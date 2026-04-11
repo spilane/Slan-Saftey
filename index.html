@@ -827,18 +827,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="tiles">
 
     <!-- EMERGENCY SOS -->
-    <div style="background:#FFF0F0;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="sosCall()">
-      <div style="display:flex;align-items:center;gap:11px">
-        <div style="width:38px;height:38px;border-radius:10px;background:#FAEBEB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.6 19.79 19.79 0 0 1 1.61 3 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"/></svg>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:600;color:#B83232">Emergency SOS</div>
-          <div style="font-size:11px;color:#C06060;margin-top:1px" id="sos-contact">Call site supervisor</div>
-        </div>
-      </div>
-      <div style="font-size:11px;font-weight:600;color:#B83232;background:#FAEBEB;padding:5px 10px;border-radius:20px;border:1px solid rgba(184,50,50,.2)">Call now</div>
-    </div>
+    
 
     <!-- SITE CONTACTS -->
     <div class="fcard">
@@ -1266,6 +1255,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-name">Broadcast</div>
         <div class="tile-sub">Message all on site</div>
       </div>
+      <div class="tile" onclick="goToPermits()">
+        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg></div>
+        <div class="tile-name">Permits to Work</div>
+        <div class="tile-sub">Log &amp; track permits</div>
+      </div>
+
       <div class="tile" onclick="goToWorkerContacts()">
         <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="#136D65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="tile-name">Workers</div>
@@ -2748,27 +2743,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <!-- ── Scrollable content ─────────────────── -->
   <div class="tiles" style="padding-bottom:90px">
 
-    <!-- Period + site filter row -->
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <div class="badge an-period" data-days="30" onclick="anSetPeriod(this)" style="cursor:pointer;background:var(--gold);color:var(--deep);border-color:var(--gold)">30 days</div>
-      <div class="badge an-period" data-days="90" onclick="anSetPeriod(this)" style="cursor:pointer">3 months</div>
-      <div class="badge an-period" data-days="365" onclick="anSetPeriod(this)" style="cursor:pointer">Year</div>
-      <div id="an-site-filter-wrap" style="display:none;margin-left:auto">
-        <select id="an-site-select" onchange="anSiteChanged()" style="background:var(--deep);border:1px solid rgba(184,150,12,.4);border-radius:8px;color:var(--gold);font-size:11px;padding:5px 10px;font-family:inherit;outline:none">
-          <option value="all">All sites</option>
-          <option value="site-a">Site A — Parramatta</option>
-          <option value="site-b">Site B — Blacktown</option>
-          <option value="site-c">Site C — Liverpool</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Director alerts (hidden unless there are alerts) -->
-    <div id="an-dir-alerts" style="display:none;flex-direction:column;gap:8px">
-      <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Requires attention</div>
-      <div id="an-dir-alerts-list" style="font-size:13px;color:var(--muted);text-align:center;padding:12px">No critical alerts at this time.</div>
-    </div>
-
     <!-- ── TODAY AT A GLANCE — always visible ── -->
     <div style="background:var(--deep);border-radius:var(--r);padding:16px">
       <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px">Today at a glance</div>
@@ -2796,6 +2770,27 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">Incidents this period</div>
         </div>
       </div>
+    </div>
+
+    <!-- Period + site filter row -->
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <div class="badge an-period" data-days="30" onclick="anSetPeriod(this)" style="cursor:pointer;background:var(--gold);color:var(--deep);border-color:var(--gold)">30 days</div>
+      <div class="badge an-period" data-days="90" onclick="anSetPeriod(this)" style="cursor:pointer">3 months</div>
+      <div class="badge an-period" data-days="365" onclick="anSetPeriod(this)" style="cursor:pointer">Year</div>
+      <div id="an-site-filter-wrap" style="display:none;margin-left:auto">
+        <select id="an-site-select" onchange="anSiteChanged()" style="background:var(--deep);border:1px solid rgba(184,150,12,.4);border-radius:8px;color:var(--gold);font-size:11px;padding:5px 10px;font-family:inherit;outline:none">
+          <option value="all">All sites</option>
+          <option value="site-a">Site A — Parramatta</option>
+          <option value="site-b">Site B — Blacktown</option>
+          <option value="site-c">Site C — Liverpool</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Director alerts (hidden unless there are alerts) -->
+    <div id="an-dir-alerts" style="display:none;flex-direction:column;gap:8px">
+      <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Requires attention</div>
+      <div id="an-dir-alerts-list" style="font-size:13px;color:var(--muted);text-align:center;padding:12px">No critical alerts at this time.</div>
     </div>
 
     <!-- ── EXPANDABLE TILES ─────────────────── -->
@@ -3093,38 +3088,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 
     <!-- Director: Contact + Scorecard as matching tiles -->
+
+    <!-- Contact Slán + Scorecard — matching standard tiles -->
     <div id="an-dir-tiles" style="display:none;grid-template-columns:1fr 1fr;gap:10px">
-      <div id="an-contact-btn" style="display:none;background:#E6EEF9;border:1.5px solid rgba(28,90,173,.2);border-radius:var(--r);padding:16px 12px;cursor:pointer;text-align:center" onclick="goToContactSlan()">
-        <div style="width:40px;height:40px;border-radius:12px;background:rgba(28,90,173,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#1C5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <div style="font-size:13px;font-weight:600;color:#1C5AAD">Contact Slán</div>
-        <div style="font-size:10px;color:#4A7DBB;margin-top:3px">Message WHS provider</div>
+      <div id="an-contact-btn" class="tile" style="display:none" onclick="goToContactSlan()">
+        <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="#1C5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="tile-name">Contact Slán</div>
+        <div class="tile-sub">Message WHS provider</div>
       </div>
-      <div id="an-scorecard-btn" style="display:none;background:var(--deep);border-radius:var(--r);padding:16px 12px;cursor:pointer;text-align:center" onclick="goToScorecard()">
-        <div style="width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(184,150,12,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
-        <div style="font-size:13px;font-weight:600;color:#fff">Scorecard</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:3px">Monthly RAG report</div>
+      <div id="an-scorecard-btn" class="tile" style="display:none" onclick="goToScorecard()">
+        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="tile-name">Scorecard</div>
+        <div class="tile-sub">Monthly RAG report</div>
       </div>
     </div>
 
   </div>
-
-  <nav class="nav" id="an-nav-sup" style="display:none">
-    <div class="ni" onclick="analyticsBack()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard
-    </div>
-    <div class="ni on">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics
-    </div>
-    <div class="ni" onclick="goTo('screen-profile');prefillProfileScreen();initSig()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile
-    </div>
-  </nav>
-
-
+</div>
 <!-- ═══════════════════ EMERGENCY CONTACTS ═══ -->
 <div id="screen-emergency" class="screen">
   <div class="sb"></div>
@@ -3157,6 +3137,95 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
+    <!-- Nearest Hospital / A&E -->
+    <div class="fcard" style="padding:0">
+      <div class="fcard-hdr" style="border-bottom:1px solid var(--border)">Nearest Hospital / Emergency Department</div>
+      <div id="em-hospital-rows" style="padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:start">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Name</div>
+          <div id="em-hosp-name" style="font-size:13px;font-weight:600;color:var(--text)">— Update with site-specific details —</div>
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Address</div>
+          <div id="em-hosp-addr" style="font-size:12px;color:var(--muted)">Contact Slán Safety to configure</div>
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Hours</div>
+          <div id="em-hosp-hours" style="font-size:12px;color:var(--muted)">24 / 7</div>
+        </div>
+        <a id="em-hosp-phone-link" href="tel:000" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;background:#FAEBEB;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:10px 13px;margin-top:4px">
+          <div>
+            <div id="em-hosp-phone-txt" style="font-size:13px;font-weight:600;color:#B83232">Phone — see above</div>
+            <div style="font-size:11px;color:var(--muted)">Nearest A&amp;E / Emergency Department</div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:#B83232;background:#fff;border:1.5px solid rgba(184,50,50,.3);border-radius:7px;padding:4px 10px">CALL</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- GP / Medical Centre -->
+    <div class="fcard" style="padding:0">
+      <div class="fcard-hdr" style="border-bottom:1px solid var(--border)">GP / Medical Centre</div>
+      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:start">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Name</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">— Update with site-specific details —</div>
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Address</div>
+          <div style="font-size:12px;color:var(--muted)">Contact Slán Safety to configure</div>
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Hours</div>
+          <div style="font-size:12px;color:var(--muted)">Mon–Fri 8am–6pm</div>
+        </div>
+        <a href="tel:000" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;background:#E6EEF9;border:1.5px solid rgba(28,90,173,.2);border-radius:var(--rs);padding:10px 13px;margin-top:4px">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1C5AAD">Phone — see above</div>
+            <div style="font-size:11px;color:var(--muted)">GP / Medical Centre</div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:#1C5AAD;background:#fff;border:1.5px solid rgba(28,90,173,.3);border-radius:7px;padding:4px 10px">CALL</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Urgent Care -->
+    <div class="fcard" style="padding:0">
+      <div class="fcard-hdr" style="border-bottom:1px solid var(--border)">Urgent Care</div>
+      <div style="padding:12px 14px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">For non-life-threatening injuries — avoid A&amp;E queues</div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:start;margin-bottom:8px">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Name</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">— Update with site-specific details —</div>
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Address</div>
+          <div style="font-size:12px;color:var(--muted)">Contact Slán Safety to configure</div>
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Hours</div>
+          <div style="font-size:12px;color:var(--muted)">7 days — extended hours</div>
+        </div>
+        <a href="tel:000" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;background:#E6F5ED;border:1.5px solid rgba(45,106,69,.2);border-radius:var(--rs);padding:10px 13px">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--mid)">Phone — see above</div>
+            <div style="font-size:11px;color:var(--muted)">Urgent Care Centre</div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:var(--mid);background:#fff;border:1.5px solid rgba(45,106,69,.3);border-radius:7px;padding:4px 10px">CALL</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- After Hours & Physiotherapy -->
+    <div class="fcard" style="padding:0">
+      <div class="fcard-hdr" style="border-bottom:1px solid var(--border)">After Hours &amp; Physiotherapy</div>
+      <div style="padding:12px 14px">
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:start;margin-bottom:8px">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Name</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">— Update with site-specific details —</div>
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Address</div>
+          <div style="font-size:12px;color:var(--muted)">Contact Slán Safety to configure</div>
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding-top:2px">Hours</div>
+          <div style="font-size:12px;color:var(--muted)">Extended / after hours</div>
+        </div>
+        <a href="tel:000" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;background:#F3F0FB;border:1.5px solid rgba(91,33,182,.2);border-radius:var(--rs);padding:10px 13px">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#5B21B6">Phone — see above</div>
+            <div style="font-size:11px;color:var(--muted)">After hours &amp; physio</div>
+          </div>
+          <div style="font-size:10px;font-weight:700;color:#5B21B6;background:#fff;border:1.5px solid rgba(91,33,182,.3);border-radius:7px;padding:4px 10px">CALL</div>
+        </a>
+      </div>
+    </div>
+
     <!-- Other emergency numbers -->
     <div class="fcard">
       <div class="fcard-hdr">Other numbers</div>
@@ -3186,56 +3255,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="contact-info"><div class="contact-name">Healthdirect</div><div class="contact-role">1800 022 222 — health advice</div></div>
           <div class="contact-call" style="font-size:10px;font-weight:600;color:#1C5AAD;padding:4px 8px;background:#E6EEF9;border-color:rgba(28,90,173,.2);border-radius:8px">Call</div>
         </a>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ═══════════════════ SWMS LIBRARY ═══ -->
-<div id="screen-swms" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="swms-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
-    </div>
-    <div class="tbar-greeting" style="margin-top:10px">
-      <h1>SWMS Library</h1>
-      <p>Safe Work Method Statements — read &amp; sign</p>
-    </div>
-  </div>
-
-  <div class="tiles">
-    <div style="background:#FDF8E8;border:1.5px solid rgba(184,150,12,.3);border-radius:var(--r);padding:13px 15px;display:flex;align-items:flex-start;gap:10px">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <div style="font-size:12px;color:#8B6914;line-height:1.5">You must read and sign the relevant SWMS <strong>before starting any high-risk work</strong>. Your supervisor will be notified when you sign.</div>
-    </div>
-
-    <div class="fcard">
-      <div class="fcard-hdr">Current SWMS — this site</div>
-      <div class="fcard-body" style="padding:0;gap:0">
-
-        <div id="swms-empty" style="padding:20px;text-align:center">
-          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">No SWMS have been uploaded yet</div>
-          <div style="font-size:11px;color:var(--muted);line-height:1.5">Your supervisor or Slán Safety will upload SWMS documents here. You will be notified when new SWMS are available to sign.</div>
-        </div>
-
-        <!-- SWMS items — these will be populated from Firebase when SWMS are uploaded -->
-        <div id="swms-list"></div>
-
-      </div>
-    </div>
-
-    <!-- Signed SWMS history -->
-    <div class="fcard">
-      <div class="fcard-hdr">My signed SWMS</div>
-      <div class="fcard-body" style="padding:0;gap:0">
-        <div id="swms-signed-empty" style="padding:20px;text-align:center">
-          <div style="font-size:13px;color:var(--muted)">No signed SWMS on record yet</div>
-        </div>
-        <div id="swms-signed-list"></div>
       </div>
     </div>
 
@@ -3588,83 +3607,115 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <div class="tiles">
 
-    <!-- Search bar -->
     <div style="position:relative">
       <input type="text" id="wc-search" oninput="wcSearch()" placeholder="Search workers..." style="width:100%;padding:11px 13px 11px 38px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#fff;outline:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;position:absolute;left:12px;top:50%;transform:translateY(-50%)"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
     </div>
 
-    <!-- On site list -->
     <div style="background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden">
-      <div style="background:var(--deep);padding:10px 14px;font-size:10px;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase">Currently on site</div>
-      <div id="wc-onsite-list" style="padding:0">
-
-        <div class="contact-row wc-worker" data-name="jake ryan">
-          <div class="contact-icon" style="background:#E6F5ED"><div style="width:20px;height:20px;border-radius:50%;background:var(--mid);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff">JR</div></div>
-          <div class="contact-info">
-            <div class="contact-name">Jake Ryan</div>
-            <div class="contact-role">Concretor · Murphy Concreting · In since 06:55</div>
-          </div>
-          <a href="tel:" class="contact-call" style="text-decoration:none"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.6 19.79 19.79 0 0 1 1.61 3 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>
-        </div>
-
-        <div class="contact-row wc-worker" data-name="mark flynn">
-          <div class="contact-icon" style="background:#E6F5ED"><div style="width:20px;height:20px;border-radius:50%;background:var(--mid);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff">MF</div></div>
-          <div class="contact-info">
-            <div class="contact-name">Mark Flynn</div>
-            <div class="contact-role">Formworker · Murphy Concreting · In since 07:02</div>
-          </div>
-          <a href="tel:" class="contact-call" style="text-decoration:none"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.6 19.79 19.79 0 0 1 1.61 3 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>
-        </div>
-
-        <div class="contact-row wc-worker" data-name="sam carroll">
-          <div class="contact-icon" style="background:#E6F5ED"><div style="width:20px;height:20px;border-radius:50%;background:var(--mid);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff">SC</div></div>
-          <div class="contact-info">
-            <div class="contact-name">Sam Carroll</div>
-            <div class="contact-role">Plant Operator · Burke Civil · In since 07:08</div>
-          </div>
-          <a href="tel:" class="contact-call" style="text-decoration:none"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.6 19.79 19.79 0 0 1 1.61 3 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>
-        </div>
-
-        <div class="contact-row wc-worker" style="border-bottom:none" data-name="tom burke">
-          <div class="contact-icon" style="background:#E6F5ED"><div style="width:20px;height:20px;border-radius:50%;background:var(--mid);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff">TB</div></div>
-          <div class="contact-info">
-            <div class="contact-name">Tom Burke</div>
-            <div class="contact-role">Labourer · Burke Civil · In since 07:15</div>
-          </div>
-          <a href="tel:" class="contact-call" style="text-decoration:none"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.6 19.79 19.79 0 0 1 1.61 3 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>
-        </div>
-
-      </div>
+      <div style="background:var(--deep);padding:10px 14px;font-size:10px;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase">On site today — tap to view licences &amp; details</div>
+      <div id="wc-onsite-list" style="padding:0"></div>
     </div>
 
-    <!-- All registered workers (not on site) -->
-    <div class="fcard">
-      <div class="fcard-hdr">All registered workers</div>
-      <div class="fcard-body" style="padding:0;gap:0">
-        <div class="contact-row wc-worker" data-name="chris walsh">
-          <div class="contact-icon" style="background:#F2F3F2"><div style="width:20px;height:20px;border-radius:50%;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff">CW</div></div>
-          <div class="contact-info">
-            <div class="contact-name">Chris Walsh</div>
-            <div class="contact-role" style="color:#B83232">Not signed in today · Smith Formwork</div>
-          </div>
-          <a href="tel:" class="contact-call" style="text-decoration:none;background:#F2F3F2;border-color:var(--border);color:var(--muted)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.6 19.79 19.79 0 0 1 1.61 3 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>
-        </div>
-        <div class="contact-row wc-worker" style="border-bottom:none" data-name="dave murphy">
-          <div class="contact-icon" style="background:#F2F3F2"><div style="width:20px;height:20px;border-radius:50%;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff">DM</div></div>
-          <div class="contact-info">
-            <div class="contact-name">Dave Murphy</div>
-            <div class="contact-role" style="color:#B83232">Not signed in today · Smith Formwork</div>
-          </div>
-          <a href="tel:" class="contact-call" style="text-decoration:none;background:#F2F3F2;border-color:var(--border);color:var(--muted)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.6 19.79 19.79 0 0 1 1.61 3 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></a>
-        </div>
-      </div>
+    <div style="background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden">
+      <div style="background:#374151;padding:10px 14px;font-size:10px;font-weight:600;color:#D1D5DB;letter-spacing:.08em;text-transform:uppercase">Off site today — tap to view licences &amp; details</div>
+      <div id="wc-all-list" style="padding:0"></div>
     </div>
 
   </div>
 </div>
 
 <!-- ═══════════════════ NOTIFICATIONS ═══ -->
+<div id="screen-ptw" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goTo('screen-dash')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="tbar-logo"><img id="ptw-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="tbar-greeting" style="margin-top:10px">
+      <h1>Permits to Work</h1>
+      <p>Log a permit — Slán Safety files &amp; registers it within 24 hrs</p>
+    </div>
+  </div>
+  <div class="syncbar">
+    <div class="sync-l"><div class="bdot g"></div><span>Supervisor use only</span></div>
+    <div class="sync-r" id="ptw-count">Loading...</div>
+  </div>
+  <div class="fbody" style="gap:14px">
+
+    <div class="fcard">
+      <div class="fcard-hdr">Log a New Permit</div>
+      <div class="fcard-body" style="gap:10px">
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">Select the permit type, add details and submit. Slán Safety will file it and update your permit register within 24 hours.</div>
+
+        <div class="fgroup">
+          <label class="flabel">Permit type</label>
+          <select id="ptw-type">
+            <option value="">Select type...</option>
+            <option value="Hot Works">Hot Works</option>
+            <option value="Confined Space Entry">Confined Space Entry</option>
+            <option value="Working at Heights">Working at Heights</option>
+            <option value="Electrical Isolation">Electrical Isolation</option>
+            <option value="Excavation">Excavation</option>
+            <option value="Crane Lift">Crane Lift</option>
+          </select>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="fgroup">
+            <label class="flabel">Date issued</label>
+            <input id="ptw-date" class="finput" type="date">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Permit ref #</label>
+            <input id="ptw-ref" class="finput" type="text" placeholder="e.g. HW-001">
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Location / description</label>
+          <input id="ptw-location" class="finput" type="text" placeholder="e.g. Level 3 east — welding to steel frame">
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Workers covered</label>
+          <input id="ptw-workers-field" class="finput" type="text" placeholder="Names of workers covered by this permit">
+        </div>
+
+        <div id="ptw-photo-area" onclick="document.getElementById('ptw-photo-input').click()" style="border:2px dashed var(--border);border-radius:var(--rs);padding:20px;text-align:center;cursor:pointer;background:var(--bg)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;margin:0 auto 8px;display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div style="font-size:13px;font-weight:600;color:var(--muted)">Tap to photograph permit</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">Both sides must be legible</div>
+          <input id="ptw-photo-input" type="file" accept="image/*" capture="environment" style="display:none" onchange="ptwPhotoSelected(this)">
+        </div>
+
+        <div id="ptw-photo-preview" style="display:none;position:relative">
+          <img id="ptw-photo-img" style="width:100%;border-radius:var(--rs);max-height:200px;object-fit:contain;border:1.5px solid var(--border)">
+          <button onclick="ptwClearPhoto()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);border:none;border-radius:50%;width:28px;height:28px;color:#fff;font-size:18px;cursor:pointer;line-height:1">&#215;</button>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Permit status</label>
+          <select id="ptw-status">
+            <option value="open">Open — work in progress</option>
+            <option value="closed">Closed out — work complete</option>
+          </select>
+        </div>
+
+        <button onclick="submitPermit()" style="width:100%;padding:14px;background:var(--mid);border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;color:#fff;cursor:pointer">Submit Permit to Slán Safety</button>
+      </div>
+    </div>
+
+    <div class="fcard" style="padding:0;overflow:hidden">
+      <div class="fcard-hdr" style="border-bottom:1px solid var(--border)">Recent Permits — This Site</div>
+      <div id="ptw-list" style="padding:0"></div>
+    </div>
+
+  </div>
+</div>
+
 <div id="screen-notifications" class="screen">
   <div class="sb"></div>
   <div class="topbar" style="padding-bottom:14px">
@@ -3723,83 +3774,181 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <div class="fbody" style="gap:14px">
 
-    <!-- Weather assessment -->
+    <!-- SEC 1 — SITE DETAILS -->
+    <div class="fcard">
+      <div class="fcard-hdr">1 — Site Details</div>
+      <div class="fcard-body" style="gap:8px">
+        <div class="fgroup">
+          <label class="flabel">Site / Project</label>
+          <input id="sps-site" class="finput" type="text" placeholder="e.g. Murphy Civil — Parramatta Rd" value="">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="fgroup">
+            <label class="flabel">Date</label>
+            <input id="sps-date-input" class="finput" type="date">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Supervisor</label>
+            <input id="sps-sup-name" class="finput" type="text" placeholder="Name">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div class="fgroup">
+            <label class="flabel">Start time</label>
+            <input id="sps-start-time" class="finput" type="time">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Finish time</label>
+            <input id="sps-finish-time" class="finput" type="time">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">No. introductions</label>
+            <input id="sps-intros" class="finput" type="number" min="0" value="0" placeholder="0">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC 2 — WEATHER -->
     <div class="fcard">
       <div class="fcard-hdr">
-        <span id="sps-weather-icon">⏳</span>&nbsp; Weather — <span id="sps-weather-status">Fetching...</span>
+        <span id="sps-weather-icon">⏳</span>&nbsp; 2 — Weather — <span id="sps-weather-status">Fetching...</span>
       </div>
       <div class="fcard-body" style="gap:8px">
         <div id="sps-weather-detail" style="font-size:12px;color:var(--muted)"></div>
         <div id="sps-weather-note" style="font-size:11px;color:#B8960C;font-weight:500"></div>
-        <div class="fgroup" style="margin-top:4px">
-          <label class="flabel">Weather assessment for today's work</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
+          <div class="fgroup">
+            <label class="flabel">Temp (°C)</label>
+            <input id="sps-temp" class="finput" type="text" placeholder="—">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Conditions</label>
+            <input id="sps-conditions" class="finput" type="text" placeholder="—">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Wind (km/h)</label>
+            <input id="sps-wind" class="finput" type="text" placeholder="—">
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Weather assessment</label>
           <select id="sps-weather-assessment">
             <option value="">Select assessment...</option>
             <option>Suitable — no weather concerns</option>
-            <option>Suitable with controls — monitor conditions</option>
-            <option>Marginal — review SWMS before commencing</option>
-            <option>Unsuitable — defer high-risk work</option>
+            <option>Caution — monitor throughout day</option>
+            <option>Restricted — certain tasks paused</option>
+            <option>Stop work — conditions unsafe</option>
           </select>
         </div>
       </div>
     </div>
 
-    <!-- Site inspection -->
+    <!-- SEC 3 — TASKS NOT COMPLETED -->
     <div class="fcard">
-      <div class="fcard-hdr">Site inspection</div>
+      <div class="fcard-hdr">3 — Tasks Not Completed from Previous Shift</div>
+      <div class="fcard-body">
+        <textarea id="sps-prev-tasks" placeholder="Provide details and reasons if applicable. Write NIL if none." rows="3" style="width:100%;border:1.5px solid var(--border);border-radius:var(--rs);padding:10px;font-size:13px;font-family:inherit;resize:none;background:#fff;color:var(--text)"></textarea>
+      </div>
+    </div>
+
+    <!-- SEC 3B — OPEN CORRECTIVE ACTIONS -->
+    <div class="fcard">
+      <div class="fcard-hdr">3B — Open Corrective Actions</div>
+      <div class="fcard-body" style="gap:10px">
+        <div style="font-size:12.5px;color:var(--text)">Are there open corrective actions from previous hazard or incident reports?</div>
+        <div style="display:flex;gap:10px">
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer">
+            <input type="radio" name="sps-ca-open" id="sps-ca-yes" value="yes" style="accent-color:var(--mid)"> Yes — see details below
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer">
+            <input type="radio" name="sps-ca-open" id="sps-ca-no" value="no" style="accent-color:var(--mid)"> No — all clear
+          </label>
+        </div>
+        <textarea id="sps-ca-refs" placeholder="Reference numbers / details (e.g. HAZ-001, INC-003)" rows="2" style="width:100%;border:1.5px solid var(--border);border-radius:var(--rs);padding:10px;font-size:13px;font-family:inherit;resize:none;background:#fff;color:var(--text)"></textarea>
+      </div>
+    </div>
+
+    <!-- SEC 4 — TASKS TODAY -->
+    <div class="fcard">
+      <div class="fcard-hdr">4 — Tasks Scheduled for Today</div>
+      <div class="fcard-body" style="gap:7px">
+        <div style="font-size:11px;color:var(--muted)">List all planned activities and assign responsibilities where applicable.</div>
+        <div id="sps-tasks-list" style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:center;gap:8px"><div style="min-width:18px;font-size:12px;font-weight:600;color:var(--muted)">1.</div><input class="finput sps-task" type="text" placeholder="Task / activity..."></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="min-width:18px;font-size:12px;font-weight:600;color:var(--muted)">2.</div><input class="finput sps-task" type="text" placeholder="Task / activity..."></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="min-width:18px;font-size:12px;font-weight:600;color:var(--muted)">3.</div><input class="finput sps-task" type="text" placeholder="Task / activity..."></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="min-width:18px;font-size:12px;font-weight:600;color:var(--muted)">4.</div><input class="finput sps-task" type="text" placeholder="Task / activity..."></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="min-width:18px;font-size:12px;font-weight:600;color:var(--muted)">5.</div><input class="finput sps-task" type="text" placeholder="Task / activity..."></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="min-width:18px;font-size:12px;font-weight:600;color:var(--muted)">6.</div><input class="finput sps-task" type="text" placeholder="Task / activity..."></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC 5 — HAZARDS -->
+    <div class="fcard">
+      <div class="fcard-hdr">5 — Hazards Identified &amp; Controls</div>
+      <div class="fcard-body">
+        <textarea id="sps-hazards" placeholder="Describe any hazards identified and the controls or mitigations in place. Write NIL if none." rows="3" style="width:100%;border:1.5px solid var(--border);border-radius:var(--rs);padding:10px;font-size:13px;font-family:inherit;resize:none;background:#fff;color:var(--text)"></textarea>
+      </div>
+    </div>
+
+    <!-- SEC 6 — SITE CONDITION CHECKLIST -->
+    <div class="fcard">
+      <div class="fcard-hdr">6 — Site Condition Checklist</div>
       <div class="fcard-body" style="gap:0;padding:8px 15px">
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">
-          Tap <strong style="color:#1B6E3A">Pass</strong>, <strong style="color:#B83232">Fail</strong> or <strong style="color:var(--muted)">N/A</strong> for each item. ★ = critical.
+          Tap <strong style="color:#1B6E3A">Pass</strong>, <strong style="color:#B83232">Fail</strong> or <strong style="color:var(--muted)">N/A</strong>. ★ = critical.
         </div>
         <div id="sps-site-items"></div>
       </div>
     </div>
 
-    <!-- Plant on site today -->
+    <!-- SEC 7 — WORKER ATTENDANCE -->
     <div class="fcard">
-      <div class="fcard-hdr">Plant &amp; equipment on site today</div>
-      <div class="fcard-body" style="gap:0;padding:8px 15px">
-        <div id="sps-plant-items"></div>
-      </div>
-    </div>
-
-    <!-- Additional notes -->
-    <div class="fcard">
-      <div class="fcard-hdr">Supervisor notes</div>
-      <div class="fcard-body">
-        <textarea id="sps-notes" placeholder="Any additional observations, instructions or site conditions to note..." rows="3" style="font-size:14px;resize:none"></textarea>
-      </div>
-    </div>
-
-    <!-- Outcome banner -->
-    <div id="sps-outcome-wrap" style="display:none">
-      <div class="ps-outcome" id="sps-outcome-banner">
-        <div class="ps-outcome-icon"><svg viewBox="0 0 24 24" fill="none" id="sps-outcome-icon-svg"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div>
-          <div class="ps-outcome-title" id="sps-outcome-title">Site cleared for work</div>
-          <div class="ps-outcome-sub" id="sps-outcome-sub"></div>
+      <div class="fcard-hdr">7 — Worker Attendance &amp; Sign-On</div>
+      <div class="fcard-body" style="gap:0;padding:0">
+        <div style="display:grid;grid-template-columns:2fr 2fr 1fr;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg)">
+          <div>Full Name</div><div>Company</div><div style="text-align:center">Fit for work</div>
+        </div>
+        <div id="sps-workers-list"></div>
+        <div style="padding:10px 14px">
+          <div style="font-size:11px;color:var(--muted);line-height:1.55;font-style:italic">
+            By signing above, each worker confirms they are fit for duty, free from the influence of alcohol, drugs or substances, and free from the effects of fatigue.
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Supervisor signature -->
-    <div class="fcard" id="sps-sig-card" style="display:none">
-      <div class="fcard-hdr">Supervisor declaration</div>
+    <!-- SEC 8 — SUPERVISOR SIGN-OFF -->
+    <div class="fcard">
+      <div class="fcard-hdr">8 — Supervisor Sign-Off</div>
       <div class="fcard-body">
-        <div style="font-size:12.5px;color:var(--muted);line-height:1.6">I confirm I have carried out this site inspection and the above information is accurate. Workers have been briefed on today's conditions and any identified hazards.</div>
-        <div class="sig-preview-wrap" id="sps-sig-preview"><span class="no-sig">No saved signature — go to Profile</span></div>
+        <div id="sps-sig-preview" style="width:100%;min-height:80px;border:1.5px dashed var(--border);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;margin-bottom:10px;overflow:hidden">
+          <span style="font-size:12px;color:var(--muted)">Signature loads from your profile</span>
+        </div>
+        <div id="sps-outcome-wrap" style="display:none">
+          <div class="fgroup" style="margin-bottom:10px">
+            <label class="flabel">Overall outcome</label>
+            <select id="sps-overall-outcome">
+              <option value="">Select outcome...</option>
+              <option>PASS — site ready to commence work</option>
+              <option>CONDITIONAL — proceed with noted controls</option>
+              <option>FAIL — work cannot commence, items to resolve</option>
+            </select>
+          </div>
+        </div>
+        <textarea id="sps-notes" placeholder="Additional observations, instructions or conditions to note..." rows="3" style="width:100%;border:1.5px solid var(--border);border-radius:var(--rs);padding:10px;font-size:13px;font-family:inherit;resize:none;background:#fff;color:var(--text);margin-bottom:10px"></textarea>
       </div>
     </div>
 
-    <button class="submit-btn" id="sps-submit-btn" style="display:none" onclick="submitSitePreStart()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
-      Submit site pre-start
-    </button>
+    <div id="sps-submit-btn" style="display:none;padding:0 0 8px">
+      <button onclick="submitSitePreStart()" style="width:100%;padding:15px;background:var(--mid);border:none;border-radius:var(--r);font-family:inherit;font-size:15px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.02em">
+        Submit Pre-Start
+      </button>
+    </div>
 
   </div>
-</div>
-
-<!-- ═══════════════════ VISITOR SIGN-IN ═══ -->
 <div id="screen-visitor" class="screen">
   <div class="sb"></div>
   <div class="topbar" style="padding-bottom:14px">
@@ -4047,26 +4196,26 @@ if (typeof localStorage !== 'undefined' && localStorage.getItem('slan_demo') ===
 
 // ── 20-person civil construction site demo data ──────────────────
 var DEMO_WORKERS = [
-  { name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',        pts:912, tier:'gold'   },
-  { name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',        pts:724, tier:'gold'   },
-  { name:'Sam Carroll',     company:'Burke Civil Contractors',   role:'Concretor',         pts:681, tier:'gold'   },
-  { name:'Tom Burke',       company:'Burke Civil Contractors',   role:'Labourer',          pts:541, tier:'silver' },
-  { name:'Chris Walsh',     company:'Smith Formwork Pty Ltd',    role:'Formworker',        pts:490, tier:'silver' },
-  { name:'Dave Murphy',     company:'Smith Formwork Pty Ltd',    role:'Carpenter',         pts:388, tier:'silver' },
-  { name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',            pts:312, tier:'silver' },
-  { name:'Pat Healy',       company:'Murphy Civil Construction', role:'Labourer',          pts:285, tier:'bronze' },
-  { name:'Brendan Kelly',   company:'Kelly Crane Services',      role:'Crane Operator',    pts:260, tier:'bronze' },
-  { name:'Mick Doyle',      company:'Burke Civil Contractors',   role:'Excavator Operator',pts:241, tier:'bronze' },
-  { name:'Shane Connolly',  company:'Murphy Civil Construction', role:'Steelfixer',        pts:198, tier:'bronze' },
-  { name:'Aaron Farrell',   company:'Smith Formwork Pty Ltd',    role:'Formworker',        pts:175, tier:'bronze' },
-  { name:'Gary Tully',      company:'Tully Plumbing',            role:'Plumber',           pts:154, tier:'bronze' },
-  { name:'Wayne Slattery',  company:'Slattery Electrical',       role:'Electrician',       pts:138, tier:'bronze' },
-  { name:'James Riordan',   company:'Murphy Civil Construction', role:'Labourer',          pts:112, tier:'bronze' },
-  { name:'Kevin Nash',      company:'Burke Civil Contractors',   role:'Traffic Controller', pts:98, tier:'bronze' },
-  { name:'Paul Sheridan',   company:'Murphy Civil Construction', role:'Concretor',         pts:87,  tier:'bronze' },
-  { name:'Dean Mc Grath',   company:'Smith Formwork Pty Ltd',    role:'Carpenter',         pts:72,  tier:'bronze' },
-  { name:'Liam Brennan',    company:'Murphy Civil Construction', role:'Labourer',          pts:55,  tier:'bronze' },
-  { name:'Niall Costello',  company:'Burke Civil Contractors',   role:'Labourer',          pts:40,  tier:'bronze' }
+  { name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',         pts:912, tier:'gold',   phone:'0411 111 001', inducted:true,  onsite:true,  signin:'06:55', licences:{ whitecard:{expiry:'2027-03-10',ok:true}, hrwl:{type:'Dogging DG',expiry:'2026-07-15',ok:true}, driver:{expiry:'2027-08-22',ok:true}, firstaid:{expiry:'2025-11-30',ok:false} } },
+  { name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',         pts:724, tier:'gold',   phone:'0411 111 002', inducted:true,  onsite:true,  signin:'07:02', licences:{ whitecard:{expiry:'2027-06-20',ok:true}, driver:{expiry:'2026-04-10',ok:true} } },
+  { name:'Sam Carroll',     company:'Burke Civil Contractors',   role:'Concretor',          pts:681, tier:'gold',   phone:'0411 111 003', inducted:true,  onsite:true,  signin:'07:05', licences:{ whitecard:{expiry:'2026-09-15',ok:true}, driver:{expiry:'2026-12-01',ok:true} } },
+  { name:'Tom Burke',       company:'Burke Civil Contractors',   role:'Labourer',           pts:541, tier:'silver', phone:'0411 111 004', inducted:true,  onsite:true,  signin:'07:10', licences:{ whitecard:{expiry:'2027-01-08',ok:true} } },
+  { name:'Chris Walsh',     company:'Smith Formwork Pty Ltd',    role:'Formworker',         pts:490, tier:'silver', phone:'0411 111 005', inducted:true,  onsite:true,  signin:'07:08', licences:{ whitecard:{expiry:'2026-11-25',ok:true}, driver:{expiry:'2026-05-14',ok:true} } },
+  { name:'Dave Murphy',     company:'Smith Formwork Pty Ltd',    role:'Carpenter',          pts:388, tier:'silver', phone:'0411 111 006', inducted:true,  onsite:true,  signin:'07:12', licences:{ whitecard:{expiry:'2026-08-30',ok:true} } },
+  { name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',             pts:312, tier:'silver', phone:'0411 111 007', inducted:true,  onsite:true,  signin:'07:00', licences:{ whitecard:{expiry:'2027-04-18',ok:true}, hrwl:{type:'Rigging RI',expiry:'2026-09-20',ok:true} } },
+  { name:'Pat Healy',       company:'Murphy Civil Construction', role:'Labourer',           pts:285, tier:'bronze', phone:'0411 111 008', inducted:true,  onsite:true,  signin:'07:15', licences:{ whitecard:{expiry:'2026-07-05',ok:true} } },
+  { name:'Brendan Kelly',   company:'Kelly Crane Services',      role:'Crane Operator',     pts:260, tier:'bronze', phone:'0411 111 009', inducted:true,  onsite:true,  signin:'07:00', licences:{ whitecard:{expiry:'2027-02-14',ok:true}, hrwl:{type:'Slewing Crane SC',expiry:'2026-06-30',ok:false} } },
+  { name:'Mick Doyle',      company:'Burke Civil Contractors',   role:'Excavator Operator', pts:241, tier:'bronze', phone:'0411 111 010', inducted:true,  onsite:true,  signin:'07:05', licences:{ whitecard:{expiry:'2026-10-22',ok:true}, hrwl:{type:'Earthmoving ME',expiry:'2027-01-15',ok:true} } },
+  { name:'Shane Connolly',  company:'Murphy Civil Construction', role:'Steelfixer',         pts:198, tier:'bronze', phone:'0411 111 011', inducted:true,  onsite:true,  signin:'07:20', licences:{ whitecard:{expiry:'2026-12-10',ok:true} } },
+  { name:'Aaron Farrell',   company:'Smith Formwork Pty Ltd',    role:'Formworker',         pts:175, tier:'bronze', phone:'0411 111 012', inducted:true,  onsite:false, signin:null,    licences:{ whitecard:{expiry:'2026-09-08',ok:true} } },
+  { name:'Gary Tully',      company:'Tully Plumbing',            role:'Plumber',            pts:154, tier:'bronze', phone:'0411 111 013', inducted:true,  onsite:true,  signin:'07:30', licences:{ whitecard:{expiry:'2027-05-20',ok:true}, driver:{expiry:'2026-11-30',ok:true} } },
+  { name:'Wayne Slattery',  company:'Slattery Electrical',       role:'Electrician',        pts:138, tier:'bronze', phone:'0411 111 014', inducted:true,  onsite:true,  signin:'07:25', licences:{ whitecard:{expiry:'2026-08-15',ok:true}, hrwl:{type:'Electrical EE',expiry:'2026-03-01',ok:false} } },
+  { name:'James Riordan',   company:'Murphy Civil Construction', role:'Labourer',           pts:112, tier:'bronze', phone:'0411 111 015', inducted:false, onsite:false, signin:null,    licences:{ whitecard:{expiry:'2025-06-30',ok:false} } },
+  { name:'Kevin Nash',      company:'Burke Civil Contractors',   role:'Traffic Controller',  pts:98, tier:'bronze', phone:'0411 111 016', inducted:true,  onsite:true,  signin:'07:45', licences:{ whitecard:{expiry:'2026-10-01',ok:true}, hrwl:{type:'Traffic Control TC',expiry:'2027-03-10',ok:true} } },
+  { name:'Paul Sheridan',   company:'Murphy Civil Construction', role:'Concretor',          pts:87,  tier:'bronze', phone:'0411 111 017', inducted:true,  onsite:true,  signin:'07:50', licences:{ whitecard:{expiry:'2026-06-15',ok:true} } },
+  { name:'Dean Mc Grath',   company:'Smith Formwork Pty Ltd',    role:'Carpenter',          pts:72,  tier:'bronze', phone:'0411 111 018', inducted:true,  onsite:false, signin:null,    licences:{ whitecard:{expiry:'2027-01-22',ok:true} } },
+  { name:'Liam Brennan',    company:'Murphy Civil Construction', role:'Labourer',           pts:55,  tier:'bronze', phone:'0411 111 019', inducted:true,  onsite:true,  signin:'08:00', licences:{ whitecard:{expiry:'2026-11-10',ok:true} } },
+  { name:'Niall Costello',  company:'Burke Civil Contractors',   role:'Labourer',           pts:40,  tier:'bronze', phone:'0411 111 020', inducted:true,  onsite:true,  signin:'08:05', licences:{ whitecard:{expiry:'2026-07-28',ok:true} } }
 ];
 
 // ── Sign-ins (20 workers signed in today) ────────────────────
@@ -6048,58 +6197,86 @@ let spsResults = {};
 function goToSitePreStart() {
   const p = getProfile();
   if (!p) { goTo('screen-profile'); initSig(); return; }
-  // Safety: ensure spsResults is always defined
-  if (typeof spsResults === 'undefined') { window.spsResults = {}; }
-  // Restore demo mode
-  if (localStorage.getItem('slan_demo') === 'true') DEMO_MODE = true;
+  if (typeof spsResults === 'undefined') window.spsResults = {};
+  goTo('screen-site-ps');
 
+  // Logo
   const spl = document.getElementById('sps-logo');
   if (spl) { const src = document.querySelector('.tbar-logo img'); if (src) spl.src = src.src; }
-  const dateLbl = document.getElementById('sps-date-lbl');
-  if (dateLbl) dateLbl.textContent = new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) + ' — ' + (typeof SITE !== 'undefined' ? SITE : '');
-  const timeLbl = document.getElementById('sps-time-lbl');
-  if (timeLbl) timeLbl.textContent = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true});
 
-  const sp = document.getElementById('sps-sig-preview');
-  if (p.sig) sp.innerHTML = `<img src="${p.sig}" alt="Signature">`;
+  // Section 1 — pre-fill
+  const today = new Date();
+  const dateEl = document.getElementById('sps-date-input');
+  if (dateEl) dateEl.value = today.toISOString().split('T')[0];
+  const supEl = document.getElementById('sps-sup-name');
+  if (supEl) supEl.value = p.name || '';
+  const siteEl = document.getElementById('sps-site');
+  if (siteEl) siteEl.value = typeof SITE !== 'undefined' ? SITE : '';
+  const stEl = document.getElementById('sps-start-time');
+  if (stEl && !stEl.value) stEl.value = '07:00';
+  const ftEl = document.getElementById('sps-finish-time');
+  if (ftEl && !ftEl.value) ftEl.value = '17:00';
 
-  spsResults = {};
-  document.getElementById('sps-notes').value = '';
-  document.getElementById('sps-weather-assessment').value = '';
-  ['sps-outcome-wrap','sps-sig-card','sps-submit-btn'].forEach(id => {
-    var el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
-
-  // Fetch live weather
-  fetchSiteWeather();
-
-  // Populate plant checklist from PLANT_LIST
-  SITE_CHECKLIST.plant = PLANT_LIST.map(pl => ({
-    id: 'plant_' + pl.id,
-    label: pl.name + ' (' + pl.id + ') — pre-started or not in use today',
-    c: true
-  }));
-
-  function buildItems(items, containerId) {
-    document.getElementById(containerId).innerHTML = items.map(item => `
-      <div class="ps-item" id="spsi-${item.id}">
-        <div class="ps-item-label${item.c?' critical':''}">${item.label}</div>
-        <div class="ps-toggle">
-          <button class="ps-btn" id="spsbtn-pass-${item.id}" onclick="setSpsItem('${item.id}','pass')">Pass</button>
-          <button class="ps-btn" id="spsbtn-fail-${item.id}" onclick="setSpsItem('${item.id}','fail')">Fail</button>
-          <button class="ps-btn" id="spsbtn-na-${item.id}"   onclick="setSpsItem('${item.id}','na')">N/A</button>
+  // Section 6 — Site condition checklist
+  const siteItems = document.getElementById('sps-site-items');
+  if (siteItems) {
+    const items = [
+      { id:'psi-ppe',      label:'All workers wearing correct PPE for today\'s tasks', c:true },
+      { id:'psi-weather',  label:'Weather conditions suitable for planned work', c:true },
+      { id:'psi-access',   label:'Site access routes clear and safe', c:true },
+      { id:'psi-barr',     label:'Barricading and exclusion zones in place', c:true },
+      { id:'psi-firstaid', label:'First aid kit stocked and location confirmed', c:true },
+      { id:'psi-swms',     label:'Current SWMS available and accessible on site', c:false },
+      { id:'psi-inducted', label:'All workers inducted for today\'s scope of work', c:false },
+      { id:'psi-permits',  label:'Permits to work in place for high-risk tasks', c:false },
+      { id:'psi-hrwl',     label:'HRWL licences confirmed for all high-risk work', c:false },
+      { id:'psi-briefing', label:'Pre-start briefing conducted and workers informed', c:false }
+    ];
+    siteItems.innerHTML = items.map(item => `
+      <div class="ps-item" id="${item.id}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:12.5px;color:var(--text);flex:1;padding-right:10px;line-height:1.4">
+          ${item.c ? '<strong style="color:#1B6E3A">★</strong> ' : ''}${item.label}
         </div>
-      </div>
-    `).join('');
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button onclick="spsTap('${item.id}','pass')" id="${item.id}-pass" style="min-width:42px;padding:5px 8px;border-radius:7px;border:1.5px solid var(--border);background:#fff;font-size:10px;font-weight:700;color:#1B6E3A;cursor:pointer;font-family:inherit">Pass</button>
+          <button onclick="spsTap('${item.id}','fail')" id="${item.id}-fail" style="min-width:42px;padding:5px 8px;border-radius:7px;border:1.5px solid var(--border);background:#fff;font-size:10px;font-weight:700;color:#B83232;cursor:pointer;font-family:inherit">Fail</button>
+          <button onclick="spsTap('${item.id}','na')" id="${item.id}-na" style="min-width:42px;padding:5px 8px;border-radius:7px;border:1.5px solid var(--border);background:#fff;font-size:10px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit">N/A</button>
+        </div>
+      </div>`).join('');
   }
 
-  try {
-    buildItems(SITE_CHECKLIST.site,  'sps-site-items');
-    buildItems(SITE_CHECKLIST.plant, 'sps-plant-items');
-  } catch(e) { console.warn('Prestart build error:', e); }
+  // Section 7 — Worker attendance rows
+  const wlist = document.getElementById('sps-workers-list');
+  if (wlist) {
+    const workers = (typeof DEMO_MODE !== 'undefined' && DEMO_MODE && typeof DEMO_WORKERS !== 'undefined')
+      ? DEMO_WORKERS : [];
+    const rows = 20;
+    wlist.innerHTML = Array.from({length: rows}, (_, i) => {
+      const w = workers[i];
+      return `<div style="display:grid;grid-template-columns:2fr 2fr 1fr;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);${i%2===0?'background:#fff;':'background:var(--bg);'}">
+        <div style="font-size:12.5px;color:var(--text);font-weight:${w?'500':'400'}">${w ? w.name : '<span style="color:var(--muted)">—</span>'}</div>
+        <div style="font-size:11px;color:var(--muted)">${w ? w.company || 'Murphy Civil' : ''}</div>
+        <div style="text-align:center">
+          <div style="width:22px;height:22px;border:1.5px solid var(--border);border-radius:5px;background:${w?'#E6F5ED':'#fff'};margin:0 auto;display:flex;align-items:center;justify-content:center">
+            ${w ? '<svg viewBox="0 0 24 24" fill="none" stroke="#1B6E3A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
-  goTo('screen-site-ps');
+  // Signature from profile
+  const sp = document.getElementById('sps-sig-preview');
+  if (sp && p.sig) sp.innerHTML = `<img src="${p.sig}" alt="Signature" style="max-height:80px;max-width:100%;object-fit:contain">`;
+
+  // Show outcome + submit
+  ['sps-outcome-wrap','sps-submit-btn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'block';
+  });
+
+  spsResults = {};
+  fetchSiteWeather();
 }
 
 // ── WORKER SITE PRE-START VIEWER ─────────────────────────────────────────
@@ -8971,13 +9148,12 @@ function goToWorkerContacts() {
   setTimeout(wcLoadWorkers, 100);
   var logoEl = document.getElementById('wc-logo');
   if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
-  document.getElementById('wc-count').textContent = '4 on site · 2 not signed in';
+  // wc-count is set dynamically by wcLoadWorkers()
 }
 function wcSearch() {
-  var q = document.getElementById('wc-search').value.toLowerCase();
-  document.querySelectorAll('.wc-worker').forEach(function(row){
-    var name = row.dataset.name || '';
-    row.style.display = name.includes(q) ? 'flex' : 'none';
+  var q = (document.getElementById('wc-search').value || '').toLowerCase();
+  document.querySelectorAll('.wc-worker').forEach(function(row) {
+    row.style.display = (row.getAttribute('data-name') || '').includes(q) ? '' : 'none';
   });
 }
 
@@ -9228,30 +9404,57 @@ function exitDemo() {
 // WORKER CONTACTS — load demo list
 // ═══════════════════════════════════════════════════════════════
 function wcLoadWorkers() {
-  var list = document.getElementById('wc-list');
-  var count = document.getElementById('wc-count');
-  if (!list) return;
-  var workers = [];
-  if (DEMO_MODE || localStorage.getItem('slan_demo')) {
-    workers = DEMO_SIGNINS.filter(function(s){ return s.type === 'Sign In'; }).map(function(s){
-      return { name:s.worker_name, company:s.company, role:s.role, time:s.time, status:'On site' };
-    });
-  }
-  if (count) count.textContent = workers.length + ' on site today';
-  if (workers.length === 0) {
-    list.innerHTML = '<div style="text-align:center;padding:40px 20px"><div style="font-size:32px;margin-bottom:12px">👷</div><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">No workers signed in</div><div style="font-size:12px;color:var(--muted)">Workers appear here once they sign in for the day</div></div>';
+  var onsite  = document.getElementById('wc-onsite-list');
+  var allList = document.getElementById('wc-all-list');
+  var countEl = document.getElementById('wc-count');
+  if (!onsite) return;
+  if (!DEMO_MODE && !localStorage.getItem('slan_demo')) {
+    onsite.innerHTML = '<div style="padding:16px;text-align:center;font-size:13px;color:var(--muted)">Connect Firebase to load live data</div>';
     return;
   }
-  list.innerHTML = workers.map(function(w){
-    var initials = w.name.split(' ').map(function(n){ return n[0]; }).join('').slice(0,2).toUpperCase();
-    return '<div class="worker-row" style="cursor:pointer" data-name="' + w.name.replace(/"/g,'') + '" onclick="wcCallWorker(this.dataset.name)">' +
-      '<div style="width:38px;height:38px;border-radius:50%;background:rgba(184,150,12,.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--deep);flex-shrink:0">' + initials + '</div>' +
-      '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">' + w.name + '</div>' +
-      '<div style="font-size:11.5px;color:var(--muted)">' + w.company + ' · ' + w.role + '</div></div>' +
-      '<div style="text-align:right"><div style="font-size:11px;font-weight:600;color:#1B6E3A">Signed in</div>' +
-      '<div style="font-size:10.5px;color:var(--muted)">' + w.time + '</div></div>' +
-    '</div>';
-  }).join('');
+  var workers = typeof DEMO_WORKERS !== 'undefined' ? DEMO_WORKERS : [];
+  var onsiteW = workers.filter(function(w) { return w.onsite; });
+  var offW    = workers.filter(function(w) { return !w.onsite; });
+  if (countEl) countEl.textContent = onsiteW.length + ' on site \u00b7 ' + offW.length + ' not signed in';
+
+  function makeRow(w, idx) {
+    var ini = w.name.split(' ').map(function(n) { return n[0] || ''; }).join('').toUpperCase().slice(0, 2);
+    var hasExp = w.licences && Object.values(w.licences).some(function(l) { return l.ok === false; });
+    var expBadge  = hasExp ? '<span style="font-size:9px;font-weight:700;color:#B83232;background:#FAEBEB;padding:1px 6px;border-radius:10px">LIC \u26a0</span>' : '';
+    var indBadge  = !w.inducted ? '<span style="font-size:9px;font-weight:700;color:#D4630A;background:#FFF5EC;padding:1px 6px;border-radius:10px">NOT INDUCTED</span>' : '';
+    var signinTxt = w.signin ? ' \u00b7 In ' + w.signin : '';
+    var bgIcon    = w.onsite ? '#E6F5ED' : 'var(--bg)';
+    var bgDot     = w.onsite ? 'var(--mid)' : '#9CA3AF';
+    return (
+      '<div class="contact-row wc-worker" data-name="' + w.name.toLowerCase() + '" onclick="showWorkerDetail(' + idx + ')" style="cursor:pointer">' +
+        '<div class="contact-icon" style="background:' + bgIcon + '">' +
+          '<div style="width:20px;height:20px;border-radius:50%;background:' + bgDot + ';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">' + ini + '</div>' +
+        '</div>' +
+        '<div class="contact-info">' +
+          '<div class="contact-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">' + w.name + expBadge + indBadge + '</div>' +
+          '<div class="contact-role">' + w.role + ' \u00b7 ' + w.company + signinTxt + '</div>' +
+        '</div>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>' +
+      '</div>'
+    );
+  }
+
+  onsite.innerHTML = onsiteW.length
+    ? onsiteW.map(function(w) { return makeRow(w, workers.indexOf(w)); }).join('')
+    : '<div style="padding:16px;text-align:center;font-size:13px;color:var(--muted)">No workers currently on site</div>';
+
+  if (allList) {
+    allList.innerHTML = offW.length
+      ? offW.map(function(w) { return makeRow(w, workers.indexOf(w)); }).join('')
+      : '<div style="padding:16px;text-align:center;font-size:13px;color:var(--muted)">All workers currently on site</div>';
+  }
+}
+
+function wcSearch() {
+  var q = (document.getElementById('wc-search').value || '').toLowerCase();
+  document.querySelectorAll('.wc-worker').forEach(function(row) {
+    row.style.display = (row.getAttribute('data-name') || '').includes(q) ? '' : 'none';
+  });
 }
 function wcCallWorker(name) {
   alert('Call ' + name + '\n\nIn the live app this would open the phone dialler with the worker\'s number from their profile.');
@@ -9454,6 +9657,226 @@ function toggleCheck(id) {
     btn.style.opacity = allChecked ? '1' : '0.45';
     btn.style.cursor = allChecked ? 'pointer' : 'not-allowed';
   }
+}
+
+// --- DEMO PERMITS ----------------------------------------------------------
+const DEMO_PERMITS = [
+  { type:'Hot Works',          ref:'HW-001',  date:'2026-04-11', location:'Level 2 \u2014 welding to steel column connections', workers:"Lee O'Brien, Shane Connolly", status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-11' },
+  { type:'Working at Heights', ref:'WAH-003', date:'2026-04-11', location:'Scaffold erection \u2014 north elevation perimeter',  workers:'Jake Ryan, Tom Burke, Pat Healy', status:'open', filedBy:'Pending', filedAt:null },
+  { type:'Crane Lift',         ref:'CL-002',  date:'2026-04-10', location:'Precast panels \u2014 Grid B Level 1',                workers:"Brendan Kelly, Lee O'Brien",  status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-10' },
+  { type:'Excavation',         ref:'EX-001',  date:'2026-04-09', location:'Trench for stormwater \u2014 car park zone C',        workers:'Mick Doyle, Kevin Nash',      status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-09' },
+  { type:'Hot Works',          ref:'HW-002',  date:'2026-04-08', location:'Roof level \u2014 cutting and grinding to steel',     workers:"Lee O'Brien, Shane Connolly", status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-08' }
+];
+
+// --- PERMITS TO WORK -------------------------------------------------------
+function goToPermits() {
+  goTo('screen-ptw');
+  var logo = document.getElementById('ptw-logo');
+  if (logo) { var src = document.querySelector('.tbar-logo img'); if (src) logo.src = src.src; }
+  var d = document.getElementById('ptw-date');
+  if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+  ptwLoadList();
+  var c = document.getElementById('ptw-count');
+  if (c) {
+    var open = DEMO_PERMITS.filter(function(p) { return p.status === 'open'; }).length;
+    c.textContent = open + ' open \u00b7 ' + DEMO_PERMITS.length + ' total this month';
+  }
+}
+
+function ptwLoadList() {
+  var list = document.getElementById('ptw-list');
+  if (!list) return;
+  var items = (DEMO_MODE || localStorage.getItem('slan_demo')) ? DEMO_PERMITS : [];
+  if (!items.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">No permits logged yet this month</div>';
+    return;
+  }
+  list.innerHTML = items.map(function(p, i) {
+    var isOpen = p.status === 'open';
+    var sc = isOpen ? '#D4630A' : '#1B6E3A';
+    var sb = isOpen ? '#FFF5EC' : '#E6F5ED';
+    var dated = new Date(p.date).toLocaleDateString('en-AU', {day:'numeric', month:'short'});
+    var filedTxt = p.filedBy + (p.filedAt ? ' \u00b7 ' + new Date(p.filedAt).toLocaleDateString('en-AU', {day:'numeric', month:'short'}) : ' \u2014 pending');
+    return (
+      '<div onclick="ptwShowDetail(' + i + ')" style="padding:13px 15px;border-bottom:1px solid var(--border);cursor:pointer;background:#fff">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+          '<div style="font-size:13px;font-weight:600;color:var(--text)">' + p.type + '</div>' +
+          '<div style="font-size:10px;font-weight:700;color:' + sc + ';background:' + sb + ';padding:3px 9px;border-radius:20px">' + (isOpen ? 'OPEN' : 'CLOSED') + '</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-bottom:2px">' + p.ref + ' \u00b7 ' + dated + '</div>' +
+        '<div style="font-size:12px;color:var(--text)">' + p.location + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:2px">Filed: ' + filedTxt + '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+function ptwShowDetail(idx) {
+  var p = DEMO_PERMITS[idx];
+  if (!p) return;
+  var isOpen = p.status === 'open';
+  var sc = isOpen ? '#D4630A' : '#1B6E3A';
+  var sb = isOpen ? '#FFF5EC' : '#E6F5ED';
+  var dated = new Date(p.date).toLocaleDateString('en-AU', {weekday:'short', day:'numeric', month:'short'});
+  var filedTxt = p.filedBy + (p.filedAt ? ' \u00b7 ' + new Date(p.filedAt).toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'}) : ' \u2014 pending within 24 hrs');
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  sheet.onclick = function(e) { if (e.target === sheet) sheet.remove(); };
+  sheet.innerHTML = (
+    '<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px calc(32px + env(safe-area-inset-bottom))">' +
+      '<div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>' +
+      '<div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:16px">' +
+        '<div>' +
+          '<div style="font-size:17px;font-weight:700;color:var(--text)">' + p.type + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + p.ref + ' \u00b7 ' + dated + '</div>' +
+        '</div>' +
+        '<div style="font-size:11px;font-weight:700;color:' + sc + ';background:' + sb + ';padding:5px 12px;border-radius:20px;flex-shrink:0;margin-left:10px">' + (isOpen ? 'OPEN' : 'CLOSED') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">' +
+        '<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Location</div><div style="font-size:13px;color:var(--text)">' + p.location + '</div></div>' +
+        '<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Workers Covered</div><div style="font-size:13px;color:var(--text)">' + p.workers + '</div></div>' +
+        '<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Filed by Sl\u00e1n Safety</div><div style="font-size:13px;color:var(--text)">' + filedTxt + '</div></div>' +
+      '</div>' +
+      '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="width:100%;padding:14px;background:var(--mid);border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;color:#fff;cursor:pointer">Close</button>' +
+    '</div>'
+  );
+  document.body.appendChild(sheet);
+}
+
+function ptwPhotoSelected(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('ptw-photo-img').src = e.target.result;
+    document.getElementById('ptw-photo-area').style.display = 'none';
+    document.getElementById('ptw-photo-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function ptwClearPhoto() {
+  var inp = document.getElementById('ptw-photo-input'); if (inp) inp.value = '';
+  var a   = document.getElementById('ptw-photo-area');   if (a)   a.style.display = 'block';
+  var prv = document.getElementById('ptw-photo-preview'); if (prv) prv.style.display = 'none';
+}
+
+function submitPermit() {
+  var type = document.getElementById('ptw-type').value;
+  if (!type) { alert('Please select a permit type.'); return; }
+  var loc = (document.getElementById('ptw-location').value || '').trim();
+  if (!loc) { alert('Please enter a location or description.'); return; }
+  var ref  = (document.getElementById('ptw-ref').value || '').trim();
+  var date = document.getElementById('ptw-date').value;
+  var wkrs = (document.getElementById('ptw-workers-field').value || '').trim();
+  var stat = document.getElementById('ptw-status').value;
+  var pr   = getProfile();
+  if (typeof fbInsert === 'function') {
+    fbInsert('permits', { type:type, ref:ref, location:loc, date:date, workers:wkrs, status:stat, site: typeof SITE !== 'undefined' ? SITE : '', submitted_by: pr ? pr.name : 'Supervisor', timestamp: new Date().toISOString() });
+  }
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  sheet.innerHTML = (
+    '<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center">' +
+      '<div style="width:56px;height:56px;border-radius:50%;background:#E6F5ED;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="#1B6E3A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><polyline points="20 6 9 17 4 12"/></svg>' +
+      '</div>' +
+      '<div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">Permit Logged</div>' +
+      '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">Sl\u00e1n Safety has been notified. Your <strong>' + type + '</strong> permit will be filed and registered within 24 hours.</div>' +
+      '<button onclick="this.closest(\'div[style*=fixed]\').remove();ptwReset()" style="width:100%;padding:13px;background:var(--mid);border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;color:#fff;cursor:pointer">Done</button>' +
+    '</div>'
+  );
+  document.body.appendChild(sheet);
+}
+
+function ptwReset() {
+  ['ptw-type', 'ptw-ref', 'ptw-location', 'ptw-workers-field'].forEach(function(id) {
+    var e = document.getElementById(id); if (e) e.value = '';
+  });
+  ptwClearPhoto();
+  var s = document.getElementById('ptw-status'); if (s) s.value = 'open';
+  var d = document.getElementById('ptw-date');   if (d) d.value = new Date().toISOString().split('T')[0];
+}
+
+// --- WORKER DETAIL BOTTOM SHEET --------------------------------------------
+function showWorkerDetail(workerIdx) {
+  var workers = typeof DEMO_WORKERS !== 'undefined' ? DEMO_WORKERS : [];
+  var w = workers[workerIdx];
+  if (!w) return;
+
+  var ini = w.name.split(' ').map(function(n) { return n[0] || ''; }).join('').toUpperCase().slice(0, 2);
+  var tierCol = { gold:'#B8960C', silver:'#6B7280', bronze:'#92400E' }[w.tier] || '#6B7280';
+  var tierBg  = { gold:'rgba(184,150,12,.12)', silver:'rgba(107,114,128,.1)', bronze:'rgba(146,64,14,.1)' }[w.tier] || 'rgba(107,114,128,.1)';
+  var licLabels = { whitecard:'White Card', hrwl:'HRWL', hrwl2:'HRWL (2nd)', driver:"Driver's Licence", firstaid:'First Aid', electrical:'Electrical Licence' };
+
+  var licRows = '';
+  if (w.licences) {
+    Object.entries(w.licences).forEach(function(entry) {
+      var key = entry[0];
+      var lic = entry[1];
+      var label   = lic.type || licLabels[key] || key;
+      var expDate = lic.expiry ? new Date(lic.expiry).toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'}) : '\u2014';
+      var ok = lic.ok !== false;
+      licRows += (
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">' +
+          '<div>' +
+            '<div style="font-size:12.5px;font-weight:500;color:var(--text)">' + label + '</div>' +
+            '<div style="font-size:11px;color:var(--muted);margin-top:1px">Expires ' + expDate + '</div>' +
+          '</div>' +
+          '<div style="font-size:10px;font-weight:700;color:' + (ok ? '#1B6E3A' : '#B83232') + ';background:' + (ok ? '#E6F5ED' : '#FAEBEB') + ';padding:4px 10px;border-radius:20px;flex-shrink:0">' + (ok ? 'CURRENT' : 'EXPIRED') + '</div>' +
+        '</div>'
+      );
+    });
+  }
+  if (!licRows) licRows = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No licence data on file</div>';
+
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  sheet.onclick = function(e) { if (e.target === sheet) sheet.remove(); };
+
+  sheet.innerHTML = (
+    '<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;padding:24px 20px calc(32px + env(safe-area-inset-bottom))">' +
+      '<div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>' +
+
+      '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">' +
+        '<div style="width:52px;height:52px;border-radius:50%;background:var(--deep);display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+          '<span style="font-size:16px;font-weight:700;color:#fff">' + ini + '</span>' +
+        '</div>' +
+        '<div style="flex:1">' +
+          '<div style="font-size:17px;font-weight:700;color:var(--text)">' + w.name + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + w.role + ' \u00b7 ' + w.company + '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-top:5px">' +
+            '<span style="font-size:10px;font-weight:600;color:' + tierCol + ';background:' + tierBg + ';padding:2px 8px;border-radius:20px;text-transform:capitalize">' + (w.tier || '') + ' star</span>' +
+            '<span style="font-size:10px;color:var(--muted)">' + (w.pts || 0) + ' pts</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px">' +
+        '<div style="background:' + (w.onsite ? '#E6F5ED' : 'var(--bg)') + ';border-radius:10px;padding:10px;text-align:center">' +
+          '<div style="font-size:10px;font-weight:700;color:' + (w.onsite ? '#1B6E3A' : 'var(--muted)') + ';text-transform:uppercase;letter-spacing:.05em">' + (w.onsite ? 'On site' : 'Off site') + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + (w.signin ? 'In ' + w.signin : 'Not signed in') + '</div>' +
+        '</div>' +
+        '<div style="background:' + (w.inducted ? '#E6F5ED' : '#FAEBEB') + ';border-radius:10px;padding:10px;text-align:center">' +
+          '<div style="font-size:10px;font-weight:700;color:' + (w.inducted ? '#1B6E3A' : '#B83232') + ';text-transform:uppercase;letter-spacing:.05em">' + (w.inducted ? 'Inducted' : 'Not inducted') + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">This site</div>' +
+        '</div>' +
+        '<div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">' +
+          '<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Safety \u2605</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + (w.pts || 0) + ' pts</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="margin-bottom:18px">' +
+        '<div style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Licences &amp; Tickets</div>' +
+        licRows +
+      '</div>' +
+
+      '<a href="tel:' + (w.phone || '') + '" style="text-decoration:none;display:block;width:100%;padding:14px;background:var(--mid);border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;color:#fff;text-align:center">' +
+        '\ud83d\udcde Call ' + w.name.split(' ')[0] + ' \u2014 ' + (w.phone || 'No number on file') +
+      '</a>' +
+    '</div>'
+  );
+  document.body.appendChild(sheet);
 }
 
 // ─── Logo tap easter egg — tap 5 times to enter demo mode ─────────────
