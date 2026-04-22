@@ -485,6 +485,165 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .stars-progress-track{height:7px;background:#E8F0EB;border-radius:4px;overflow:hidden;margin:6px 0 4px}
 .stars-progress-fill{height:100%;background:var(--deep);border-radius:4px;transition:width .4s ease}
 
+/* ═══════════════════ PERMITS MODULE v1.0 ═══════════════════
+   Added by Slán Safety Permit Module build.
+   All rules scoped with .pm- prefix to avoid collisions.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Permit status badges */
+.pm-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:10px;white-space:nowrap}
+.pm-badge.submitted{background:#FFF5D6;color:#7A6020}
+.pm-badge.approved{background:#E6F5ED;color:#1B6E3A}
+.pm-badge.conditions{background:#FEF0E6;color:#9A4A00}
+.pm-badge.active{background:#E6F5ED;color:#1B6E3A;animation:pm-pulse 2s ease-in-out infinite}
+.pm-badge.rejected{background:#FAEBEB;color:#B83232}
+.pm-badge.revoked{background:#FAEBEB;color:#B83232}
+.pm-badge.expired{background:#FAEBEB;color:#B83232}
+.pm-badge.closed{background:#F0F0F0;color:#5C6B62}
+.pm-badge.draft{background:#F0F0F0;color:#5C6B62}
+
+@keyframes pm-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* Active permit banner (shown on home/sign-out screen) */
+.pm-active-banner{background:#FFF5D6;border:1.5px solid #D4AF37;border-radius:var(--r);padding:13px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:transform .12s;-webkit-tap-highlight-color:transparent}
+.pm-active-banner:active{transform:scale(.98)}
+.pm-active-banner-icon{width:38px;height:38px;border-radius:10px;background:#D4AF37;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pm-active-banner-icon svg{width:20px;height:20px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:#fff;fill:none}
+.pm-active-banner-text{flex:1;min-width:0}
+.pm-active-banner-title{font-size:13px;font-weight:700;color:#7A6020;line-height:1.3}
+.pm-active-banner-sub{font-size:11.5px;color:#7A6020;margin-top:2px;line-height:1.4;opacity:.8}
+.pm-active-banner-chev{color:#7A6020;flex-shrink:0}
+
+/* Permit card (used in lists) */
+.pm-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:transform .12s;-webkit-tap-highlight-color:transparent;margin-bottom:8px}
+.pm-card:active{transform:scale(.98)}
+.pm-card-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.pm-card-id{font-family:'DM Mono',monospace;font-size:10.5px;font-weight:500;color:var(--muted);letter-spacing:.03em}
+.pm-card-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
+.pm-card-meta{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+.pm-card-meta strong{color:var(--text);font-weight:600}
+
+/* Permit type selector */
+.pm-type-grid{display:flex;flex-direction:column;gap:10px}
+.pm-type-btn{display:flex;align-items:center;gap:13px;padding:14px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .13s;text-align:left;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.pm-type-btn:active{transform:scale(.98)}
+.pm-type-btn.enabled{border-color:var(--mid)}
+.pm-type-btn.enabled:hover{background:#F8FAF8}
+.pm-type-btn.disabled{opacity:.45;cursor:not-allowed}
+.pm-type-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pm-type-icon svg{width:21px;height:21px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.pm-type-txt{flex:1;min-width:0}
+.pm-type-name{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
+.pm-type-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.pm-type-chev{color:var(--muted);flex-shrink:0}
+
+/* Subtype pill buttons */
+.pm-sub-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.pm-sub-btn{padding:10px 8px;border:1.5px solid var(--border);background:var(--card);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;transition:all .13s;-webkit-tap-highlight-color:transparent}
+.pm-sub-btn:active{transform:scale(.95)}
+.pm-sub-btn.selected{border-color:var(--mid);background:#E6F5ED;color:var(--mid);font-weight:600}
+
+/* Pre-start check list */
+.pm-check-list{display:flex;flex-direction:column;gap:6px}
+.pm-check-item{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .13s;text-align:left;font-family:inherit;-webkit-tap-highlight-color:transparent;width:100%}
+.pm-check-item:active{transform:scale(.99)}
+.pm-check-item.checked{border-color:var(--mid);background:#F4FAF6}
+.pm-check-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .13s}
+.pm-check-item.checked .pm-check-box{background:var(--mid);border-color:var(--mid)}
+.pm-check-box svg{width:11px;height:11px;opacity:0;transition:opacity .13s}
+.pm-check-item.checked .pm-check-box svg{opacity:1}
+.pm-check-lbl{flex:1;font-size:12.5px;color:var(--text);line-height:1.4}
+
+/* Fire watch timer */
+.pm-fw-timer{background:linear-gradient(135deg,#E6F5ED,#F4FAF6);border:2px solid var(--mid);border-radius:var(--r);padding:20px;margin:0 16px 14px;text-align:center}
+.pm-fw-timer.warn{background:linear-gradient(135deg,#FFF5D6,#FDF8E8);border-color:#D4AF37}
+.pm-fw-timer.done{background:linear-gradient(135deg,#E6F5ED,#F4FAF6);border-color:var(--mid)}
+.pm-fw-label{font-size:11px;font-weight:600;color:var(--mid);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.pm-fw-timer.warn .pm-fw-label{color:#7A6020}
+.pm-fw-time{font-family:'DM Mono',monospace;font-size:40px;font-weight:500;color:var(--deep);line-height:1;letter-spacing:-.02em}
+.pm-fw-timer.warn .pm-fw-time{color:#7A6020}
+.pm-fw-sub{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.4}
+
+/* Photo slots (reuse hz pattern but with pm- naming to avoid conflicts) */
+.pm-photo-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pm-photo-slot{aspect-ratio:1;border:1.5px dashed var(--border);border-radius:var(--rs);background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;overflow:hidden;position:relative}
+.pm-photo-slot.filled{border-style:solid;border-color:var(--mid)}
+.pm-photo-slot img{width:100%;height:100%;object-fit:cover}
+.pm-photo-slot svg{width:24px;height:24px}
+.pm-photo-slot span{font-size:10.5px;color:var(--muted);text-align:center;padding:0 4px;line-height:1.3}
+.pm-photo-slot input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.pm-photo-label{position:absolute;top:4px;left:4px;background:rgba(27,58,45,.85);color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;letter-spacing:.03em;text-transform:uppercase;pointer-events:none}
+
+/* Supervisor queue card */
+.pm-sup-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--rs);padding:12px 13px;margin-bottom:8px;cursor:pointer;transition:transform .12s;-webkit-tap-highlight-color:transparent}
+.pm-sup-card:active{transform:scale(.98)}
+.pm-sup-card.pending{border-left:4px solid #D4AF37}
+.pm-sup-card.active{border-left:4px solid var(--mid)}
+
+/* Conditions textarea */
+.pm-conditions{width:100%;min-height:80px;padding:10px;font-family:inherit;font-size:13px;border:1.5px solid var(--border);border-radius:var(--rs);resize:vertical;line-height:1.45}
+.pm-conditions:focus{outline:none;border-color:var(--mid)}
+
+/* Decision buttons */
+.pm-dec-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.pm-dec-btn{display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--card);font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;transition:all .13s;text-align:left;-webkit-tap-highlight-color:transparent}
+.pm-dec-btn:active{transform:scale(.98)}
+.pm-dec-btn.approve{border-color:var(--mid);color:var(--mid)}
+.pm-dec-btn.approve:hover{background:#E6F5ED}
+.pm-dec-btn.conditions{border-color:#D4AF37;color:#7A6020}
+.pm-dec-btn.conditions:hover{background:#FFF5D6}
+.pm-dec-btn.reject{border-color:#B83232;color:#B83232}
+.pm-dec-btn.reject:hover{background:#FAEBEB}
+.pm-dec-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pm-dec-icon svg{width:18px;height:18px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.pm-dec-txt{flex:1}
+.pm-dec-name{font-size:14px;font-weight:600;line-height:1.3}
+.pm-dec-sub{font-size:11.5px;opacity:.75;margin-top:2px;line-height:1.3;font-weight:500}
+
+/* Permit detail info rows */
+.pm-info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);gap:14px}
+.pm-info-row:last-child{border-bottom:none}
+.pm-info-lbl{font-size:11.5px;color:var(--muted);font-weight:500;flex-shrink:0}
+.pm-info-val{font-size:12.5px;color:var(--text);font-weight:500;text-align:right;line-height:1.4;word-break:break-word}
+
+/* Conditions display on active permit */
+.pm-cond-box{background:#FFF5D6;border:1.5px solid #D4AF37;border-radius:var(--rs);padding:11px 13px;margin:4px 0}
+.pm-cond-hdr{font-size:11px;font-weight:700;color:#7A6020;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.pm-cond-txt{font-size:12.5px;color:#7A6020;line-height:1.5;white-space:pre-wrap}
+
+/* Inline hazard link on closeout */
+.pm-hz-link{display:flex;align-items:flex-start;gap:10px;padding:10px 11px;border:1.5px dashed var(--border);border-radius:var(--rs);cursor:pointer;margin-top:8px;background:var(--bg);transition:all .13s;-webkit-tap-highlight-color:transparent}
+.pm-hz-link:active{transform:scale(.99)}
+.pm-hz-link.checked{border-style:solid;border-color:#D4630A;background:#FEF0E6}
+.pm-hz-link .pm-check-box{margin-top:1px}
+.pm-hz-link.checked .pm-check-box{background:#D4630A;border-color:#D4630A}
+.pm-hz-link-txt{flex:1}
+.pm-hz-link-ttl{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3}
+.pm-hz-link-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* Sign-out permit block (injected above EOS card) */
+.pm-eos-block{margin:0 16px 12px;background:#FFF5D6;border:2px solid #D4AF37;border-radius:var(--r);padding:14px 15px;display:none}
+.pm-eos-block.show{display:block}
+.pm-eos-block-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pm-eos-block-icon{width:32px;height:32px;border-radius:9px;background:#D4AF37;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pm-eos-block-icon svg{width:18px;height:18px;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.pm-eos-block-ttl{flex:1;font-size:13px;font-weight:700;color:#7A6020;line-height:1.3}
+.pm-eos-block-sub{font-size:11.5px;color:#7A6020;line-height:1.5;margin-bottom:11px;opacity:.85}
+.pm-eos-block-btn{width:100%;padding:11px;background:#7A6020;color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s}
+.pm-eos-block-btn:active{transform:scale(.98)}
+
+/* Empty state */
+.pm-empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.pm-empty-icon{width:56px;height:56px;border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.pm-empty-icon svg{width:26px;height:26px;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.pm-empty-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.pm-empty-sub{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* Big CTA button */
+.pm-new-btn{width:100%;padding:14px;background:var(--deep);color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s;margin-bottom:14px}
+.pm-new-btn:active{transform:scale(.98)}
+.pm-new-btn svg{width:18px;height:18px;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none;stroke:#fff}
+
 </style>
 </head>
 <body>
@@ -874,6 +1033,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon ic-red"><svg viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
         <div class="tile-name">Report Incident</div><div class="tile-sub">Injury or near miss</div>
       </div>
+      <!-- ═══ HOT WORKS PERMIT (Permits Module) ═══ -->
+      <div class="tile" onclick="goToHotWorksPermit()">
+        <div class="tile-icon" style="background:#FDF8E8"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></div>
+        <div class="tile-name">Hot Works Permit</div>
+        <div class="tile-sub" id="permits-tile-sub">Welding, grinding, oxy cutting</div>
+        <div class="tile-notif" id="permits-tile-notif" style="display:none"></div>
+      </div>
       <div class="tile" onclick="goToTake5()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
         <div class="tile-name">Take 5</div><div class="tile-sub">Pre-task safety check</div>
@@ -979,6 +1145,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <span id="ffd-label" style="font-size:13px;font-weight:600;color:var(--muted)">I confirm I am fit for work today</span>
         </button>
       </div>
+    </div>
+
+    <!-- ═══ PERMIT SIGN-OUT GATE (Permits Module) ═══ -->
+    <div id="pm-eos-block" class="pm-eos-block">
+      <div class="pm-eos-block-hdr">
+        <div class="pm-eos-block-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="pm-eos-block-ttl">You have an active permit</div>
+      </div>
+      <div class="pm-eos-block-sub">You must close out your active permit before signing off site.</div>
+      <button class="pm-eos-block-btn" type="button">Close out permit now</button>
     </div>
 
     <!-- End of shift declaration — sign-out only -->
@@ -1178,6 +1354,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
         <div class="tile-name">Report Hazard</div>
         <div class="tile-sub">Log &amp; escalate</div>
+      </div>
+
+      <!-- ═══ HOT WORKS APPROVALS (Permits Module) ═══ -->
+      <div class="tile" onclick="goToHotWorksSupQueue()">
+        <div class="tile-icon" style="background:#FDF8E8"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></div>
+        <div class="tile-name">Hot Works Permits</div>
+        <div class="tile-sub" id="sup-permits-tile-sub">Approvals &amp; active work</div>
+        <div class="tile-notif" id="sup-permits-tile-notif" style="display:none"></div>
       </div>
 
       <div class="tile" onclick="goToVisitorSignIn()">
@@ -2637,6 +2821,511 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </div>
 
 <!-- ═══════════════════ TOOLBOX TALK ═══ -->
+<!-- ═══════════════════ PERMITS MODULE v1.0 — SCREENS ═══ -->
+<!-- All permit screens. Inserted after screen-hazard, before screen-talk. -->
+
+<!-- ──────────── WORKER: PERMITS LIST ──────────── -->
+<div id="screen-hw-permits" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="pm-list-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="topbar-text" style="padding:0 16px 4px">
+      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">Permits to Work</h1>
+      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">High risk work approvals</p>
+    </div>
+  </div>
+  <div class="fbody" style="padding:14px 16px 80px">
+
+    <button class="pm-new-btn" onclick="pmGoToNewType()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Permit
+    </button>
+
+    <!-- Active permits section -->
+    <div id="pm-list-active-wrap" style="display:none;margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Active</div>
+      <div id="pm-list-active"></div>
+    </div>
+
+    <!-- Pending / submitted section -->
+    <div id="pm-list-pending-wrap" style="display:none;margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Awaiting Approval</div>
+      <div id="pm-list-pending"></div>
+    </div>
+
+    <!-- History section -->
+    <div id="pm-list-history-wrap" style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">History</div>
+      <div id="pm-list-history">
+        <div class="pm-empty">
+          <div class="pm-empty-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="pm-empty-title">No permits yet</div>
+          <div class="pm-empty-sub">Tap "New Permit" above to get started</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ──────────── WORKER: PERMIT TYPE SELECTOR ──────────── -->
+<div id="screen-permit-new-type" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goTo('screen-hw-permits')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="pm-type-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="topbar-text" style="padding:0 16px 4px">
+      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">New Permit</h1>
+      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">Select the type of work</p>
+    </div>
+  </div>
+  <div class="fbody" style="padding:14px 16px 80px">
+    <div class="pm-type-grid">
+      <button class="pm-type-btn enabled" onclick="pmGoToHotWorks()">
+        <div class="pm-type-icon" style="background:#FEF0E6"><svg viewBox="0 0 24 24" stroke="#D4630A"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+        <div class="pm-type-txt">
+          <div class="pm-type-name">Hot Works</div>
+          <div class="pm-type-sub">Welding, grinding, oxy cutting, soldering, thermal lance</div>
+        </div>
+        <svg class="pm-type-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="pm-type-btn disabled" disabled>
+        <div class="pm-type-icon" style="background:#F0F0F0"><svg viewBox="0 0 24 24" stroke="#888"><path d="M12 2L4 8v12h16V8l-8-6z"/><line x1="12" y1="10" x2="12" y2="22"/></svg></div>
+        <div class="pm-type-txt">
+          <div class="pm-type-name">Working at Heights <span style="font-size:9.5px;color:var(--muted);font-weight:500">· Coming soon</span></div>
+          <div class="pm-type-sub">Above 2m — harness, anchor, edge protection</div>
+        </div>
+      </button>
+      <button class="pm-type-btn disabled" disabled>
+        <div class="pm-type-icon" style="background:#F0F0F0"><svg viewBox="0 0 24 24" stroke="#888"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg></div>
+        <div class="pm-type-txt">
+          <div class="pm-type-name">Confined Space <span style="font-size:9.5px;color:var(--muted);font-weight:500">· Coming soon</span></div>
+          <div class="pm-type-sub">Gas testing, rescue plan, standby person</div>
+        </div>
+      </button>
+      <button class="pm-type-btn disabled" disabled>
+        <div class="pm-type-icon" style="background:#F0F0F0"><svg viewBox="0 0 24 24" stroke="#888"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
+        <div class="pm-type-txt">
+          <div class="pm-type-name">Electrical <span style="font-size:9.5px;color:var(--muted);font-weight:500">· Coming soon</span></div>
+          <div class="pm-type-sub">Live work, LOTO, isolation verification</div>
+        </div>
+      </button>
+      <button class="pm-type-btn disabled" disabled>
+        <div class="pm-type-icon" style="background:#F0F0F0"><svg viewBox="0 0 24 24" stroke="#888"><path d="M3 21h18M6 18V9M10 18V9M14 18V9M18 18V9M2 9h20l-10-7z"/></svg></div>
+        <div class="pm-type-txt">
+          <div class="pm-type-name">Excavation <span style="font-size:9.5px;color:var(--muted);font-weight:500">· Coming soon</span></div>
+          <div class="pm-type-sub">Trenching, shoring, services check</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── WORKER: HOT WORKS PERMIT FORM ──────────── -->
+<div id="screen-permit-hw" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goTo('screen-permit-new-type')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="pm-hw-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="topbar-text" style="padding:0 16px 4px">
+      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">Hot Works Permit</h1>
+      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">Submit for supervisor approval</p>
+    </div>
+  </div>
+  <div class="fbody">
+
+    <!-- Work details -->
+    <div class="fcard">
+      <div class="fcard-hdr">Work details</div>
+      <div class="fcard-body">
+        <div class="fgroup">
+          <label class="flabel">Type of hot works <span class="req">*</span></label>
+          <div class="pm-sub-grid">
+            <button class="pm-sub-btn" id="pmhw-sub-Welding" onclick="pmSetSubtype('Welding')">Welding</button>
+            <button class="pm-sub-btn" id="pmhw-sub-Grinding" onclick="pmSetSubtype('Grinding')">Grinding</button>
+            <button class="pm-sub-btn" id="pmhw-sub-Oxy Cutting" onclick="pmSetSubtype('Oxy Cutting')">Oxy Cutting</button>
+            <button class="pm-sub-btn" id="pmhw-sub-Soldering" onclick="pmSetSubtype('Soldering')">Soldering</button>
+            <button class="pm-sub-btn" id="pmhw-sub-Thermal Lance" onclick="pmSetSubtype('Thermal Lance')">Thermal Lance</button>
+            <button class="pm-sub-btn" id="pmhw-sub-Other" onclick="pmSetSubtype('Other')">Other</button>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Work description <span class="req">*</span></label>
+          <textarea id="pmhw-desc" placeholder="Briefly describe the work — what you're doing, duration, materials involved" rows="3" style="font-size:14px"></textarea>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Location on site <span class="req">*</span></label>
+          <input type="text" id="pmhw-location" placeholder="e.g. Level 3 core wall west, Pier 2 abutment">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Validity end time <span class="req">*</span></label>
+          <input type="time" id="pmhw-end-time">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4">Permit valid from approval until this time. Maximum 8 hours.</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Linked SWMS reference</label>
+          <input type="text" id="pmhw-swms" placeholder="e.g. SWMS-0047">
+        </div>
+      </div>
+    </div>
+
+    <!-- Fire watch -->
+    <div class="fcard">
+      <div class="fcard-hdr">Fire watch</div>
+      <div class="fcard-body">
+        <div class="fgroup">
+          <label class="flabel">Nominated fire watch person <span class="req">*</span></label>
+          <input type="text" id="pmhw-fw-name" placeholder="Full name">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4">Must be a competent person on site who can monitor the work area and use firefighting equipment.</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Fire watch company / employer</label>
+          <input type="text" id="pmhw-fw-company" placeholder="e.g. Cooper Civil Pty Ltd">
+        </div>
+      </div>
+    </div>
+
+    <!-- Pre-start checks -->
+    <div class="fcard">
+      <div class="fcard-hdr">Pre-start checks <span style="font-size:11px;font-weight:400;color:var(--muted)">· Tick all before submitting</span></div>
+      <div class="fcard-body">
+        <div class="pm-check-list" id="pmhw-checks">
+          <button class="pm-check-item" id="pmhw-chk-0" onclick="pmToggleCheck(0)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Combustible materials removed or protected within 10m radius</span></button>
+          <button class="pm-check-item" id="pmhw-chk-1" onclick="pmToggleCheck(1)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Floor/ground swept clean of dust and debris</span></button>
+          <button class="pm-check-item" id="pmhw-chk-2" onclick="pmToggleCheck(2)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Drains, openings and penetrations covered</span></button>
+          <button class="pm-check-item" id="pmhw-chk-3" onclick="pmToggleCheck(3)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Gas lines and flammable services isolated (if applicable)</span></button>
+          <button class="pm-check-item" id="pmhw-chk-4" onclick="pmToggleCheck(4)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Fire extinguisher on site, in date, within 5m of work</span></button>
+          <button class="pm-check-item" id="pmhw-chk-5" onclick="pmToggleCheck(5)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">PPE confirmed — gloves, helmet, apron, eye/face protection</span></button>
+          <button class="pm-check-item" id="pmhw-chk-6" onclick="pmToggleCheck(6)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">SWMS reviewed and acknowledged</span></button>
+          <button class="pm-check-item" id="pmhw-chk-7" onclick="pmToggleCheck(7)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Ventilation adequate for the task</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Photos -->
+    <div class="fcard">
+      <div class="fcard-hdr">Photo evidence <span style="font-size:11px;font-weight:400;color:var(--muted)">· All 4 required</span></div>
+      <div class="fcard-body">
+        <div class="pm-photo-row">
+          <div class="pm-photo-slot" id="pmhw-slot-0">
+            <div class="pm-photo-label">1. Work area</div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>10m clear radius</span>
+            <input type="file" accept="image/*" capture="environment" id="pmhw-photo-input-0" onchange="pmHandlePhoto(0,event)">
+          </div>
+          <div class="pm-photo-slot" id="pmhw-slot-1">
+            <div class="pm-photo-label">2. Extinguisher</div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Tag visible, in date</span>
+            <input type="file" accept="image/*" capture="environment" id="pmhw-photo-input-1" onchange="pmHandlePhoto(1,event)">
+          </div>
+          <div class="pm-photo-slot" id="pmhw-slot-2">
+            <div class="pm-photo-label">3. Fire blanket</div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>If required by SWMS</span>
+            <input type="file" accept="image/*" capture="environment" id="pmhw-photo-input-2" onchange="pmHandlePhoto(2,event)">
+          </div>
+          <div class="pm-photo-slot" id="pmhw-slot-3">
+            <div class="pm-photo-label">4. Surrounding area</div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Walls, floor below, adjacent</span>
+            <input type="file" accept="image/*" capture="environment" id="pmhw-photo-input-3" onchange="pmHandlePhoto(3,event)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signature -->
+    <div class="fcard" id="pmhw-sig-card">
+      <div class="fcard-hdr">Your signature</div>
+      <div class="fcard-body">
+        <div id="pmhw-sig-preview" style="background:#F8FAF8;border:1.5px solid var(--border);border-radius:var(--rs);min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">No signature on file — go to Profile to add one</div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div style="padding:14px 16px 28px">
+      <div class="cbtn-row" style="padding:0;gap:10px">
+        <button class="cbtn cancel" onclick="goTo('screen-hw-permits')" style="flex:1">Cancel</button>
+        <button class="cbtn in" onclick="pmSubmitHotWorks()" style="flex:2">Submit for Approval</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── WORKER: ACTIVE PERMIT VIEW ──────────── -->
+<div id="screen-permit-view" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goTo('screen-hw-permits')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="pm-view-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="topbar-text" style="padding:0 16px 4px">
+      <h1 id="pm-view-title" style="font-size:20px;font-weight:600;color:var(--text);margin:0">Hot Works Permit</h1>
+      <p id="pm-view-id" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin:3px 0 0;letter-spacing:.03em">—</p>
+    </div>
+  </div>
+  <div class="fbody" style="padding-bottom:100px">
+
+    <!-- Status + fire watch timer (only active) -->
+    <div id="pm-view-timer-wrap"></div>
+
+    <!-- Permit details -->
+    <div class="fcard">
+      <div class="fcard-hdr">Permit details</div>
+      <div class="fcard-body" style="padding:4px 15px">
+        <div id="pm-view-details"></div>
+      </div>
+    </div>
+
+    <!-- Conditions (if any) -->
+    <div class="fcard" id="pm-view-conditions-card" style="display:none">
+      <div class="fcard-hdr" style="color:#7A6020">⚠ Conditions applied by supervisor</div>
+      <div class="fcard-body">
+        <div class="pm-cond-txt" id="pm-view-conditions-txt"></div>
+      </div>
+    </div>
+
+    <!-- Pre-start checks submitted -->
+    <div class="fcard" id="pm-view-checks-card">
+      <div class="fcard-hdr">Pre-start checks</div>
+      <div class="fcard-body">
+        <div id="pm-view-checks"></div>
+      </div>
+    </div>
+
+    <!-- Photos submitted -->
+    <div class="fcard" id="pm-view-photos-card">
+      <div class="fcard-hdr">Photo evidence</div>
+      <div class="fcard-body">
+        <div class="pm-photo-row" id="pm-view-photos"></div>
+      </div>
+    </div>
+
+    <!-- Sign out button (only for active) -->
+    <div id="pm-view-signout-wrap" style="padding:6px 16px 28px;display:none">
+      <button id="pm-view-signout-btn" class="cbtn in" style="width:100%;padding:14px" onclick="pmGoToCloseout()">Sign Out of Permit</button>
+      <div id="pm-view-signout-hint" style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.4"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ──────────── WORKER: CLOSEOUT CHECKLIST ──────────── -->
+<div id="screen-permit-closeout" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goTo('screen-permit-view')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="pm-co-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="topbar-text" style="padding:0 16px 4px">
+      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">Sign Out of Permit</h1>
+      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">Confirm the work area is left safe</p>
+    </div>
+  </div>
+  <div class="fbody" style="padding-bottom:80px">
+
+    <div class="fcard">
+      <div class="fcard-hdr">Closeout declaration <span style="font-size:11px;font-weight:400;color:var(--muted)">· Tick all to sign out</span></div>
+      <div class="fcard-body">
+        <div class="pm-check-list" id="pm-co-checks">
+          <button class="pm-check-item" id="pm-co-chk-0" onclick="pmToggleCloseoutCheck(0)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Hot works finished and tools made safe</span></button>
+          <button class="pm-check-item" id="pm-co-chk-1" onclick="pmToggleCloseoutCheck(1)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Fire watch conducted for a minimum of 60 minutes post-work</span></button>
+          <button class="pm-check-item" id="pm-co-chk-2" onclick="pmToggleCloseoutCheck(2)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Area inspected — no smouldering, sparks or hot spots</span></button>
+          <button class="pm-check-item" id="pm-co-chk-3" onclick="pmToggleCloseoutCheck(3)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Fire extinguisher returned to muster point, still in date</span></button>
+          <button class="pm-check-item" id="pm-co-chk-4" onclick="pmToggleCloseoutCheck(4)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Work area swept clean of hot debris</span></button>
+          <!-- Conditions compliance check only shows if conditions were applied -->
+          <button class="pm-check-item" id="pm-co-chk-5" onclick="pmToggleCloseoutCheck(5)" style="display:none"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">All conditions applied by supervisor have been complied with</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <div class="fcard-hdr">Anything to flag? <span style="font-size:11px;font-weight:400;color:var(--muted)">· Optional</span></div>
+      <div class="fcard-body">
+        <div class="fgroup">
+          <textarea id="pm-co-note" placeholder="Note any hazards observed, damage, or anything that needs follow-up" rows="3" style="font-size:14px"></textarea>
+        </div>
+        <div class="pm-hz-link" id="pm-co-hz-link" onclick="pmToggleCloseoutHazard()">
+          <div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="pm-hz-link-txt">
+            <div class="pm-hz-link-ttl">Also raise this as a hazard report</div>
+            <div class="pm-hz-link-sub">Your note will be copied into a new hazard report for the site register</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sign out button -->
+    <div style="padding:6px 16px 28px">
+      <div class="cbtn-row" style="padding:0;gap:10px">
+        <button class="cbtn cancel" onclick="goTo('screen-permit-view')" style="flex:1">Cancel</button>
+        <button class="cbtn in" id="pm-co-submit" onclick="pmSubmitCloseout()" disabled style="flex:2;opacity:.45;cursor:not-allowed">Sign Out</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ──────────── SUPERVISOR: PERMIT QUEUE ──────────── -->
+<div id="screen-permit-sup-queue" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goTo('screen-supervisor')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="pm-supq-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="topbar-text" style="padding:0 16px 4px">
+      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">Permit Approvals</h1>
+      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">Pending and active permits on site</p>
+    </div>
+  </div>
+  <div class="fbody" style="padding:14px 16px 80px">
+
+    <div id="pm-supq-pending-wrap" style="display:none;margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:#7A6020;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Awaiting approval</div>
+      <div id="pm-supq-pending"></div>
+    </div>
+
+    <div id="pm-supq-active-wrap" style="display:none;margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--mid);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Currently active</div>
+      <div id="pm-supq-active"></div>
+    </div>
+
+    <div id="pm-supq-recent-wrap" style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Recent</div>
+      <div id="pm-supq-recent">
+        <div class="pm-empty">
+          <div class="pm-empty-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="pm-empty-title">No permits yet</div>
+          <div class="pm-empty-sub">Permits submitted by workers will appear here</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ──────────── SUPERVISOR: REVIEW PERMIT ──────────── -->
+<div id="screen-permit-sup-review" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goTo('screen-permit-sup-queue')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="pm-supr-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="topbar-text" style="padding:0 16px 4px">
+      <h1 id="pm-supr-title" style="font-size:20px;font-weight:600;color:var(--text);margin:0">Review Permit</h1>
+      <p id="pm-supr-id" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin:3px 0 0;letter-spacing:.03em">—</p>
+    </div>
+  </div>
+  <div class="fbody" style="padding-bottom:100px">
+
+    <!-- Permit details -->
+    <div class="fcard">
+      <div class="fcard-hdr">Permit details</div>
+      <div class="fcard-body" style="padding:4px 15px">
+        <div id="pm-supr-details"></div>
+      </div>
+    </div>
+
+    <!-- Pre-start checks -->
+    <div class="fcard">
+      <div class="fcard-hdr">Pre-start checks</div>
+      <div class="fcard-body">
+        <div id="pm-supr-checks"></div>
+      </div>
+    </div>
+
+    <!-- Photos -->
+    <div class="fcard">
+      <div class="fcard-hdr">Photo evidence</div>
+      <div class="fcard-body">
+        <div class="pm-photo-row" id="pm-supr-photos"></div>
+      </div>
+    </div>
+
+    <!-- Decision (only when pending) -->
+    <div class="fcard" id="pm-supr-decision-card">
+      <div class="fcard-hdr">Your decision</div>
+      <div class="fcard-body">
+        <div class="pm-dec-grid">
+          <button class="pm-dec-btn approve" onclick="pmSupApprove()">
+            <div class="pm-dec-icon" style="background:#E6F5ED"><svg viewBox="0 0 24 24" stroke="var(--mid)"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="pm-dec-txt"><div class="pm-dec-name">Approve</div><div class="pm-dec-sub">Worker can commence immediately</div></div>
+          </button>
+          <button class="pm-dec-btn conditions" onclick="pmSupShowConditions()">
+            <div class="pm-dec-icon" style="background:#FFF5D6"><svg viewBox="0 0 24 24" stroke="#7A6020"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div class="pm-dec-txt"><div class="pm-dec-name">Approve with Conditions</div><div class="pm-dec-sub">Impose additional controls before work starts</div></div>
+          </button>
+          <button class="pm-dec-btn reject" onclick="pmSupShowReject()">
+            <div class="pm-dec-icon" style="background:#FAEBEB"><svg viewBox="0 0 24 24" stroke="#B83232"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            <div class="pm-dec-txt"><div class="pm-dec-name">Reject</div><div class="pm-dec-sub">Permit cannot proceed — worker will be notified</div></div>
+          </button>
+        </div>
+        <!-- Conditions input (hidden until Approve with Conditions clicked) -->
+        <div id="pm-supr-cond-input" style="display:none;margin-top:14px">
+          <label class="flabel">Conditions to apply <span class="req">*</span></label>
+          <textarea id="pm-supr-cond-txt" class="pm-conditions" placeholder="e.g. 2nd fire watch required. Fire watch rotation every 30 min. Stop work if wind > 25km/h."></textarea>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4">These conditions will appear on the worker's permit and must be complied with at closeout.</div>
+          <button class="cbtn in" style="width:100%;margin-top:10px;padding:12px" onclick="pmSupConfirmConditions()">Confirm approval with conditions</button>
+        </div>
+        <!-- Rejection input -->
+        <div id="pm-supr-rej-input" style="display:none;margin-top:14px">
+          <label class="flabel">Reason for rejection <span class="req">*</span></label>
+          <textarea id="pm-supr-rej-txt" class="pm-conditions" placeholder="e.g. Fire extinguisher out of service date. Combustible materials still present in photo 4."></textarea>
+          <button class="cbtn out" style="width:100%;margin-top:10px;padding:12px" onclick="pmSupConfirmReject()">Confirm rejection</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revoke (only when active/approved) -->
+    <div class="fcard" id="pm-supr-revoke-card" style="display:none">
+      <div class="fcard-hdr" style="color:#B83232">Revoke permit</div>
+      <div class="fcard-body">
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:10px">Use only if conditions have changed and work must stop immediately. The worker will be notified.</div>
+        <button class="pm-dec-btn reject" onclick="pmSupShowRevoke()" style="width:100%">
+          <div class="pm-dec-icon" style="background:#FAEBEB"><svg viewBox="0 0 24 24" stroke="#B83232"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
+          <div class="pm-dec-txt"><div class="pm-dec-name">Revoke Permit</div><div class="pm-dec-sub">Stop work immediately</div></div>
+        </button>
+        <div id="pm-supr-rev-input" style="display:none;margin-top:14px">
+          <label class="flabel">Revocation category <span class="req">*</span></label>
+          <select id="pm-supr-rev-cat" style="margin-bottom:10px">
+            <option value="">Select category...</option>
+            <option>Weather</option>
+            <option>Adjacent works conflict</option>
+            <option>Gas reading / air quality</option>
+            <option>Competency / SWMS concern</option>
+            <option>Other</option>
+          </select>
+          <label class="flabel">Reason <span class="req">*</span></label>
+          <textarea id="pm-supr-rev-txt" class="pm-conditions" placeholder="Describe why the permit must be revoked"></textarea>
+          <button class="cbtn out" style="width:100%;margin-top:10px;padding:12px" onclick="pmSupConfirmRevoke()">Confirm revocation</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- ═══════════════════ END PERMITS MODULE v1.0 ═══ -->
+
+
 <div id="screen-talk" class="screen">
   <div class="sb"></div>
   <div class="topbar" style="padding-bottom:0">
@@ -5501,6 +6190,23 @@ async function loadSuperDash() {
 }
 
 function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
+  // ─── Permits Module: update supervisor Hot Works tile ─────
+  try {
+    if (typeof pmLoadAll === 'function') {
+      var _pL = pmLoadAll();
+      var _pP = _pL.filter(function(p){return p.status==='submitted';}).length;
+      var _pA = _pL.filter(function(p){return p.status==='active'||p.status==='approved'||p.status==='approved_conditions';}).length;
+      var _sub = document.getElementById('sup-permits-tile-sub');
+      var _notif = document.getElementById('sup-permits-tile-notif');
+      if (_sub) {
+        if (_pP) _sub.textContent = _pP + ' awaiting approval';
+        else if (_pA) _sub.textContent = _pA + ' currently active';
+        else _sub.textContent = 'Approvals & active work';
+      }
+      if (_notif) _notif.style.display = (_pP||_pA) ? 'block' : 'none';
+    }
+  } catch(e){}
+  // ─────────────────────────────────────────────────────────
   const colours = ['#1B3A2D','#2D6A45','#8B4513','#1C5AAD','#5535AD','#136D65','#B83232','#906500'];
   const signedIn  = [...new Map(signIns.filter(s=>s.type==='Sign In'||s.submission_type==='Sign In').map(s=>[s.worker_name,s])).values()];
   const workerPs  = prestarts.filter(p=>!p.is_site_prestart);
@@ -6942,6 +7648,9 @@ function startFlow(m){
     if (ffdCard) ffdCard.style.display = 'none';
     if (eosCard) eosCard.style.display = 'block';
     resetEOS();
+    // ─── Permits Module: direct sign-out gate hook ─────────
+    try { if (typeof pmCheckSignOutGate === 'function') pmCheckSignOutGate(); } catch(e){}
+    // ──────────────────────────────────────────────────────
   }
 
   goTo('screen-confirm');
@@ -9338,7 +10047,7 @@ function startDemoAs(role) {
     director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   licences:{} }
   };
   var p = profiles[role] || profiles.supervisor;
-  p.created = new Date().toISOString(); p.demo = true; p.sig = null; p.photo = null;
+  p.created = new Date().toISOString(); p.demo = true; p.sig = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCAyMjAgODAiPjxwYXRoIGQ9Ik0xMCA1NSBRIDIwIDIwLCAzNSA0NSBUIDYwIDUwIFEgNzAgMjUsIDg1IDUwIFQgMTE1IDUyIFEgMTMwIDMwLCAxNTAgNTAgUSAxNjAgNjUsIDE4MCA0OCBRIDE5NSAzOCwgMjEwIDUwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxQjNBMkQiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNDAgNjIgUSA1NSA1OCwgNzAgNjIgUSA5MCA2MCwgMTIwIDYzIFEgMTUwIDYxLCAxODAgNjMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFCM0EyRCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC41Ii8+PC9zdmc+'; p.photo = null;
   localStorage.setItem('slan_profile', JSON.stringify(p));
   localStorage.setItem('slan_onboarded', 'true');
   localStorage.setItem('slan_signed_in_today', 'true');
@@ -10928,6 +11637,1092 @@ function submitContactSlan() {
   }, 500);
 }
 
+
+
+// ═══════════════════ PERMITS MODULE v1.0 — JAVASCRIPT ═══════════════════
+// Inserted before </script> at end of file.
+// All identifiers prefixed pm / pmhw to avoid collisions with existing code.
+// Uses existing: getProfile(), goTo(), locData, SITE, PA_URL, fbInsert(),
+//                queueSub(), showSharedSuccess(), isOnline, sendEscalationEmail()
+// ════════════════════════════════════════════════════════════════════════
+
+// ── STATE ───────────────────────────────────────────────────────────────
+const PM_LOCAL_KEY = 'slan_permits_v1';     // local cache of permits (offline-first)
+const PM_TIMER_KEY = 'slan_pm_timers_v1';   // fire watch timer state (survives reload)
+const PM_FW_MIN_MINUTES = 60;                // Slán standard: 60 min fire watch post-work
+
+let pmCurrentPermit = null;       // the permit currently being viewed/edited
+let pmSelectedType  = null;       // subtype for new permit (Welding / Grinding etc.)
+let pmChecks        = [false,false,false,false,false,false,false,false];
+let pmPhotos        = [null, null, null, null];
+let pmPhotos_meta   = {};
+let pmCoChecks      = [false,false,false,false,false,false];
+let pmCoHazard      = false;
+let pmFwTimerInterval = null;
+
+// ── LOGO SYNC ───────────────────────────────────────────────────────────
+function pmSyncLogos() {
+  const src = document.querySelector('.tbar-logo img')?.src || '';
+  if (!src) return;
+  ['pm-list-logo','pm-type-logo','pm-hw-logo','pm-view-logo','pm-co-logo','pm-supq-logo','pm-supr-logo'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el && !el.src) el.src = src;
+  });
+}
+
+// ── LOCAL STORAGE ───────────────────────────────────────────────────────
+function pmLoadAll() {
+  try {
+    const raw = localStorage.getItem(PM_LOCAL_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+function pmSaveAll(list) {
+  try { localStorage.setItem(PM_LOCAL_KEY, JSON.stringify(list)); } catch(e) {}
+}
+function pmSaveOne(permit) {
+  const list = pmLoadAll();
+  const idx = list.findIndex(p => p.permit_id === permit.permit_id);
+  if (idx >= 0) list[idx] = permit; else list.unshift(permit);
+  pmSaveAll(list);
+}
+function pmFindById(id) {
+  return pmLoadAll().find(p => p.permit_id === id) || null;
+}
+function pmGenerateId() {
+  const d = new Date();
+  const yr = d.getFullYear();
+  // Count this year's permits for sequence
+  const list = pmLoadAll();
+  const seq = list.filter(p => p.permit_id && p.permit_id.includes('HW-'+yr)).length + 1;
+  return 'SLS-PTW-HW-'+yr+'-'+String(seq).padStart(4,'0');
+}
+
+// ── FIREBASE SYNC ───────────────────────────────────────────────────────
+async function pmPersist(permit) {
+  // Save local-first (always)
+  pmSaveOne(permit);
+  // Then try Firebase if online
+  if (typeof db !== 'undefined' && db && isOnline) {
+    try {
+      await db.collection('permits').doc(permit.permit_id).set({
+        ...permit,
+        _updated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch(e) {
+      console.warn('Firestore permit write failed — kept locally', e.message);
+    }
+  }
+  // Also hit PA_URL if configured (fire-and-forget)
+  if (typeof PA_URL !== 'undefined' && PA_URL !== 'YOUR_POWER_AUTOMATE_URL_HERE' && isOnline) {
+    try {
+      fetch(PA_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ form_type:'permit', register_target:'SLS-REG-011', ...permit })
+      }).catch(()=>{});
+    } catch(e) {}
+  }
+}
+
+// ── ACTIVE PERMIT HELPERS ───────────────────────────────────────────────
+function pmActiveForWorker(workerName) {
+  if (!workerName) return [];
+  return pmLoadAll().filter(p =>
+    p.worker_name === workerName &&
+    (p.status === 'active' || p.status === 'approved' || p.status === 'approved_conditions')
+  );
+}
+function pmPendingForWorker(workerName) {
+  if (!workerName) return [];
+  return pmLoadAll().filter(p =>
+    p.worker_name === workerName && p.status === 'submitted'
+  );
+}
+function pmHistoryForWorker(workerName) {
+  if (!workerName) return [];
+  const terminal = ['closed','rejected','revoked','expired'];
+  return pmLoadAll().filter(p =>
+    p.worker_name === workerName && terminal.includes(p.status)
+  ).sort((a,b) => (b.submitted_at || '').localeCompare(a.submitted_at || ''));
+}
+
+// ── STATUS LABELS ───────────────────────────────────────────────────────
+function pmStatusLabel(s) {
+  return {
+    draft: 'Draft', submitted: 'Awaiting approval', approved: 'Approved',
+    approved_conditions: 'Approved (conditions)', active: 'Active',
+    rejected: 'Rejected', revoked: 'Revoked', expired: 'Expired', closed: 'Closed'
+  }[s] || s;
+}
+function pmStatusBadgeClass(s) {
+  return {
+    draft: 'draft', submitted: 'submitted', approved: 'active',
+    approved_conditions: 'conditions', active: 'active',
+    rejected: 'rejected', revoked: 'revoked', expired: 'expired', closed: 'closed'
+  }[s] || 'draft';
+}
+
+// ── ENTRY POINT — from home tile ────────────────────────────────────────
+function goToHotWorksPermit() {
+  const p = getProfile();
+  if (!p) { goTo('screen-profile'); initSig(); return; }
+  pmSyncLogos();
+  pmRenderList();
+  goTo('screen-hw-permits');
+}
+
+function pmRenderList() {
+  const p = getProfile(); if (!p) return;
+  const active  = pmActiveForWorker(p.name);
+  const pending = pmPendingForWorker(p.name);
+  const history = pmHistoryForWorker(p.name);
+
+  // Active
+  const aW = document.getElementById('pm-list-active-wrap');
+  const aE = document.getElementById('pm-list-active');
+  if (active.length) {
+    aW.style.display = 'block';
+    aE.innerHTML = active.map(pm => pmCardHtml(pm, 'worker')).join('');
+  } else { aW.style.display = 'none'; aE.innerHTML = ''; }
+
+  // Pending
+  const pW = document.getElementById('pm-list-pending-wrap');
+  const pE = document.getElementById('pm-list-pending');
+  if (pending.length) {
+    pW.style.display = 'block';
+    pE.innerHTML = pending.map(pm => pmCardHtml(pm, 'worker')).join('');
+  } else { pW.style.display = 'none'; pE.innerHTML = ''; }
+
+  // History
+  const hE = document.getElementById('pm-list-history');
+  if (history.length) {
+    hE.innerHTML = history.map(pm => pmCardHtml(pm, 'worker')).join('');
+  } else {
+    hE.innerHTML = `<div class="pm-empty">
+      <div class="pm-empty-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="pm-empty-title">No permits yet</div>
+      <div class="pm-empty-sub">Tap "New Permit" above to get started</div>
+    </div>`;
+  }
+}
+
+function pmCardHtml(pm, mode) {
+  const when = pm.submitted_at ? new Date(pm.submitted_at).toLocaleString('en-AU', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+  const badgeClass = pmStatusBadgeClass(pm.status);
+  const onclick = mode === 'supervisor' ? `pmSupViewPermit('${pm.permit_id}')` : `pmViewPermit('${pm.permit_id}')`;
+  return `<div class="pm-card" onclick="${onclick}">
+    <div class="pm-card-hdr">
+      <div class="pm-card-id">${pm.permit_id}</div>
+      <div class="pm-badge ${badgeClass}">${pmStatusLabel(pm.status)}</div>
+    </div>
+    <div class="pm-card-title">${pm.type_label || 'Hot Works'}${pm.subtype ? ' · '+pm.subtype : ''}</div>
+    <div class="pm-card-meta">
+      ${mode === 'supervisor' ? '<strong>'+(pm.worker_name||'—')+'</strong> · ' : ''}
+      ${pm.location || '—'}${when ? ' · '+when : ''}
+    </div>
+  </div>`;
+}
+
+// ── NEW PERMIT FLOW ─────────────────────────────────────────────────────
+function pmGoToNewType() {
+  pmSyncLogos();
+  goTo('screen-permit-new-type');
+}
+
+function pmGoToHotWorks() {
+  const p = getProfile();
+  if (!p) { goTo('screen-profile'); initSig(); return; }
+  pmSyncLogos();
+
+  // Reset form
+  pmSelectedType = null;
+  pmChecks = [false,false,false,false,false,false,false,false];
+  pmPhotos = [null,null,null,null];
+  pmPhotos_meta = {};
+
+  document.getElementById('pmhw-desc').value = '';
+  document.getElementById('pmhw-location').value = '';
+  document.getElementById('pmhw-end-time').value = '';
+  document.getElementById('pmhw-swms').value = '';
+  document.getElementById('pmhw-fw-name').value = '';
+  document.getElementById('pmhw-fw-company').value = p.company || '';
+
+  // Clear subtype buttons
+  ['Welding','Grinding','Oxy Cutting','Soldering','Thermal Lance','Other'].forEach(s => {
+    const b = document.getElementById('pmhw-sub-'+s);
+    if (b) b.classList.remove('selected');
+  });
+  // Clear pre-start checks
+  for (let i=0;i<8;i++) {
+    const btn = document.getElementById('pmhw-chk-'+i);
+    if (btn) btn.classList.remove('checked');
+  }
+  // Reset photo slots
+  for (let i=0;i<4;i++) {
+    const slot = document.getElementById('pmhw-slot-'+i);
+    if (!slot) continue;
+    slot.classList.remove('filled');
+    const labels = ['1. Work area','2. Extinguisher','3. Fire blanket','4. Surrounding area'];
+    const hints  = ['10m clear radius','Tag visible, in date','If required by SWMS','Walls, floor below, adjacent'];
+    slot.innerHTML = `<div class="pm-photo-label">${labels[i]}</div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>${hints[i]}</span>
+      <input type="file" accept="image/*" capture="environment" id="pmhw-photo-input-${i}" onchange="pmHandlePhoto(${i},event)">`;
+  }
+  // Signature preview
+  const sp = document.getElementById('pmhw-sig-preview');
+  if (p.sig) sp.innerHTML = `<img src="${p.sig}" alt="Signature" style="max-height:80px;max-width:100%">`;
+  else sp.innerHTML = `<div style="color:var(--muted);font-size:12px">No signature on file — go to Profile to add one</div>`;
+
+  // GPS capture
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        locData.lat = pos.coords.latitude.toFixed(6);
+        locData.lng = pos.coords.longitude.toFixed(6);
+        locData.accuracy = Math.round(pos.coords.accuracy);
+      }, ()=>{},
+      { timeout:10000, maximumAge:60000, enableHighAccuracy:true }
+    );
+  }
+
+  goTo('screen-permit-hw');
+}
+
+function pmSetSubtype(s) {
+  pmSelectedType = s;
+  ['Welding','Grinding','Oxy Cutting','Soldering','Thermal Lance','Other'].forEach(t => {
+    const b = document.getElementById('pmhw-sub-'+t);
+    if (b) b.classList.toggle('selected', t === s);
+  });
+}
+
+function pmToggleCheck(idx) {
+  pmChecks[idx] = !pmChecks[idx];
+  const btn = document.getElementById('pmhw-chk-'+idx);
+  if (btn) btn.classList.toggle('checked', pmChecks[idx]);
+}
+
+function pmHandlePhoto(idx, e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new window.Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const MAX = 800;
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX/w, MAX/h);
+        w = Math.round(w*ratio); h = Math.round(h*ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+
+      const now = new Date();
+      const stamp = now.toLocaleDateString('en-AU') + '  ' +
+        now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+      const siteLine = (typeof SITE !== 'undefined') ? SITE : '';
+      const fontSize = Math.max(12, Math.round(w * 0.03));
+      ctx.font = `bold ${fontSize}px 'DM Mono', monospace`;
+      const lines = [stamp, siteLine];
+      const padding = fontSize * 0.6;
+      const lineH = fontSize * 1.5;
+      const boxH = lines.length * lineH + padding * 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.62)';
+      ctx.fillRect(0, h - boxH, w, boxH);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'left';
+      lines.forEach((line, i) => {
+        ctx.fillText(line, padding, h - boxH + padding + (i + 1) * lineH - fontSize * 0.3);
+      });
+      ctx.font = `bold ${Math.max(10, Math.round(fontSize * 0.8))}px 'DM Sans', sans-serif`;
+      const badge = '  SLÁN SAFETY  ';
+      const bw = ctx.measureText(badge).width + padding;
+      ctx.fillStyle = 'rgba(184,150,12,0.9)';
+      ctx.fillRect(w - bw - padding*0.5, padding*0.5, bw + padding*0.5, fontSize * 1.8);
+      ctx.fillStyle = '#1B3A2D';
+      ctx.textAlign = 'right';
+      ctx.fillText(badge, w - padding, padding*0.5 + fontSize * 1.3);
+
+      const compressed = canvas.toDataURL('image/jpeg', 0.80);
+      pmPhotos[idx] = compressed;
+      pmPhotos_meta[idx] = {
+        timestamp: now.toISOString(),
+        date: now.toLocaleDateString('en-AU'),
+        time: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}),
+        latitude: locData?.lat || null,
+        longitude: locData?.lng || null,
+        accuracy: locData?.accuracy || null,
+        site: siteLine
+      };
+
+      const slot = document.getElementById('pmhw-slot-'+idx);
+      if (slot) {
+        const labels = ['1. Work area','2. Extinguisher','3. Fire blanket','4. Surrounding area'];
+        slot.innerHTML = `<div class="pm-photo-label">${labels[idx]}</div><img src="${compressed}" alt="Permit photo">`;
+        slot.classList.add('filled');
+      }
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function pmSubmitHotWorks() {
+  const p = getProfile();
+  if (!p) { alert('Please complete your profile first.'); return; }
+  if (!p.sig && !p.demo) { alert('You need to add a signature in Profile before submitting a permit.'); return; }
+  if (!p.sig && p.demo) { p.sig = 'demo'; }
+  if (!pmSelectedType) { alert('Please select the type of hot works.'); return; }
+  const desc = document.getElementById('pmhw-desc').value.trim();
+  if (!desc) { alert('Please describe the work.'); return; }
+  const loc = document.getElementById('pmhw-location').value.trim();
+  if (!loc) { alert('Please enter the location on site.'); return; }
+  const end = document.getElementById('pmhw-end-time').value;
+  if (!end) { alert('Please set a validity end time.'); return; }
+  const fwName = document.getElementById('pmhw-fw-name').value.trim();
+  if (!fwName) { alert('Please nominate a fire watch person.'); return; }
+  if (!pmChecks.every(Boolean)) { alert('All 8 pre-start checks must be ticked.'); return; }
+  if (!pmPhotos.every(Boolean)) { alert('All 4 photos must be uploaded.'); return; }
+
+  // Validate end time — must be in the future, max 8 hours from now
+  const now = new Date();
+  const [hh, mm] = end.split(':').map(Number);
+  const endDate = new Date(now); endDate.setHours(hh, mm, 0, 0);
+  if (endDate <= now) endDate.setDate(endDate.getDate() + 1); // Next day if earlier
+  const diffHours = (endDate - now) / 3600000;
+  if (diffHours > 8) { alert('Validity window cannot exceed 8 hours.'); return; }
+
+  const permitId = pmGenerateId();
+
+  const permit = {
+    permit_id: permitId,
+    type: 'hot_works',
+    type_label: 'Hot Works',
+    subtype: pmSelectedType,
+    status: 'submitted',
+
+    worker_name: p.name,
+    worker_company: p.company,
+    worker_role: p.role,
+    worker_signature: p.sig,
+
+    fire_watch_name: fwName,
+    fire_watch_company: document.getElementById('pmhw-fw-company').value.trim() || null,
+
+    site: (typeof SITE !== 'undefined') ? SITE : null,
+    location: loc,
+    description: desc,
+    swms_ref: document.getElementById('pmhw-swms').value.trim() || null,
+
+    validity_start_requested: now.toISOString(),
+    validity_end_requested: endDate.toISOString(),
+
+    pre_start_checks: {
+      combustibles_cleared: pmChecks[0],
+      floor_swept: pmChecks[1],
+      drains_covered: pmChecks[2],
+      gas_isolated: pmChecks[3],
+      extinguisher_on_site: pmChecks[4],
+      ppe_confirmed: pmChecks[5],
+      swms_reviewed: pmChecks[6],
+      ventilation_adequate: pmChecks[7]
+    },
+
+    photos: pmPhotos.slice(),
+    photo_metadata: { ...pmPhotos_meta },
+
+    gps: {
+      latitude: locData?.lat || null,
+      longitude: locData?.lng || null,
+      accuracy: locData?.accuracy || null
+    },
+
+    submitted_at: now.toISOString(),
+    submission_mode: isOnline ? 'online' : 'offline_queued',
+
+    supervisor_name: null,
+    supervisor_decision: null,
+    supervisor_timestamp: null,
+    supervisor_conditions: null,
+    supervisor_rejection_reason: null,
+
+    approved_at: null,
+    active_until: null,
+    closeout: null,
+    revocation: null,
+
+    register_target: 'SLS-REG-011',
+
+    history: [{
+      event: 'submitted',
+      by: p.name,
+      timestamp: now.toISOString()
+    }]
+  };
+
+  pmPersist(permit);
+
+  // Email escalation (supervisor alert)
+  if (typeof sendEscalationEmail === 'function') {
+    try {
+      sendEscalationEmail({
+        subject: `🔥 Hot Works Permit for approval — ${permitId} — ${permit.site || ''}`,
+        body: `A Hot Works permit has been submitted and is awaiting supervisor approval.\n\nPermit: ${permitId}\nType: ${pmSelectedType}\nWorker: ${p.name} (${p.company})\nLocation: ${loc}\nFire watch: ${fwName}\nValid until: ${endDate.toLocaleString('en-AU')}\n\nDescription:\n${desc}\n\nReview and approve in the app: Permit Approvals.`
+      });
+    } catch(e){}
+  }
+
+  showSharedSuccess({
+    icon: 'in',
+    iconStroke: 'var(--mid)',
+    title: 'Permit Submitted',
+    sub: 'Your supervisor has been notified. You will receive a notification when it is approved.',
+    ref: permitId,
+    details: [
+      { l:'Type',      v:'Hot Works · '+pmSelectedType },
+      { l:'Location',  v:loc },
+      { l:'Fire watch',v:fwName },
+      { l:'Valid until',v:endDate.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}) },
+      { l:'Register',  v:'SLS-REG-011 Permit to Work Register' },
+      { l:'Status',    v: isOnline ? 'Sent for approval ✓' : 'Saved — will sync' }
+    ]
+  });
+}
+
+// ── VIEW PERMIT (worker side) ───────────────────────────────────────────
+function pmViewPermit(permitId) {
+  const pm = pmFindById(permitId);
+  if (!pm) { alert('Permit not found.'); return; }
+  pmCurrentPermit = pm;
+  pmSyncLogos();
+  pmRenderPermitView(pm);
+  goTo('screen-permit-view');
+}
+
+function pmRenderPermitView(pm) {
+  document.getElementById('pm-view-title').textContent =
+    (pm.type_label || 'Permit') + (pm.subtype ? ' · '+pm.subtype : '');
+  document.getElementById('pm-view-id').textContent = pm.permit_id + ' · ' + pmStatusLabel(pm.status);
+
+  // Fire watch timer (only if active/approved)
+  const timerWrap = document.getElementById('pm-view-timer-wrap');
+  timerWrap.innerHTML = '';
+  if (pmFwTimerInterval) { clearInterval(pmFwTimerInterval); pmFwTimerInterval = null; }
+
+  if (pm.status === 'active' || pm.status === 'approved' || pm.status === 'approved_conditions') {
+    timerWrap.innerHTML = `<div class="pm-fw-timer" id="pm-fw-live">
+      <div class="pm-fw-label" id="pm-fw-live-label">Time since approval</div>
+      <div class="pm-fw-time" id="pm-fw-live-time">00:00</div>
+      <div class="pm-fw-sub" id="pm-fw-live-sub">Fire watch minimum: 60 minutes after work completion</div>
+    </div>`;
+    const updateTimer = () => {
+      const startTs = pm.approved_at ? new Date(pm.approved_at).getTime() : new Date(pm.submitted_at).getTime();
+      const nowTs = Date.now();
+      const elapsedMin = Math.floor((nowTs - startTs) / 60000);
+      const mm = Math.floor(elapsedMin / 60);
+      const m  = elapsedMin % 60;
+      const timeEl  = document.getElementById('pm-fw-live-time');
+      const labelEl = document.getElementById('pm-fw-live-label');
+      const subEl   = document.getElementById('pm-fw-live-sub');
+      const wrap    = document.getElementById('pm-fw-live');
+      if (!timeEl || !wrap) return;
+      timeEl.textContent = String(mm).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      if (elapsedMin >= PM_FW_MIN_MINUTES) {
+        wrap.classList.remove('warn'); wrap.classList.add('done');
+        if (labelEl) labelEl.textContent = 'Fire watch minimum complete';
+        if (subEl)   subEl.textContent   = 'You can now sign out of this permit';
+      } else {
+        wrap.classList.add('warn');
+        const rem = PM_FW_MIN_MINUTES - elapsedMin;
+        if (labelEl) labelEl.textContent = 'Fire watch in progress';
+        if (subEl)   subEl.textContent   = rem+' min until sign-out unlocks';
+      }
+      pmUpdateSignOutBtn(pm, elapsedMin);
+    };
+    updateTimer();
+    pmFwTimerInterval = setInterval(updateTimer, 30000); // every 30s
+  }
+
+  // Details
+  const validEnd = pm.validity_end_requested ? new Date(pm.validity_end_requested).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+  const submitted = pm.submitted_at ? new Date(pm.submitted_at).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+  const approved  = pm.approved_at  ? new Date(pm.approved_at).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true})  : '—';
+
+  let detailsHtml = '';
+  const row = (l,v) => `<div class="pm-info-row"><div class="pm-info-lbl">${l}</div><div class="pm-info-val">${v}</div></div>`;
+  detailsHtml += row('Worker', (pm.worker_name||'—')+'<br><span style="color:var(--muted);font-size:11px;font-weight:400">'+(pm.worker_company||'')+'</span>');
+  detailsHtml += row('Fire watch', pm.fire_watch_name || '—');
+  detailsHtml += row('Location', pm.location || '—');
+  detailsHtml += row('Description', pm.description || '—');
+  if (pm.swms_ref) detailsHtml += row('SWMS', pm.swms_ref);
+  detailsHtml += row('Submitted', submitted);
+  if (pm.approved_at) detailsHtml += row('Approved', approved);
+  if (pm.supervisor_name) detailsHtml += row('Supervisor', pm.supervisor_name);
+  detailsHtml += row('Valid until', validEnd);
+  if (pm.closeout && pm.closeout.signed_out_at) {
+    detailsHtml += row('Signed out', new Date(pm.closeout.signed_out_at).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}));
+  }
+  if (pm.supervisor_rejection_reason) detailsHtml += row('Rejection reason', pm.supervisor_rejection_reason);
+  if (pm.revocation) detailsHtml += row('Revoked', (pm.revocation.category || '') + ' · ' + (pm.revocation.reason || ''));
+  document.getElementById('pm-view-details').innerHTML = detailsHtml;
+
+  // Conditions
+  if (pm.supervisor_conditions) {
+    document.getElementById('pm-view-conditions-card').style.display = 'block';
+    document.getElementById('pm-view-conditions-txt').textContent = pm.supervisor_conditions;
+  } else {
+    document.getElementById('pm-view-conditions-card').style.display = 'none';
+  }
+
+  // Pre-start checks
+  const checksMap = [
+    ['combustibles_cleared','Combustible materials removed or protected within 10m radius'],
+    ['floor_swept','Floor/ground swept clean of dust and debris'],
+    ['drains_covered','Drains, openings and penetrations covered'],
+    ['gas_isolated','Gas lines and flammable services isolated (if applicable)'],
+    ['extinguisher_on_site','Fire extinguisher on site, in date, within 5m of work'],
+    ['ppe_confirmed','PPE confirmed — gloves, helmet, apron, eye/face protection'],
+    ['swms_reviewed','SWMS reviewed and acknowledged'],
+    ['ventilation_adequate','Ventilation adequate for the task']
+  ];
+  const checksEl = document.getElementById('pm-view-checks');
+  checksEl.innerHTML = checksMap.map(([k,lbl]) => {
+    const on = pm.pre_start_checks && pm.pre_start_checks[k];
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:6px 0;font-size:12.5px;color:var(--text);line-height:1.5">
+      <div style="width:18px;height:18px;border-radius:4px;border:2px solid ${on?'var(--mid)':'var(--border)'};background:${on?'var(--mid)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+        ${on ? '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </div>
+      <span>${lbl}</span>
+    </div>`;
+  }).join('');
+
+  // Photos
+  const photosEl = document.getElementById('pm-view-photos');
+  const photoLabels = ['1. Work area','2. Extinguisher','3. Fire blanket','4. Surrounding area'];
+  photosEl.innerHTML = (pm.photos || []).map((dataUrl, i) => {
+    if (!dataUrl) return '';
+    return `<div class="pm-photo-slot filled" style="cursor:default">
+      <div class="pm-photo-label">${photoLabels[i] || ('Photo '+(i+1))}</div>
+      <img src="${dataUrl}" alt="Permit photo ${i+1}">
+    </div>`;
+  }).join('');
+
+  // Sign out section (only for active / approved)
+  const signoutWrap = document.getElementById('pm-view-signout-wrap');
+  if (pm.status === 'active' || pm.status === 'approved' || pm.status === 'approved_conditions') {
+    signoutWrap.style.display = 'block';
+  } else {
+    signoutWrap.style.display = 'none';
+  }
+}
+
+function pmUpdateSignOutBtn(pm, elapsedMin) {
+  const btn = document.getElementById('pm-view-signout-btn');
+  const hint = document.getElementById('pm-view-signout-hint');
+  if (!btn) return;
+  const remain = PM_FW_MIN_MINUTES - elapsedMin;
+  if (remain > 0) {
+    btn.disabled = true;
+    btn.style.opacity = '.45';
+    btn.style.cursor = 'not-allowed';
+    if (hint) hint.textContent = 'Sign-out available in '+remain+' minute'+(remain===1?'':'s')+' — minimum 60 min fire watch';
+  } else {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    if (hint) hint.textContent = 'Fire watch complete — you can now sign out';
+  }
+}
+
+// ── CLOSEOUT ─────────────────────────────────────────────────────────────
+function pmGoToCloseout() {
+  if (!pmCurrentPermit) return;
+  // Guard: fire watch minimum must be met
+  const startTs = pmCurrentPermit.approved_at ? new Date(pmCurrentPermit.approved_at).getTime() : new Date(pmCurrentPermit.submitted_at).getTime();
+  const elapsedMin = Math.floor((Date.now() - startTs) / 60000);
+  if (elapsedMin < PM_FW_MIN_MINUTES) {
+    alert('Fire watch minimum of 60 minutes has not been met. Please wait '+(PM_FW_MIN_MINUTES - elapsedMin)+' more minute(s).');
+    return;
+  }
+
+  pmSyncLogos();
+  pmCoChecks = [false,false,false,false,false,false];
+  pmCoHazard = false;
+  document.getElementById('pm-co-note').value = '';
+  for (let i=0;i<6;i++) {
+    const btn = document.getElementById('pm-co-chk-'+i);
+    if (btn) btn.classList.remove('checked');
+  }
+  document.getElementById('pm-co-hz-link').classList.remove('checked');
+
+  // Show / hide conditions compliance check
+  const hasConditions = !!pmCurrentPermit.supervisor_conditions;
+  const condChk = document.getElementById('pm-co-chk-5');
+  if (condChk) condChk.style.display = hasConditions ? 'flex' : 'none';
+
+  pmUpdateCoSubmitBtn();
+  goTo('screen-permit-closeout');
+}
+
+function pmToggleCloseoutCheck(idx) {
+  pmCoChecks[idx] = !pmCoChecks[idx];
+  const btn = document.getElementById('pm-co-chk-'+idx);
+  if (btn) btn.classList.toggle('checked', pmCoChecks[idx]);
+  pmUpdateCoSubmitBtn();
+}
+
+function pmToggleCloseoutHazard() {
+  pmCoHazard = !pmCoHazard;
+  document.getElementById('pm-co-hz-link').classList.toggle('checked', pmCoHazard);
+}
+
+function pmUpdateCoSubmitBtn() {
+  const hasConditions = pmCurrentPermit && !!pmCurrentPermit.supervisor_conditions;
+  const required = hasConditions ? [0,1,2,3,4,5] : [0,1,2,3,4];
+  const ok = required.every(i => pmCoChecks[i]);
+  const btn = document.getElementById('pm-co-submit');
+  if (btn) {
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '1' : '.45';
+    btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+  }
+}
+
+function pmSubmitCloseout() {
+  if (!pmCurrentPermit) return;
+  const note = document.getElementById('pm-co-note').value.trim();
+  const now = new Date();
+
+  // GPS
+  let gps = { latitude: locData?.lat || null, longitude: locData?.lng || null, accuracy: locData?.accuracy || null };
+
+  const updated = {
+    ...pmCurrentPermit,
+    status: 'closed',
+    closeout: {
+      signed_out_at: now.toISOString(),
+      signed_out_by: pmCurrentPermit.worker_name,
+      gps: gps,
+      checks: {
+        work_finished: pmCoChecks[0],
+        fire_watch_complete: pmCoChecks[1],
+        area_inspected: pmCoChecks[2],
+        extinguisher_returned: pmCoChecks[3],
+        area_swept: pmCoChecks[4],
+        conditions_complied: pmCoChecks[5] || null
+      },
+      note: note || null,
+      hazard_raised: pmCoHazard,
+      signature: (getProfile()?.sig) || null
+    },
+    history: (pmCurrentPermit.history || []).concat([{
+      event: 'closed',
+      by: pmCurrentPermit.worker_name,
+      timestamp: now.toISOString()
+    }])
+  };
+
+  pmPersist(updated);
+
+  // If user asked to raise a hazard, raise one
+  if (pmCoHazard && note && typeof queueSub === 'function') {
+    const hzPayload = {
+      form_type: 'hazard',
+      register_target: 'SLS-REG-008',
+      hazard_type: 'Other',
+      severity: 'Low',
+      severity_raw: 'Low',
+      location: pmCurrentPermit.location,
+      description: note,
+      who_at_risk: '',
+      activity: 'Hot works closeout — raised via permit',
+      immediate_action: '',
+      swms_ref: pmCurrentPermit.swms_ref || '',
+      anonymous: false,
+      reporter_name: pmCurrentPermit.worker_name,
+      reporter_company: pmCurrentPermit.worker_company,
+      linked_permit: pmCurrentPermit.permit_id,
+      photos: [],
+      photo_count: 0,
+      photo_metadata: {},
+      signature_png: (getProfile()?.sig) || null,
+      gps: gps,
+      submitted_at: now.toISOString()
+    };
+    try {
+      if (isOnline && typeof PA_URL !== 'undefined' && PA_URL !== 'YOUR_POWER_AUTOMATE_URL_HERE') {
+        fetch(PA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(hzPayload)}).catch(()=>queueSub(hzPayload));
+      } else { queueSub(hzPayload); }
+    } catch(e) { queueSub(hzPayload); }
+    if (typeof db !== 'undefined' && db && isOnline) {
+      db.collection('hazards').add(hzPayload).catch(()=>{});
+    }
+  }
+
+  if (pmFwTimerInterval) { clearInterval(pmFwTimerInterval); pmFwTimerInterval = null; }
+
+  showSharedSuccess({
+    icon: 'in',
+    iconStroke: 'var(--mid)',
+    title: 'Permit Closed',
+    sub: 'The permit has been closed out. A PDF will be generated and filed to the register.',
+    ref: pmCurrentPermit.permit_id,
+    details: [
+      { l:'Closed at', v: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}) },
+      { l:'Hazard raised', v: pmCoHazard ? 'Yes' : 'No' },
+      { l:'Register', v:'SLS-REG-011 Permit to Work Register' },
+      { l:'Status',    v: isOnline ? 'Closed ✓' : 'Saved — will sync' }
+    ]
+  });
+}
+
+// ── SUPERVISOR: QUEUE ──────────────────────────────────────────────────
+function goToHotWorksSupQueue() {
+  pmSyncLogos();
+  pmRenderSupQueue();
+  goTo('screen-permit-sup-queue');
+}
+
+function pmRenderSupQueue() {
+  const all = pmLoadAll();
+  const pending = all.filter(p => p.status === 'submitted').sort((a,b) => (b.submitted_at||'').localeCompare(a.submitted_at||''));
+  const active  = all.filter(p => p.status === 'active' || p.status === 'approved' || p.status === 'approved_conditions').sort((a,b) => (b.submitted_at||'').localeCompare(a.submitted_at||''));
+  const recent  = all.filter(p => ['closed','rejected','revoked','expired'].includes(p.status)).sort((a,b) => (b.submitted_at||'').localeCompare(a.submitted_at||'')).slice(0, 15);
+
+  const pW = document.getElementById('pm-supq-pending-wrap');
+  const pE = document.getElementById('pm-supq-pending');
+  if (pending.length) { pW.style.display='block'; pE.innerHTML = pending.map(pm => pmCardHtml(pm,'supervisor')).join(''); }
+  else { pW.style.display='none'; pE.innerHTML=''; }
+
+  const aW = document.getElementById('pm-supq-active-wrap');
+  const aE = document.getElementById('pm-supq-active');
+  if (active.length) { aW.style.display='block'; aE.innerHTML = active.map(pm => pmCardHtml(pm,'supervisor')).join(''); }
+  else { aW.style.display='none'; aE.innerHTML=''; }
+
+  const rE = document.getElementById('pm-supq-recent');
+  if (recent.length) { rE.innerHTML = recent.map(pm => pmCardHtml(pm,'supervisor')).join(''); }
+  else {
+    rE.innerHTML = `<div class="pm-empty">
+      <div class="pm-empty-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="pm-empty-title">No permits yet</div>
+      <div class="pm-empty-sub">Permits submitted by workers will appear here</div>
+    </div>`;
+  }
+}
+
+// ── SUPERVISOR: REVIEW ────────────────────────────────────────────────
+function pmSupViewPermit(permitId) {
+  const pm = pmFindById(permitId);
+  if (!pm) { alert('Permit not found.'); return; }
+  pmCurrentPermit = pm;
+  pmSyncLogos();
+
+  document.getElementById('pm-supr-title').textContent =
+    (pm.type_label || 'Permit') + (pm.subtype ? ' · '+pm.subtype : '');
+  document.getElementById('pm-supr-id').textContent = pm.permit_id + ' · ' + pmStatusLabel(pm.status);
+
+  // Details — same as worker view
+  const validEnd = pm.validity_end_requested ? new Date(pm.validity_end_requested).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+  const submitted = pm.submitted_at ? new Date(pm.submitted_at).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+  const row = (l,v) => `<div class="pm-info-row"><div class="pm-info-lbl">${l}</div><div class="pm-info-val">${v}</div></div>`;
+  let detailsHtml = '';
+  detailsHtml += row('Worker', (pm.worker_name||'—')+'<br><span style="color:var(--muted);font-size:11px;font-weight:400">'+(pm.worker_company||'')+'</span>');
+  detailsHtml += row('Fire watch', (pm.fire_watch_name||'—')+(pm.fire_watch_company?'<br><span style="color:var(--muted);font-size:11px;font-weight:400">'+pm.fire_watch_company+'</span>':''));
+  detailsHtml += row('Location', pm.location || '—');
+  detailsHtml += row('Description', pm.description || '—');
+  if (pm.swms_ref) detailsHtml += row('SWMS', pm.swms_ref);
+  detailsHtml += row('Submitted', submitted);
+  detailsHtml += row('Valid until', validEnd);
+  if (pm.supervisor_conditions) detailsHtml += row('Conditions', pm.supervisor_conditions);
+  if (pm.supervisor_rejection_reason) detailsHtml += row('Rejection reason', pm.supervisor_rejection_reason);
+  document.getElementById('pm-supr-details').innerHTML = detailsHtml;
+
+  // Pre-start checks
+  const checksMap = [
+    ['combustibles_cleared','Combustible materials cleared'],
+    ['floor_swept','Floor swept'],
+    ['drains_covered','Drains/openings covered'],
+    ['gas_isolated','Gas/flammables isolated'],
+    ['extinguisher_on_site','Fire extinguisher on site'],
+    ['ppe_confirmed','PPE confirmed'],
+    ['swms_reviewed','SWMS reviewed'],
+    ['ventilation_adequate','Ventilation adequate']
+  ];
+  document.getElementById('pm-supr-checks').innerHTML = checksMap.map(([k,lbl]) => {
+    const on = pm.pre_start_checks && pm.pre_start_checks[k];
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:6px 0;font-size:12.5px;line-height:1.5">
+      <div style="width:18px;height:18px;border-radius:4px;border:2px solid ${on?'var(--mid)':'var(--border)'};background:${on?'var(--mid)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+        ${on ? '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </div>
+      <span>${lbl}</span>
+    </div>`;
+  }).join('');
+
+  // Photos
+  const photosEl = document.getElementById('pm-supr-photos');
+  const photoLabels = ['1. Work area','2. Extinguisher','3. Fire blanket','4. Surrounding area'];
+  photosEl.innerHTML = (pm.photos || []).map((dataUrl, i) => {
+    if (!dataUrl) return '';
+    return `<div class="pm-photo-slot filled" style="cursor:default">
+      <div class="pm-photo-label">${photoLabels[i] || ('Photo '+(i+1))}</div>
+      <img src="${dataUrl}" alt="Permit photo ${i+1}">
+    </div>`;
+  }).join('');
+
+  // Decision card visibility
+  const decCard = document.getElementById('pm-supr-decision-card');
+  const revCard = document.getElementById('pm-supr-revoke-card');
+  decCard.style.display = pm.status === 'submitted' ? 'block' : 'none';
+  revCard.style.display = (pm.status === 'approved' || pm.status === 'approved_conditions' || pm.status === 'active') ? 'block' : 'none';
+
+  // Reset decision inputs
+  document.getElementById('pm-supr-cond-input').style.display = 'none';
+  document.getElementById('pm-supr-rej-input').style.display = 'none';
+  document.getElementById('pm-supr-rev-input').style.display = 'none';
+  document.getElementById('pm-supr-cond-txt').value = '';
+  document.getElementById('pm-supr-rej-txt').value = '';
+  document.getElementById('pm-supr-rev-txt').value = '';
+
+  goTo('screen-permit-sup-review');
+}
+
+function pmSupApprove() {
+  if (!pmCurrentPermit) return;
+  if (!confirm('Approve this permit? The worker will be notified and can commence immediately.')) return;
+  pmSupWriteDecision('approved', null, null);
+}
+
+function pmSupShowConditions() {
+  document.getElementById('pm-supr-cond-input').style.display = 'block';
+  document.getElementById('pm-supr-rej-input').style.display = 'none';
+}
+function pmSupConfirmConditions() {
+  const txt = document.getElementById('pm-supr-cond-txt').value.trim();
+  if (!txt) { alert('Please enter the conditions to apply.'); return; }
+  pmSupWriteDecision('approved_conditions', txt, null);
+}
+
+function pmSupShowReject() {
+  document.getElementById('pm-supr-rej-input').style.display = 'block';
+  document.getElementById('pm-supr-cond-input').style.display = 'none';
+}
+function pmSupConfirmReject() {
+  const txt = document.getElementById('pm-supr-rej-txt').value.trim();
+  if (!txt) { alert('Please enter a rejection reason.'); return; }
+  pmSupWriteDecision('rejected', null, txt);
+}
+
+function pmSupWriteDecision(status, conditions, rejectionReason) {
+  const p = getProfile();
+  const now = new Date();
+  const updated = {
+    ...pmCurrentPermit,
+    status: status,
+    supervisor_name: p ? p.name : 'Unknown',
+    supervisor_decision: status,
+    supervisor_timestamp: now.toISOString(),
+    supervisor_conditions: conditions,
+    supervisor_rejection_reason: rejectionReason,
+    approved_at: (status === 'approved' || status === 'approved_conditions') ? now.toISOString() : null,
+    history: (pmCurrentPermit.history || []).concat([{
+      event: status,
+      by: p ? p.name : 'Supervisor',
+      timestamp: now.toISOString()
+    }])
+  };
+  pmPersist(updated);
+
+  // Escalation / notification to worker (sendEscalationEmail reused — the recipient config in-app
+  // routes this to the right channel; in production the backend will notify the worker directly).
+  if (typeof sendEscalationEmail === 'function') {
+    try {
+      const subject = status === 'rejected'
+        ? `❌ Hot Works Permit rejected — ${updated.permit_id}`
+        : `✅ Hot Works Permit ${status === 'approved_conditions' ? 'approved (with conditions)' : 'approved'} — ${updated.permit_id}`;
+      sendEscalationEmail({
+        subject: subject,
+        body: `Permit: ${updated.permit_id}\nWorker: ${updated.worker_name}\nDecision: ${pmStatusLabel(status)}\n\n${conditions ? 'Conditions:\n'+conditions : ''}${rejectionReason ? 'Reason:\n'+rejectionReason : ''}`
+      });
+    } catch(e){}
+  }
+
+  showSharedSuccess({
+    icon: status === 'rejected' ? 'out' : 'in',
+    iconStroke: status === 'rejected' ? '#B83232' : 'var(--mid)',
+    title: status === 'rejected' ? 'Permit Rejected' : (status === 'approved_conditions' ? 'Approved with Conditions' : 'Permit Approved'),
+    sub: status === 'rejected' ? 'The worker has been notified.' : 'The worker can now commence work.',
+    ref: updated.permit_id,
+    details: [
+      { l:'Worker',    v: updated.worker_name },
+      { l:'Decision',  v: pmStatusLabel(status) },
+      { l:'Time',      v: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}) },
+      { l:'Register',  v:'SLS-REG-011' }
+    ]
+  });
+}
+
+function pmSupShowRevoke() {
+  document.getElementById('pm-supr-rev-input').style.display = 'block';
+}
+function pmSupConfirmRevoke() {
+  const cat = document.getElementById('pm-supr-rev-cat').value;
+  const txt = document.getElementById('pm-supr-rev-txt').value.trim();
+  if (!cat) { alert('Please select a revocation category.'); return; }
+  if (!txt) { alert('Please enter a revocation reason.'); return; }
+  if (!confirm('Revoke this permit immediately? The worker will be notified to stop work.')) return;
+  const p = getProfile();
+  const now = new Date();
+  const updated = {
+    ...pmCurrentPermit,
+    status: 'revoked',
+    revocation: {
+      by: p ? p.name : 'Supervisor',
+      timestamp: now.toISOString(),
+      category: cat,
+      reason: txt
+    },
+    history: (pmCurrentPermit.history || []).concat([{
+      event: 'revoked',
+      by: p ? p.name : 'Supervisor',
+      timestamp: now.toISOString()
+    }])
+  };
+  pmPersist(updated);
+
+  if (typeof sendEscalationEmail === 'function') {
+    try {
+      sendEscalationEmail({
+        subject: `🚨 Permit revoked — STOP WORK — ${updated.permit_id}`,
+        body: `The Hot Works permit ${updated.permit_id} has been revoked.\nWorker: ${updated.worker_name}\nCategory: ${cat}\nReason: ${txt}\n\nWork must stop immediately.`
+      });
+    } catch(e){}
+  }
+
+  showSharedSuccess({
+    icon:'out', iconStroke:'#B83232',
+    title:'Permit Revoked',
+    sub:'The worker has been notified to stop work immediately.',
+    ref: updated.permit_id,
+    details: [
+      { l:'Category', v: cat },
+      { l:'Time',     v: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}) },
+      { l:'Register', v:'SLS-REG-011' }
+    ]
+  });
+}
+
+// ── SIGN-OUT INJECTION ──────────────────────────────────────────────────
+// Hooks into the existing end-of-shift confirm screen.
+// When the worker tries to sign out of site and has an active permit open,
+// a banner appears above the EOS card, and the Confirm Sign Out button
+// stays disabled until the permit is closed.
+
+function pmCheckSignOutGate() {
+  // Called when the sign-out confirm screen is shown.
+  const p = getProfile(); if (!p) return;
+  const actives = pmActiveForWorker(p.name);
+  const block = document.getElementById('pm-eos-block');
+  const confBtn = document.getElementById('conf-btn');
+  if (!block) return;
+
+  if (actives.length === 0) {
+    block.classList.remove('show');
+    // Do NOT touch the confirm button — EOS tick logic already manages it
+    return;
+  }
+  const pm = actives[0]; // handle first active permit
+  block.classList.add('show');
+  const ttl = block.querySelector('.pm-eos-block-ttl');
+  const sub = block.querySelector('.pm-eos-block-sub');
+  const btn = block.querySelector('.pm-eos-block-btn');
+  if (ttl) ttl.textContent = 'You have an active permit';
+  if (sub) sub.textContent = pm.permit_id + ' — '+(pm.type_label||'Permit')+(pm.subtype?' · '+pm.subtype:'')+'. Close this out before signing off site.';
+  if (btn) btn.onclick = function(){ pmViewPermit(pm.permit_id); };
+
+  // Hard-lock the sign-out confirm button while a permit is open
+  if (confBtn) {
+    confBtn.disabled = true;
+    confBtn.style.opacity = '.45';
+    confBtn.style.cursor = 'not-allowed';
+  }
+}
+
+// Wrap the existing toggleEOS so the lock survives every tick change.
+(function(){
+  if (typeof window === 'undefined') return;
+  const _origToggle = window.toggleEOS;
+  if (typeof _origToggle === 'function') {
+    window.toggleEOS = function(idx) {
+      _origToggle(idx);
+      // Re-assert permit gate after the original unlock logic runs
+      const p = (typeof getProfile === 'function') ? getProfile() : null;
+      if (p && typeof pmActiveForWorker === 'function' && pmActiveForWorker(p.name).length > 0) {
+        const confBtn = document.getElementById('conf-btn');
+        if (confBtn) {
+          confBtn.disabled = true;
+          confBtn.style.opacity = '.45';
+          confBtn.style.cursor = 'not-allowed';
+        }
+      }
+    };
+  }
+})();
+
+// ── HOME-SCREEN ACTIVE BANNER ───────────────────────────────────────────
+// Lightweight call that updates the permits tile subline and (if present)
+// shows a standalone active-permit banner at top of home.
+function pmUpdateHomeBanner() {
+  const p = getProfile(); if (!p) return;
+  const actives = pmActiveForWorker(p.name);
+  const pending = pmPendingForWorker(p.name);
+
+  const sub = document.getElementById('permits-tile-sub');
+  if (sub) {
+    if (actives.length)      sub.textContent = actives.length + ' active — tap to manage';
+    else if (pending.length) sub.textContent = pending.length + ' awaiting approval';
+    else                     sub.textContent = 'Hot works, heights, confined space';
+  }
+  const notif = document.getElementById('permits-tile-notif');
+  if (notif) notif.style.display = (actives.length || pending.length) ? 'block' : 'none';
+}
+
+// Keep the banner fresh on relevant nav events
+(function(){
+  if (typeof window === 'undefined') return;
+  const _origGoTo = window.goTo;
+  if (typeof _origGoTo === 'function') {
+    window.goTo = function(screenId) {
+      _origGoTo.apply(this, arguments);
+      // Update home banner whenever we land on home
+      if (screenId === 'screen-home') {
+        try { pmUpdateHomeBanner(); } catch(e){}
+      }
+      // Enforce permit gate whenever sign-out confirm is shown
+      if (screenId === 'screen-confirm') {
+        try {
+          // Only when signing out — detect via the c-type label the existing code sets
+          const typeEl = document.getElementById('c-type');
+          if (typeEl && typeEl.textContent === 'Signing Out') {
+            setTimeout(pmCheckSignOutGate, 30);
+          } else {
+            const block = document.getElementById('pm-eos-block');
+            if (block) block.classList.remove('show');
+          }
+        } catch(e){}
+      }
+    };
+  }
+})();
+
+// Initial banner update on DOM ready (if profile already exists)
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => { try { pmUpdateHomeBanner(); } catch(e){} }, 500);
+});
+// ═══════════════════ END PERMITS MODULE v1.0 ═══════════════════
 
 </script>
 </body>
