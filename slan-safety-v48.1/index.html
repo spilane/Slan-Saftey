@@ -10047,7 +10047,7 @@ function startDemoAs(role) {
     director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   licences:{} }
   };
   var p = profiles[role] || profiles.supervisor;
-  p.created = new Date().toISOString(); p.demo = true; p.sig = null; p.photo = null;
+  p.created = new Date().toISOString(); p.demo = true; p.sig = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCAyMjAgODAiPjxwYXRoIGQ9Ik0xMCA1NSBRIDIwIDIwLCAzNSA0NSBUIDYwIDUwIFEgNzAgMjUsIDg1IDUwIFQgMTE1IDUyIFEgMTMwIDMwLCAxNTAgNTAgUSAxNjAgNjUsIDE4MCA0OCBRIDE5NSAzOCwgMjEwIDUwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxQjNBMkQiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNDAgNjIgUSA1NSA1OCwgNzAgNjIgUSA5MCA2MCwgMTIwIDYzIFEgMTUwIDYxLCAxODAgNjMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFCM0EyRCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC41Ii8+PC9zdmc+'; p.photo = null;
   localStorage.setItem('slan_profile', JSON.stringify(p));
   localStorage.setItem('slan_onboarded', 'true');
   localStorage.setItem('slan_signed_in_today', 'true');
@@ -11980,7 +11980,8 @@ function pmHandlePhoto(idx, e) {
 function pmSubmitHotWorks() {
   const p = getProfile();
   if (!p) { alert('Please complete your profile first.'); return; }
-  if (!p.sig) { alert('You need to add a signature in Profile before submitting a permit.'); return; }
+  if (!p.sig && !p.demo) { alert('You need to add a signature in Profile before submitting a permit.'); return; }
+  if (!p.sig && p.demo) { p.sig = 'demo'; }  // safety belt — demo mode
   if (!pmSelectedType) { alert('Please select the type of hot works.'); return; }
   const desc = document.getElementById('pmhw-desc').value.trim();
   if (!desc) { alert('Please describe the work.'); return; }
