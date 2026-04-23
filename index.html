@@ -321,11 +321,29 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .role-option.selected h4{color:var(--mid)}
 
 /* STATUS STRIP */
-.status-pill{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:500;color:var(--muted)}
-.status-pill.done{background:#E6F5ED;border-color:rgba(27,110,58,.2);color:#1B6E3A}
-.status-pill.done .sp-dot{background:#1B6E3A}
+.status-pill{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s}
+.status-pill:active{transform:scale(.96)}
+.status-pill.done{background:#E6F5ED;border-color:rgba(27,110,58,.2);color:#1B6E3A;font-weight:600}
+.status-pill.done .sp-dot{background:#1B6E3A;animation:none}
+.status-pill.warn{background:#F5C48A;border-color:#BA7517;color:#633806;font-weight:600}
+.status-pill.warn .sp-dot{background:#854F0B;width:7px;height:7px;animation:spPulse 1.4s infinite ease-in-out}
+.status-pill.fail{background:#FCEBEB;border-color:rgba(184,50,50,.3);color:#A32D2D;font-weight:600}
+.status-pill.fail .sp-dot{background:#A32D2D;animation:none}
 .sp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .sp-pending{background:#CCCCCC}
+.sp-done{background:#1B6E3A}
+@keyframes spPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(186,117,23,0); }
+  50%     { box-shadow: 0 0 0 6px rgba(186,117,23,0.5); }
+}
+.hw-badge.hw-pending { background:#F5C48A; border:1px solid #BA7517; color:#633806; display:inline-flex; align-items:center; gap:5px }
+.hw-badge.hw-pending::before { content:''; width:6px; height:6px; border-radius:50%; background:#854F0B; animation:spPulse 1.4s infinite ease-in-out }
+.hw-badge.hw-active  { background:#E6F5ED; border:1px solid rgba(27,110,58,.3); color:#1B6E3A; display:inline-flex; align-items:center; gap:5px }
+.hw-badge.hw-active::before  { content:''; width:6px; height:6px; border-radius:50%; background:#1B6E3A }
+.hw-badge.hw-reject  { background:#FCEBEB; border:1px solid rgba(184,50,50,.3); color:#A32D2D; display:inline-flex; align-items:center; gap:5px }
+.hw-badge.hw-reject::before  { content:''; width:6px; height:6px; border-radius:50%; background:#A32D2D }
+.hw-badge.hw-expired { background:#F2F3F2; border:1px solid var(--border); color:#5C6B62; display:inline-flex; align-items:center; gap:5px }
+.hw-badge.hw-expired::before { content:''; width:6px; height:6px; border-radius:50%; background:#888 }
 
 /* CONTACT ROWS */
 .contact-row{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .13s}
@@ -841,17 +859,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div id="status-strip" style="background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px">
     <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Today's activity</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <div class="status-pill" id="sp-signin">
-        <div class="sp-dot sp-pending"></div><span>Sign In</span>
+      <div class="status-pill" id="sp-signin" onclick="chipTapSignIn()">
+        <div class="sp-dot sp-pending"></div><span id="sp-signin-lbl">Sign In</span>
       </div>
-      <div class="status-pill" id="sp-talk">
-        <div class="sp-dot sp-pending"></div><span>Toolbox Talk</span>
+      <div class="status-pill" id="sp-prestart" onclick="chipTapPrestart()">
+        <div class="sp-dot sp-pending"></div><span id="sp-prestart-lbl">Pre-Start</span>
       </div>
-      <div class="status-pill" id="sp-prestart">
-        <div class="sp-dot sp-pending"></div><span>Pre-Start</span>
+      <div class="status-pill" id="sp-swms" onclick="chipTapSwms()">
+        <div class="sp-dot sp-pending"></div><span id="sp-swms-lbl">SWMS</span>
       </div>
-      <div class="status-pill" id="sp-swms">
-        <div class="sp-dot sp-pending"></div><span>SWMS</span>
+      <div class="status-pill" id="sp-talk" onclick="chipTapTalk()">
+        <div class="sp-dot sp-pending"></div><span id="sp-talk-lbl">Toolbox Talk</span>
       </div>
     </div>
   </div>
@@ -7129,37 +7147,89 @@ function initHome(p){
 }
 
 async function updateStatusStrip() {
-  const today=new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
-  const q=JSON.parse(localStorage.getItem('slan_queue')||'[]');
-  const signedInToday=q.some(s=>s.data&&s.data.form_type==='attendance'&&s.data.date&&s.data.date.replace(/\//g,'-')===today);
-  setPill('sp-signin', signedInToday);
-  setPill('sp-talk', !!localStorage.getItem('talk_signed_'+today));
-  setPill('sp-prestart', false);
-  setPill('sp-swms', false);
+  const today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
+  const q = JSON.parse(localStorage.getItem('slan_queue')||'[]');
 
-  // Check for supervisor pre-start from Supabase
-  const supPrestarts = await sbQuery('prestart_checks',{ site:SITE, date:new Date().toLocaleDateString('en-AU'), is_supervisor_check:true });
-  const banner = document.getElementById('sup-prestart-banner');
-  const bannerText = document.getElementById('sup-prestart-banner-text');
-  if (banner && supPrestarts.length > 0) {
-    const sp = supPrestarts[0];
-    banner.style.display = 'block';
-    if (bannerText) bannerText.textContent = `✓ Supervisor pre-start: ${sp.plant_name} — ${sp.outcome} (${sp.time})`;
-    setPill('sp-prestart', true);
-  } else if (banner) {
-    banner.style.display = 'none';
+  // Sign In / Sign Out (dynamic chip)
+  const signedInToday  = q.some(s => s.data && s.data.form_type === 'attendance' && s.data.form_mode === 'in'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  const signedOutToday = q.some(s => s.data && s.data.form_type === 'attendance' && s.data.form_mode === 'out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  const signinLbl  = document.getElementById('sp-signin-lbl');
+  const signinPill = document.getElementById('sp-signin');
+  if (signinLbl && signinPill) {
+    if (signedOutToday) {
+      signinLbl.textContent = 'Signed out today';
+      setPillState('sp-signin', 'done');
+    } else if (signedInToday) {
+      signinLbl.textContent = 'On site · tap to sign out';
+      setPillState('sp-signin', 'done');
+    } else {
+      signinLbl.textContent = 'Sign In';
+      setPillState('sp-signin', 'warn');
+    }
   }
 
-  // Hot Works Permits chip (only shown if worker has permits today)
+  // Pre-Start - done if queue has prestart entry today or localStorage flag set
+  const prestartDoneToday = q.some(s => s.data && s.data.form_type === 'prestart' && s.data.date && s.data.date.replace(/\//g,'-') === today) || !!localStorage.getItem('prestart_signed_' + today);
+  setPillState('sp-prestart', prestartDoneToday ? 'done' : 'warn');
+
+  // SWMS - persist green until new available
+  const swmsSignedAny = !!localStorage.getItem('swms_signed_latest');
+  const swmsNewAvail  = !!localStorage.getItem('swms_new_available');
+  setPillState('sp-swms', (swmsSignedAny && !swmsNewAvail) ? 'done' : 'warn');
+
+  // Toolbox - persist green until new available
+  const talkSignedAny = !!localStorage.getItem('talk_signed_latest') || !!localStorage.getItem('talk_signed_' + today);
+  const talkNewAvail  = !!localStorage.getItem('talk_new_available');
+  setPillState('sp-talk', (talkSignedAny && !talkNewAvail) ? 'done' : 'warn');
+
+  // Legacy banner for supervisor pre-start
+  try {
+    const supPrestarts = await sbQuery('prestart_checks', { site: (typeof SITE !== 'undefined' ? SITE : ''), date: new Date().toLocaleDateString('en-AU'), is_supervisor_check: true });
+    const banner = document.getElementById('sup-prestart-banner');
+    const bannerText = document.getElementById('sup-prestart-banner-text');
+    if (banner && supPrestarts && supPrestarts.length > 0) {
+      const sp = supPrestarts[0];
+      banner.style.display = 'block';
+      if (bannerText) bannerText.textContent = `✓ Supervisor pre-start: ${sp.plant_name} — ${sp.outcome} (${sp.time})`;
+    } else if (banner) {
+      banner.style.display = 'none';
+    }
+  } catch(e) {}
+
   try { hwUpdateChip(); } catch(e) {}
 }
 
 function setPill(id, done) {
-  const el=document.getElementById(id);
-  if (!el) return;
-  el.classList.toggle('done', done);
-  el.querySelector('.sp-dot').className='sp-dot'+(done?'':' sp-pending');
+  setPillState(id, done ? 'done' : 'warn');
 }
+
+function setPillState(id, state) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('done', 'warn', 'fail');
+  if (state === 'done')      el.classList.add('done');
+  else if (state === 'warn') el.classList.add('warn');
+  else if (state === 'fail') el.classList.add('fail');
+  const dot = el.querySelector('.sp-dot');
+  if (dot) {
+    dot.className = 'sp-dot' + (state === 'done' ? ' sp-done' : state === 'pending' ? ' sp-pending' : '');
+  }
+}
+
+function chipTapSignIn() {
+  const q = JSON.parse(localStorage.getItem('slan_queue')||'[]');
+  const today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
+  const signedInToday  = q.some(s => s.data && s.data.form_type === 'attendance' && s.data.form_mode === 'in'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  const signedOutToday = q.some(s => s.data && s.data.form_type === 'attendance' && s.data.form_mode === 'out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  if (signedInToday && !signedOutToday) {
+    if (typeof startFlow === 'function') startFlow('out'); else goTo('screen-confirm');
+  } else {
+    if (typeof startFlow === 'function') startFlow('in');  else goTo('screen-confirm');
+  }
+}
+function chipTapPrestart() { goTo('screen-prestart'); if (typeof initPrestart === 'function') setTimeout(initPrestart, 20); }
+function chipTapSwms()     { goTo('screen-swms-library'); if (typeof initSwmsLibrary === 'function') setTimeout(initSwmsLibrary, 20); }
+function chipTapTalk()     { goTo('screen-talk'); if (typeof initTalk === 'function') setTimeout(initTalk, 20); }
 
 // Update the "Permits" chip on the worker home status strip.
 // Only visible when worker has permits today. Shows counts by bucket.
@@ -7174,44 +7244,37 @@ function hwUpdateChip() {
   const all = (typeof hwLoadAll === 'function' ? hwLoadAll() : [])
     .filter(x => x.worker_name === p.name && x.date === today);
 
-  if (all.length === 0) {
-    if (chip) chip.remove();
-    return;
-  }
+  if (all.length === 0) { if (chip) chip.remove(); return; }
 
-  // Bucket counts
-  let pending = 0, active = 0, other = 0;
+  let pending = 0, active = 0, other = 0, rejected = 0;
   all.forEach(x => {
     const b = hwPermitBucket(x);
     if (b === 'pending') pending++;
     else if (b === 'active') active++;
+    else if (x.status === 'rejected') rejected++;
     else other++;
   });
 
-  // Pick primary label and state
   let label, state;
   if (pending > 0) {
-    label = 'Permits (' + pending + ' pending)';
-    state = 'warn';
+    label = 'Permits (' + pending + ' pending)'; state = 'warn';
+  } else if (rejected > 0 && active === 0) {
+    label = 'Permits (' + rejected + ' rejected)'; state = 'fail';
   } else if (active > 0) {
-    label = 'Permits (' + active + ' active)';
-    state = 'done';
+    label = 'Permits (' + active + ' active)'; state = 'done';
   } else {
-    label = 'Permits (' + all.length + ' today)';
-    state = 'done';
+    label = 'Permits (' + all.length + ' today)'; state = 'done';
   }
 
   if (!chip) {
     chip = document.createElement('div');
-    chip.className = 'status-pill';
     chip.id = 'sp-permits';
-    chip.style.cursor = 'pointer';
     chip.onclick = function(){ goToHotWorks(); };
     strip.appendChild(chip);
   }
-
-  chip.classList.toggle('done', state === 'done');
-  chip.innerHTML = '<div class="sp-dot ' + (state === 'done' ? 'sp-done' : 'sp-pending') + '"></div><span>' + label + '</span>';
+  chip.className = 'status-pill';
+  chip.innerHTML = '<div class="sp-dot"></div><span>' + label + '</span>';
+  setPillState('sp-permits', state);
 }
 
 function sosCall() {
@@ -9081,6 +9144,12 @@ function hwStatusColor(s) {
   if (s === 'expired' || s === 'closed')   return '#5C6B62';
   return '#B8960C';
 }
+function hwStatusBadgeClass(s) {
+  if (s === 'active' || s === 'approved')  return 'hw-active';
+  if (s === 'rejected' || s === 'revoked') return 'hw-reject';
+  if (s === 'expired' || s === 'closed')   return 'hw-expired';
+  return 'hw-pending';
+}
 function hwPermitBucket(p) {
   // Now: only 'submitted'/'pending' exist on worker side until Step 3.
   // But we lay foundations: active = approved + within time, history = terminal states.
@@ -9102,14 +9171,14 @@ function hwRenderList() {
   const history = all.filter(x => hwPermitBucket(x) === 'history');
 
   function cardHtml(pm) {
-    const badgeText  = hwStatusLabel(pm.status);
-    const badgeColor = hwStatusColor(pm.status);
+    const badgeText = hwStatusLabel(pm.status);
+    const badgeClass = hwStatusBadgeClass(pm.status);
     const subtypeText = pm.subtype || pm.type || 'Hot Works';
     const locText = pm.location || '';
     return `<div class="hw-card" onclick="hwViewPermit('${pm.permit_id}')">
       <div class="hw-card-top">
         <div class="hw-card-id">${pm.permit_id}</div>
-        <div class="hw-badge" style="background:${badgeColor}20;color:${badgeColor};border:1px solid ${badgeColor}40">${badgeText}</div>
+        <div class="hw-badge ${badgeClass}" style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px">${badgeText}</div>
       </div>
       <div class="hw-card-mid">${subtypeText}</div>
       <div class="hw-card-sub">${locText}</div>
@@ -9176,7 +9245,7 @@ function hwViewPermit(permitId) {
         <div class="hw-view-id">${p.permit_id}</div>
         <div class="hw-view-sub">${p.subtype || p.type || 'Hot Works'}</div>
       </div>
-      <div class="hw-badge" style="background:${badgeColor}20;color:${badgeColor};border:1px solid ${badgeColor}40">${badgeText}</div>
+      <div class="hw-badge ${hwStatusBadgeClass(p.status)}" style="font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px">${badgeText}</div>
     </div>
     ${row('Date', p.date)}
     ${row('Site', p.site)}
