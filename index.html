@@ -485,165 +485,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .stars-progress-track{height:7px;background:#E8F0EB;border-radius:4px;overflow:hidden;margin:6px 0 4px}
 .stars-progress-fill{height:100%;background:var(--deep);border-radius:4px;transition:width .4s ease}
 
-/* ═══════════════════ PERMITS MODULE v1.0 ═══════════════════
-   Added by Slán Safety Permit Module build.
-   All rules scoped with .pm- prefix to avoid collisions.
-   ═══════════════════════════════════════════════════════════ */
-
-/* Permit status badges */
-.pm-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:10px;white-space:nowrap}
-.pm-badge.submitted{background:#FFF5D6;color:#7A6020}
-.pm-badge.approved{background:#E6F5ED;color:#1B6E3A}
-.pm-badge.conditions{background:#FEF0E6;color:#9A4A00}
-.pm-badge.active{background:#E6F5ED;color:#1B6E3A;animation:pm-pulse 2s ease-in-out infinite}
-.pm-badge.rejected{background:#FAEBEB;color:#B83232}
-.pm-badge.revoked{background:#FAEBEB;color:#B83232}
-.pm-badge.expired{background:#FAEBEB;color:#B83232}
-.pm-badge.closed{background:#F0F0F0;color:#5C6B62}
-.pm-badge.draft{background:#F0F0F0;color:#5C6B62}
-
-@keyframes pm-pulse{0%,100%{opacity:1}50%{opacity:.6}}
-
-/* Active permit banner (shown on home/sign-out screen) */
-.pm-active-banner{background:#FFF5D6;border:1.5px solid #D4AF37;border-radius:var(--r);padding:13px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:transform .12s;-webkit-tap-highlight-color:transparent}
-.pm-active-banner:active{transform:scale(.98)}
-.pm-active-banner-icon{width:38px;height:38px;border-radius:10px;background:#D4AF37;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.pm-active-banner-icon svg{width:20px;height:20px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:#fff;fill:none}
-.pm-active-banner-text{flex:1;min-width:0}
-.pm-active-banner-title{font-size:13px;font-weight:700;color:#7A6020;line-height:1.3}
-.pm-active-banner-sub{font-size:11.5px;color:#7A6020;margin-top:2px;line-height:1.4;opacity:.8}
-.pm-active-banner-chev{color:#7A6020;flex-shrink:0}
-
-/* Permit card (used in lists) */
-.pm-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:transform .12s;-webkit-tap-highlight-color:transparent;margin-bottom:8px}
-.pm-card:active{transform:scale(.98)}
-.pm-card-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
-.pm-card-id{font-family:'DM Mono',monospace;font-size:10.5px;font-weight:500;color:var(--muted);letter-spacing:.03em}
-.pm-card-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
-.pm-card-meta{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
-.pm-card-meta strong{color:var(--text);font-weight:600}
-
-/* Permit type selector */
-.pm-type-grid{display:flex;flex-direction:column;gap:10px}
-.pm-type-btn{display:flex;align-items:center;gap:13px;padding:14px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .13s;text-align:left;font-family:inherit;-webkit-tap-highlight-color:transparent}
-.pm-type-btn:active{transform:scale(.98)}
-.pm-type-btn.enabled{border-color:var(--mid)}
-.pm-type-btn.enabled:hover{background:#F8FAF8}
-.pm-type-btn.disabled{opacity:.45;cursor:not-allowed}
-.pm-type-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.pm-type-icon svg{width:21px;height:21px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
-.pm-type-txt{flex:1;min-width:0}
-.pm-type-name{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
-.pm-type-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
-.pm-type-chev{color:var(--muted);flex-shrink:0}
-
-/* Subtype pill buttons */
-.pm-sub-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
-.pm-sub-btn{padding:10px 8px;border:1.5px solid var(--border);background:var(--card);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;transition:all .13s;-webkit-tap-highlight-color:transparent}
-.pm-sub-btn:active{transform:scale(.95)}
-.pm-sub-btn.selected{border-color:var(--mid);background:#E6F5ED;color:var(--mid);font-weight:600}
-
-/* Pre-start check list */
-.pm-check-list{display:flex;flex-direction:column;gap:6px}
-.pm-check-item{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .13s;text-align:left;font-family:inherit;-webkit-tap-highlight-color:transparent;width:100%}
-.pm-check-item:active{transform:scale(.99)}
-.pm-check-item.checked{border-color:var(--mid);background:#F4FAF6}
-.pm-check-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .13s}
-.pm-check-item.checked .pm-check-box{background:var(--mid);border-color:var(--mid)}
-.pm-check-box svg{width:11px;height:11px;opacity:0;transition:opacity .13s}
-.pm-check-item.checked .pm-check-box svg{opacity:1}
-.pm-check-lbl{flex:1;font-size:12.5px;color:var(--text);line-height:1.4}
-
-/* Fire watch timer */
-.pm-fw-timer{background:linear-gradient(135deg,#E6F5ED,#F4FAF6);border:2px solid var(--mid);border-radius:var(--r);padding:20px;margin:0 16px 14px;text-align:center}
-.pm-fw-timer.warn{background:linear-gradient(135deg,#FFF5D6,#FDF8E8);border-color:#D4AF37}
-.pm-fw-timer.done{background:linear-gradient(135deg,#E6F5ED,#F4FAF6);border-color:var(--mid)}
-.pm-fw-label{font-size:11px;font-weight:600;color:var(--mid);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
-.pm-fw-timer.warn .pm-fw-label{color:#7A6020}
-.pm-fw-time{font-family:'DM Mono',monospace;font-size:40px;font-weight:500;color:var(--deep);line-height:1;letter-spacing:-.02em}
-.pm-fw-timer.warn .pm-fw-time{color:#7A6020}
-.pm-fw-sub{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.4}
-
-/* Photo slots (reuse hz pattern but with pm- naming to avoid conflicts) */
-.pm-photo-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.pm-photo-slot{aspect-ratio:1;border:1.5px dashed var(--border);border-radius:var(--rs);background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;overflow:hidden;position:relative}
-.pm-photo-slot.filled{border-style:solid;border-color:var(--mid)}
-.pm-photo-slot img{width:100%;height:100%;object-fit:cover}
-.pm-photo-slot svg{width:24px;height:24px}
-.pm-photo-slot span{font-size:10.5px;color:var(--muted);text-align:center;padding:0 4px;line-height:1.3}
-.pm-photo-slot input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
-.pm-photo-label{position:absolute;top:4px;left:4px;background:rgba(27,58,45,.85);color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;letter-spacing:.03em;text-transform:uppercase;pointer-events:none}
-
-/* Supervisor queue card */
-.pm-sup-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--rs);padding:12px 13px;margin-bottom:8px;cursor:pointer;transition:transform .12s;-webkit-tap-highlight-color:transparent}
-.pm-sup-card:active{transform:scale(.98)}
-.pm-sup-card.pending{border-left:4px solid #D4AF37}
-.pm-sup-card.active{border-left:4px solid var(--mid)}
-
-/* Conditions textarea */
-.pm-conditions{width:100%;min-height:80px;padding:10px;font-family:inherit;font-size:13px;border:1.5px solid var(--border);border-radius:var(--rs);resize:vertical;line-height:1.45}
-.pm-conditions:focus{outline:none;border-color:var(--mid)}
-
-/* Decision buttons */
-.pm-dec-grid{display:grid;grid-template-columns:1fr;gap:8px}
-.pm-dec-btn{display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--card);font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;transition:all .13s;text-align:left;-webkit-tap-highlight-color:transparent}
-.pm-dec-btn:active{transform:scale(.98)}
-.pm-dec-btn.approve{border-color:var(--mid);color:var(--mid)}
-.pm-dec-btn.approve:hover{background:#E6F5ED}
-.pm-dec-btn.conditions{border-color:#D4AF37;color:#7A6020}
-.pm-dec-btn.conditions:hover{background:#FFF5D6}
-.pm-dec-btn.reject{border-color:#B83232;color:#B83232}
-.pm-dec-btn.reject:hover{background:#FAEBEB}
-.pm-dec-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.pm-dec-icon svg{width:18px;height:18px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
-.pm-dec-txt{flex:1}
-.pm-dec-name{font-size:14px;font-weight:600;line-height:1.3}
-.pm-dec-sub{font-size:11.5px;opacity:.75;margin-top:2px;line-height:1.3;font-weight:500}
-
-/* Permit detail info rows */
-.pm-info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);gap:14px}
-.pm-info-row:last-child{border-bottom:none}
-.pm-info-lbl{font-size:11.5px;color:var(--muted);font-weight:500;flex-shrink:0}
-.pm-info-val{font-size:12.5px;color:var(--text);font-weight:500;text-align:right;line-height:1.4;word-break:break-word}
-
-/* Conditions display on active permit */
-.pm-cond-box{background:#FFF5D6;border:1.5px solid #D4AF37;border-radius:var(--rs);padding:11px 13px;margin:4px 0}
-.pm-cond-hdr{font-size:11px;font-weight:700;color:#7A6020;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
-.pm-cond-txt{font-size:12.5px;color:#7A6020;line-height:1.5;white-space:pre-wrap}
-
-/* Inline hazard link on closeout */
-.pm-hz-link{display:flex;align-items:flex-start;gap:10px;padding:10px 11px;border:1.5px dashed var(--border);border-radius:var(--rs);cursor:pointer;margin-top:8px;background:var(--bg);transition:all .13s;-webkit-tap-highlight-color:transparent}
-.pm-hz-link:active{transform:scale(.99)}
-.pm-hz-link.checked{border-style:solid;border-color:#D4630A;background:#FEF0E6}
-.pm-hz-link .pm-check-box{margin-top:1px}
-.pm-hz-link.checked .pm-check-box{background:#D4630A;border-color:#D4630A}
-.pm-hz-link-txt{flex:1}
-.pm-hz-link-ttl{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3}
-.pm-hz-link-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
-
-/* Sign-out permit block (injected above EOS card) */
-.pm-eos-block{margin:0 16px 12px;background:#FFF5D6;border:2px solid #D4AF37;border-radius:var(--r);padding:14px 15px;display:none}
-.pm-eos-block.show{display:block}
-.pm-eos-block-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.pm-eos-block-icon{width:32px;height:32px;border-radius:9px;background:#D4AF37;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.pm-eos-block-icon svg{width:18px;height:18px;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
-.pm-eos-block-ttl{flex:1;font-size:13px;font-weight:700;color:#7A6020;line-height:1.3}
-.pm-eos-block-sub{font-size:11.5px;color:#7A6020;line-height:1.5;margin-bottom:11px;opacity:.85}
-.pm-eos-block-btn{width:100%;padding:11px;background:#7A6020;color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s}
-.pm-eos-block-btn:active{transform:scale(.98)}
-
-/* Empty state */
-.pm-empty{text-align:center;padding:36px 20px;color:var(--muted)}
-.pm-empty-icon{width:56px;height:56px;border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
-.pm-empty-icon svg{width:26px;height:26px;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
-.pm-empty-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
-.pm-empty-sub{font-size:12px;color:var(--muted);line-height:1.5}
-
-/* Big CTA button */
-.pm-new-btn{width:100%;padding:14px;background:var(--deep);color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s;margin-bottom:14px}
-.pm-new-btn:active{transform:scale(.98)}
-.pm-new-btn svg{width:18px;height:18px;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none;stroke:#fff}
-
 </style>
 </head>
 <body>
@@ -1033,13 +874,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon ic-red"><svg viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
         <div class="tile-name">Report Incident</div><div class="tile-sub">Injury or near miss</div>
       </div>
-      <!-- ═══ HOT WORKS PERMIT (Permits Module) ═══ -->
-      <div class="tile" onclick="goToHotWorksPermit()">
-        <div class="tile-icon" style="background:#FDF8E8"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></div>
-        <div class="tile-name">Hot Works Permit</div>
-        <div class="tile-sub" id="permits-tile-sub">Welding, grinding, oxy cutting</div>
-        <div class="tile-notif" id="permits-tile-notif" style="display:none"></div>
-      </div>
       <div class="tile" onclick="goToTake5()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
         <div class="tile-name">Take 5</div><div class="tile-sub">Pre-task safety check</div>
@@ -1145,16 +979,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <span id="ffd-label" style="font-size:13px;font-weight:600;color:var(--muted)">I confirm I am fit for work today</span>
         </button>
       </div>
-    </div>
-
-    <!-- ═══ PERMIT SIGN-OUT GATE (Permits Module) ═══ -->
-    <div id="pm-eos-block" class="pm-eos-block">
-      <div class="pm-eos-block-hdr">
-        <div class="pm-eos-block-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-        <div class="pm-eos-block-ttl">You have an active permit</div>
-      </div>
-      <div class="pm-eos-block-sub">You must close out your active permit before signing off site.</div>
-      <button class="pm-eos-block-btn" type="button">Close out permit now</button>
     </div>
 
     <!-- End of shift declaration — sign-out only -->
@@ -1354,14 +1178,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
         <div class="tile-name">Report Hazard</div>
         <div class="tile-sub">Log &amp; escalate</div>
-      </div>
-
-      <!-- ═══ HOT WORKS APPROVALS (Permits Module) ═══ -->
-      <div class="tile" onclick="goToHotWorksSupQueue()">
-        <div class="tile-icon" style="background:#FDF8E8"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></div>
-        <div class="tile-name">Hot Works Permits</div>
-        <div class="tile-sub" id="sup-permits-tile-sub">Approvals &amp; active work</div>
-        <div class="tile-notif" id="sup-permits-tile-notif" style="display:none"></div>
       </div>
 
       <div class="tile" onclick="goToVisitorSignIn()">
@@ -2821,511 +2637,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </div>
 
 <!-- ═══════════════════ TOOLBOX TALK ═══ -->
-<!-- ═══════════════════ PERMITS MODULE v1.0 — SCREENS ═══ -->
-<!-- All permit screens. Inserted after screen-hazard, before screen-talk. -->
-
-<!-- ──────────── WORKER: PERMITS LIST ──────────── -->
-<div id="screen-hw-permits" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="pm-list-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
-    </div>
-    <div class="topbar-text" style="padding:0 16px 4px">
-      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">Permits to Work</h1>
-      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">High risk work approvals</p>
-    </div>
-  </div>
-  <div class="fbody" style="padding:14px 16px 80px">
-
-    <button class="pm-new-btn" onclick="pmGoToNewType()">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New Permit
-    </button>
-
-    <!-- Active permits section -->
-    <div id="pm-list-active-wrap" style="display:none;margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Active</div>
-      <div id="pm-list-active"></div>
-    </div>
-
-    <!-- Pending / submitted section -->
-    <div id="pm-list-pending-wrap" style="display:none;margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Awaiting Approval</div>
-      <div id="pm-list-pending"></div>
-    </div>
-
-    <!-- History section -->
-    <div id="pm-list-history-wrap" style="margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">History</div>
-      <div id="pm-list-history">
-        <div class="pm-empty">
-          <div class="pm-empty-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-          <div class="pm-empty-title">No permits yet</div>
-          <div class="pm-empty-sub">Tap "New Permit" above to get started</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ──────────── WORKER: PERMIT TYPE SELECTOR ──────────── -->
-<div id="screen-permit-new-type" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goTo('screen-hw-permits')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="pm-type-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
-    </div>
-    <div class="topbar-text" style="padding:0 16px 4px">
-      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">New Permit</h1>
-      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">Select the type of work</p>
-    </div>
-  </div>
-  <div class="fbody" style="padding:14px 16px 80px">
-    <div class="pm-type-grid">
-      <button class="pm-type-btn enabled" onclick="pmGoToHotWorks()">
-        <div class="pm-type-icon" style="background:#FEF0E6"><svg viewBox="0 0 24 24" stroke="#D4630A"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
-        <div class="pm-type-txt">
-          <div class="pm-type-name">Hot Works</div>
-          <div class="pm-type-sub">Welding, grinding, oxy cutting, soldering, thermal lance</div>
-        </div>
-        <svg class="pm-type-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-      <button class="pm-type-btn disabled" disabled>
-        <div class="pm-type-icon" style="background:#F0F0F0"><svg viewBox="0 0 24 24" stroke="#888"><path d="M12 2L4 8v12h16V8l-8-6z"/><line x1="12" y1="10" x2="12" y2="22"/></svg></div>
-        <div class="pm-type-txt">
-          <div class="pm-type-name">Working at Heights <span style="font-size:9.5px;color:var(--muted);font-weight:500">· Coming soon</span></div>
-          <div class="pm-type-sub">Above 2m — harness, anchor, edge protection</div>
-        </div>
-      </button>
-      <button class="pm-type-btn disabled" disabled>
-        <div class="pm-type-icon" style="background:#F0F0F0"><svg viewBox="0 0 24 24" stroke="#888"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg></div>
-        <div class="pm-type-txt">
-          <div class="pm-type-name">Confined Space <span style="font-size:9.5px;color:var(--muted);font-weight:500">· Coming soon</span></div>
-          <div class="pm-type-sub">Gas testing, rescue plan, standby person</div>
-        </div>
-      </button>
-      <button class="pm-type-btn disabled" disabled>
-        <div class="pm-type-icon" style="background:#F0F0F0"><svg viewBox="0 0 24 24" stroke="#888"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
-        <div class="pm-type-txt">
-          <div class="pm-type-name">Electrical <span style="font-size:9.5px;color:var(--muted);font-weight:500">· Coming soon</span></div>
-          <div class="pm-type-sub">Live work, LOTO, isolation verification</div>
-        </div>
-      </button>
-      <button class="pm-type-btn disabled" disabled>
-        <div class="pm-type-icon" style="background:#F0F0F0"><svg viewBox="0 0 24 24" stroke="#888"><path d="M3 21h18M6 18V9M10 18V9M14 18V9M18 18V9M2 9h20l-10-7z"/></svg></div>
-        <div class="pm-type-txt">
-          <div class="pm-type-name">Excavation <span style="font-size:9.5px;color:var(--muted);font-weight:500">· Coming soon</span></div>
-          <div class="pm-type-sub">Trenching, shoring, services check</div>
-        </div>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ──────────── WORKER: HOT WORKS PERMIT FORM ──────────── -->
-<div id="screen-permit-hw" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goTo('screen-permit-new-type')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="pm-hw-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
-    </div>
-    <div class="topbar-text" style="padding:0 16px 4px">
-      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">Hot Works Permit</h1>
-      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">Submit for supervisor approval</p>
-    </div>
-  </div>
-  <div class="fbody">
-
-    <!-- Work details -->
-    <div class="fcard">
-      <div class="fcard-hdr">Work details</div>
-      <div class="fcard-body">
-        <div class="fgroup">
-          <label class="flabel">Type of hot works <span class="req">*</span></label>
-          <div class="pm-sub-grid">
-            <button class="pm-sub-btn" id="pmhw-sub-Welding" onclick="pmSetSubtype('Welding')">Welding</button>
-            <button class="pm-sub-btn" id="pmhw-sub-Grinding" onclick="pmSetSubtype('Grinding')">Grinding</button>
-            <button class="pm-sub-btn" id="pmhw-sub-Oxy Cutting" onclick="pmSetSubtype('Oxy Cutting')">Oxy Cutting</button>
-            <button class="pm-sub-btn" id="pmhw-sub-Soldering" onclick="pmSetSubtype('Soldering')">Soldering</button>
-            <button class="pm-sub-btn" id="pmhw-sub-Thermal Lance" onclick="pmSetSubtype('Thermal Lance')">Thermal Lance</button>
-            <button class="pm-sub-btn" id="pmhw-sub-Other" onclick="pmSetSubtype('Other')">Other</button>
-          </div>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Work description <span class="req">*</span></label>
-          <textarea id="pmhw-desc" placeholder="Briefly describe the work — what you're doing, duration, materials involved" rows="3" style="font-size:14px"></textarea>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Location on site <span class="req">*</span></label>
-          <input type="text" id="pmhw-location" placeholder="e.g. Level 3 core wall west, Pier 2 abutment">
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Validity end time <span class="req">*</span></label>
-          <input type="time" id="pmhw-end-time">
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4">Permit valid from approval until this time. Maximum 8 hours.</div>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Linked SWMS reference</label>
-          <input type="text" id="pmhw-swms" placeholder="e.g. SWMS-0047">
-        </div>
-      </div>
-    </div>
-
-    <!-- Fire watch -->
-    <div class="fcard">
-      <div class="fcard-hdr">Fire watch</div>
-      <div class="fcard-body">
-        <div class="fgroup">
-          <label class="flabel">Nominated fire watch person <span class="req">*</span></label>
-          <input type="text" id="pmhw-fw-name" placeholder="Full name">
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4">Must be a competent person on site who can monitor the work area and use firefighting equipment.</div>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Fire watch company / employer</label>
-          <input type="text" id="pmhw-fw-company" placeholder="e.g. Cooper Civil Pty Ltd">
-        </div>
-      </div>
-    </div>
-
-    <!-- Pre-start checks -->
-    <div class="fcard">
-      <div class="fcard-hdr">Pre-start checks <span style="font-size:11px;font-weight:400;color:var(--muted)">· Tick all before submitting</span></div>
-      <div class="fcard-body">
-        <div class="pm-check-list" id="pmhw-checks">
-          <button class="pm-check-item" id="pmhw-chk-0" onclick="pmToggleCheck(0)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Combustible materials removed or protected within 10m radius</span></button>
-          <button class="pm-check-item" id="pmhw-chk-1" onclick="pmToggleCheck(1)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Floor/ground swept clean of dust and debris</span></button>
-          <button class="pm-check-item" id="pmhw-chk-2" onclick="pmToggleCheck(2)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Drains, openings and penetrations covered</span></button>
-          <button class="pm-check-item" id="pmhw-chk-3" onclick="pmToggleCheck(3)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Gas lines and flammable services isolated (if applicable)</span></button>
-          <button class="pm-check-item" id="pmhw-chk-4" onclick="pmToggleCheck(4)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Fire extinguisher on site, in date, within 5m of work</span></button>
-          <button class="pm-check-item" id="pmhw-chk-5" onclick="pmToggleCheck(5)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">PPE confirmed — gloves, helmet, apron, eye/face protection</span></button>
-          <button class="pm-check-item" id="pmhw-chk-6" onclick="pmToggleCheck(6)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">SWMS reviewed and acknowledged</span></button>
-          <button class="pm-check-item" id="pmhw-chk-7" onclick="pmToggleCheck(7)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Ventilation adequate for the task</span></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Photos -->
-    <div class="fcard">
-      <div class="fcard-hdr">Photo evidence <span style="font-size:11px;font-weight:400;color:var(--muted)">· All 4 required</span></div>
-      <div class="fcard-body">
-        <div class="pm-photo-row">
-          <div class="pm-photo-slot" id="pmhw-slot-0">
-            <div class="pm-photo-label">1. Work area</div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span>10m clear radius</span>
-            <input type="file" accept="image/*" capture="environment" id="pmhw-photo-input-0" onchange="pmHandlePhoto(0,event)">
-          </div>
-          <div class="pm-photo-slot" id="pmhw-slot-1">
-            <div class="pm-photo-label">2. Extinguisher</div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span>Tag visible, in date</span>
-            <input type="file" accept="image/*" capture="environment" id="pmhw-photo-input-1" onchange="pmHandlePhoto(1,event)">
-          </div>
-          <div class="pm-photo-slot" id="pmhw-slot-2">
-            <div class="pm-photo-label">3. Fire blanket</div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span>If required by SWMS</span>
-            <input type="file" accept="image/*" capture="environment" id="pmhw-photo-input-2" onchange="pmHandlePhoto(2,event)">
-          </div>
-          <div class="pm-photo-slot" id="pmhw-slot-3">
-            <div class="pm-photo-label">4. Surrounding area</div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span>Walls, floor below, adjacent</span>
-            <input type="file" accept="image/*" capture="environment" id="pmhw-photo-input-3" onchange="pmHandlePhoto(3,event)">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Signature -->
-    <div class="fcard" id="pmhw-sig-card">
-      <div class="fcard-hdr">Your signature</div>
-      <div class="fcard-body">
-        <div id="pmhw-sig-preview" style="background:#F8FAF8;border:1.5px solid var(--border);border-radius:var(--rs);min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">No signature on file — go to Profile to add one</div>
-      </div>
-    </div>
-
-    <!-- Submit -->
-    <div style="padding:14px 16px 28px">
-      <div class="cbtn-row" style="padding:0;gap:10px">
-        <button class="cbtn cancel" onclick="goTo('screen-hw-permits')" style="flex:1">Cancel</button>
-        <button class="cbtn in" onclick="pmSubmitHotWorks()" style="flex:2">Submit for Approval</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ──────────── WORKER: ACTIVE PERMIT VIEW ──────────── -->
-<div id="screen-permit-view" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goTo('screen-hw-permits')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="pm-view-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
-    </div>
-    <div class="topbar-text" style="padding:0 16px 4px">
-      <h1 id="pm-view-title" style="font-size:20px;font-weight:600;color:var(--text);margin:0">Hot Works Permit</h1>
-      <p id="pm-view-id" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin:3px 0 0;letter-spacing:.03em">—</p>
-    </div>
-  </div>
-  <div class="fbody" style="padding-bottom:100px">
-
-    <!-- Status + fire watch timer (only active) -->
-    <div id="pm-view-timer-wrap"></div>
-
-    <!-- Permit details -->
-    <div class="fcard">
-      <div class="fcard-hdr">Permit details</div>
-      <div class="fcard-body" style="padding:4px 15px">
-        <div id="pm-view-details"></div>
-      </div>
-    </div>
-
-    <!-- Conditions (if any) -->
-    <div class="fcard" id="pm-view-conditions-card" style="display:none">
-      <div class="fcard-hdr" style="color:#7A6020">⚠ Conditions applied by supervisor</div>
-      <div class="fcard-body">
-        <div class="pm-cond-txt" id="pm-view-conditions-txt"></div>
-      </div>
-    </div>
-
-    <!-- Pre-start checks submitted -->
-    <div class="fcard" id="pm-view-checks-card">
-      <div class="fcard-hdr">Pre-start checks</div>
-      <div class="fcard-body">
-        <div id="pm-view-checks"></div>
-      </div>
-    </div>
-
-    <!-- Photos submitted -->
-    <div class="fcard" id="pm-view-photos-card">
-      <div class="fcard-hdr">Photo evidence</div>
-      <div class="fcard-body">
-        <div class="pm-photo-row" id="pm-view-photos"></div>
-      </div>
-    </div>
-
-    <!-- Sign out button (only for active) -->
-    <div id="pm-view-signout-wrap" style="padding:6px 16px 28px;display:none">
-      <button id="pm-view-signout-btn" class="cbtn in" style="width:100%;padding:14px" onclick="pmGoToCloseout()">Sign Out of Permit</button>
-      <div id="pm-view-signout-hint" style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.4"></div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ──────────── WORKER: CLOSEOUT CHECKLIST ──────────── -->
-<div id="screen-permit-closeout" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goTo('screen-permit-view')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="pm-co-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
-    </div>
-    <div class="topbar-text" style="padding:0 16px 4px">
-      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">Sign Out of Permit</h1>
-      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">Confirm the work area is left safe</p>
-    </div>
-  </div>
-  <div class="fbody" style="padding-bottom:80px">
-
-    <div class="fcard">
-      <div class="fcard-hdr">Closeout declaration <span style="font-size:11px;font-weight:400;color:var(--muted)">· Tick all to sign out</span></div>
-      <div class="fcard-body">
-        <div class="pm-check-list" id="pm-co-checks">
-          <button class="pm-check-item" id="pm-co-chk-0" onclick="pmToggleCloseoutCheck(0)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Hot works finished and tools made safe</span></button>
-          <button class="pm-check-item" id="pm-co-chk-1" onclick="pmToggleCloseoutCheck(1)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Fire watch conducted for a minimum of 60 minutes post-work</span></button>
-          <button class="pm-check-item" id="pm-co-chk-2" onclick="pmToggleCloseoutCheck(2)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Area inspected — no smouldering, sparks or hot spots</span></button>
-          <button class="pm-check-item" id="pm-co-chk-3" onclick="pmToggleCloseoutCheck(3)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Fire extinguisher returned to muster point, still in date</span></button>
-          <button class="pm-check-item" id="pm-co-chk-4" onclick="pmToggleCloseoutCheck(4)"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">Work area swept clean of hot debris</span></button>
-          <!-- Conditions compliance check only shows if conditions were applied -->
-          <button class="pm-check-item" id="pm-co-chk-5" onclick="pmToggleCloseoutCheck(5)" style="display:none"><div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="pm-check-lbl">All conditions applied by supervisor have been complied with</span></button>
-        </div>
-      </div>
-    </div>
-
-    <div class="fcard">
-      <div class="fcard-hdr">Anything to flag? <span style="font-size:11px;font-weight:400;color:var(--muted)">· Optional</span></div>
-      <div class="fcard-body">
-        <div class="fgroup">
-          <textarea id="pm-co-note" placeholder="Note any hazards observed, damage, or anything that needs follow-up" rows="3" style="font-size:14px"></textarea>
-        </div>
-        <div class="pm-hz-link" id="pm-co-hz-link" onclick="pmToggleCloseoutHazard()">
-          <div class="pm-check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div class="pm-hz-link-txt">
-            <div class="pm-hz-link-ttl">Also raise this as a hazard report</div>
-            <div class="pm-hz-link-sub">Your note will be copied into a new hazard report for the site register</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sign out button -->
-    <div style="padding:6px 16px 28px">
-      <div class="cbtn-row" style="padding:0;gap:10px">
-        <button class="cbtn cancel" onclick="goTo('screen-permit-view')" style="flex:1">Cancel</button>
-        <button class="cbtn in" id="pm-co-submit" onclick="pmSubmitCloseout()" disabled style="flex:2;opacity:.45;cursor:not-allowed">Sign Out</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ──────────── SUPERVISOR: PERMIT QUEUE ──────────── -->
-<div id="screen-permit-sup-queue" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goTo('screen-supervisor')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="pm-supq-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
-    </div>
-    <div class="topbar-text" style="padding:0 16px 4px">
-      <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0">Permit Approvals</h1>
-      <p style="font-size:12.5px;color:var(--muted);margin:3px 0 0">Pending and active permits on site</p>
-    </div>
-  </div>
-  <div class="fbody" style="padding:14px 16px 80px">
-
-    <div id="pm-supq-pending-wrap" style="display:none;margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:#7A6020;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Awaiting approval</div>
-      <div id="pm-supq-pending"></div>
-    </div>
-
-    <div id="pm-supq-active-wrap" style="display:none;margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:var(--mid);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Currently active</div>
-      <div id="pm-supq-active"></div>
-    </div>
-
-    <div id="pm-supq-recent-wrap" style="margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Recent</div>
-      <div id="pm-supq-recent">
-        <div class="pm-empty">
-          <div class="pm-empty-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-          <div class="pm-empty-title">No permits yet</div>
-          <div class="pm-empty-sub">Permits submitted by workers will appear here</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ──────────── SUPERVISOR: REVIEW PERMIT ──────────── -->
-<div id="screen-permit-sup-review" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goTo('screen-permit-sup-queue')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="pm-supr-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
-    </div>
-    <div class="topbar-text" style="padding:0 16px 4px">
-      <h1 id="pm-supr-title" style="font-size:20px;font-weight:600;color:var(--text);margin:0">Review Permit</h1>
-      <p id="pm-supr-id" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin:3px 0 0;letter-spacing:.03em">—</p>
-    </div>
-  </div>
-  <div class="fbody" style="padding-bottom:100px">
-
-    <!-- Permit details -->
-    <div class="fcard">
-      <div class="fcard-hdr">Permit details</div>
-      <div class="fcard-body" style="padding:4px 15px">
-        <div id="pm-supr-details"></div>
-      </div>
-    </div>
-
-    <!-- Pre-start checks -->
-    <div class="fcard">
-      <div class="fcard-hdr">Pre-start checks</div>
-      <div class="fcard-body">
-        <div id="pm-supr-checks"></div>
-      </div>
-    </div>
-
-    <!-- Photos -->
-    <div class="fcard">
-      <div class="fcard-hdr">Photo evidence</div>
-      <div class="fcard-body">
-        <div class="pm-photo-row" id="pm-supr-photos"></div>
-      </div>
-    </div>
-
-    <!-- Decision (only when pending) -->
-    <div class="fcard" id="pm-supr-decision-card">
-      <div class="fcard-hdr">Your decision</div>
-      <div class="fcard-body">
-        <div class="pm-dec-grid">
-          <button class="pm-dec-btn approve" onclick="pmSupApprove()">
-            <div class="pm-dec-icon" style="background:#E6F5ED"><svg viewBox="0 0 24 24" stroke="var(--mid)"><polyline points="20 6 9 17 4 12"/></svg></div>
-            <div class="pm-dec-txt"><div class="pm-dec-name">Approve</div><div class="pm-dec-sub">Worker can commence immediately</div></div>
-          </button>
-          <button class="pm-dec-btn conditions" onclick="pmSupShowConditions()">
-            <div class="pm-dec-icon" style="background:#FFF5D6"><svg viewBox="0 0 24 24" stroke="#7A6020"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-            <div class="pm-dec-txt"><div class="pm-dec-name">Approve with Conditions</div><div class="pm-dec-sub">Impose additional controls before work starts</div></div>
-          </button>
-          <button class="pm-dec-btn reject" onclick="pmSupShowReject()">
-            <div class="pm-dec-icon" style="background:#FAEBEB"><svg viewBox="0 0 24 24" stroke="#B83232"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
-            <div class="pm-dec-txt"><div class="pm-dec-name">Reject</div><div class="pm-dec-sub">Permit cannot proceed — worker will be notified</div></div>
-          </button>
-        </div>
-        <!-- Conditions input (hidden until Approve with Conditions clicked) -->
-        <div id="pm-supr-cond-input" style="display:none;margin-top:14px">
-          <label class="flabel">Conditions to apply <span class="req">*</span></label>
-          <textarea id="pm-supr-cond-txt" class="pm-conditions" placeholder="e.g. 2nd fire watch required. Fire watch rotation every 30 min. Stop work if wind > 25km/h."></textarea>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4">These conditions will appear on the worker's permit and must be complied with at closeout.</div>
-          <button class="cbtn in" style="width:100%;margin-top:10px;padding:12px" onclick="pmSupConfirmConditions()">Confirm approval with conditions</button>
-        </div>
-        <!-- Rejection input -->
-        <div id="pm-supr-rej-input" style="display:none;margin-top:14px">
-          <label class="flabel">Reason for rejection <span class="req">*</span></label>
-          <textarea id="pm-supr-rej-txt" class="pm-conditions" placeholder="e.g. Fire extinguisher out of service date. Combustible materials still present in photo 4."></textarea>
-          <button class="cbtn out" style="width:100%;margin-top:10px;padding:12px" onclick="pmSupConfirmReject()">Confirm rejection</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Revoke (only when active/approved) -->
-    <div class="fcard" id="pm-supr-revoke-card" style="display:none">
-      <div class="fcard-hdr" style="color:#B83232">Revoke permit</div>
-      <div class="fcard-body">
-        <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:10px">Use only if conditions have changed and work must stop immediately. The worker will be notified.</div>
-        <button class="pm-dec-btn reject" onclick="pmSupShowRevoke()" style="width:100%">
-          <div class="pm-dec-icon" style="background:#FAEBEB"><svg viewBox="0 0 24 24" stroke="#B83232"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
-          <div class="pm-dec-txt"><div class="pm-dec-name">Revoke Permit</div><div class="pm-dec-sub">Stop work immediately</div></div>
-        </button>
-        <div id="pm-supr-rev-input" style="display:none;margin-top:14px">
-          <label class="flabel">Revocation category <span class="req">*</span></label>
-          <select id="pm-supr-rev-cat" style="margin-bottom:10px">
-            <option value="">Select category...</option>
-            <option>Weather</option>
-            <option>Adjacent works conflict</option>
-            <option>Gas reading / air quality</option>
-            <option>Competency / SWMS concern</option>
-            <option>Other</option>
-          </select>
-          <label class="flabel">Reason <span class="req">*</span></label>
-          <textarea id="pm-supr-rev-txt" class="pm-conditions" placeholder="Describe why the permit must be revoked"></textarea>
-          <button class="cbtn out" style="width:100%;margin-top:10px;padding:12px" onclick="pmSupConfirmRevoke()">Confirm revocation</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-<!-- ═══════════════════ END PERMITS MODULE v1.0 ═══ -->
-
-
 <div id="screen-talk" class="screen">
   <div class="sb"></div>
   <div class="topbar" style="padding-bottom:0">
@@ -4818,16 +4129,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 
 <script>
-// ── Safe stub for missing helper: sbQuery ──────────────────────────────
-// User's existing code calls sbQuery() (a Supabase helper) but the function
-// is never defined, causing a ReferenceError that crashes the script and
-// prevents everything defined after that point from being registered.
-// This stub returns a resolved empty array so the call fails gracefully.
-if (typeof window !== 'undefined' && typeof window.sbQuery !== 'function') {
-  window.sbQuery = async function(table, filter){ return []; };
-}
-var sbQuery = window.sbQuery;
-
 const PA_URL = 'YOUR_POWER_AUTOMATE_URL_HERE';
 // ═══════════════════════════════════════════════════════════════
 // FIREBASE CONFIG
@@ -6200,23 +5501,6 @@ async function loadSuperDash() {
 }
 
 function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
-  // ─── Permits Module: update supervisor Hot Works tile ─────
-  try {
-    if (typeof pmLoadAll === 'function') {
-      var _pL = pmLoadAll();
-      var _pP = _pL.filter(function(p){return p.status==='submitted';}).length;
-      var _pA = _pL.filter(function(p){return p.status==='active'||p.status==='approved'||p.status==='approved_conditions';}).length;
-      var _sub = document.getElementById('sup-permits-tile-sub');
-      var _notif = document.getElementById('sup-permits-tile-notif');
-      if (_sub) {
-        if (_pP) _sub.textContent = _pP + ' awaiting approval';
-        else if (_pA) _sub.textContent = _pA + ' currently active';
-        else _sub.textContent = 'Approvals & active work';
-      }
-      if (_notif) _notif.style.display = (_pP||_pA) ? 'block' : 'none';
-    }
-  } catch(e){}
-  // ─────────────────────────────────────────────────────────
   const colours = ['#1B3A2D','#2D6A45','#8B4513','#1C5AAD','#5535AD','#136D65','#B83232','#906500'];
   const signedIn  = [...new Map(signIns.filter(s=>s.type==='Sign In'||s.submission_type==='Sign In').map(s=>[s.worker_name,s])).values()];
   const workerPs  = prestarts.filter(p=>!p.is_site_prestart);
@@ -7658,9 +6942,6 @@ function startFlow(m){
     if (ffdCard) ffdCard.style.display = 'none';
     if (eosCard) eosCard.style.display = 'block';
     resetEOS();
-    // ─── Permits Module: direct sign-out gate hook ─────────
-    try { if (typeof pmCheckSignOutGate === 'function') pmCheckSignOutGate(); } catch(e){}
-    // ──────────────────────────────────────────────────────
   }
 
   goTo('screen-confirm');
@@ -9319,4 +8600,2335 @@ function goToAnalytics(fromRole) {
   if (dirAlerts) dirAlerts.style.display = anIsDirector ? 'flex' : 'none';
   // Hide LTI and incidents row from supervisor view
   var ltiRow = document.getElementById('an-lti-row');
-  if (ltiRow) ltiRow.st
+  if (ltiRow) ltiRow.style.display = anIsDirector ? 'grid' : 'none';
+  // Scorecard button — director only
+  var scBtn = document.getElementById('an-scorecard-btn');
+  if (scBtn) scBtn.style.display = anIsDirector ? 'block' : 'none';
+  var ctBtn = document.getElementById('an-contact-btn');
+  if (ctBtn) ctBtn.style.display = anIsDirector ? 'block' : 'none';
+  var dirTiles = document.getElementById('an-dir-tiles');
+  if (dirTiles) dirTiles.style.display = anIsDirector ? 'grid' : 'none';
+  // Stars
+  anRenderStars();
+  // Body map zones
+  document.querySelectorAll('.an-zone').forEach(function(z) {
+    z.style.cursor = 'pointer';
+    z.addEventListener('click', anBmZoneClick);
+  });
+  // Charts — slight delay so DOM is ready
+  setTimeout(anRenderCharts, 200);
+
+  // Populate metric cards with demo or real data
+  if (DEMO_MODE || localStorage.getItem('slan_demo')) {
+    anPopulateDemoMetrics();
+  }
+
+  // Auto-open Safety Performance section so director sees content immediately
+  setTimeout(function() {
+    var safetySection = document.getElementById('an-section-safety');
+    var safetyArrow = document.getElementById('an-arrow-safety');
+    if (safetySection && safetySection.style.display === 'none') {
+      safetySection.style.display = 'block';
+      if (safetyArrow) safetyArrow.style.transform = 'rotate(180deg)';
+      setTimeout(anRenderCharts, 150);
+    }
+  }, 100);
+
+  window.scrollTo(0, 0);
+}
+
+
+function analyticsBack() {
+  // Supervisor goes back to their dashboard
+  goTo('screen-dash');
+  window.scrollTo(0, 0);
+}
+
+function anSiteChanged() {
+  var site = document.getElementById('an-site-select');
+  if (!site) return;
+  var val = site.value;
+  if (DEMO_MODE || localStorage.getItem('slan_demo')) {
+    var siteData = {
+      'all':    { signin:20, prestart:8,  hazards:2, lti:47, incidents:3 },
+      'site-a': { signin:12, prestart:5,  hazards:1, lti:47, incidents:2 },
+      'site-b': { signin:5,  prestart:2,  hazards:1, lti:32, incidents:1 },
+      'site-c': { signin:3,  prestart:1,  hazards:0, lti:18, incidents:0 },
+    };
+    var d = siteData[val] || siteData['all'];
+    var set = function(id, v) { var el = document.getElementById(id); if(el) el.textContent = v; };
+    set('an-live-signin', d.signin); set('an-live-prestart', d.prestart);
+    set('an-live-hazards', d.hazards); set('an-live-lti', d.lti);
+    set('an-live-incidents', d.incidents);
+  }
+}
+
+function anSetPeriod(el) {
+  document.querySelectorAll('.an-period').forEach(function(b) {
+    b.style.background = 'rgba(255,255,255,.08)';
+    b.style.borderColor = 'rgba(255,255,255,.13)';
+    b.style.color = 'rgba(255,255,255,.7)';
+  });
+  el.style.background = 'var(--gold)';
+  el.style.borderColor = 'var(--gold)';
+  el.style.color = 'var(--deep)';
+  anRenderCharts();
+}
+
+function anRenderCharts() {
+  // Destroy existing charts
+  if (anBarChart) { anBarChart.destroy(); anBarChart = null; }
+  if (anDonutChart) { anDonutChart.destroy(); anDonutChart = null; }
+  if (anLineChart) { anLineChart.destroy(); anLineChart = null; }
+
+  var barEl = document.getElementById('an-chart-bar');
+  var donutEl = document.getElementById('an-chart-donut');
+  var lineEl = document.getElementById('an-chart-line');
+  if (!barEl || !donutEl || !lineEl) return;
+  if (typeof Chart === 'undefined') return;
+
+  // Bar chart
+  anBarChart = new Chart(barEl, {
+    type: 'bar',
+    data: {
+      labels: ['Nov','Dec','Jan','Feb','Mar','Apr'],
+      datasets: [
+        { label:'Incidents', data:[5,4,3,6,2,3], backgroundColor:'#1B3A2D', borderRadius:4, barPercentage:0.55 },
+        { label:'Hazards',   data:[8,12,9,14,10,11], backgroundColor:'#9FC4AE', borderRadius:4, barPercentage:0.55 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ grid:{ display:false }, ticks:{ font:{ size:10 } } },
+        y:{ grid:{ color:'rgba(0,0,0,.05)' }, ticks:{ font:{ size:10 }, stepSize:5 } }
+      }
+    }
+  });
+
+  // Donut chart
+  anDonutChart = new Chart(donutEl, {
+    type: 'doughnut',
+    data: {
+      labels: ['Near miss','First aid','Property','Other'],
+      datasets: [{ data:[40,27,20,13], backgroundColor:['#1B3A2D','#2D6A45','#B8960C','#9FC4AE'], borderWidth:0, hoverOffset:4 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{ display:false } } }
+  });
+
+  // Line chart
+  anLineChart = new Chart(lineEl, {
+    type: 'line',
+    data: {
+      labels: ['W1','W2','W3','W4','W5','W6','W7','W8'],
+      datasets: [{
+        label:'Compliance %',
+        data:[88,91,85,94,92,96,90,94],
+        borderColor:'#2D6A45', backgroundColor:'rgba(45,106,69,.08)',
+        fill:true, tension:0.35, pointBackgroundColor:'#2D6A45', pointRadius:3, borderWidth:2
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ grid:{ display:false }, ticks:{ font:{ size:10 } } },
+        y:{ min:70, max:100, grid:{ color:'rgba(0,0,0,.05)' }, ticks:{ font:{ size:10 }, callback:function(v){ return v+'%'; } } }
+      }
+    }
+  });
+}
+
+function anRenderStars() {
+  var list = document.getElementById('an-stars-list');
+  if (!list) return;
+  var medals = ['🥇','🥈','🥉'];
+  list.innerHTML = AN_STARS.slice(0,3).map(function(s,i) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">' +
+      '<div style="font-size:20px;width:28px;text-align:center">' + medals[i] + '</div>' +
+      '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">' + s.name + '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + s.company + '</div></div>' +
+      '<div style="font-size:13px;font-weight:600;color:var(--gold)">' + s.pts.toLocaleString() + ' pts</div>' +
+      '</div>';
+  }).join('');
+}
+
+function anBmView(v) {
+  document.getElementById('an-bm-f').style.display = v==='f' ? 'block' : 'none';
+  document.getElementById('an-bm-b').style.display = v==='b' ? 'block' : 'none';
+  var fb = document.getElementById('an-bm-fbtn');
+  var bb = document.getElementById('an-bm-bbtn');
+  if (fb) { fb.style.background = v==='f' ? 'var(--deep)' : 'transparent'; fb.style.color = v==='f' ? '#fff' : 'var(--muted)'; fb.style.border = v==='f' ? 'none' : '1px solid var(--border)'; }
+  if (bb) { bb.style.background = v==='b' ? 'var(--deep)' : 'transparent'; bb.style.color = v==='b' ? '#fff' : 'var(--muted)'; bb.style.border = v==='b' ? 'none' : '1px solid var(--border)'; }
+  document.getElementById('an-bm-panel').style.display = 'none';
+}
+
+// Zone-specific preventive action suggestions
+var AN_ZONE_SUGGESTIONS = {
+  'Lower Back': ['Add manual handling training to next toolbox talk','Review SWMS for all lifting tasks','Source back support belts for workers doing heavy lifts','Arrange ergonomic assessment for high-risk tasks'],
+  'Abdomen': ['Review SWMS for tasks involving struck-by risk','Ensure PPE includes appropriate body protection','Inspect work area for pinch points and crush hazards'],
+  'Left Shoulder': ['Add overhead work safety to next toolbox talk','Review SWMS for tasks above shoulder height','Rotate workers on repetitive overhead tasks'],
+  'Left Shoulder (Rear)': ['Add overhead work safety to next toolbox talk','Review SWMS for tasks above shoulder height','Rotate workers on repetitive overhead tasks'],
+  'Left Thigh': ['Review access/egress routes on site','Check for slip/trip hazards in common work areas','Ensure workers wear high-visibility clothing in plant zones'],
+  'Left Knee': ['Review tasks requiring prolonged kneeling','Provide knee pads for all groundwork activities','Check for sharp or unstable surfaces in work areas'],
+  'Left Hand': ['Review SWMS for tasks involving hand tools and cutting equipment','Ensure correct gloves are available and worn','Add hand and finger safety to next toolbox talk'],
+  'Left Hamstring': ['Review manual handling and lifting techniques','Add stretching warm-up guidance to pre-start','Check for uneven or slippery ground surfaces'],
+  'Glutes': ['Review fall from height SWMS','Check all elevated work platforms and scaffolding','Ensure harness training is current for at-height workers'],
+  'Head': ['Audit hard hat compliance across site','Review overhead hazard controls in SWMS','Ensure exclusion zones under crane/overhead work are enforced'],
+};
+
+function anBmZoneClick() {
+  var l = this.dataset.l, n = parseInt(this.dataset.n || 0);
+  document.getElementById('an-bm-name').textContent = l;
+  document.getElementById('an-bm-count').textContent = n > 0 ? n + ' recorded injur' + (n===1?'y':'ies') : 'No injuries recorded yet';
+  
+  // History
+  var h = AN_BODY_HIST[l] || [];
+  var histHtml = h.length
+    ? h.map(function(i){ return '<div style="background:#F2F3F2;border-radius:7px;padding:7px 10px;font-size:11px;color:var(--muted)">' + i + '</div>'; }).join('')
+    : '<div style="font-size:11px;color:#9FC4AE;font-style:italic;padding:3px 0">No recorded history for this zone.</div>';
+  
+  // Preventive action suggestions — shown when 3+ incidents
+  var preventHtml = '';
+  if (n >= 3) {
+    var suggestions = AN_ZONE_SUGGESTIONS[l] || ['Review SWMS and controls for tasks involving this body area','Add targeted safety topic to next toolbox talk'];
+    var safeZone = l.replace(/"/g,'&quot;');
+    preventHtml = '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' +
+      '<div style="font-size:10px;font-weight:600;color:#B8960C;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">⚠ ' + n + ' injuries — preventive actions suggested</div>' +
+      suggestions.slice(0,3).map(function(s,i){
+        return '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px">' +
+          '<div style="width:18px;height:18px;border-radius:5px;background:rgba(184,150,12,.15);border:1px solid rgba(184,150,12,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;font-weight:600;color:#8B6914">' + (i+1) + '</div>' +
+          '<div style="font-size:11px;color:var(--text);line-height:1.4;flex:1">' + s + '</div>' +
+          '</div>';
+      }).join('') +
+      '<button onclick="anCreateCorrectiveAction(this)" data-zone="' + safeZone + '" data-count="' + n + '" style="margin-top:8px;width:100%;padding:10px;border-radius:9px;background:var(--deep);border:none;color:#fff;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>' +
+        'Create corrective action from this zone</button>' +
+      '</div>';
+  }
+  
+  document.getElementById('an-bm-hist').innerHTML = histHtml + preventHtml;
+  document.getElementById('an-bm-panel').style.display = 'block';
+}
+
+function anCreateCorrectiveAction(btn) {
+  var zone = btn ? btn.dataset.zone : '';
+  var count = btn ? parseInt(btn.dataset.count) : 0;
+  // Navigate to corrective actions and pre-fill
+  goTo('screen-corrective-actions');
+  var logoEl = document.getElementById('ca-logo');
+  if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
+  // Open the new action form with pre-filled data
+  openNewAction();
+  var desc = document.getElementById('ca-new-desc');
+  var source = document.getElementById('ca-new-source');
+  if (desc) desc.value = 'Preventive action — ' + zone + ' (' + count + ' recorded injuries)';
+  if (source) source.value = 'Body injury map';
+  // Scroll to form
+  setTimeout(function(){
+    var form = document.getElementById('ca-new-form');
+    if (form) form.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }, 300);
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// EMERGENCY CONTACTS
+// ═══════════════════════════════════════════════════════════════
+function goToEmergencyContacts() {
+  goTo('screen-emergency');
+  var p = getProfile();
+  var logoEl = document.getElementById('em-logo');
+  if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
+  var siteEl = document.getElementById('em-site');
+  if (siteEl) siteEl.textContent = (typeof SITE !== 'undefined' ? SITE : 'Site') + ' — Emergency contacts';
+  var supEl = document.getElementById('em-sup-name');
+  if (supEl) supEl.textContent = (typeof SUPERVISOR_NAME !== 'undefined' ? SUPERVISOR_NAME : 'Site Supervisor');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SWMS LIBRARY
+// ═══════════════════════════════════════════════════════════════
+function goToSwmsLibrary() {
+  goTo('screen-swms');
+  var logoEl = document.getElementById('swms-logo');
+  if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
+  // Future: load SWMS list from Firebase
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MONTHLY SCORECARD
+// ═══════════════════════════════════════════════════════════════
+function goToScorecard() {
+  var p = getProfile();
+  // Director only
+  if (p && p.role !== 'Company Director') {
+    alert('The Monthly Scorecard is only available to the Company Director.');
+    return;
+  }
+  goTo('screen-scorecard');
+  var logoEl = document.getElementById('sc-logo');
+  if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
+  scPopulateDemoData();
+}
+
+function scPopulateDemoData() {
+  if (!DEMO_MODE && !localStorage.getItem('slan_demo')) return;
+  // Populate month/site header
+  var monthEl = document.getElementById('sc-month');
+  if (monthEl) monthEl.textContent = 'April 2026';
+  var siteEl = document.getElementById('sc-site');
+  if (siteEl) siteEl.textContent = 'Murphy Civil Construction — All Sites';
+  var scoreEl = document.getElementById('sc-overall-score');
+  if (scoreEl) scoreEl.textContent = '82%';
+  var statusEl = document.getElementById('sc-overall-status');
+  if (statusEl) { statusEl.textContent = 'AMBER — 3 items require attention'; statusEl.style.color = '#B8960C'; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WEATHER WIDGET
+// ═══════════════════════════════════════════════════════════════
+var wxLoaded = false;
+function loadWeather() {
+  if (wxLoaded) return;
+  if (!navigator.geolocation) { updateWeatherUI(null); return; }
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude.toFixed(4);
+    var lon = pos.coords.longitude.toFixed(4);
+    fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,apparent_temperature,weathercode,windspeed_10m&timezone=auto')
+      .then(function(r){ return r.json(); })
+      .then(function(d){ updateWeatherUI(d.current); wxLoaded = true; })
+      .catch(function(){ updateWeatherUI(null); });
+  }, function(){ updateWeatherUI(null); });
+}
+
+function updateWeatherUI(wx) {
+  var icons = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
+  var descs = {0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',51:'Light drizzle',61:'Light rain',63:'Moderate rain',65:'Heavy rain',71:'Light snow',80:'Showers',95:'Thunderstorm'};
+  if (!wx) {
+    ['d-wx-temp','d-wx-desc','d-wx-wind','d-wx-feel'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.textContent = id==='d-wx-desc'?'Location unavailable':'--';
+    });
+    return;
+  }
+  var code = wx.weathercode || 0;
+  var temp = Math.round(wx.temperature_2m || 0);
+  var feel = Math.round(wx.apparent_temperature || temp);
+  var wind = Math.round(wx.windspeed_10m || 0);
+  var icon = icons[code] || '🌡️';
+  var desc = descs[code] || 'Weather data';
+  document.getElementById('d-wx-icon').textContent = icon;
+  document.getElementById('d-wx-temp').textContent = temp + '°C';
+  document.getElementById('d-wx-desc').textContent = desc;
+  document.getElementById('d-wx-wind').textContent = 'Wind ' + wind + ' km/h';
+  document.getElementById('d-wx-feel').textContent = 'Feels like ' + feel + '°';
+  var assess = document.getElementById('d-wx-assess');
+  if (assess) {
+    var ok = code < 61 && wind < 50;
+    assess.textContent = ok ? 'Suitable — no weather concerns' : 'Review conditions before work';
+    assess.style.background = ok ? 'rgba(92,219,149,.2)' : 'rgba(184,150,12,.2)';
+    assess.style.color = ok ? '#5CDB95' : '#D4AF37';
+  }
+}
+
+// Auto-load weather when supervisor dashboard opens
+var _origDoOpenSuperDash = typeof _doOpenSuperDash === 'function' ? _doOpenSuperDash : null;
+// Load weather on supervisor dash init — attach after page load
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(loadWeather, 1500);
+});
+
+
+// ═══════════════════════════════════════════════════════════════
+// CORRECTIVE ACTIONS
+// ═══════════════════════════════════════════════════════════════
+function goToCorrectiveActions() {
+  goTo('screen-corrective-actions');
+  var logoEl = document.getElementById('ca-logo');
+  if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
+  caLoadItems();
+}
+
+function caLoadItems() {
+  var list = document.getElementById('ca-list');
+  var countEl = document.getElementById('ca-count');
+  if (!list) return;
+
+  var items = [];
+  if (DEMO_MODE || localStorage.getItem('slan_demo')) {
+    items = typeof DEMO_CORRECTIVE_ACTIONS !== 'undefined' ? DEMO_CORRECTIVE_ACTIONS : [];
+  }
+
+  if (items.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px 20px"><div style="font-size:32px;margin-bottom:10px">✓</div><div style="font-size:14px;font-weight:600;color:var(--text)">No open actions</div><div style="font-size:12px;color:var(--muted);margin-top:4px">All corrective actions are up to date</div></div>';
+    if (countEl) countEl.textContent = '0 actions';
+    return;
+  }
+
+  var open = items.filter(function(a){ return a.status !== 'closed'; });
+  var overdue = items.filter(function(a){ return a.priority === 'Critical' || a.priority === 'High'; });
+  if (countEl) countEl.textContent = open.length + ' open — ' + overdue.length + ' high priority';
+
+  var priorityColour = function(p) {
+    if (p === 'Critical') return { bg:'#FFF0F0', dot:'#B83232', text:'#B83232' };
+    if (p === 'High') return { bg:'#FFF5EC', dot:'#D4630A', text:'#D4630A' };
+    if (p === 'Medium') return { bg:'#FDF8E8', dot:'#B8960C', text:'#B8960C' };
+    return { bg:'#E6F5ED', dot:'#1B6E3A', text:'#1B6E3A' };
+  };
+
+  list.innerHTML = items.map(function(item, idx) {
+    var id = 'ca-demo-' + idx;
+    var col = priorityColour(item.priority);
+    var dueDate = item.due ? new Date(item.due).toLocaleDateString('en-AU', {day:'numeric', month:'short'}) : '';
+    var isOverdue = item.due && new Date(item.due) < new Date() && item.status !== 'closed';
+    var statusLabel = item.status === 'inprogress' ? 'In Progress' : item.status === 'closed' ? 'Closed' : 'Open';
+    return '<div class="fcard" id="' + id + '" style="border-left:3px solid ' + col.dot + ';overflow:hidden">' +
+      '<div style="background:' + col.bg + ';padding:9px 14px;display:flex;align-items:center;justify-content:space-between">' +
+        '<div style="display:flex;align-items:center;gap:7px">' +
+          '<div style="width:7px;height:7px;border-radius:50%;background:' + col.dot + ';flex-shrink:0"></div>' +
+          '<span style="font-size:10px;font-weight:700;color:' + col.text + ';text-transform:uppercase;letter-spacing:.07em">' + item.priority + ' — ' + statusLabel + '</span>' +
+        '</div>' +
+        '<span style="font-size:10px;font-weight:600;color:' + (isOverdue ? '#B83232' : 'var(--muted)') + '">' + (isOverdue ? 'Overdue — ' : 'Due ') + dueDate + '</span>' +
+      '</div>' +
+      '<div class="fcard-body" style="gap:6px;padding:12px 14px">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--text)">' + item.desc + '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">Source: ' + item.source + ' · Assigned to: ' + item.assigned_to + '</div>' +
+        (item.status !== 'closed' ? '<div style="display:flex;gap:7px;margin-top:4px">' +
+          '<button data-id="' + id + '" data-status="inprogress" onclick="caUpdateStatus(this.dataset.id,this.dataset.status)" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit">In Progress</button>' +
+          '<button data-id="' + id + '" data-status="closed" onclick="caUpdateStatus(this.dataset.id,this.dataset.status)" style="flex:1;padding:8px;border-radius:8px;border:none;background:var(--mid);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Mark Complete</button>' +
+        '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+function openNewAction() {
+  var f = document.getElementById('ca-new-form');
+  if (f) { f.style.display = f.style.display === 'none' ? 'block' : 'none'; }
+  // Set default due date to 14 days from now
+  var due = document.getElementById('ca-new-due');
+  if (due && !due.value) {
+    var d = new Date(); d.setDate(d.getDate()+14);
+    due.value = d.toISOString().split('T')[0];
+  }
+}
+function saveNewAction() {
+  var desc = document.getElementById('ca-new-desc').value.trim();
+  if (!desc) { alert('Please enter a description.'); return; }
+  var source = document.getElementById('ca-new-source').value;
+  var assign = document.getElementById('ca-new-assign').value.trim() || 'Site Supervisor';
+  var due = document.getElementById('ca-new-due').value;
+  var priority = document.getElementById('ca-new-priority').value;
+  var dueStr = due ? new Date(due).toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : 'No due date';
+  // Add to list
+  var list = document.getElementById('ca-list');
+  var newId = 'ca-new-' + Date.now();
+  var card = document.createElement('div');
+  card.className = 'fcard'; card.id = newId;
+  var ipBtn = document.createElement('button');
+  ipBtn.textContent = 'In Progress';
+  ipBtn.style.cssText = 'flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit';
+  ipBtn.onclick = function(){ caUpdateStatus(newId,'inprogress'); };
+  var doneBtn = document.createElement('button');
+  doneBtn.textContent = 'Mark Complete';
+  doneBtn.style.cssText = 'flex:1;padding:8px;border-radius:8px;border:none;background:var(--mid);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit';
+  doneBtn.onclick = function(){ caUpdateStatus(newId,'closed'); };
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:7px';
+  btnRow.appendChild(ipBtn); btnRow.appendChild(doneBtn);
+  card.innerHTML = '';
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'background:#E6F5ED;padding:10px 14px;display:flex;align-items:center;justify-content:space-between';
+  hdr.innerHTML = '<div style="display:flex;align-items:center;gap:7px"><div style="width:7px;height:7px;border-radius:50%;background:#1B6E3A"></div><span style="font-size:10px;font-weight:600;color:#1B6E3A;text-transform:uppercase;letter-spacing:.07em">Open — '+priority+'</span></div><span style="font-size:10px;color:var(--muted)">Due '+dueStr+'</span>';
+  var body = document.createElement('div');
+  body.className = 'fcard-body';
+  body.style.cssText = 'padding:12px 14px';
+  body.innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">'+desc+'</div><div style="font-size:11px;color:var(--muted);margin-bottom:10px">'+(source?'Source: '+source+' · ':'')+'Assigned to: '+assign+'</div>';
+  body.appendChild(btnRow);
+  card.appendChild(hdr); card.appendChild(body);
+  list.appendChild(card);
+  document.getElementById('ca-new-form').style.display = 'none';
+  document.getElementById('ca-new-desc').value = '';
+  // Firebase write (when connected)
+  if (typeof fbInsert === 'function') {
+    fbInsert('corrective_actions', { description:desc, source:source, assigned_to:assign, due_date:due, priority:priority, status:'open', site:typeof SITE!=='undefined'?SITE:'', created:new Date().toISOString() });
+  }
+}
+function caUpdateStatus(id, status) {
+  var card = document.getElementById(id);
+  if (!card) return;
+  if (status === 'closed') {
+    card.style.opacity = '0';
+    card.style.transition = 'opacity .3s';
+    setTimeout(function(){ card.remove(); }, 300);
+  } else {
+    var hdr = card.querySelector('div');
+    if (hdr) { hdr.style.background = '#FDF8E8'; hdr.querySelector('div>span:last-child').style.color='#B8960C'; hdr.querySelector('div>div').style.background='#B8960C'; hdr.querySelector('div>span:first-child').textContent='In Progress'; }
+  }
+}
+function caFilter(el) {
+  document.querySelectorAll('.ca-filter').forEach(function(b){
+    b.style.background='rgba(255,255,255,.08)'; b.style.color='rgba(255,255,255,.7)'; b.style.borderColor='rgba(255,255,255,.13)';
+  });
+  el.style.background='var(--gold)'; el.style.color='var(--deep)'; el.style.borderColor='var(--gold)';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SITE BROADCAST
+// ═══════════════════════════════════════════════════════════════
+function goToBroadcast() {
+  goTo('screen-broadcast');
+  var logoEl = document.getElementById('bc-logo');
+  if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
+  var sub = document.getElementById('bc-subtitle');
+  if (sub) sub.textContent = 'Message all workers currently signed in on site';
+  var msg = document.getElementById('bc-message');
+  if (msg) msg.addEventListener('input', function(){
+    var n = this.value.length;
+    var el = document.getElementById('bc-char-count');
+    if (el) { el.textContent = n + ' / 200 characters'; el.style.color = n > 180 ? '#B83232' : 'var(--muted)'; }
+    if (n > 200) this.value = this.value.slice(0,200);
+  });
+  bcLoadHistory();
+}
+
+function bcLoadHistory() {
+  var hist = document.getElementById('bc-history-list');
+  if (!hist) return;
+  if (!DEMO_MODE && !localStorage.getItem('slan_demo')) { hist.innerHTML = '<div style="text-align:center;padding:20px;font-size:12px;color:var(--muted)">No broadcasts sent yet</div>'; return; }
+
+  var broadcasts = [
+    { msg:'TOOLBOX TALK TODAY — All workers to attend the toolbox talk at the crib shed at 07:30. Topic: Working at Heights. Attendance is mandatory.', by:'Eoin Burke', time:'07:15', date:'Today', priority:'Normal' },
+    { msg:'STOP WORK — Edge protection on Level 3 east perimeter has been removed. Do not access Level 3 until reinstated. Supervisor to advise when clear.', by:'Eoin Burke', time:'08:52', date:'Today', priority:'Urgent' },
+    { msg:'Concrete pour commencing at 13:00 — exclusion zone around pump truck. All non-essential workers to clear Zone B before 12:45. Concretors and formworkers only.', by:'Eoin Burke', time:'12:30', date:'Yesterday', priority:'Normal' },
+    { msg:'Reminder — site gate closes at 16:30 sharp. Anyone needing to remain on site after 16:30 must notify Eoin before 16:00.', by:'Eoin Burke', time:'15:45', date:'Yesterday', priority:'Normal' },
+    { msg:'CRANE LIFT TOMORROW 09:00 — exclusion zones will be established from 08:30. Lifting plan and SWMS to be reviewed at toolbox before lift commences. Rigger Lee O\'Brien coordinating.', by:'Eoin Burke', time:'16:00', date:'2 days ago', priority:'Normal' },
+  ];
+
+  var urgentStyle = 'background:#FFF0F0;border-color:rgba(184,50,50,.25)';
+  var normalStyle = 'background:var(--bg);border-color:var(--border)';
+
+  hist.innerHTML = '<div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Recent broadcasts</div>' +
+    broadcasts.map(function(b) {
+      var isUrgent = b.priority === 'Urgent';
+      return '<div style="border:1.5px solid;border-radius:var(--r);padding:12px 14px;margin-bottom:8px;' + (isUrgent ? urgentStyle : normalStyle) + '">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<span style="font-size:10px;font-weight:700;color:' + (isUrgent ? '#B83232' : 'var(--muted)') + ';text-transform:uppercase;letter-spacing:.06em">' + (isUrgent ? 'URGENT' : 'BROADCAST') + '</span>' +
+          '<span style="font-size:10px;color:var(--muted)">' + b.date + ' at ' + b.time + '</span>' +
+        '</div>' +
+        '<div style="font-size:12.5px;color:var(--text);line-height:1.5;margin-bottom:5px">' + b.msg + '</div>' +
+        '<div style="font-size:10.5px;color:var(--muted)">Sent by ' + b.by + ' — delivered to 20 workers</div>' +
+      '</div>';
+    }).join('');
+}
+function bcTemplate(text) {
+  var msg = document.getElementById('bc-message');
+  if (msg) { msg.value = text; msg.dispatchEvent(new Event('input')); }
+}
+function sendBroadcast() {
+  var msg = document.getElementById('bc-message').value.trim();
+  if (!msg) { alert('Please type a message before sending.'); return; }
+  var priority = document.getElementById('bc-priority').value;
+  // Write to Firebase broadcasts collection
+  if (typeof fbInsert === 'function') {
+    var p = getProfile();
+    fbInsert('broadcasts', { message:msg, priority:priority, site:typeof SITE!=='undefined'?SITE:'', sent_by:p?p.name:'Supervisor', timestamp:new Date().toISOString() });
+  }
+  // Clear form and show confirmation
+  document.getElementById('bc-message').value = '';
+  document.getElementById('bc-char-count').textContent = '0 / 200 characters';
+  alert('Broadcast sent to all workers on site.');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WORKER CONTACTS
+// ═══════════════════════════════════════════════════════════════
+function goToWorkerContacts() {
+  goTo('screen-worker-contacts');
+  setTimeout(wcLoadWorkers, 100);
+  var logoEl = document.getElementById('wc-logo');
+  if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
+  // wc-count is set dynamically by wcLoadWorkers()
+}
+function wcSearch() {
+  var q = (document.getElementById('wc-search').value || '').toLowerCase();
+  document.querySelectorAll('.wc-worker').forEach(function(row) {
+    row.style.display = (row.getAttribute('data-name') || '').includes(q) ? '' : 'none';
+  });
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// NOTIFICATION CENTRE
+// ═══════════════════════════════════════════════════════════════
+var _notifFromRole = 'worker';
+
+function goToNotifications() {
+  var p = getProfile();
+  _notifFromRole = p ? (p.role === 'Site Supervisor' ? 'supervisor' : p.role === 'Company Director' ? 'director' : 'worker') : 'worker';
+  goTo('screen-notifications');
+  // Logo
+  var logoEl = document.getElementById('notif-logo');
+  if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
+  // Nav style — supervisors get dashboard, directors get analytics
+  var nav = document.getElementById('notif-nav');
+  var navHome = document.getElementById('notif-nav-home');
+  if (_notifFromRole === 'supervisor' && navHome) navHome.textContent = '';
+  // Build notifications
+  buildNotifications();
+}
+
+function notifBack() {
+  if (_notifFromRole === 'supervisor') { goTo('screen-dash'); }
+  else if (_notifFromRole === 'director') { goToAnalytics('director'); }
+  else { goTo('screen-home'); }
+}
+
+function buildNotifications() {
+  var list = document.getElementById('notif-list');
+  if (!list) return;
+
+  var notifications = [];
+
+  if (DEMO_MODE || localStorage.getItem('slan_demo')) {
+    var today = new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+    var yest = new Date(Date.now()-86400000).toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+    notifications = [
+      { icon:'🔴', title:'Critical hazard — unsecured edge protection', sub:'Level 3 east perimeter · Reported by Jake Ryan · ' + today, colour:'#FAEBEB', dot:'#B83232' },
+      { icon:'⚠️', title:'SDS expired — Solvent Cleaner (MEK)', sub:'Site C Liverpool · 32 days overdue · Action required', colour:'#FFF0F0', dot:'#B83232' },
+      { icon:'🔴', title:'Rigging inspection overdue', sub:'2T Chain Sling CS-004 \u00b7 Was due 5 Apr \u00b7 Lee O\'Brien', colour:'#FFF0F0', dot:'#B83232' },
+      { icon:'⚠️', title:'Workers Compensation expiring in 28 days', sub:'iCare NSW · Renew before 9 May 2026', colour:'#FDF8E8', dot:'#B8960C' },
+      { icon:'⚠️', title:'3 licences expiring within 30 days', sub:'L. O\'Brien HRWL \u00b7 M. Flynn White Card \u00b7 D. Murphy First Aid', colour:'#FDF8E8', dot:'#B8960C' },
+      { icon:'⚠️', title:'Bobcat skid steer defect — action required', sub:'Left rear tyre pressure low · Pre-start SK-01 · ' + today, colour:'#FDF8E8', dot:'#B8960C' },
+      { icon:'✅', title:'Toolbox talk delivered — Working at Heights', sub:'20 workers · ' + today + ' · 16 signed · 4 pending', colour:'#E6F5ED', dot:'#1B6E3A' },
+      { icon:'✅', title:'Daily site pre-start completed', sub:'Eoin Burke · 07:15 · ' + today + ' · Site cleared', colour:'#E6F5ED', dot:'#1B6E3A' },
+      { icon:'✅', title:'SafeWork NSW inspector visit — site cleared', sub:'Rachel Donoghue · ' + yest + ' · No improvement notices issued', colour:'#E6F5ED', dot:'#1B6E3A' },
+      { icon:'⭐', title:'Star award — Jake Ryan', sub:'50 points · Identified unsecured edge protection · ' + today, colour:'rgba(184,150,12,.08)', dot:'#B8960C' },
+    ];
+  }
+
+  if (notifications.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:50px 20px"><div style="font-size:32px;margin-bottom:10px">🔔</div><div style="font-size:14px;font-weight:600;color:var(--text)">No notifications</div><div style="font-size:12px;color:var(--muted);margin-top:4px">You are all up to date</div></div>';
+    return;
+  }
+
+  list.innerHTML = notifications.map(function(n) {
+    return '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:' + n.colour + '">' +
+      '<div style="width:8px;height:8px;border-radius:50%;background:' + n.dot + ';flex-shrink:0;margin-top:5px"></div>' +
+      '<div style="flex:1">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px">' + n.title + '</div>' +
+        '<div style="font-size:11.5px;color:var(--muted);line-height:1.4">' + n.sub + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  updateNotifBadges();
+}
+
+function notifMarkRead(id) {
+  var demoRead = JSON.parse(localStorage.getItem('notif_demo_read')||'{}');
+  demoRead[id] = true;
+  localStorage.setItem('notif_demo_read', JSON.stringify(demoRead));
+  // Also mark licence-related ones
+  if (id.startsWith('lic_')) localStorage.setItem('notif_read_'+id, '1');
+  // Update UI
+  var item = document.getElementById('notif-item-'+id);
+  if (item) item.style.opacity = '0.55';
+  // Recount
+  var unread = document.querySelectorAll('#notif-list [id^="notif-item-"]');
+  // Just rebuild for simplicity
+  buildNotifications();
+}
+
+function clearAllNotifs() {
+  var demoRead = JSON.parse(localStorage.getItem('notif_demo_read')||'{}');
+  ['demo_hazard_resolved','demo_ca_overdue','demo_broadcast','demo_stars'].forEach(function(k){ demoRead[k]=true; });
+  localStorage.setItem('notif_demo_read', JSON.stringify(demoRead));
+  buildNotifications();
+}
+
+// ── Auto-update badges on load ──────────────────────────────────
+function updateNotifBadges() {
+  var p = getProfile();
+  var today = new Date();
+  var unread = 0;
+  // Check talk
+  var todayKey = today.toLocaleDateString('en-AU').replace(/\//g,'-');
+  if (!localStorage.getItem('talk_signed_'+todayKey)) unread++;
+  // Check licences
+  if (p && p.licences) {
+    Object.keys(p.licences).forEach(function(key){
+      var lic = p.licences[key];
+      if (!lic||!lic.expiry) return;
+      var d = new Date(lic.expiry);
+      if (isNaN(d.getTime())) return;
+      var days = Math.round((d-today)/(1000*60*60*24));
+      if (days <= 30) unread++;
+    });
+  }
+  // Demo unread
+  var demoRead = JSON.parse(localStorage.getItem('notif_demo_read')||'{}');
+  ['demo_hazard_resolved','demo_broadcast','demo_stars'].forEach(function(k){ if(!demoRead[k]) unread++; });
+  if (!demoRead['demo_ca_overdue'] && p && (p.role==='Site Supervisor'||p.role==='Company Director')) unread++;
+  
+  ['w','s','d'].forEach(function(suffix){
+    var badge = document.getElementById('notif-badge-'+suffix);
+    if (badge) {
+      if (unread > 0) { badge.style.display='flex'; badge.textContent = unread > 9 ? '9+' : String(unread); }
+      else badge.style.display='none';
+    }
+  });
+}
+
+
+function smartSignFlow() {
+  var signed = localStorage.getItem('slan_signed_in_today');
+  var signedOut = localStorage.getItem('slan_signed_out_today');
+  // If signed in but not out → go to sign out
+  if (signed && !signedOut) {
+    startFlow('out');
+  } else {
+    // Either not signed in yet, or already signed out (new shift)
+    startFlow('in');
+  }
+}
+
+
+
+// ═══════════════════════════════════════════════════════════════
+// DEMO MODE — Role selector and startup
+// ═══════════════════════════════════════════════════════════════
+function showDemoRoleSheet() {
+  var ex = document.getElementById('demo-role-sheet');
+  if (ex) ex.remove();
+  var sheet = document.createElement('div');
+  sheet.id = 'demo-role-sheet';
+  sheet.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center;-webkit-overflow-scrolling:touch';
+  sheet.onclick = function(e){ if(e.target===sheet) sheet.remove(); };
+  sheet.innerHTML =
+    '<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px calc(36px + env(safe-area-inset-bottom))">' +
+      '<div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>' +
+      '<div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px">View demo as...</div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5">Choose a role to see the app from that perspective. All data is from a realistic 20-person civil construction site.</div>' +
+      '<div style="display:flex;flex-direction:column;gap:10px">' +
+        '<button onclick="startDemoAs(this.dataset.role)" data-role="worker" style="padding:16px;border-radius:12px;border:1.5px solid var(--border);background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%">' +
+          '<div style="font-size:14px;font-weight:600;color:var(--text)">Worker</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">Jake Ryan — Concretor — Murphy Civil Construction</div>' +
+        '</button>' +
+        '<button onclick="startDemoAs(this.dataset.role)" data-role="supervisor" style="padding:16px;border-radius:12px;border:1.5px solid var(--border);background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%">' +
+          '<div style="font-size:14px;font-weight:600;color:var(--text)">Site Supervisor</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">Eoin Burke — Site Supervisor — Murphy Civil Construction</div>' +
+        '</button>' +
+        '<button onclick="startDemoAs(this.dataset.role)" data-role="director" style="padding:16px;border-radius:12px;border:1.5px solid var(--border);background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%">' +
+          '<div style="font-size:14px;font-weight:600;color:var(--text)">Company Director</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">Patrick Murphy — Director — Murphy Civil Construction</div>' +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(sheet);
+}
+
+function startDemoAs(role) {
+  DEMO_MODE = true;
+  localStorage.setItem('slan_demo', 'true');
+  var today = new Date().toLocaleDateString('en-AU').replace(/\//g, '-');
+  var profiles = {
+    worker:     { name:'Jake Ryan',      company:'Murphy Civil Construction', role:'Worker',           safetyPoints:912, licences:{ whitecard:{expiry:'2027-03-10'}, driver:{expiry:'2027-08-22'}, hrwl:{expiry:'2026-07-15'} } },
+    supervisor: { name:'Eoin Burke',     company:'Murphy Civil Construction', role:'Site Supervisor',  safetyPoints:0,   licences:{ whitecard:{expiry:'2027-06-15'}, hrwl:{expiry:'2026-09-20'}, firstaid:{expiry:'2026-11-30'} } },
+    director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   licences:{} }
+  };
+  var p = profiles[role] || profiles.supervisor;
+  p.created = new Date().toISOString(); p.demo = true; p.sig = null; p.photo = null;
+  localStorage.setItem('slan_profile', JSON.stringify(p));
+  localStorage.setItem('slan_onboarded', 'true');
+  localStorage.setItem('slan_signed_in_today', 'true');
+  localStorage.setItem('slan_site_ps_done_' + today, 'true');
+  localStorage.setItem('talk_signed_' + today, '07:30');
+
+  var sheet = document.getElementById('demo-role-sheet');
+  if (sheet) sheet.remove();
+  // Remove existing banner before showing new one
+  var existingBanner = document.getElementById('demo-banner');
+  if (existingBanner) existingBanner.remove();
+  showDemoBanner();
+
+  if (role === 'worker') {
+    goTo('screen-home');
+    var pr = JSON.parse(localStorage.getItem('slan_profile') || '{}');
+    if (typeof initHome === 'function') initHome(pr);
+    if (typeof updateAllTileSubs === 'function') updateAllTileSubs(pr);
+    var av = document.getElementById('h-avatar');
+    if (av) av.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(184,150,12,.8)" stroke-width="1.8" style="width:18px;height:18px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>';
+  } else if (role === 'director') {
+    goToAnalytics('director');
+  } else {
+    if (typeof _doOpenSuperDash === 'function') _doOpenSuperDash();
+  }
+}
+
+function startDemo() {
+  showDemoRoleSheet();
+}
+
+function showDemoBanner() {
+  var existing = document.getElementById('demo-banner');
+  if (existing) return;
+  var banner = document.createElement('div');
+  banner.id = 'demo-banner';
+  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1B3A2D;color:var(--gold);font-size:11px;font-weight:600;text-align:center;padding:8px;z-index:9000;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:12px';
+  banner.innerHTML = '<span>DEMO MODE — data is simulated</span><button onclick="showDemoRoleSheet()" style="background:rgba(184,150,12,.2);border:1px solid rgba(184,150,12,.4);border-radius:5px;color:var(--gold);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit;margin-right:4px">Switch role</button><button onclick="exitDemo()" style="background:rgba(184,150,12,.2);border:1px solid rgba(184,150,12,.4);border-radius:5px;color:var(--gold);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit">Exit</button>';
+  document.body.appendChild(banner);
+}
+
+function exitDemo() {
+  DEMO_MODE = false;
+  // Clear all demo/session keys
+  var today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
+  var keysToRemove = [
+    'slan_demo','slan_profile','slan_onboarded','slan_signed_in_today',
+    'slan_site_ps_done_' + today,
+    'talk_signed_' + new Date().toLocaleDateString('en-AU').replace(/\//g,'-'),
+    'slan_lang','slan_notifs_seen'
+  ];
+  keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
+  var banner = document.getElementById('demo-banner');
+  if (banner) banner.remove();
+  var roleSheet = document.getElementById('demo-role-sheet');
+  if (roleSheet) roleSheet.remove();
+  goTo('screen-onboarding');
+  // Reload to clear any in-memory state
+  setTimeout(function(){ window.location.reload(); }, 100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WORKER CONTACTS — load demo list
+// ═══════════════════════════════════════════════════════════════
+function wcLoadWorkers() {
+  var onsite  = document.getElementById('wc-onsite-list');
+  var allList = document.getElementById('wc-all-list');
+  var countEl = document.getElementById('wc-count');
+  if (!onsite) return;
+  if (!DEMO_MODE && !localStorage.getItem('slan_demo')) {
+    onsite.innerHTML = '<div style="padding:16px;text-align:center;font-size:13px;color:var(--muted)">Connect Firebase to load live data</div>';
+    return;
+  }
+  var workers = typeof DEMO_WORKERS !== 'undefined' ? DEMO_WORKERS : [];
+  var onsiteW = workers.filter(function(w) { return w.onsite; });
+  var offW    = workers.filter(function(w) { return !w.onsite; });
+  if (countEl) countEl.textContent = onsiteW.length + ' on site \u00b7 ' + offW.length + ' not signed in';
+
+  function makeRow(w, idx) {
+    var ini = w.name.split(' ').map(function(n) { return n[0] || ''; }).join('').toUpperCase().slice(0, 2);
+    var hasExp = w.licences && Object.values(w.licences).some(function(l) { return l.ok === false; });
+    var expBadge  = hasExp ? '<span style="font-size:9px;font-weight:700;color:#B83232;background:#FAEBEB;padding:1px 6px;border-radius:10px">LIC \u26a0</span>' : '';
+    var indBadge  = !w.inducted ? '<span style="font-size:9px;font-weight:700;color:#D4630A;background:#FFF5EC;padding:1px 6px;border-radius:10px">NOT INDUCTED</span>' : '';
+    var signinTxt = w.signin ? ' \u00b7 In ' + w.signin : '';
+    var bgIcon    = w.onsite ? '#E6F5ED' : 'var(--bg)';
+    var bgDot     = w.onsite ? 'var(--mid)' : '#9CA3AF';
+    return (
+      '<div class="contact-row wc-worker" data-name="' + w.name.toLowerCase() + '" onclick="showWorkerDetail(' + idx + ')" style="cursor:pointer">' +
+        '<div class="contact-icon" style="background:' + bgIcon + '">' +
+          '<div style="width:20px;height:20px;border-radius:50%;background:' + bgDot + ';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">' + ini + '</div>' +
+        '</div>' +
+        '<div class="contact-info">' +
+          '<div class="contact-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">' + w.name + expBadge + indBadge + '</div>' +
+          '<div class="contact-role">' + w.role + ' \u00b7 ' + w.company + signinTxt + '</div>' +
+        '</div>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>' +
+      '</div>'
+    );
+  }
+
+  onsite.innerHTML = onsiteW.length
+    ? onsiteW.map(function(w) { return makeRow(w, workers.indexOf(w)); }).join('')
+    : '<div style="padding:16px;text-align:center;font-size:13px;color:var(--muted)">No workers currently on site</div>';
+
+  if (allList) {
+    allList.innerHTML = offW.length
+      ? offW.map(function(w) { return makeRow(w, workers.indexOf(w)); }).join('')
+      : '<div style="padding:16px;text-align:center;font-size:13px;color:var(--muted)">All workers currently on site</div>';
+  }
+}
+
+function wcSearch() {
+  var q = (document.getElementById('wc-search').value || '').toLowerCase();
+  document.querySelectorAll('.wc-worker').forEach(function(row) {
+    row.style.display = (row.getAttribute('data-name') || '').includes(q) ? '' : 'none';
+  });
+}
+function wcCallWorker(name) {
+  alert('Call ' + name + '\n\nIn the live app this would open the phone dialler with the worker\'s number from their profile.');
+}
+function wcSearch(val) {
+  var rows = document.querySelectorAll('#wc-list .worker-row');
+  var q = val.toLowerCase();
+  rows.forEach(function(r){ r.style.display = r.textContent.toLowerCase().indexOf(q) !== -1 ? '' : 'none'; });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ANALYTICS — populate demo metrics
+// ═══════════════════════════════════════════════════════════════
+function anPopulateDemoMetrics() {
+  var set = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+  // Live stats row (always visible)
+  set('an-live-signin', '20'); set('an-live-prestart', '8');
+  set('an-live-hazards', '2'); set('an-live-lti', '47'); set('an-live-incidents', '3');
+  // Section metrics
+  set('an-val-incidents', '3'); set('an-sub-incidents', '▼ 40% vs last period');
+  set('an-val-hazards', '2'); set('an-sub-hazards', '▲ 2 require action');
+  set('an-val-prestart', '94%'); set('an-sub-prestart', '▲ compliance rate');
+  set('an-val-lti', '47'); set('an-sub-lti', '★ Personal best');
+  set('an-lic-exp', '1'); set('an-lic-soon', '3'); set('an-lic-cur', '41');
+  set('an-lic-pct', '93% workforce compliant');
+  set('an-val-plant', '2'); set('an-sub-plant', '1 critical — action needed');
+  set('an-val-sub', '87%'); set('an-sub-sub', '1 insurance expiring soon');
+  set('an-val-sds', '90%'); set('an-sub-sds', '1 SDS expired (MEK)');
+  set('an-val-talk', '88%'); set('an-sub-talk', '3 workers unsigned today');
+  set('an-val-rig', '2'); set('an-sub-rig', 'Inspections overdue');
+  set('an-val-vis', '14'); set('an-sub-vis', 'This period');
+  set('an-val-psych', '1'); set('an-sub-psych', 'Under review');
+
+  // Director alerts
+  var alertsList = document.getElementById('an-dir-alerts-list');
+  if (alertsList) {
+    alertsList.innerHTML =
+      '<div style="background:#FFF0F0;border:1.5px solid rgba(184,50,50,.25);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">' +
+        '<div style="width:8px;height:8px;border-radius:50%;background:#B83232;flex-shrink:0;margin-top:3px"></div>' +
+        '<div><div style="font-size:12px;font-weight:600;color:#B83232">SDS Expired — Solvent Cleaner MEK</div>' +
+        '<div style="font-size:11px;color:#C06060;margin-top:2px">Site C Liverpool — expired 32 days ago. Chemical must not be used on site until renewed.</div></div>' +
+      '</div>' +
+      '<div style="background:#FDF8E8;border:1.5px solid rgba(184,150,12,.3);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">' +
+        '<div style="width:8px;height:8px;border-radius:50%;background:#B8960C;flex-shrink:0;margin-top:3px"></div>' +
+        '<div><div style="font-size:12px;font-weight:600;color:#8B6914">3 licences expiring within 30 days</div>' +
+        '<div style="font-size:11px;color:#A07020;margin-top:2px">L. O\'Brien — HRWL — 20 Apr &nbsp;&middot;&nbsp; M. Flynn — White Card — 28 Apr &nbsp;&middot;&nbsp; D. Murphy — First Aid — 2 May</div></div>' +
+      '</div>' +
+      '<div style="background:#FDF8E8;border:1.5px solid rgba(184,150,12,.3);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px">' +
+        '<div style="width:8px;height:8px;border-radius:50%;background:#B8960C;flex-shrink:0;margin-top:3px"></div>' +
+        '<div><div style="font-size:12px;font-weight:600;color:#8B6914">2 rigging items overdue for inspection</div>' +
+        '<div style="font-size:11px;color:#A07020;margin-top:2px">Site A — 2T Chain Sling CS-004 &nbsp;·&nbsp; 3T Wire Rope WR-002 — due 5 Apr</div></div>' +
+      '</div>';
+  }
+  // Stars
+  if (!AN_STARS || AN_STARS.length === 0) {
+    AN_STARS = [
+      { name:'Jake Ryan', company:'Murphy Civil Construction', pts:912 },
+      { name:'Mark Flynn', company:'Murphy Civil Construction', pts:724 },
+      { name:'Sam Carroll', company:'Burke Civil Contractors', pts:681 }
+    ];
+    if (typeof anRenderStars === 'function') anRenderStars();
+  }
+}
+
+// ─── Analytics section toggle ──────────────────────────────
+function anToggleSection(id) {
+  var section = document.getElementById('an-section-' + id);
+  var arrow = document.getElementById('an-arrow-' + id);
+  if (!section) return;
+  var isOpen = section.style.display !== 'none';
+  section.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+  // Render charts if opening the safety or types section
+  if (!isOpen && (id === 'safety' || id === 'types')) {
+    setTimeout(anRenderCharts, 100);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TILE SUBTITLE UPDATES — keep worker home tiles current
+// ═══════════════════════════════════════════════════════════════
+function updateAllTileSubs(p) {
+  // Sign in/out tile
+  var signedIn = localStorage.getItem('slan_signed_in_today');
+  var signedOut = localStorage.getItem('slan_signed_out_today');
+  var signinSub = document.getElementById('signin-tile-sub');
+  if (signinSub) {
+    if (signedIn && signedOut) signinSub.textContent = 'Signed out — shift complete';
+    else if (signedIn) signinSub.textContent = 'Signed in — tap to sign out';
+    else signinSub.textContent = 'Not signed in yet';
+  }
+  // Hazard tile
+  var hazSub = document.getElementById('hazard-tile-sub');
+  if (hazSub) {
+    if (DEMO_MODE || localStorage.getItem('slan_demo')) {
+      hazSub.textContent = '2 open hazards on site';
+    } else {
+      hazSub.textContent = 'Log site hazard';
+    }
+  }
+  // SWMS tile
+  var swmsSub = document.getElementById('swms-tile-sub2');
+  if (swmsSub) swmsSub.textContent = 'Read & sign SWMS';
+  // Toolbox talk tile
+  var today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
+  var signedKey = 'talk_signed_' + today;
+  var talkSub = document.getElementById('talk-tile-sub');
+  if (talkSub) {
+    if (localStorage.getItem(signedKey)) {
+      talkSub.textContent = 'Signed today ✓';
+    } else if (DEMO_MODE || localStorage.getItem('slan_demo')) {
+      talkSub.textContent = TODAYS_TALK ? TODAYS_TALK.title : 'Working at Heights — April 2026';
+    } else {
+      talkSub.textContent = 'Monthly safety topic';
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOOLBOX TALK SUBMISSION
+// ═══════════════════════════════════════════════════════════════
+function submitTalk() {
+  var chk1 = document.getElementById('chk1');
+  var chk2 = document.getElementById('chk2');
+  if (!chk1 || !chk1.classList.contains('checked')) { alert('Please confirm you have read and understood the toolbox talk.'); return; }
+  if (!chk2 || !chk2.classList.contains('checked')) { alert('Please confirm you commit to working safely.'); return; }
+
+  var p = getProfile();
+  var now = new Date();
+  var today = now.toLocaleDateString('en-AU').replace(/\//g,'-');
+  var timeStr = now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true});
+
+  // Save signed record locally
+  localStorage.setItem('talk_signed_' + today, timeStr);
+
+  // Save to Firebase
+  if (typeof fbInsert === 'function') {
+    fbInsert('toolbox_talks', {
+      worker_name: p ? p.name : 'Unknown',
+      company: p ? p.company : '',
+      talk_title: TODAYS_TALK ? TODAYS_TALK.title : 'Toolbox Talk',
+      signed: true,
+      date: now.toLocaleDateString('en-AU'),
+      time: timeStr,
+      site: typeof SITE !== 'undefined' ? SITE : ''
+    });
+  }
+
+  // Show signed badge
+  var alreadyDiv = document.getElementById('talk-already-signed');
+  var signSection = document.getElementById('talk-sign-section');
+  var signedAtEl = document.getElementById('talk-signed-at');
+  if (alreadyDiv) alreadyDiv.style.display = 'block';
+  if (signSection) signSection.style.display = 'none';
+  if (signedAtEl) signedAtEl.textContent = 'Signed at ' + timeStr;
+
+  // Update tile sub
+  updateAllTileSubs(p);
+
+  // Show success after brief delay
+  setTimeout(function() {
+    showSharedSuccess({
+      icon:'in', iconStroke:'var(--mid)',
+      title:'Toolbox Talk Signed',
+      sub:'Your attendance has been recorded.',
+      ref:'TALK-' + today.replace(/-/g,''),
+      details:[
+        {l:'Talk', v: TODAYS_TALK ? TODAYS_TALK.title : 'Toolbox Talk'},
+        {l:'Signed by', v: p ? p.name : 'Worker'},
+        {l:'Time', v: timeStr}
+      ]
+    });
+  }, 600);
+}
+
+// ─── Missing function aliases ─────────────────────────────
+function requestLocationPermission() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(pos){ console.log('Location granted'); },
+      function(err){ console.log('Location denied'); }
+    );
+  }
+}
+
+function loadSupervisorDashboard() {
+  loadSuperDash();
+}
+
+function toggleCheck(id) {
+  var row = document.getElementById(id);
+  if (!row) return;
+  row.classList.toggle('checked');
+  var chk1 = document.getElementById('chk1');
+  var chk2 = document.getElementById('chk2');
+  var btn = document.getElementById('talk-submit-btn');
+  if (btn && chk1 && chk2) {
+    var allChecked = chk1.classList.contains('checked') && chk2.classList.contains('checked');
+    btn.disabled = !allChecked;
+    btn.style.opacity = allChecked ? '1' : '0.45';
+    btn.style.cursor = allChecked ? 'pointer' : 'not-allowed';
+  }
+}
+
+// --- DEMO PERMITS ----------------------------------------------------------
+const DEMO_PERMITS = [
+  { type:'Hot Works',          ref:'HW-001',  date:'2026-04-11', location:'Level 2 \u2014 welding to steel column connections', workers:"Lee O'Brien, Shane Connolly", status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-11' },
+  { type:'Working at Heights', ref:'WAH-003', date:'2026-04-11', location:'Scaffold erection \u2014 north elevation perimeter',  workers:'Jake Ryan, Tom Burke, Pat Healy', status:'open', filedBy:'Pending', filedAt:null },
+  { type:'Crane Lift',         ref:'CL-002',  date:'2026-04-10', location:'Precast panels \u2014 Grid B Level 1',                workers:"Brendan Kelly, Lee O'Brien",  status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-10' },
+  { type:'Excavation',         ref:'EX-001',  date:'2026-04-09', location:'Trench for stormwater \u2014 car park zone C',        workers:'Mick Doyle, Kevin Nash',      status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-09' },
+  { type:'Hot Works',          ref:'HW-002',  date:'2026-04-08', location:'Roof level \u2014 cutting and grinding to steel',     workers:"Lee O'Brien, Shane Connolly", status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-08' }
+];
+
+// --- PERMITS TO WORK -------------------------------------------------------
+function goToPermits() {
+  goTo('screen-ptw');
+  var logo = document.getElementById('ptw-logo');
+  if (logo) { var src = document.querySelector('.tbar-logo img'); if (src) logo.src = src.src; }
+  var d = document.getElementById('ptw-date');
+  if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+  ptwLoadList();
+  var c = document.getElementById('ptw-count');
+  if (c) {
+    var open = DEMO_PERMITS.filter(function(p) { return p.status === 'open'; }).length;
+    c.textContent = open + ' open \u00b7 ' + DEMO_PERMITS.length + ' total this month';
+  }
+}
+
+function ptwLoadList() {
+  var list = document.getElementById('ptw-list');
+  if (!list) return;
+  var items = (DEMO_MODE || localStorage.getItem('slan_demo')) ? DEMO_PERMITS : [];
+  if (!items.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">No permits logged yet this month</div>';
+    return;
+  }
+  list.innerHTML = items.map(function(p, i) {
+    var isOpen = p.status === 'open';
+    var sc = isOpen ? '#D4630A' : '#1B6E3A';
+    var sb = isOpen ? '#FFF5EC' : '#E6F5ED';
+    var dated = new Date(p.date).toLocaleDateString('en-AU', {day:'numeric', month:'short'});
+    var filedTxt = p.filedBy + (p.filedAt ? ' \u00b7 ' + new Date(p.filedAt).toLocaleDateString('en-AU', {day:'numeric', month:'short'}) : ' \u2014 pending');
+    return (
+      '<div onclick="ptwShowDetail(' + i + ')" style="padding:13px 15px;border-bottom:1px solid var(--border);cursor:pointer;background:#fff">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+          '<div style="font-size:13px;font-weight:600;color:var(--text)">' + p.type + '</div>' +
+          '<div style="font-size:10px;font-weight:700;color:' + sc + ';background:' + sb + ';padding:3px 9px;border-radius:20px">' + (isOpen ? 'OPEN' : 'CLOSED') + '</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-bottom:2px">' + p.ref + ' \u00b7 ' + dated + '</div>' +
+        '<div style="font-size:12px;color:var(--text)">' + p.location + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:2px">Filed: ' + filedTxt + '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+function ptwShowDetail(idx) {
+  var p = DEMO_PERMITS[idx];
+  if (!p) return;
+  var isOpen = p.status === 'open';
+  var sc = isOpen ? '#D4630A' : '#1B6E3A';
+  var sb = isOpen ? '#FFF5EC' : '#E6F5ED';
+  var dated = new Date(p.date).toLocaleDateString('en-AU', {weekday:'short', day:'numeric', month:'short'});
+  var filedTxt = p.filedBy + (p.filedAt ? ' \u00b7 ' + new Date(p.filedAt).toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'}) : ' \u2014 pending within 24 hrs');
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  sheet.onclick = function(e) { if (e.target === sheet) sheet.remove(); };
+  sheet.innerHTML = (
+    '<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px calc(32px + env(safe-area-inset-bottom))">' +
+      '<div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>' +
+      '<div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:16px">' +
+        '<div>' +
+          '<div style="font-size:17px;font-weight:700;color:var(--text)">' + p.type + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + p.ref + ' \u00b7 ' + dated + '</div>' +
+        '</div>' +
+        '<div style="font-size:11px;font-weight:700;color:' + sc + ';background:' + sb + ';padding:5px 12px;border-radius:20px;flex-shrink:0;margin-left:10px">' + (isOpen ? 'OPEN' : 'CLOSED') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">' +
+        '<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Location</div><div style="font-size:13px;color:var(--text)">' + p.location + '</div></div>' +
+        '<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Workers Covered</div><div style="font-size:13px;color:var(--text)">' + p.workers + '</div></div>' +
+        '<div style="background:var(--bg);border-radius:10px;padding:12px"><div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Filed by Sl\u00e1n Safety</div><div style="font-size:13px;color:var(--text)">' + filedTxt + '</div></div>' +
+      '</div>' +
+      '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="width:100%;padding:14px;background:var(--mid);border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;color:#fff;cursor:pointer">Close</button>' +
+    '</div>'
+  );
+  document.body.appendChild(sheet);
+}
+
+function ptwPhotoSelected(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('ptw-photo-img').src = e.target.result;
+    document.getElementById('ptw-photo-area').style.display = 'none';
+    document.getElementById('ptw-photo-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function ptwClearPhoto() {
+  var inp = document.getElementById('ptw-photo-input'); if (inp) inp.value = '';
+  var a   = document.getElementById('ptw-photo-area');   if (a)   a.style.display = 'block';
+  var prv = document.getElementById('ptw-photo-preview'); if (prv) prv.style.display = 'none';
+}
+
+function submitPermit() {
+  var type = document.getElementById('ptw-type').value;
+  if (!type) { alert('Please select a permit type.'); return; }
+  var loc = (document.getElementById('ptw-location').value || '').trim();
+  if (!loc) { alert('Please enter a location or description.'); return; }
+  var ref  = (document.getElementById('ptw-ref').value || '').trim();
+  var date = document.getElementById('ptw-date').value;
+  var wkrs = (document.getElementById('ptw-workers-field').value || '').trim();
+  var stat = document.getElementById('ptw-status').value;
+  var pr   = getProfile();
+  if (typeof fbInsert === 'function') {
+    fbInsert('permits', { type:type, ref:ref, location:loc, date:date, workers:wkrs, status:stat, site: typeof SITE !== 'undefined' ? SITE : '', submitted_by: pr ? pr.name : 'Supervisor', timestamp: new Date().toISOString() });
+  }
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  sheet.innerHTML = (
+    '<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center">' +
+      '<div style="width:56px;height:56px;border-radius:50%;background:#E6F5ED;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="#1B6E3A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><polyline points="20 6 9 17 4 12"/></svg>' +
+      '</div>' +
+      '<div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">Permit Logged</div>' +
+      '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">Sl\u00e1n Safety has been notified. Your <strong>' + type + '</strong> permit will be filed and registered within 24 hours.</div>' +
+      '<button onclick="this.closest(\'div[style*=fixed]\').remove();ptwReset()" style="width:100%;padding:13px;background:var(--mid);border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;color:#fff;cursor:pointer">Done</button>' +
+    '</div>'
+  );
+  document.body.appendChild(sheet);
+}
+
+function ptwReset() {
+  ['ptw-type', 'ptw-ref', 'ptw-location', 'ptw-workers-field'].forEach(function(id) {
+    var e = document.getElementById(id); if (e) e.value = '';
+  });
+  ptwClearPhoto();
+  var s = document.getElementById('ptw-status'); if (s) s.value = 'open';
+  var d = document.getElementById('ptw-date');   if (d) d.value = new Date().toISOString().split('T')[0];
+}
+
+// --- WORKER DETAIL BOTTOM SHEET --------------------------------------------
+function showWorkerDetail(workerIdx) {
+  var workers = typeof DEMO_WORKERS !== 'undefined' ? DEMO_WORKERS : [];
+  var w = workers[workerIdx];
+  if (!w) return;
+
+  var ini = w.name.split(' ').map(function(n) { return n[0] || ''; }).join('').toUpperCase().slice(0, 2);
+  var tierCol = { gold:'#B8960C', silver:'#6B7280', bronze:'#92400E' }[w.tier] || '#6B7280';
+  var tierBg  = { gold:'rgba(184,150,12,.12)', silver:'rgba(107,114,128,.1)', bronze:'rgba(146,64,14,.1)' }[w.tier] || 'rgba(107,114,128,.1)';
+  var licLabels = { whitecard:'White Card', hrwl:'HRWL', hrwl2:'HRWL (2nd)', driver:"Driver's Licence", firstaid:'First Aid', electrical:'Electrical Licence' };
+
+  var licRows = '';
+  if (w.licences) {
+    Object.entries(w.licences).forEach(function(entry) {
+      var key = entry[0];
+      var lic = entry[1];
+      var label   = lic.type || licLabels[key] || key;
+      var expDate = lic.expiry ? new Date(lic.expiry).toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'}) : '\u2014';
+      var ok = lic.ok !== false;
+      licRows += (
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">' +
+          '<div>' +
+            '<div style="font-size:12.5px;font-weight:500;color:var(--text)">' + label + '</div>' +
+            '<div style="font-size:11px;color:var(--muted);margin-top:1px">Expires ' + expDate + '</div>' +
+          '</div>' +
+          '<div style="font-size:10px;font-weight:700;color:' + (ok ? '#1B6E3A' : '#B83232') + ';background:' + (ok ? '#E6F5ED' : '#FAEBEB') + ';padding:4px 10px;border-radius:20px;flex-shrink:0">' + (ok ? 'CURRENT' : 'EXPIRED') + '</div>' +
+        '</div>'
+      );
+    });
+  }
+  if (!licRows) licRows = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No licence data on file</div>';
+
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  sheet.onclick = function(e) { if (e.target === sheet) sheet.remove(); };
+
+  sheet.innerHTML = (
+    '<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;padding:24px 20px calc(32px + env(safe-area-inset-bottom))">' +
+      '<div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>' +
+
+      '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">' +
+        '<div style="width:52px;height:52px;border-radius:50%;background:var(--deep);display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+          '<span style="font-size:16px;font-weight:700;color:#fff">' + ini + '</span>' +
+        '</div>' +
+        '<div style="flex:1">' +
+          '<div style="font-size:17px;font-weight:700;color:var(--text)">' + w.name + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + w.role + ' \u00b7 ' + w.company + '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-top:5px">' +
+            '<span style="font-size:10px;font-weight:600;color:' + tierCol + ';background:' + tierBg + ';padding:2px 8px;border-radius:20px;text-transform:capitalize">' + (w.tier || '') + ' star</span>' +
+            '<span style="font-size:10px;color:var(--muted)">' + (w.pts || 0) + ' pts</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px">' +
+        '<div style="background:' + (w.onsite ? '#E6F5ED' : 'var(--bg)') + ';border-radius:10px;padding:10px;text-align:center">' +
+          '<div style="font-size:10px;font-weight:700;color:' + (w.onsite ? '#1B6E3A' : 'var(--muted)') + ';text-transform:uppercase;letter-spacing:.05em">' + (w.onsite ? 'On site' : 'Off site') + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + (w.signin ? 'In ' + w.signin : 'Not signed in') + '</div>' +
+        '</div>' +
+        '<div style="background:' + (w.inducted ? '#E6F5ED' : '#FAEBEB') + ';border-radius:10px;padding:10px;text-align:center">' +
+          '<div style="font-size:10px;font-weight:700;color:' + (w.inducted ? '#1B6E3A' : '#B83232') + ';text-transform:uppercase;letter-spacing:.05em">' + (w.inducted ? 'Inducted' : 'Not inducted') + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">This site</div>' +
+        '</div>' +
+        '<div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">' +
+          '<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Safety \u2605</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + (w.pts || 0) + ' pts</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="margin-bottom:18px">' +
+        '<div style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Licences &amp; Tickets</div>' +
+        licRows +
+      '</div>' +
+
+      '<a href="tel:' + (w.phone || '') + '" style="text-decoration:none;display:block;width:100%;padding:14px;background:var(--mid);border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;color:#fff;text-align:center">' +
+        '\ud83d\udcde Call ' + w.name.split(' ')[0] + ' \u2014 ' + (w.phone || 'No number on file') +
+      '</a>' +
+    '</div>'
+  );
+  document.body.appendChild(sheet);
+}
+
+// ─── Logo tap easter egg — tap 5 times to enter demo mode ─────────────
+var _logoTapCount = 0, _logoTapTimer = null;
+function _logoTap() {
+  _logoTapCount++;
+  clearTimeout(_logoTapTimer);
+  _logoTapTimer = setTimeout(function(){ _logoTapCount = 0; }, 2000);
+  if (_logoTapCount >= 5) {
+    _logoTapCount = 0;
+    startDemo();
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// SDS LOOKUP
+// ═══════════════════════════════════════════════════════════════
+// SDS Register — SLSREG-005 v1.3 — Slan Safety
+var SDS_CHEMICALS = [
+  { name:'Concreseal WB', trade:'Concreseal', manufacturer:'Parchem Construction', dg:'N/A', risk:'Low', form:'Liquid', sites:'Site A', storage:'Chemical Store Shed 1 | 200L max', usage:'Brush/roller — Concretor', hazard:'Eye and skin irritant. Low environmental hazard.', ppe:'Chemical-resistant gloves, safety glasses, P2 respirator', emergency:'Contain spill. Do not allow to enter drains.', sds:'Parchem Construction - Issued 15 Apr 2021', expiry:'15 Apr 2026', status:'urgent', statusLabel:'Expiring - 14 days', colour:'#FFF0F0', dot:'#B83232' },
+  { name:'Diesel Fuel (Automotive)', trade:'Diesel', manufacturer:'Caltex Australia', dg:'Class 3 Flammable Liquid - Hazchem 3[Y]', risk:'High', form:'Liquid', sites:'Site A, Site C', storage:'Diesel Tank - Compound (bunded) | 2000L max', usage:'Plant refuelling - Plant Operator', hazard:'Flammable liquid. Aquatic toxin. Aspiration hazard if swallowed.', ppe:'Chemical-resistant gloves, safety glasses, fire-resistant clothing', emergency:'Eliminate ignition sources. Contain. Do not wash to drain. Call 000 if ignited.', sds:'Caltex Australia - Issued 20 Jun 2021', expiry:'20 Jun 2026', status:'current', statusLabel:'Current - 80 days', colour:'#FDF2D8', dot:'#B8960C' },
+  { name:'Hydraulic Fluid ISO 46', trade:'Hyspin AWS 46', manufacturer:'Fuchs Lubricants', dg:'N/A - not DG', risk:'Low', form:'Liquid', sites:'Site B', storage:'Plant Workshop - Oil Store (bunded) | 200L max', usage:'Plant maintenance - Plant Mechanic', hazard:'Aquatic irritant. Regulated waste on disposal.', ppe:'Nitrile gloves, safety glasses', emergency:'Contain with sand. Licensed waste disposal only.', sds:'Fuchs Lubricants AU - Issued 12 May 2021', expiry:'12 May 2026', status:'expiring', statusLabel:'Expiring Soon - 41 days', colour:'#FDF8E8', dot:'#B8960C' },
+  { name:'Spray Paint - Grey Primer', trade:'Zinc-It Grey', manufacturer:'Septone', dg:'Class 2.1 Flammable Aerosol - Hazchem 2YE', risk:'High', form:'Aerosol', sites:'Site A', storage:'Formwork Store - Flammable cabinet | 24 cans max', usage:'Steel priming - Steelfixer', hazard:'Flammable aerosol. Eye irritant. VOC emissions. Do not puncture.', ppe:'Organic vapour respirator (P2), nitrile gloves, safety glasses', emergency:'Remove ignition sources. Ventilate area. Do not spray near naked flame.', sds:'Septone - Issued 10 Mar 2022', expiry:'10 Mar 2027', status:'current', statusLabel:'Current - 343 days', colour:'#E6F5ED', dot:'#1B6E3A' },
+  { name:'Acetylene (Dissolved)', trade:'Acetylene', manufacturer:'BOC Limited', dg:'Class 2.1 Extremely Flammable Gas - Hazchem 1WE', risk:'Extreme', form:'Gas (cylinder)', sites:'Site A', storage:'Welding Bay - Caged DG Storage upright | 2 cylinders max', usage:'Oxy-acetylene cutting/welding - Welder', hazard:'Extremely flammable gas. Explosive risk. Asphyxiant in high concentrations.', ppe:'Face shield, leather gloves, fire-resistant clothing, SCBA if confined space', emergency:'Evacuate area. Shut off supply if safe. Keep cool with water spray. Call 000.', sds:'BOC Gas Australia - Issued 5 Aug 2023', expiry:'5 Aug 2028', status:'current', statusLabel:'Current - 857 days', colour:'#E6F5ED', dot:'#1B6E3A' },
+  { name:'Oxygen (Industrial)', trade:'Oxygen', manufacturer:'BOC Limited', dg:'Class 2.2 Non-flammable Compressed Gas - Hazchem 2X', risk:'High', form:'Gas (cylinder)', sites:'Site A', storage:'Welding Bay - Caged DG Storage upright | 2 cylinders max', usage:'Oxy-acetylene cutting/welding - Welder', hazard:'Oxidiser - supports and intensifies combustion. No grease near fittings.', ppe:'Face shield, leather gloves, fire-resistant clothing - no grease on hands', emergency:'Shut off supply. Ventilate area. Keep cylinders away from heat and ignition.', sds:'BOC Gas Australia - Issued 5 Aug 2023', expiry:'5 Aug 2028', status:'current', statusLabel:'Current - 857 days', colour:'#E6F5ED', dot:'#1B6E3A' },
+  { name:'Epoxy Resin System', trade:'Armatex EP', manufacturer:'Fosroc Australia', dg:'N/A - not DG', risk:'Medium', form:'Liquid (two-part)', sites:'Site B', storage:'Chemical Store Shelf 2 (secure) | 50L max', usage:'Crack repair - Concretor', hazard:'Skin sensitiser. Potential allergen. Eye irritant. Hazardous waste on disposal.', ppe:'Chemical-resistant gloves, safety glasses, P2 respirator, coveralls', emergency:'Contain. Do not allow uncured resin to enter drains. Licensed disposal of containers.', sds:'Fosroc Australia - Issued 20 Nov 2022', expiry:'20 Nov 2027', status:'current', statusLabel:'Current - 598 days', colour:'#E6F5ED', dot:'#1B6E3A' },
+  { name:'Solvent Cleaner (MEK)', trade:'Methyl Ethyl Ketone', manufacturer:'Recochem', dg:'Class 3 Flammable Liquid - Hazchem 3[Y]E', risk:'High', form:'Liquid', sites:'Site C', storage:'Chemical Store - Flammable Cabinet (locked) | 60L max', usage:'Degreasing - Painter', hazard:'SDS EXPIRED - do not use on site. Flammable liquid. Aquatic toxin.', ppe:'Butyl rubber gloves, organic vapour respirator, safety glasses', emergency:'Eliminate ignition sources. Absorb with dry sand. Do not wash to drain.', sds:'Recochem AU - Issued 28 Feb 2021', expiry:'28 Feb 2026 - EXPIRED', status:'expired', statusLabel:'EXPIRED - 32 days ago', colour:'#FFF0F0', dot:'#B83232' },
+  { name:'Concrete Curing Compound', trade:'Masterkure 111W', manufacturer:'BASF Australia', dg:'N/A - not DG', risk:'Low', form:'Liquid', sites:'Site C', storage:'Chemical Store Shed 2 | 100L max', usage:'Spray on fresh concrete - Concretor', hazard:'Low environmental hazard. Eye irritant. Do not allow to enter waterways.', ppe:'Nitrile gloves, safety glasses, P1 dust mask', emergency:'Contain. Do not allow to enter waterways or stormwater drains.', sds:'BASF Australia - Issued 1 Jun 2023', expiry:'1 Jun 2028', status:'current', statusLabel:'Current - 792 days', colour:'#E6F5ED', dot:'#1B6E3A' },
+  { name:'Citric Acid Cleaner', trade:'Citrus Degreaser Pro', manufacturer:'Peerless Jal', dg:'N/A - not DG', risk:'Low', form:'Liquid', sites:'All Sites', storage:'Site Office - Cleaning Store | 20L max', usage:'General cleaning - All trades', hazard:'Eye irritant on contact. Low environmental hazard. Biodegradable.', ppe:'Nitrile gloves, safety glasses', emergency:'Dilute with water. Normal waste disposal.', sds:'Peerless Jal AU - Issued 15 Jun 2024', expiry:'15 Jun 2029', status:'current', statusLabel:'Current - 1171 days', colour:'#E6F5ED', dot:'#1B6E3A' },
+];
+var _sdsFromRole = 'worker';
+
+function goToSdsLookup() {
+  var p = getProfile();
+  _sdsFromRole = p ? (p.role === 'Site Supervisor' ? 'supervisor' : 'worker') : 'worker';
+  goTo("screen-sds");
+  document.getElementById("sds-search-input").value = "";
+  document.getElementById("sds-results").innerHTML = "";
+  document.getElementById("sds-empty").style.display = "block";
+}
+
+function sdsBrowseAll() {
+  var inp = document.getElementById('sds-search-input');
+  if (inp) { inp.value = 'a'; sdsSearch('a'); setTimeout(function(){ inp.value=''; },50); }
+  // Show all by setting a space query that matches everything
+  var matches = SDS_CHEMICALS;
+  var results = document.getElementById('sds-results');
+  var empty = document.getElementById('sds-empty');
+  if(empty) empty.style.display = 'none';
+  // Reuse sdsSearch logic - just show all
+  inp.value = ' ';
+  sdsSearch(SDS_CHEMICALS[0].name.slice(0,1));
+  // Actually just render all
+  var q = '';
+  results.innerHTML = SDS_CHEMICALS.map(function(c) {
+    var borderCol = c.status==='expired' ? 'rgba(184,50,50,.35)' : c.status==='urgent' ? 'rgba(184,50,50,.2)' : c.status==='expiring' ? 'rgba(184,150,12,.3)' : 'rgba(0,0,0,.07)';
+    var isDG = c.dg && c.dg.indexOf('N/A') === -1 && c.dg.indexOf('not DG') === -1;
+    var dgBadge = isDG ? '<span style="background:#FAEBEB;color:#B83232;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px">DG</span>' : '';
+    var statusBg = c.status==='expired'?'#FAEBEB':c.status==='urgent'?'#FFF0F0':c.status==='expiring'?'#FDF8E8':'#E6F5ED';
+    var statusCol = c.status==='expired'?'#B83232':c.status==='urgent'?'#B83232':c.status==='expiring'?'#8B6914':'#1B6E3A';
+    return '<div class="fcard" style="background:'+c.colour+';border-color:'+borderCol+'">' +
+      '<div class="fcard-body" style="gap:8px">' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">' +
+          '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+            '<div style="width:9px;height:9px;border-radius:50%;background:'+c.dot+';flex-shrink:0"></div>' +
+            '<span style="font-size:13px;font-weight:600;color:var(--text)">'+c.name+'</span>' +
+            dgBadge +
+          '</div>' +
+          '<div style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:'+statusBg+';color:'+statusCol+';white-space:nowrap;flex-shrink:0">'+c.statusLabel+'</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">'+c.manufacturer+' · '+c.form+' · '+c.sites+'</div>' +
+        '<div style="font-size:11.5px;color:var(--text);line-height:1.4">' + c.hazard + '</div>' +
+        '<div style="font-size:10.5px;color:var(--muted);padding-top:6px;border-top:1px solid rgba(0,0,0,.08)">PPE: ' + c.ppe + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  if(inp) inp.value = '';
+}
+
+function sdsReportMissing() {
+  var name = document.getElementById('sds-missing-name');
+  var usage = document.getElementById('sds-missing-usage');
+  var confirm = document.getElementById('sds-missing-confirm');
+  if (!name || !name.value.trim()) { alert('Please enter the chemical name.'); return; }
+  var p = getProfile();
+  var payload = {
+    form_type: 'sds_missing_report',
+    chemical_name: name.value.trim(),
+    usage: usage ? usage.value.trim() : '',
+    reported_by: p ? p.name : 'Unknown',
+    reported_at: new Date().toISOString()
+  };
+  fbInsert('sds_missing', payload);
+  if (name) name.value = '';
+  if (usage) usage.value = '';
+  if (confirm) { confirm.style.display = 'block'; setTimeout(function(){ confirm.style.display='none'; }, 4000); }
+}
+
+function sdsBack() {
+  if (_sdsFromRole === "supervisor") {
+    goTo("screen-dash");
+    loadSuperDash();
+  } else {
+    goTo("screen-home");
+    var p = getProfile(); if (p) initHome(p);
+  }
+}
+
+function sdsSearch(query) {
+  var q = query.trim().toLowerCase();
+  var results = document.getElementById("sds-results");
+  var empty = document.getElementById("sds-empty");
+
+  if (!q) {
+    results.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  var matches = SDS_CHEMICALS.filter(function(c) {
+    return c.name.toLowerCase().indexOf(q) !== -1 ||
+           (c.trade && c.trade.toLowerCase().indexOf(q) !== -1) ||
+           (c.manufacturer && c.manufacturer.toLowerCase().indexOf(q) !== -1) ||
+           c.hazard.toLowerCase().indexOf(q) !== -1 ||
+           (c.sites && c.sites.toLowerCase().indexOf(q) !== -1);
+  });
+
+  if (matches.length === 0) {
+    results.innerHTML = '<div style="text-align:center;padding:30px 20px"><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">No SDS found for “' + query + '”</div><div style="font-size:12px;color:var(--muted);line-height:1.5">If this chemical is on site and not listed, notify your supervisor. Do not use an unknown chemical without a current SDS.</div></div>';
+    return;
+  }
+
+  results.innerHTML = matches.map(function(c) {
+    var borderCol = c.status==='expired' ? 'rgba(184,50,50,.35)' : c.status==='urgent' ? 'rgba(184,50,50,.2)' : c.status==='expiring' ? 'rgba(184,150,12,.3)' : 'rgba(0,0,0,.07)';
+    var isDG = c.dg && c.dg.indexOf('N/A') === -1 && c.dg.indexOf('not DG') === -1;
+    var dgBadge = isDG ? '<span style="background:#FAEBEB;color:#B83232;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.04em;margin-left:6px">DG</span>' : '';
+    var statusBg = c.status==='expired' ? '#FAEBEB' : c.status==='urgent' ? '#FFF0F0' : c.status==='expiring' ? '#FDF8E8' : '#E6F5ED';
+    var statusCol = c.status==='expired' ? '#B83232' : c.status==='urgent' ? '#B83232' : c.status==='expiring' ? '#8B6914' : '#1B6E3A';
+    return '<div class="fcard" style="background:' + c.colour + ';border-color:' + borderCol + '">' +
+      '<div class="fcard-body" style="gap:10px">' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">' +
+          '<div>' +
+            '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+              '<div style="width:9px;height:9px;border-radius:50%;background:' + c.dot + ';flex-shrink:0"></div>' +
+              '<span style="font-size:14px;font-weight:600;color:var(--text)">' + c.name + '</span>' +
+              dgBadge +
+            '</div>' +
+            (c.trade && c.trade !== c.name ? '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + c.trade + ' · ' + c.manufacturer + '</div>' : '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + c.manufacturer + '</div>') +
+          '</div>' +
+          '<div style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:' + statusBg + ';color:' + statusCol + ';white-space:nowrap;flex-shrink:0">' + c.statusLabel + '</div>' +
+        '</div>' +
+        (isDG ? '<div style="font-size:11px;color:#B83232;font-weight:600;padding:4px 8px;background:#FAEBEB;border-radius:5px;margin-top:2px">' + c.dg + '</div>' : '') +
+        '<div style="display:grid;grid-template-columns:1fr;gap:6px;margin-top:6px">' +
+          '<div><span style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Hazard</span><div style="font-size:12px;color:var(--text);line-height:1.4;margin-top:2px">' + c.hazard + '</div></div>' +
+          '<div><span style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">PPE required</span><div style="font-size:12px;color:var(--text);line-height:1.4;margin-top:2px">' + c.ppe + '</div></div>' +
+          '<div><span style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Emergency response</span><div style="font-size:12px;color:var(--text);line-height:1.4;margin-top:2px">' + c.emergency + '</div></div>' +
+          '<div><span style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Storage</span><div style="font-size:12px;color:var(--text);line-height:1.4;margin-top:2px">' + c.sites + ' — ' + c.storage + '</div></div>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--muted);margin-top:6px;padding-top:8px;border-top:1px solid rgba(0,0,0,.08)">' +
+          '<span>' + c.sds + '</span><span>Expires: ' + c.expiry + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RIGGING & ELECTRICAL
+// ═══════════════════════════════════════════════════════════════
+var _reType = null;
+var _reAction = null;
+var _reResult = null;
+
+function goToRiggingType(type) {
+  goToRiggingElectrical();
+  // Auto-select the type after screen loads
+  setTimeout(function(){ reSelectType(type); }, 150);
+}
+
+function goToRiggingElectrical() {
+  goTo("screen-rigging");
+  _reType = null; _reAction = null; _reResult = null;
+  document.getElementById("re-type-rigging").classList.remove("selected");
+  document.getElementById("re-type-electrical").classList.remove("selected");
+  document.getElementById("re-action-card").style.display = "none";
+  document.getElementById("re-form-card").style.display = "none";
+  document.getElementById("re-notes").value = "";
+  // Load register
+  reLoadRegister("rigging");
+}
+
+function reLoadRegister(type) {
+  var list = document.getElementById("re-register-list");
+  if (!list) return;
+  var items = (type === "rigging") ?
+    (typeof DEMO_RIGGING_ITEMS !== "undefined" ? DEMO_RIGGING_ITEMS : []) :
+    (typeof DEMO_ELECTRICAL_ITEMS !== "undefined" ? DEMO_ELECTRICAL_ITEMS : []);
+
+  if (!items || items.length === 0) {
+    list.innerHTML = "<div style='padding:14px;font-size:13px;color:var(--muted);text-align:center'>No items in register yet — use form below to add items.</div>";
+    return;
+  }
+
+  var statusColour = function(s) {
+    if (s === "In Service" || s === "Current") return "#1B6E3A";
+    if (s === "OVERDUE") return "#B8960C";
+    if (s === "FAILED" || s === "Out of Service" || s === "FAILED") return "#B83232";
+    return "#B83232";
+  };
+  var statusBg = function(s) {
+    if (s === "In Service" || s === "Current") return "#E6F5ED";
+    if (s === "OVERDUE") return "#FDF8E8";
+    return "#FFF0F0";
+  };
+
+  list.innerHTML = items.map(function(item, i) {
+    var col = statusColour(item.status);
+    var bg = statusBg(item.status);
+    var border = i < items.length-1 ? "border-bottom:1px solid var(--border);" : "";
+    if (type === "rigging") {
+      return "<div style='padding:11px 14px;" + border + "display:flex;align-items:center;gap:10px'>" +
+        "<div style='width:8px;height:8px;border-radius:50%;background:" + col + ";flex-shrink:0'></div>" +
+        "<div style='flex:1;min-width:0'>" +
+          "<div style='font-size:12.5px;font-weight:600;color:var(--text)'>" + item.id + " — " + item.desc + "</div>" +
+          "<div style='font-size:11px;color:var(--muted);margin-top:1px'>SWL " + item.swl + " · Next due: " + item.next_due + " · Last: " + item.result + "</div>" +
+        "</div>" +
+        "<div style='font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:" + bg + ";color:" + col + ";white-space:nowrap;flex-shrink:0'>" + item.status + "</div>" +
+      "</div>";
+    } else {
+      return "<div style='padding:11px 14px;" + border + "display:flex;align-items:center;gap:10px'>" +
+        "<div style='width:8px;height:8px;border-radius:50%;background:" + col + ";flex-shrink:0'></div>" +
+        "<div style='flex:1;min-width:0'>" +
+          "<div style='font-size:12.5px;font-weight:600;color:var(--text)'>" + item.id + " — " + item.desc + "</div>" +
+          "<div style='font-size:11px;color:var(--muted);margin-top:1px'>Next due: " + item.next_due + " · Tag: " + item.tag_colour + " · " + item.contractor + "</div>" +
+        "</div>" +
+        "<div style='font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:" + bg + ";color:" + col + ";white-space:nowrap;flex-shrink:0'>" + item.status + "</div>" +
+      "</div>";
+    }
+  }).join("");
+}
+
+function reSelectType(type) {
+  _reType = type;
+  _reAction = null;
+  document.getElementById("re-type-rigging").classList.toggle("selected", type === "rigging");
+  document.getElementById("re-type-electrical").classList.toggle("selected", type === "electrical");
+  reLoadRegister(type);
+
+  var grid = document.getElementById("re-action-grid");
+  var card = document.getElementById("re-action-card");
+  card.style.display = "block";
+  document.getElementById("re-form-card").style.display = "none";
+
+  if (type === "rigging") {
+    grid.innerHTML = [
+      {a:'inspection', l:'Inspection update'},
+      {a:'new_item',   l:'New item added to site'},
+      {a:'retired',    l:'Item retired / removed'},
+      {a:'repair',     l:'Returned from repair'}
+    ].map(function(x){ return '<button class="award-reason-btn" data-action="'+x.a+'" onclick="reSelectAction(this,this.dataset.action)">'+x.l+'</button>'; }).join('');
+  } else {
+    grid.innerHTML = [
+      {a:'test_tag',  l:'Test &amp; tag update'},
+      {a:'new_item',  l:'New item added to site'},
+      {a:'failed',    l:'Item failed — remove from service'},
+      {a:'repaired',  l:'Repaired and re-tested'}
+    ].map(function(x){ return '<button class="award-reason-btn" data-action="'+x.a+'" onclick="reSelectAction(this,this.dataset.action)">'+x.l+'</button>'; }).join('');
+  }
+}
+
+function reMakeField(labelText, inputHtml) {
+  var g = document.createElement('div');
+  g.className = 'fgroup';
+  var lbl = document.createElement('label');
+  lbl.className = 'flabel';
+  lbl.textContent = labelText;
+  g.appendChild(lbl);
+  g.insertAdjacentHTML('beforeend', inputHtml);
+  return g;
+}
+
+function reSelectAction(btn, action) {
+  _reAction = action;
+  document.querySelectorAll('#re-action-grid .award-reason-btn').forEach(function(b){ b.classList.remove('selected'); });
+  btn.classList.add('selected');
+
+  var formCard = document.getElementById('re-form-card');
+  var formTitle = document.getElementById('re-form-title');
+  var formBody = document.getElementById('re-form-body');
+  var resultCard = document.getElementById('re-result-card');
+
+  formCard.style.display = 'flex';
+  var showResult = (action==='inspection'||action==='test_tag'||action==='repaired'||action==='repair');
+  resultCard.style.display = showResult ? 'block' : 'none';
+
+  formTitle.textContent = (_reType==='rigging' ? 'Rigging item' : 'Electrical item') + ' details';
+  formBody.innerHTML = '';
+
+  var inputStyle = 'width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none';
+
+  formBody.appendChild(reMakeField('Item description / ID *', '<input type="text" id="re-item-desc" placeholder="e.g. 2T shackle #SH04 / Makita drill MODEL-123" style="'+inputStyle+'">'));
+  formBody.appendChild(reMakeField(action==='test_tag' ? 'Date of test and tag *' : 'Date of inspection / action *', '<input type="date" id="re-date" style="'+inputStyle+'">'));
+
+  if (showResult) {
+    var inspLabel = (_reType==='electrical' && action==='test_tag') ? 'Contractor / tester name *' : 'Inspector name *';
+    formBody.appendChild(reMakeField(inspLabel, '<input type="text" id="re-inspector" placeholder="Full name" style="'+inputStyle+'">'));
+  }
+
+  if (_reType==='electrical' && action==='test_tag') {
+    formBody.appendChild(reMakeField('Tag colour applied', '<select id="re-tag-colour" style="'+inputStyle+'"><option value="">Select tag colour...</option><option>Red — Jan-Mar</option><option>Green — Apr-Jun</option><option>Blue — Jul-Sep</option><option>Orange — Oct-Dec</option></select>'));
+  }
+
+  if (action==='new_item') {
+    formBody.appendChild(reMakeField('Make / model', '<input type="text" id="re-make" placeholder="e.g. Crosby, Genie, Makita" style="'+inputStyle+'">'));
+  }
+
+  var d = document.getElementById('re-date');
+  if (d) d.value = new Date().toISOString().split('T')[0];
+}
+
+
+function reSelectResult(result) {
+  _reResult = result;
+  document.getElementById("re-res-pass").style.opacity = result === "pass" ? "1" : ".45";
+  document.getElementById("re-res-fail").style.opacity = result === "fail" ? "1" : ".45";
+}
+
+function reSubmit() {
+  var desc = document.getElementById("re-item-desc");
+  var date = document.getElementById("re-date");
+  if (!desc || !desc.value.trim()) { alert("Please enter the item description."); return; }
+  if (!date || !date.value) { alert("Please enter the date."); return; }
+  if ((_reAction === "inspection" || _reAction === "test_tag" || _reAction === "repair" || _reAction === "repaired") && !_reResult) {
+    alert("Please select a pass or fail result."); return;
+  }
+
+  var payload = {
+    form_type: "rigging_electrical",
+    equipment_type: _reType,
+    action: _reAction,
+    item_description: desc.value.trim(),
+    inspection_date: date.value,
+    result: _reResult,
+    notes: document.getElementById("re-notes").value.trim(),
+    submitted_at: new Date().toISOString(),
+    submitted_by: (getProfile() || {}).name || "Unknown"
+  };
+
+  if (_reResult === "fail" || _reAction === "failed") {
+    payload.status = "Out of Service";
+  } else if (_reResult === "pass") {
+    payload.status = "Passed";
+  } else if (_reAction === "retired") {
+    payload.status = "Retired";
+  } else {
+    payload.status = "Added to register";
+  }
+
+  fbInsert("rigging_electrical", payload);
+
+  // Show success
+  var formCard = document.getElementById("re-form-card");
+  // Show success state
+  var isFail = (_reResult === 'fail' || _reAction === 'failed');
+  var successDiv = document.createElement('div');
+  successDiv.className = 'fcard';
+  successDiv.style.cssText = 'background:#E6F5ED;border-color:rgba(27,110,58,.2)';
+  var body = document.createElement('div');
+  body.className = 'fcard-body';
+  body.style.cssText = 'text-align:center;padding:20px';
+  body.innerHTML = '<div style="font-size:28px;margin-bottom:10px">' + (isFail ? '⚠️' : '✓') + '</div>' +
+    '<div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px">Update submitted</div>' +
+    '<div style="font-size:12px;color:var(--muted);line-height:1.5">' + (isFail ? 'Item has been marked Out of Service. The Slán Safety portal has been notified.' : 'Register entry saved. Slán Safety portal will be updated.') + '</div>';
+  var anotherBtn = document.createElement('button');
+  anotherBtn.textContent = 'Submit another';
+  anotherBtn.style.cssText = 'margin-top:16px;padding:11px 24px;border-radius:var(--rs);border:none;background:var(--deep);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit';
+  anotherBtn.onclick = goToRiggingElectrical;
+  body.appendChild(anotherBtn);
+  successDiv.appendChild(body);
+  formCard.innerHTML = '';
+  formCard.appendChild(successDiv);
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// MULTILINGUAL SUPPORT
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// COMPREHENSIVE TRANSLATION DICTIONARY
+// All UI strings for full app translation
+// ═══════════════════════════════════════════════════════════════
+var LANG = {
+  en: { _name: 'English' },
+  tl: {
+    _name: 'Filipino/Tagalog',
+    // Navigation
+    'Home': 'Tahanan',
+    'History': 'Kasaysayan',
+    'Profile': 'Profile',
+    'Notifications': 'Mga Abiso',
+    // Worker tiles
+    'Daily Pre-Start': 'Araw-araw na Pre-Start',
+    'Site inspection checklist': 'Checklist ng inspeksyon sa site',
+    'Plant Pre-Start': 'Plant Pre-Start',
+    'Pre-start check for plant & equipment': 'Suriin ang makinarya at kagamitan',
+    'Toolbox Talk': 'Toolbox Talk',
+    'Toolbox Talk': 'Toolbox Talk',
+    'Report Hazard': 'Mag-ulat ng Panganib',
+    'Log site hazard': 'I-log ang panganib sa site',
+    'Report Incident': 'Mag-ulat ng Insidente',
+    'Injury or near miss': 'Pinsala o malapit na aksidente',
+    'Take 5': 'Take 5',
+    'Pre-task safety check': 'Suriin bago magsimula ng trabaho',
+    'SWMS Library': 'SWMS Library',
+    'Read & sign SWMS': 'Basahin at lagdaan ang SWMS',
+    'SDS Lookup': 'Hanapin ang SDS',
+    'Search safety data sheets': 'Hanapin ang safety data sheets',
+    'Safety Stars': 'Safety Stars',
+    'Sign In / Out': 'Mag-sign In / Out',
+    'Not signed in yet': 'Hindi pa naka-sign in',
+    'Signed in': 'Naka-sign in na',
+    'Emergency': 'Emergency',
+    'Psychosocial / Concern': 'Psychosocial / Alalahanin',
+    'Confidential — direct to provider': 'Kumpidensyal — direkta sa provider',
+    // Screen titles
+    'Good morning': 'Magandang umaga',
+    'Good afternoon': 'Magandang hapon',
+    'Good evening': 'Magandang gabi',
+    'Sign In': 'Mag-sign In',
+    'Sign Out': 'Mag-sign Out',
+    'Daily Site Pre-Start': 'Araw-araw na Site Pre-Start',
+    'Site inspection before work commences': 'Inspeksyon ng site bago magsimula ang trabaho',
+    'Plant Pre-Start Check': 'Pagsusuri ng Plant bago magsimula',
+    'Report a Hazard': 'Mag-ulat ng Panganib',
+    'Report an Incident': 'Mag-ulat ng Insidente',
+    'Toolbox Talk': 'Toolbox Talk',
+    'Safety Stars': 'Safety Stars',
+    'Emergency Contacts': 'Mga Emergency Contact',
+    'My History': 'Aking Kasaysayan',
+    'Notifications': 'Mga Abiso',
+    'Take 5 Pre-Task Check': 'Take 5 — Suriin bago magsimula',
+    'Stop and think before you start. 5 questions — 2 minutes.': 'Ihinto at mag-isip bago magsimula. 5 tanong — 2 minuto.',
+    // Form labels (flabel)
+    'Full name': 'Buong pangalan',
+    'Company / employer': 'Kumpanya / employer',
+    'Trade / role': 'Trabaho / papel',
+    'Preferred language / Kagustuhang wika': 'Kagustuhang wika',
+    'Phone number': 'Numero ng telepono',
+    'Date of birth': 'Petsa ng kapanganakan',
+    'Driver licence expiry': 'Petsa ng pag-expire ng lisensya sa pagmamaneho',
+    'White Card expiry': 'Petsa ng pag-expire ng White Card',
+    'HRWL expiry': 'Petsa ng pag-expire ng HRWL',
+    'First Aid expiry': 'Petsa ng pag-expire ng First Aid',
+    'Hazard type': 'Uri ng panganib',
+    'Severity': 'Kalubhaan',
+    'Location on site': 'Lokasyon sa site',
+    'Description': 'Paglalarawan',
+    'Immediate action taken': 'Agarang aksyon na ginawa',
+    'Your signature': 'Iyong pirma',
+    'Date': 'Petsa',
+    'Time': 'Oras',
+    'Notes': 'Mga tala',
+    "Weather assessment for today's work": "Pagsusuri ng panahon para sa trabaho ngayon",
+    'What task are you about to perform?': 'Anong trabaho ang iyong gagawin?',
+    // Buttons
+    'Submit': 'Isumite',
+    'Cancel': 'Kanselahin',
+    'Save': 'I-save',
+    'Sign In': 'Mag-sign In',
+    'Sign Out': 'Mag-sign Out',
+    'Confirm Sign In': 'Kumpirmahin ang Pag-sign In',
+    'Confirm Sign Out': 'Kumpirmahin ang Pag-sign Out',
+    'Sign Toolbox Talk': 'Lagdaan ang Toolbox Talk',
+    'Submit Report': 'Isumite ang Ulat',
+    'Submit Take 5 and proceed': 'Isumite ang Take 5 at magpatuloy',
+    'Back to home': 'Bumalik sa tahanan',
+    // FFD and EOS declarations
+    'I confirm I am fit for work today': 'Kinukumpirma ko na ako ay handa para sa trabaho ngayon',
+    'I confirm that I am fit for duty': 'Kinukumpirma ko na ako ay handa para sa tungkulin',
+    'I have not sustained any injury, pain or health concern during my shift today': 'Wala akong natanggap na pinsala, sakit o alalahanin sa kalusugan sa aking shift ngayon',
+    'I have not been involved in or witnessed any incident or near miss today': 'Hindi ako nasangkot o nakasaksi ng anumang insidente o malapit na aksidente ngayon',
+    'I have not identified any new hazards that have not already been reported': 'Wala akong natukoy na bagong panganib na hindi pa naiuulat',
+    'My work area has been left in a safe and tidy condition': 'Ang aking lugar ng trabaho ay naiwan sa ligtas at maayos na kondisyon',
+    // Take 5 questions
+    'Have I identified all hazards associated with this task?': 'Natukoy ko na ba ang lahat ng panganib na may kaugnayan sa gawaing ito?',
+    'Do I have the right controls in place to manage those hazards?': 'Mayroon ba akong tamang mga kontrol para pamahalaan ang mga panganib na iyon?',
+    'Do I have the right tools, equipment and PPE for this task?': 'Mayroon ba akong tamang mga kasangkapan, kagamitan at PPE para sa gawaing ito?',
+    'Is the area I am working in safe — no uncontrolled hazards from other trades?': 'Ligtas ba ang lugar na aking pinagtratrabahuhan — walang hindi kontroladong panganib mula sa ibang trabaho?',
+    "Am I fit and capable of doing this task safely right now?": "Ako ba ay handa at may kakayahang gawin ang gawaing ito nang ligtas ngayon?",
+    'Yes — hazards identified': 'Oo — natukoy ang mga panganib',
+    'No — need to review': 'Hindi — kailangan ng pagsusuri',
+    'Yes — controls in place': 'Oo — may mga kontrol',
+    'Yes — all present': 'Oo — lahat ay nandito',
+    'No — something missing': 'Hindi — may kulang',
+    'Yes — area is safe': 'Oo — ligtas ang lugar',
+    'No — area not clear': 'Hindi — hindi ligtas ang lugar',
+    'Yes — I am fit to proceed': 'Oo — handa ako magpatuloy',
+    'No — not fit to proceed': 'Hindi — hindi handa',
+    // SDS
+    'Search chemical or product name': 'Hanapin ang pangalan ng kemikal o produkto',
+    'Chemical not listed?': 'Hindi nakalista ang kemikal?',
+    'Report to supervisor': 'Iulat sa superbisor',
+    'Browse all 10 chemicals on register': 'Tingnan ang lahat ng 10 kemikal',
+    // Status labels
+    'Signed in': 'Naka-sign in',
+    'Not signed in yet': 'Hindi pa naka-sign in',
+    'Current': 'Kasalukuyan',
+    'Expired': 'Nag-expire na',
+    'Expiring Soon': 'Malapit nang mag-expire',
+    'Open': 'Bukas',
+    'Resolved': 'Naayos na',
+    'Pass': 'Pumasa',
+    'Fail': 'Nabigo',
+    'In Service': 'Gumagamit',
+    'Out of Service': 'Hindi gumagamit',
+    // Emergency
+    'Call 000': 'Tawagan ang 000',
+    'Ambulance · Police · Fire': 'Ambulansya · Pulis · Sunog',
+    'Poisons Information': 'Impormasyon ng Lason',
+  },
+  vi: {
+    _name: 'Vietnamese',
+    'Home': 'Trang chủ',
+    'History': 'Lịch sử',
+    'Profile': 'Hồ sơ',
+    'Notifications': 'Thông báo',
+    'Daily Pre-Start': 'Kiểm tra hàng ngày',
+    'Site inspection checklist': 'Danh sách kiểm tra công trường',
+    'Plant Pre-Start': 'Kiểm tra máy móc',
+    'Report Hazard': 'Báo cáo nguy hiểm',
+    'Log site hazard': 'Ghi lại mối nguy hiểm',
+    'Report Incident': 'Báo cáo sự cố',
+    'Injury or near miss': 'Thương tích hoặc suýt xảy ra',
+    'Take 5': 'Dừng lại 5 phút',
+    'Pre-task safety check': 'Kiểm tra an toàn trước khi làm',
+    'SWMS Library': 'Thư viện SWMS',
+    'SDS Lookup': 'Tra cứu SDS',
+    'Safety Stars': 'Ngôi sao An toàn',
+    'Sign In / Out': 'Ký vào / ra',
+    'Emergency': 'Khẩn cấp',
+    'Good morning': 'Chào buổi sáng',
+    'Good afternoon': 'Chào buổi chiều',
+    'Good evening': 'Chào buổi tối',
+    'Submit': 'Gửi',
+    'Cancel': 'Hủy',
+    'Save': 'Lưu',
+    'Sign In': 'Ký vào',
+    'Sign Out': 'Ký ra',
+    'I confirm I am fit for work today': 'Tôi xác nhận tôi đủ sức khỏe làm việc hôm nay',
+    'I have not sustained any injury, pain or health concern during my shift today': 'Tôi không bị thương, đau hoặc có vấn đề sức khỏe trong ca làm việc hôm nay',
+    'I have not been involved in or witnessed any incident or near miss today': 'Tôi không liên quan hoặc chứng kiến sự cố nào hôm nay',
+    'I have not identified any new hazards that have not already been reported': 'Tôi không phát hiện mối nguy hiểm mới nào chưa được báo cáo',
+    'My work area has been left in a safe and tidy condition': 'Khu vực làm việc của tôi đã được để lại trong tình trạng an toàn và gọn gàng',
+    'Call 000': 'Gọi 000',
+  },
+  sm: {
+    _name: 'Samoan',
+    'Home': 'Fale',
+    'History': 'Talafaasolopito',
+    'Profile': 'Faailoga',
+    'Notifications': 'Faasilasilaga',
+    'Daily Pre-Start': 'Siaki Aso Uma',
+    'Site inspection checklist': 'Lisi o siakiga o le nofoaga',
+    'Plant Pre-Start': 'Siaki Masini',
+    'Report Hazard': 'Lipoti Lamatiaga',
+    'Log site hazard': 'Faamaumau lamatiaga',
+    'Report Incident': 'Lipoti Faalavelave',
+    'Injury or near miss': 'Manua pe latalata atu',
+    'Take 5': 'Sosopo 5',
+    'Pre-task safety check': 'Siaki saogalemu aoa uma galuega',
+    'SWMS Library': 'Faletusi SWMS',
+    'SDS Lookup': 'Saili SDS',
+    'Safety Stars': 'Fetu Saogalemu',
+    'Sign In / Out': 'Saini In / Out',
+    'Emergency': 'Faafuasei',
+    'Good morning': 'Manuia le taeao',
+    'Good afternoon': 'Manuia le aoauli',
+    'Good evening': 'Manuia le afiafi',
+    'Submit': 'Auina atu',
+    'Cancel': 'Soloia',
+    'Save': 'Teu',
+    'Sign In': 'Saini In',
+    'Sign Out': 'Saini Out',
+    'I confirm I am fit for work today': 'Ou te faamaonia o ou maua le malosi e galue i le aso',
+    'I have not sustained any injury, pain or health concern during my shift today': 'Ou te lei mafatia i se manua, tiga, pe faafitauli o le soifua maloloina i lou vaaiga',
+    'Call 000': 'Valaau le 000',
+  }
+};
+
+var _currentLang = 'en';
+
+// Apply translations to the whole visible page
+function applyLanguage(lang) {
+  if (!LANG[lang]) return;
+  _currentLang = lang;
+
+  // Save to profile
+  var p = getProfile();
+  if (p) { p.language = lang; localStorage.setItem('slan_profile', JSON.stringify(p)); }
+
+  var t = LANG[lang];
+  if (lang === 'en') {
+    // Reload page state to restore English (simplest approach)
+    var currentScreen = document.querySelector('.screen.active');
+    if (currentScreen) {
+      // Re-init the current screen
+      if (typeof initHome === 'function' && p) initHome(p);
+    }
+    return;
+  }
+
+  // Walk all text nodes in the document and translate matching strings
+  translateAllVisibleText(t);
+
+  // Also update tile subs specifically
+  Object.keys(t).forEach(function(key) {
+    document.querySelectorAll('.tile-name,.tile-sub,.flabel,.fcard-hdr,.submit-btn,.cbtn,.back-btn + *').forEach(function(el) {
+      if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3) {
+        var txt = el.textContent.trim();
+        if (t[txt]) el.textContent = t[txt];
+      }
+    });
+  });
+}
+
+function translateAllVisibleText(translations) {
+  // Selectors for all translatable text elements
+  var selectors = [
+    '.tile-name', '.tile-sub', '.flabel', '.fcard-hdr',
+    '.submit-btn', '.cbtn', 'h1', 'h2', '.tbar-greeting p',
+    '.eos-btn span', '.check-text', '.nav .ni-label',
+    '#ffd-label', '#ffd-text', '.talk-section-title',
+    '.sc-label', '.site-ps-banner-title', '.site-ps-banner-sub'
+  ];
+
+  selectors.forEach(function(sel) {
+    document.querySelectorAll(sel).forEach(function(el) {
+      // Only translate leaf text nodes
+      if (el.children.length === 0) {
+        var txt = el.textContent.trim();
+        if (translations[txt]) el.textContent = translations[txt];
+      } else if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3) {
+        var txt2 = el.textContent.trim();
+        if (translations[txt2]) el.textContent = translations[txt2];
+      }
+    });
+  });
+
+  // Also translate placeholder text on inputs
+  document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(function(el) {
+    var ph = el.getAttribute('placeholder');
+    if (ph && translations[ph]) el.setAttribute('placeholder', translations[ph]);
+  });
+}
+
+// Hook into goTo so translations apply on every screen change
+var _origGoTo = typeof goTo === 'function' ? goTo : null;
+function goToWithTranslation(screen) {
+  if (_origGoTo) _origGoTo(screen);
+  if (_currentLang && _currentLang !== 'en') {
+    setTimeout(function() {
+      translateAllVisibleText(LANG[_currentLang]);
+    }, 50);
+  }
+}
+
+function loadLanguageFromProfile() {
+  var p = getProfile();
+  if (p && p.language && p.language !== 'en') {
+    var sel = document.getElementById('p-language');
+    if (sel) sel.value = p.language;
+    _currentLang = p.language;
+    setTimeout(function() {
+      applyLanguage(p.language);
+    }, 200);
+  }
+}
+
+
+var _currentLang = 'en';
+
+function applyLanguage(lang) {
+  if (!LANG[lang]) return;
+  _currentLang = lang;
+  var t = LANG[lang];
+  // Save to profile
+  var p = getProfile();
+  if (p) { p.language = lang; localStorage.setItem('slan_profile', JSON.stringify(p)); }
+  // Apply to tile names if on home screen
+  var tiles = {
+    'Sign In / Out': t.signin_tile,
+    'Daily Pre-Start': t.prestart_tile,
+    'Plant Pre-Start': t.plant_tile,
+    'Toolbox Talk': t.talk_tile,
+    'Report Hazard': t.hazard_tile,
+    'Report Incident': t.incident_tile,
+    'SWMS Library': t.swms_tile,
+    'SDS Lookup': t.sds_tile,
+    'Safety Stars': t.stars_tile,
+    'Emergency': t.emergency_tile,
+    'Take 5': t.take5_tile,
+  };
+  document.querySelectorAll('.tile-name').forEach(function(el) {
+    var en = el.textContent.trim();
+    if (tiles[en]) el.textContent = tiles[en];
+  });
+  // FFD label
+  var ffd = document.getElementById('ffd-label');
+  if (ffd) ffd.textContent = t.ffd_label;
+  // Greeting
+  var greet = document.getElementById('h-greeting');
+  if (greet && p) {
+    var hr = new Date().getHours();
+    var timeGreet = hr < 12 ? t.home_greeting : hr < 17 ? (lang==='en'?'Good afternoon':t.home_greeting) : (lang==='en'?'Good evening':t.home_greeting);
+    greet.textContent = timeGreet + ', ' + p.name.split(' ')[0];
+  }
+}
+
+function loadLanguageFromProfile() {
+  var p = getProfile();
+  if (p && p.language && p.language !== 'en') {
+    var sel = document.getElementById('p-language');
+    if (sel) sel.value = p.language;
+    applyLanguage(p.language);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAKE 5 PRE-TASK ASSESSMENT
+// ═══════════════════════════════════════════════════════════════
+var _t5Answers = {};
+var _t5FromPlant = false;
+
+function goToTake5(fromPlant) {
+  _t5Answers = {};
+  _t5FromPlant = fromPlant || false;
+  goTo('screen-take5');
+  document.getElementById('t5-task').value = '';
+  document.getElementById('t5-q1-hazards').value = '';
+  document.getElementById('t5-q2-controls').value = '';
+  document.getElementById('t5-stop-warning').style.display = 'none';
+  document.getElementById('t5-submit-wrap').style.display = 'none';
+  // Reset all buttons
+  [1,2,3,4,5].forEach(function(n) {
+    var y = document.getElementById('t5-q'+n+'-yes');
+    var no = document.getElementById('t5-q'+n+'-no');
+    if (y) { y.classList.remove('selected'); y.style.background=''; }
+    if (no) { no.classList.remove('selected'); no.style.background=''; }
+  });
+}
+
+function t5Answer(q, answer) {
+  _t5Answers[q] = answer;
+  var yBtn = document.getElementById('t5-q'+q+'-yes');
+  var nBtn = document.getElementById('t5-q'+q+'-no');
+  if (yBtn) { yBtn.style.background = answer==='yes' ? '#E6F5ED' : ''; yBtn.style.borderColor = answer==='yes' ? '#1B6E3A' : ''; }
+  if (nBtn) { nBtn.style.background = answer==='no' ? '#FFF0F0' : ''; }
+
+  var hasNo = Object.values(_t5Answers).indexOf('no') !== -1;
+  var allAnswered = Object.keys(_t5Answers).length === 5;
+  var stopWarn = document.getElementById('t5-stop-warning');
+  var submitWrap = document.getElementById('t5-submit-wrap');
+
+  if (stopWarn) stopWarn.style.display = hasNo ? 'block' : 'none';
+  if (submitWrap) submitWrap.style.display = (allAnswered && !hasNo) ? 'block' : 'none';
+}
+
+function take5Submit() {
+  var task = document.getElementById('t5-task').value.trim();
+  if (!task) { alert('Please describe the task you are about to perform.'); return; }
+  var p = getProfile();
+  var payload = {
+    form_type: 'take5',
+    worker_name: p ? p.name : 'Unknown',
+    company: p ? p.company : '',
+    task_description: task,
+    q1_hazards_identified: document.getElementById('t5-q1-hazards').value,
+    q1_answer: _t5Answers[1],
+    q2_controls_in_place: document.getElementById('t5-q2-controls').value,
+    q2_answer: _t5Answers[2],
+    q3_equipment_ready: _t5Answers[3],
+    q4_area_safe: _t5Answers[4],
+    q5_fit_to_proceed: _t5Answers[5],
+    all_yes: Object.values(_t5Answers).every(function(a){ return a==='yes'; }),
+    submitted_at: new Date().toISOString()
+  };
+  fbInsert('take5_assessments', payload);
+
+  // Show success
+  var body = document.querySelector('#screen-take5 .fbody');
+  if (body) {
+    body.innerHTML = '<div style="text-align:center;padding:60px 20px">' +
+      '<div style="font-size:48px;margin-bottom:16px">✓</div>' +
+      '<div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px">Take 5 complete</div>' +
+      '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:24px">Your pre-task assessment has been recorded and time-stamped. You are clear to proceed. Stay safe.</div>' +
+      '<button onclick="take5Back()" style="padding:13px 30px;border-radius:var(--rs);border:none;background:var(--deep);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Back to home</button>' +
+    '</div>';
+  }
+}
+
+function take5Back() {
+  var p = getProfile();
+  if (p && p.role === 'Site Supervisor') { goTo('screen-dash'); loadSuperDash(); }
+  else { goTo('screen-home'); if (p) { initHome(p); updateAllTileSubs(p); } }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EMERGENCY MUSTER SYSTEM
+// ═══════════════════════════════════════════════════════════════
+var _musterStatus = {};
+
+function goToMuster() {
+  goTo('screen-muster');
+  _musterStatus = {};
+  musterLoadWorkers();
+}
+
+function musterLoadWorkers() {
+  var list = document.getElementById('muster-list');
+  var totalEl = document.getElementById('muster-total');
+  var safeEl = document.getElementById('muster-safe');
+  var missingEl = document.getElementById('muster-missing');
+  if (!list) return;
+
+  var workers = [];
+  if (DEMO_MODE || localStorage.getItem('slan_demo')) {
+    workers = DEMO_SIGNINS.filter(function(s){ return s.type === 'Sign In'; }).map(function(s){
+      return { name: s.worker_name, company: s.company, role: s.role };
+    });
+  }
+
+  if (totalEl) totalEl.textContent = workers.length;
+  if (safeEl) safeEl.textContent = '0';
+  if (missingEl) missingEl.textContent = workers.length;
+
+  list.innerHTML = workers.map(function(w, idx) {
+    var id = 'muster-' + idx;
+    var initials = w.name.split(' ').map(function(n){ return n[0]; }).join('').slice(0,2);
+    return '<div id="' + id + '" style="background:#fff;border:2px solid #FFB3B3;border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px">' +
+      '<div style="width:40px;height:40px;border-radius:50%;background:#FAEBEB;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#B83232;flex-shrink:0">' + initials + '</div>' +
+      '<div style="flex:1">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--text)">' + w.name + '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">' + w.company + ' · ' + w.role + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px">' +
+        '<button data-idx="' + idx + '" data-name="' + w.name + '" onclick="musterMark(this,\'safe\')" style="padding:7px 12px;border-radius:7px;border:1.5px solid #1B6E3A;background:#E6F5ED;color:#1B6E3A;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">SAFE</button>' +
+        '<button data-idx="' + idx + '" data-name="' + w.name + '" onclick="musterMark(this,\'missing\')" style="padding:7px 12px;border-radius:7px;border:1.5px solid #B83232;background:#FFF0F0;color:#B83232;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">MISSING</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function musterMark(btn, status) {
+  var idx = btn.dataset.idx;
+  var name = btn.dataset.name;
+  _musterStatus[idx] = status;
+  var card = document.getElementById('muster-' + idx);
+  if (card) {
+    card.style.borderColor = status === 'safe' ? '#1B6E3A' : '#B83232';
+    card.style.background = status === 'safe' ? '#E6F5ED' : '#FFF0F0';
+    card.querySelector('div:first-child').style.background = status === 'safe' ? '#E6F5ED' : '#FAEBEB';
+    card.querySelector('div:first-child').style.color = status === 'safe' ? '#1B6E3A' : '#B83232';
+  }
+  var safeCount = Object.values(_musterStatus).filter(function(s){ return s==='safe'; }).length;
+  var totalEl = document.getElementById('muster-total');
+  var total = totalEl ? parseInt(totalEl.textContent) : 0;
+  var safeEl = document.getElementById('muster-safe');
+  var missingEl = document.getElementById('muster-missing');
+  if (safeEl) safeEl.textContent = safeCount;
+  if (missingEl) missingEl.textContent = total - safeCount;
+}
+
+function musterComplete() {
+  var totalEl = document.getElementById('muster-total');
+  var safeEl = document.getElementById('muster-safe');
+  var total = totalEl ? parseInt(totalEl.textContent) : 0;
+  var safe = safeEl ? parseInt(safeEl.textContent) : 0;
+  var missing = total - safe;
+  var p = getProfile();
+  var payload = {
+    form_type: 'emergency_muster',
+    supervisor: p ? p.name : 'Unknown',
+    total_on_site: total,
+    accounted_for: safe,
+    unaccounted: missing,
+    muster_status: _musterStatus,
+    submitted_at: new Date().toISOString()
+  };
+  fbInsert('emergency_musters', payload);
+  alert('Muster report submitted.\n\nAccounted for: ' + safe + ' of ' + total + '\nUnaccounted: ' + missing + '\n\n' + (missing > 0 ? 'SEARCH for ' + missing + ' unaccounted worker(s) immediately.' : 'All workers accounted for.'));
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// MULTI-SITE SWITCHER
+// ═══════════════════════════════════════════════════════════════
+function switchSite(siteName) {
+  if (typeof SITE !== 'undefined') SITE = siteName;
+  var siteEl = document.getElementById('d-site-name');
+  if (siteEl) siteEl.textContent = siteName;
+  // Reload dashboard data for new site
+  if (typeof loadSuperDash === 'function') loadSuperDash();
+}
+
+function showMultiSite() {
+  // Show multi-site switcher in demo mode
+  var switcher = document.getElementById('d-site-switcher');
+  if (switcher && (DEMO_MODE || localStorage.getItem('slan_demo'))) {
+    switcher.style.display = 'block';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPANY DOCUMENTS
+// ═══════════════════════════════════════════════════════════════
+function goToCompanyDocs() {
+  goTo('screen-company-docs');
+}
+
+function generateComplianceCert() {
+  var p = getProfile();
+  var company = p ? p.company : 'Murphy Civil Construction';
+  var today = new Date().toLocaleDateString('en-AU', {day:'numeric', month:'long', year:'numeric'});
+  var msg =
+    'WHS COMPLIANCE CERTIFICATE\n' +
+    '══════════════════════════\n\n' +
+    'Company: ' + company + '\n' +
+    'Prepared by: Slán Safety Pty Ltd\n' +
+    'Period: April 2026\n' +
+    'Date issued: ' + today + '\n\n' +
+    'COMPLIANCE SUMMARY\n' +
+    '──────────────────\n' +
+    '✓ Sign-in compliance rate:        98%\n' +
+    '✓ Pre-start completion rate:      94%\n' +
+    '✓ Toolbox talk sign-off:          88%\n' +
+    '✓ Hazard close-out within 14d:    83%\n' +
+    '✓ SDS register current:           90%\n' +
+    '✓ Worker licence compliance:      93%\n' +
+    '✓ LTI-free days:                  47\n' +
+    '✓ Incidents this period:           3 (0 notifiable)\n\n' +
+    'INSURANCE CERTIFICATES\n' +
+    '──────────────────────\n' +
+    '✓ Public Liability $20M — current (exp. 30 Jun 2026)\n' +
+    '⚠ Workers Compensation — expiring in 28 days\n' +
+    '✓ Plant & Equipment — current (exp. 15 Aug 2026)\n\n' +
+    'Overall compliance rating: 82% AMBER\n\n' +
+    'This certificate is generated from live WHS management\n' +
+    'data maintained by Slán Safety Pty Ltd on behalf of\n' +
+    company + '.\n\n' +
+    'Slán Safety Pty Ltd | slan-safety.com.au';
+
+  // In a real app this would generate a PDF — for demo we show an alert
+  alert(msg + '\n\n[In the live system this generates a signed PDF ready to email or attach to a tender submission]');
+}
+
+// Also translate form instruction text when language changes
+var _origApplyLanguage = typeof applyLanguage === 'function' ? applyLanguage : null;
+function applyLanguage(lang) {
+  if (_origApplyLanguage) _origApplyLanguage(lang);
+  _currentLang = lang;
+  // Save to profile
+  var p = getProfile();
+  if (p) { p.language = lang; localStorage.setItem('slan_profile', JSON.stringify(p)); }
+  if (lang === 'en') return;
+  // Translate key instruction text on visible screen
+  var instructionIds = ['sds-empty', 'ffd-label'];
+  instructionIds.forEach(function(id) { translateElement(id, lang); });
+}
+
+
+// ─── Contact Slán Safety ────────────────────────────────────
+function goToContactSlan() {
+  var p = getProfile();
+  goTo('screen-contact-slan');
+  // Set logo
+  var logoEl = document.getElementById('cs-logo');
+  if (logoEl) {
+    var src = document.querySelector('.tbar-logo img');
+    if (src) logoEl.src = src.src;
+  }
+  // Pre-fill name from profile
+  var nameEl = document.getElementById('cs-name');
+  if (nameEl && p) nameEl.value = p.name || '';
+  // Reset form
+  var subj = document.getElementById('cs-subject');
+  var msg  = document.getElementById('cs-message');
+  if (subj) subj.value = '';
+  if (msg)  msg.value = '';
+}
+
+function contactSlanBack() {
+  var p = getProfile();
+  if (!p) { goTo('screen-onboarding'); return; }
+  if (p.role === 'Company Director') { goToAnalytics('director'); }
+  else if (p.role === 'Site Supervisor') { goTo('screen-dash'); loadSuperDash(); }
+  else { goTo('screen-home'); initHome(p); }
+}
+
+function submitContactSlan() {
+  var name    = (document.getElementById('cs-name').value || '').trim();
+  var subject = document.getElementById('cs-subject').value;
+  var message = (document.getElementById('cs-message').value || '').trim();
+
+  if (!name)    { alert('Please enter your name.'); return; }
+  if (!subject) { alert('Please select a subject.'); return; }
+  if (!message) { alert('Please type your message.'); return; }
+
+  var p = getProfile();
+  var company = p ? p.company : '';
+  var role    = p ? p.role : '';
+
+  // Build mailto link — opens device email app pre-filled
+  var to      = 'hello@slansafety.com.au';
+  var subLine = encodeURIComponent('[Slán Safety App] ' + subject + ' — ' + name);
+  var body    = encodeURIComponent(
+    'From: ' + name + '\n' +
+    'Company: ' + company + '\n' +
+    'Role: ' + role + '\n' +
+    'Subject: ' + subject + '\n\n' +
+    message + '\n\n' +
+    '---\nSent via Slán Safety WHS App'
+  );
+
+  window.location.href = 'mailto:' + to + '?subject=' + subLine + '&body=' + body;
+
+  // Also save to Firebase
+  if (typeof fbInsert === 'function') {
+    fbInsert('contact_messages', {
+      from_name: name, company: company, role: role,
+      subject: subject, message: message,
+      submitted_at: new Date().toISOString()
+    });
+  }
+
+  // Show confirmation
+  setTimeout(function() {
+    var body = document.querySelector('#screen-contact-slan .fbody');
+    if (body) {
+      body.innerHTML =
+        '<div style="text-align:center;padding:60px 20px">' +
+          '<div style="font-size:48px;margin-bottom:16px">✉️</div>' +
+          '<div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px">Message sent</div>' +
+          '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:24px">Your message has been sent to Slán Safety. We aim to respond within one business day.</div>' +
+          '<button onclick="contactSlanBack()" style="padding:13px 30px;border-radius:var(--rs);border:none;background:var(--deep);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Done</button>' +
+        '</div>';
+    }
+  }, 500);
+}
+
+
+</script>
+</body>
+</html>
