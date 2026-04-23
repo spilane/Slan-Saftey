@@ -2650,10 +2650,207 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div style="width:36px"></div>
   </div>
-  <div style="padding:40px 20px;text-align:center">
-    <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">Hot Works Permit</div>
-    <div style="font-size:13px;color:var(--muted)">Screen loaded successfully — form coming next</div>
+  <!-- Full Hot Works Permit form HTML -->
+<!-- Replaces the placeholder "Screen loaded successfully — form coming next" -->
+
+<div class="tbar-greeting" style="margin-top:10px">
+  <h1 style="font-size:19px">Hot Works Permit</h1>
+  <p style="font-size:12px">Fill in all fields — submit when complete</p>
+</div>
+
+<div style="padding:18px;padding-bottom:120px;display:flex;flex-direction:column;gap:14px">
+
+  <!-- Permit identification -->
+  <div class="fcard">
+    <div class="fcard-hdr">Permit Identification</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Permit number</label>
+        <input type="text" id="hw-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fgroup">
+          <label class="flabel">Date</label>
+          <input type="text" id="hw-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Site</label>
+          <input type="text" id="hw-site" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Applicant -->
+  <div class="fcard">
+    <div class="fcard-hdr">Applicant</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Worker name</label>
+        <input type="text" id="hw-worker-name" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Company</label>
+        <input type="text" id="hw-company" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Role / trade</label>
+        <input type="text" id="hw-role" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Work details -->
+  <div class="fcard">
+    <div class="fcard-hdr">Work Details</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Type of hot works <span class="req">*</span></label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
+          <button class="ps-btn" data-hwtype="Welding" onclick="hwSelectType(this)">Welding</button>
+          <button class="ps-btn" data-hwtype="Grinding" onclick="hwSelectType(this)">Grinding</button>
+          <button class="ps-btn" data-hwtype="Oxy Cutting" onclick="hwSelectType(this)">Oxy Cutting</button>
+          <button class="ps-btn" data-hwtype="Soldering" onclick="hwSelectType(this)">Soldering</button>
+          <button class="ps-btn" data-hwtype="Thermal Lance" onclick="hwSelectType(this)">Thermal Lance</button>
+          <button class="ps-btn" data-hwtype="Plasma Cutting" onclick="hwSelectType(this)">Plasma Cutting</button>
+          <button class="ps-btn" data-hwtype="Other" onclick="hwSelectType(this)">Other</button>
+        </div>
+      </div>
+      <div class="fgroup" id="hw-type-other-wrap" style="display:none">
+        <label class="flabel">Describe <span class="req">*</span></label>
+        <input type="text" id="hw-type-other" placeholder="Describe the hot works activity" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Work description <span class="req">*</span></label>
+        <textarea id="hw-description" placeholder="What's being welded / cut / ground? Materials, scope, purpose." rows="3" style="font-size:14px"></textarea>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Location on site <span class="req">*</span></label>
+        <input type="text" id="hw-location" placeholder="e.g. Level 3 core wall, west side" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Equipment / tools being used <span class="req">*</span></label>
+        <input type="text" id="hw-equipment" placeholder="e.g. MIG welder, 9-inch angle grinder, oxy torch" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Gas / fuel being used</label>
+        <input type="text" id="hw-gas" placeholder="e.g. Argon, LPG, Oxy-acetylene — or 'None'" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Estimated number of workers involved <span class="req">*</span></label>
+        <input type="number" id="hw-num-workers" min="1" max="99" placeholder="1" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:15px;width:100%;outline:none">
+      </div>
+    </div>
+  </div>
+
+  <!-- Validity -->
+  <div class="fcard">
+    <div class="fcard-hdr">Validity</div>
+    <div class="fcard-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fgroup">
+          <label class="flabel">Start <span class="req">*</span></label>
+          <input type="datetime-local" id="hw-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:13px;width:100%;outline:none">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">End <span class="req">*</span></label>
+          <input type="datetime-local" id="hw-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:13px;width:100%;outline:none">
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:-4px">Maximum 8 hours. End time will be capped automatically.</div>
+    </div>
+  </div>
+
+  <!-- Weather -->
+  <div class="fcard">
+    <div class="fcard-hdr">Weather Conditions</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Conditions observed <span class="req">*</span></label>
+        <select id="hw-weather" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#fff">
+          <option value="">Select...</option>
+          <option>Clear</option>
+          <option>Overcast</option>
+          <option>Light rain</option>
+          <option>Windy</option>
+          <option>Hot (>35°C)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pre-start safety checks -->
+  <div class="fcard">
+    <div class="fcard-hdr">Pre-Start Safety Checks</div>
+    <div class="fcard-body">
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:3px">All items must be confirmed before the permit can be submitted.</div>
+      <div class="check-row" id="hw-chk1" onclick="toggleCheck('hw-chk1')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Combustible materials removed or protected within 10m</div></div>
+      <div class="check-row" id="hw-chk2" onclick="toggleCheck('hw-chk2')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Floor / ground swept clean of dust and debris</div></div>
+      <div class="check-row" id="hw-chk3" onclick="toggleCheck('hw-chk3')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Drains, openings and penetrations covered</div></div>
+      <div class="check-row" id="hw-chk4" onclick="toggleCheck('hw-chk4')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Gas lines and flammable services isolated (if applicable)</div></div>
+      <div class="check-row" id="hw-chk5" onclick="toggleCheck('hw-chk5')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Fire extinguisher on site, in date, within 5m</div></div>
+      <div class="check-row" id="hw-chk6" onclick="toggleCheck('hw-chk6')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Fire blanket available (where required)</div></div>
+      <div class="check-row" id="hw-chk7" onclick="toggleCheck('hw-chk7')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">PPE confirmed — gloves, helmet, eye / face protection</div></div>
+      <div class="check-row" id="hw-chk8" onclick="toggleCheck('hw-chk8')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Ventilation adequate for the task</div></div>
+      <div class="check-row" id="hw-chk9" onclick="toggleCheck('hw-chk9')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Adjacent workers notified</div></div>
+      <div class="check-row" id="hw-chk10" onclick="toggleCheck('hw-chk10')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text"><strong>Confirmed:</strong> Today is NOT a declared Total Fire Ban day</div></div>
+    </div>
+  </div>
+
+  <!-- Fire watch -->
+  <div class="fcard">
+    <div class="fcard-hdr">Fire Watch</div>
+    <div class="fcard-body">
+      <div class="check-row" id="hw-fw-req" onclick="toggleCheck('hw-fw-req')">
+        <div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="check-text">Fire watch required for this task</div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Fire watch duration (post-work)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <button class="ps-btn" data-fwdur="30 min" onclick="hwSelectFWDur(this)">30 min</button>
+          <button class="ps-btn" data-fwdur="60 min" onclick="hwSelectFWDur(this)">60 min</button>
+          <button class="ps-btn" data-fwdur="Other" onclick="hwSelectFWDur(this)">Other</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emergency -->
+  <div class="fcard">
+    <div class="fcard-hdr">Emergency</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Nearest muster point <span class="req">*</span></label>
+        <input type="text" id="hw-muster" placeholder="e.g. Front gate compound, near site office" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+    </div>
+  </div>
+
+  <!-- Final confirmation + signature -->
+  <div class="fcard">
+    <div class="fcard-hdr">Confirmation &amp; Sign-off</div>
+    <div class="fcard-body">
+      <div class="check-row" id="hw-confirm" onclick="toggleCheck('hw-confirm')">
+        <div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="check-text">I confirm all information is accurate and I have read the site SWMS for this task</div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Signature — your saved signature will be applied</label>
+        <div class="sig-preview-wrap" id="hw-sig-preview">
+          <span class="no-sig">No saved signature — go to Profile to add one</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="hw-submit-btn" onclick="submitHotWorks()" disabled style="opacity:0.5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+    Submit Hot Works Permit
+  </button>
+
+</div>
+
 </div>
   <!-- ═══════════════════ TOOLBOX TALK ═══ -->
 <div id="screen-talk" class="screen">
@@ -8368,9 +8565,252 @@ let hzSeverity  = null;
 let hzRecurring = null;
 let hzAnon      = false;
 
-function goToHotWorks() {
-  goTo('screen-hotworks');
+// ═══════════════════ HOT WORKS PERMIT — Step 2 ═══════════════════
+// Form logic: permit number generation, field pre-fill, validation,
+// submit to localStorage. No backend, no supervisor flow yet.
+
+const HW_STORAGE_KEY = 'slan_hw_permits_v1';
+let hwSelectedType = null;
+let hwSelectedFwDur = null;
+
+function hwLoadAll() {
+  try {
+    const raw = localStorage.getItem(HW_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
 }
+
+function hwSaveAll(list) {
+  try { localStorage.setItem(HW_STORAGE_KEY, JSON.stringify(list)); } catch(e) {}
+}
+
+function hwGenerateId() {
+  const year = new Date().getFullYear();
+  const list = hwLoadAll();
+  const thisYear = list.filter(p => p.permit_id && p.permit_id.startsWith('HW-' + year + '-'));
+  const next = (thisYear.length + 1).toString().padStart(4, '0');
+  return 'HW-' + year + '-' + next;
+}
+
+function hwSelectType(btnEl) {
+  // Clear all selected pills for type
+  document.querySelectorAll('#screen-hotworks [data-hwtype]').forEach(b => b.classList.remove('pass'));
+  btnEl.classList.add('pass');
+  hwSelectedType = btnEl.getAttribute('data-hwtype');
+  // Toggle "Other" text box
+  const otherWrap = document.getElementById('hw-type-other-wrap');
+  if (otherWrap) otherWrap.style.display = (hwSelectedType === 'Other') ? 'flex' : 'none';
+  hwValidate();
+}
+
+function hwSelectFWDur(btnEl) {
+  document.querySelectorAll('#screen-hotworks [data-fwdur]').forEach(b => b.classList.remove('pass'));
+  btnEl.classList.add('pass');
+  hwSelectedFwDur = btnEl.getAttribute('data-fwdur');
+  hwValidate();
+}
+
+// Called when opening the form — resets everything and pre-fills
+function hwInitForm() {
+  const p = getProfile();
+  if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+
+  // Permit ID + date + site
+  document.getElementById('hw-permit-id').value = hwGenerateId();
+  const now = new Date();
+  document.getElementById('hw-date').value = now.toLocaleDateString('en-AU');
+  document.getElementById('hw-site').value = (typeof SITE !== 'undefined' && SITE) ? SITE : 'Site';
+
+  // Applicant — from profile
+  document.getElementById('hw-worker-name').value = p.name || '';
+  document.getElementById('hw-company').value = p.company || '';
+  document.getElementById('hw-role').value = p.role || '';
+
+  // Clear work details
+  hwSelectedType = null;
+  hwSelectedFwDur = null;
+  document.querySelectorAll('#screen-hotworks [data-hwtype]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-hotworks [data-fwdur]').forEach(b => b.classList.remove('pass'));
+  const otherWrap = document.getElementById('hw-type-other-wrap');
+  if (otherWrap) otherWrap.style.display = 'none';
+  document.getElementById('hw-type-other').value = '';
+  document.getElementById('hw-description').value = '';
+  document.getElementById('hw-location').value = '';
+  document.getElementById('hw-equipment').value = '';
+  document.getElementById('hw-gas').value = '';
+  document.getElementById('hw-num-workers').value = '';
+
+  // Validity defaults — now, +4 hours
+  const start = new Date();
+  const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  document.getElementById('hw-start').value = hwToLocalInputValue(start);
+  document.getElementById('hw-end').value = hwToLocalInputValue(end);
+
+  // Weather + muster
+  document.getElementById('hw-weather').value = '';
+  document.getElementById('hw-muster').value = '';
+
+  // Clear all checks
+  for (let i = 1; i <= 10; i++) {
+    const el = document.getElementById('hw-chk' + i);
+    if (el) el.classList.remove('checked');
+  }
+  const fw = document.getElementById('hw-fw-req');
+  if (fw) fw.classList.remove('checked');
+  const cf = document.getElementById('hw-confirm');
+  if (cf) cf.classList.remove('checked');
+
+  // Signature preview — same approach as other screens
+  const sigWrap = document.getElementById('hw-sig-preview');
+  if (sigWrap) {
+    if (p.sig) {
+      sigWrap.innerHTML = '<img src="' + p.sig + '" alt="signature" style="max-height:60px;max-width:200px">';
+    } else {
+      sigWrap.innerHTML = '<span class="no-sig">No saved signature — go to Profile to add one</span>';
+    }
+  }
+
+  hwValidate();
+
+  // Hook up input listeners for live validation
+  ['hw-description','hw-location','hw-equipment','hw-num-workers','hw-start','hw-end','hw-weather','hw-muster','hw-type-other'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el._hwhooked) {
+      el.addEventListener('input', hwValidate);
+      el.addEventListener('change', hwValidate);
+      el._hwhooked = true;
+    }
+  });
+  // Check-row clicks already call toggleCheck — we piggyback on that by revalidating shortly after
+  document.querySelectorAll('#screen-hotworks .check-row').forEach(r => {
+    if (!r._hwhooked) {
+      r.addEventListener('click', () => setTimeout(hwValidate, 20));
+      r._hwhooked = true;
+    }
+  });
+
+  // Clamp end time when start changes
+  const startEl = document.getElementById('hw-start');
+  const endEl = document.getElementById('hw-end');
+  if (startEl && !startEl._hwclamped) {
+    startEl.addEventListener('change', hwClampEnd);
+    endEl.addEventListener('change', hwClampEnd);
+    startEl._hwclamped = true;
+  }
+}
+
+function hwToLocalInputValue(d) {
+  // Format Date -> 'YYYY-MM-DDTHH:MM' for datetime-local input
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
+    'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function hwClampEnd() {
+  const startEl = document.getElementById('hw-start');
+  const endEl = document.getElementById('hw-end');
+  if (!startEl || !endEl || !startEl.value || !endEl.value) return;
+  const start = new Date(startEl.value);
+  const end = new Date(endEl.value);
+  const maxEnd = new Date(start.getTime() + 8 * 60 * 60 * 1000);
+  if (end > maxEnd) {
+    endEl.value = hwToLocalInputValue(maxEnd);
+  }
+  if (end <= start) {
+    endEl.value = hwToLocalInputValue(new Date(start.getTime() + 60 * 60 * 1000));
+  }
+  hwValidate();
+}
+
+function hwValidate() {
+  // Required fields
+  const type = hwSelectedType;
+  const typeOther = document.getElementById('hw-type-other').value.trim();
+  const desc = document.getElementById('hw-description').value.trim();
+  const loc = document.getElementById('hw-location').value.trim();
+  const equip = document.getElementById('hw-equipment').value.trim();
+  const numW = document.getElementById('hw-num-workers').value.trim();
+  const start = document.getElementById('hw-start').value;
+  const end = document.getElementById('hw-end').value;
+  const weather = document.getElementById('hw-weather').value;
+  const muster = document.getElementById('hw-muster').value.trim();
+
+  let ok = true;
+  if (!type) ok = false;
+  if (type === 'Other' && !typeOther) ok = false;
+  if (!desc || !loc || !equip || !numW || !start || !end || !weather || !muster) ok = false;
+
+  // All 10 safety checks ticked
+  for (let i = 1; i <= 10; i++) {
+    const el = document.getElementById('hw-chk' + i);
+    if (!el || !el.classList.contains('checked')) ok = false;
+  }
+
+  // Final confirmation ticked
+  const cf = document.getElementById('hw-confirm');
+  if (!cf || !cf.classList.contains('checked')) ok = false;
+
+  const btn = document.getElementById('hw-submit-btn');
+  if (btn) {
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '1' : '0.5';
+  }
+  return ok;
+}
+
+function submitHotWorks() {
+  if (!hwValidate()) { alert('Please complete all required fields and checks.'); return; }
+
+  const p = getProfile();
+  const now = new Date();
+  const permit = {
+    permit_id: document.getElementById('hw-permit-id').value,
+    type: 'Hot Works',
+    subtype: hwSelectedType === 'Other' ? document.getElementById('hw-type-other').value.trim() : hwSelectedType,
+    date: document.getElementById('hw-date').value,
+    site: document.getElementById('hw-site').value,
+    worker_name: document.getElementById('hw-worker-name').value,
+    company: document.getElementById('hw-company').value,
+    role: document.getElementById('hw-role').value,
+    description: document.getElementById('hw-description').value.trim(),
+    location: document.getElementById('hw-location').value.trim(),
+    equipment: document.getElementById('hw-equipment').value.trim(),
+    gas: document.getElementById('hw-gas').value.trim(),
+    num_workers: Number(document.getElementById('hw-num-workers').value),
+    start_time: document.getElementById('hw-start').value,
+    end_time: document.getElementById('hw-end').value,
+    weather: document.getElementById('hw-weather').value,
+    checks: {},
+    fire_watch_required: document.getElementById('hw-fw-req').classList.contains('checked'),
+    fire_watch_duration: hwSelectedFwDur || null,
+    muster_point: document.getElementById('hw-muster').value.trim(),
+    signature: p && p.sig ? p.sig : null,
+    submitted_at: now.toISOString(),
+    status: 'submitted'
+  };
+  for (let i = 1; i <= 10; i++) {
+    permit.checks['chk' + i] = document.getElementById('hw-chk' + i).classList.contains('checked');
+  }
+
+  const list = hwLoadAll();
+  list.unshift(permit);
+  hwSaveAll(list);
+
+  // Success feedback — simple alert for now; richer screen added in next step
+  alert('Permit ' + permit.permit_id + ' submitted successfully.');
+  goTo('screen-home');
+}
+
+// Make goToHotWorks call hwInitForm when entering
+// (we're replacing the earlier goToHotWorks we added in Step 1)
+function goToHotWorks() {
+  const p = getProfile();
+  if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+  goTo('screen-hotworks');
+  setTimeout(hwInitForm, 20);
+}
+// ═══════════════════ END HOT WORKS PERMIT — Step 2 ═══════════════════
+
   function goToHazard() {
   const p = getProfile();
   if (!p) { goTo('screen-profile'); initSig(); return; }
