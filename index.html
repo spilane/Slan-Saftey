@@ -485,6 +485,39 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .stars-progress-track{height:7px;background:#E8F0EB;border-radius:4px;overflow:hidden;margin:6px 0 4px}
 .stars-progress-fill{height:100%;background:var(--deep);border-radius:4px;transition:width .4s ease}
 
+
+/* ─── HOT WORKS PERMITS MODULE STYLES ─────────────────────────── */
+.hw-list-section-hdr{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin:16px 2px 7px}
+.hw-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 14px;margin-bottom:9px;cursor:pointer;transition:all .13s;display:flex;flex-direction:column;gap:5px}
+.hw-card:active{transform:scale(.985);border-color:var(--mid)}
+.hw-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hw-card-id{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;color:var(--text);letter-spacing:.01em}
+.hw-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.02em;white-space:nowrap}
+.hw-card-mid{font-size:14px;font-weight:600;color:var(--text);margin-top:1px}
+.hw-card-sub{font-size:12px;color:var(--muted)}
+.hw-card-foot{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
+.hw-empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.hw-empty-icon{width:48px;height:48px;margin:0 auto 12px;color:var(--muted);opacity:.4}
+.hw-empty-icon svg{width:100%;height:100%}
+.hw-empty-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.hw-empty-sub{font-size:13px;line-height:1.4}
+.hw-new-btn{width:100%;padding:14px;border-radius:var(--r);background:var(--deep);border:none;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'DM Sans',sans-serif;margin-bottom:6px}
+.hw-new-btn:active{transform:scale(.98);background:var(--mid)}
+.hw-new-btn svg{width:19px;height:19px;stroke-width:2.2}
+.hw-view-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:13px}
+.hw-view-id{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--text)}
+.hw-view-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.hw-view-row{padding:11px 13px;background:var(--card);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px}
+.hw-view-label{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px}
+.hw-view-val{font-size:13.5px;color:var(--text);word-break:break-word}
+.hw-success-wrap{padding:60px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px}
+.hw-success-icon{width:72px;height:72px;border-radius:50%;background:#E6F5ED;border:3px solid var(--mid);display:flex;align-items:center;justify-content:center}
+.hw-success-icon svg{width:38px;height:38px;stroke:var(--mid);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hw-success-title{font-size:20px;font-weight:600;color:var(--text);margin-top:4px}
+.hw-success-id{font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:var(--deep);letter-spacing:.02em;background:var(--bg);border:1.5px solid var(--border);padding:9px 16px;border-radius:var(--rs)}
+.hw-success-sub{font-size:13.5px;color:var(--muted);line-height:1.5;max-width:320px}
+.hw-success-time{font-size:12.5px;color:var(--muted);font-family:'DM Mono',monospace}
+
 </style>
 </head>
 <body>
@@ -2640,8 +2673,80 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ═══════════════════ HOT WORKS PERMITS — LIST ═══ -->
+<div id="screen-hw-list" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon ic-amber" style="width:28px;height:28px;border-radius:7px;background:rgba(184,150,12,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" style="width:14px;height:14px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Hot Works Permits</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:60px">
+    <button class="hw-new-btn" onclick="goToHotWorksForm()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Permit
+    </button>
+    <div id="hw-list-active-wrap" style="display:none">
+      <div class="hw-list-section-hdr">Active</div>
+      <div id="hw-list-active"></div>
+    </div>
+    <div id="hw-list-pending-wrap" style="display:none">
+      <div class="hw-list-section-hdr">Pending approval</div>
+      <div id="hw-list-pending"></div>
+    </div>
+    <div id="hw-list-history-wrap" style="display:none">
+      <div class="hw-list-section-hdr">History</div>
+      <div id="hw-list-history"></div>
+    </div>
+    <div id="hw-list-empty" class="hw-empty">
+      <div class="hw-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="hw-empty-title">No permits yet</div>
+      <div class="hw-empty-sub">Tap "New Permit" above to create your first Hot Works permit.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HOT WORKS PERMIT — VIEW (read-only) ═══ -->
+<div id="screen-hw-view" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="hwRenderList(); goTo('screen-hw-list');"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon ic-amber" style="width:28px;height:28px;border-radius:7px;background:rgba(184,150,12,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" style="width:14px;height:14px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Permit Details</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div id="hw-view-body" style="padding:18px;padding-bottom:60px"></div>
+</div>
+
+<!-- ═══════════════════ HOT WORKS PERMIT — SUCCESS ═══ -->
+<div id="screen-hw-success" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <div style="width:36px"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Permit Submitted</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="hw-success-wrap">
+    <div class="hw-success-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="hw-success-title">Permit submitted</div>
+    <div class="hw-success-id" id="hw-success-id">HW-YYYY-NNNN</div>
+    <div class="hw-success-sub" id="hw-success-sub">Hot Works</div>
+    <div class="hw-success-time" id="hw-success-time"></div>
+    <div class="hw-success-sub" style="margin-top:10px">Your permit is pending supervisor approval. You'll see it under <strong>Pending approval</strong> in your permits list.</div>
+    <button class="submit-btn" onclick="hwRenderList(); goTo('screen-hw-list');" style="margin-top:24px;max-width:280px">
+      Done
+    </button>
+  </div>
+</div>
+
 <!-- ═══════════════════ HOT WORKS PERMIT ═══ -->
-<div id="screen-hotworks" class="screen">
+<div id="screen-hw-form" class="screen">
   <div class="tbar" style="background:var(--deep)">
     <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
     <div style="display:flex;align-items:center;gap:8px">
@@ -7044,6 +7149,9 @@ async function updateStatusStrip() {
   } else if (banner) {
     banner.style.display = 'none';
   }
+
+  // Hot Works Permits chip (only shown if worker has permits today)
+  try { hwUpdateChip(); } catch(e) {}
 }
 
 function setPill(id, done) {
@@ -7051,6 +7159,59 @@ function setPill(id, done) {
   if (!el) return;
   el.classList.toggle('done', done);
   el.querySelector('.sp-dot').className='sp-dot'+(done?'':' sp-pending');
+}
+
+// Update the "Permits" chip on the worker home status strip.
+// Only visible when worker has permits today. Shows counts by bucket.
+function hwUpdateChip() {
+  const p = getProfile && getProfile();
+  const strip = document.querySelector('#status-strip .status-pill')?.parentElement;
+  let chip = document.getElementById('sp-permits');
+
+  if (!p || !strip) { if (chip) chip.remove(); return; }
+
+  const today = new Date().toLocaleDateString('en-AU');
+  const all = (typeof hwLoadAll === 'function' ? hwLoadAll() : [])
+    .filter(x => x.worker_name === p.name && x.date === today);
+
+  if (all.length === 0) {
+    if (chip) chip.remove();
+    return;
+  }
+
+  // Bucket counts
+  let pending = 0, active = 0, other = 0;
+  all.forEach(x => {
+    const b = hwPermitBucket(x);
+    if (b === 'pending') pending++;
+    else if (b === 'active') active++;
+    else other++;
+  });
+
+  // Pick primary label and state
+  let label, state;
+  if (pending > 0) {
+    label = 'Permits (' + pending + ' pending)';
+    state = 'warn';
+  } else if (active > 0) {
+    label = 'Permits (' + active + ' active)';
+    state = 'done';
+  } else {
+    label = 'Permits (' + all.length + ' today)';
+    state = 'done';
+  }
+
+  if (!chip) {
+    chip = document.createElement('div');
+    chip.className = 'status-pill';
+    chip.id = 'sp-permits';
+    chip.style.cursor = 'pointer';
+    chip.onclick = function(){ goToHotWorks(); };
+    strip.appendChild(chip);
+  }
+
+  chip.classList.toggle('done', state === 'done');
+  chip.innerHTML = '<div class="sp-dot ' + (state === 'done' ? 'sp-done' : 'sp-pending') + '"></div><span>' + label + '</span>';
 }
 
 function sosCall() {
@@ -8623,7 +8784,7 @@ function hwGenerateId() {
 
 function hwSelectType(btnEl) {
   // Clear all selected pills for type
-  document.querySelectorAll('#screen-hotworks [data-hwtype]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-hw-form [data-hwtype]').forEach(b => b.classList.remove('pass'));
   btnEl.classList.add('pass');
   hwSelectedType = btnEl.getAttribute('data-hwtype');
   // Toggle "Other" text box
@@ -8634,7 +8795,7 @@ function hwSelectType(btnEl) {
 
 function hwToggleEquip(btnEl) {
   btnEl.classList.toggle('pass');
-  const otherSelected = document.querySelector('#screen-hotworks [data-hwequip="Other"]').classList.contains('pass');
+  const otherSelected = document.querySelector('#screen-hw-form [data-hwequip="Other"]').classList.contains('pass');
   document.getElementById('hw-equip-other-wrap').style.display = otherSelected ? 'flex' : 'none';
   hwValidate();
 }
@@ -8644,22 +8805,22 @@ function hwToggleGas(btnEl) {
   const wasSelected = btnEl.classList.contains('pass');
   // 'None' is exclusive — picking it deselects all others; picking any other deselects 'None'
   if (clickedVal === 'None' && !wasSelected) {
-    document.querySelectorAll('#screen-hotworks [data-hwgas]').forEach(b => b.classList.remove('pass'));
+    document.querySelectorAll('#screen-hw-form [data-hwgas]').forEach(b => b.classList.remove('pass'));
     btnEl.classList.add('pass');
   } else {
     btnEl.classList.toggle('pass');
     if (clickedVal !== 'None') {
-      const none = document.querySelector('#screen-hotworks [data-hwgas="None"]');
+      const none = document.querySelector('#screen-hw-form [data-hwgas="None"]');
       if (none) none.classList.remove('pass');
     }
   }
-  const otherSelected = document.querySelector('#screen-hotworks [data-hwgas="Other"]').classList.contains('pass');
+  const otherSelected = document.querySelector('#screen-hw-form [data-hwgas="Other"]').classList.contains('pass');
   document.getElementById('hw-gas-other-wrap').style.display = otherSelected ? 'flex' : 'none';
   hwValidate();
 }
 
 function hwSelectFWDur(btnEl) {
-  document.querySelectorAll('#screen-hotworks [data-fwdur]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-hw-form [data-fwdur]').forEach(b => b.classList.remove('pass'));
   btnEl.classList.add('pass');
   hwSelectedFwDur = btnEl.getAttribute('data-fwdur');
   hwValidate();
@@ -8684,10 +8845,10 @@ function hwInitForm() {
   // Clear work details
   hwSelectedType = null;
   hwSelectedFwDur = null;
-  document.querySelectorAll('#screen-hotworks [data-hwtype]').forEach(b => b.classList.remove('pass'));
-  document.querySelectorAll('#screen-hotworks [data-hwequip]').forEach(b => b.classList.remove('pass'));
-  document.querySelectorAll('#screen-hotworks [data-hwgas]').forEach(b => b.classList.remove('pass'));
-  document.querySelectorAll('#screen-hotworks [data-fwdur]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-hw-form [data-hwtype]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-hw-form [data-hwequip]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-hw-form [data-hwgas]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-hw-form [data-fwdur]').forEach(b => b.classList.remove('pass'));
   const otherWrap = document.getElementById('hw-type-other-wrap');
   if (otherWrap) otherWrap.style.display = 'none';
   const eqOther = document.getElementById('hw-equip-other-wrap');
@@ -8743,7 +8904,7 @@ function hwInitForm() {
     }
   });
   // Check-row clicks already call toggleCheck — we piggyback on that by revalidating shortly after
-  document.querySelectorAll('#screen-hotworks .check-row').forEach(r => {
+  document.querySelectorAll('#screen-hw-form .check-row').forEach(r => {
     if (!r._hwhooked) {
       r.addEventListener('click', () => setTimeout(hwValidate, 20));
       r._hwhooked = true;
@@ -8796,12 +8957,12 @@ function hwValidate() {
   const muster = document.getElementById('hw-muster').value.trim();
 
   // Equipment: at least one selected
-  const equipSelected = document.querySelectorAll('#screen-hotworks [data-hwequip].pass');
+  const equipSelected = document.querySelectorAll('#screen-hw-form [data-hwequip].pass');
   const equipOther = document.getElementById('hw-equip-other').value.trim();
   const equipOtherReq = Array.from(equipSelected).some(b => b.getAttribute('data-hwequip') === 'Other');
 
   // Gas: at least one selected
-  const gasSelected = document.querySelectorAll('#screen-hotworks [data-hwgas].pass');
+  const gasSelected = document.querySelectorAll('#screen-hw-form [data-hwgas].pass');
   const gasOther = document.getElementById('hw-gas-other').value.trim();
   const gasOtherReq = Array.from(gasSelected).some(b => b.getAttribute('data-hwgas') === 'Other');
 
@@ -8848,12 +9009,12 @@ function submitHotWorks() {
     role: document.getElementById('hw-role').value,
     description: document.getElementById('hw-description').value.trim(),
     location: document.getElementById('hw-location').value.trim(),
-    equipment: Array.from(document.querySelectorAll('#screen-hotworks [data-hwequip].pass')).map(b => {
+    equipment: Array.from(document.querySelectorAll('#screen-hw-form [data-hwequip].pass')).map(b => {
       const v = b.getAttribute('data-hwequip');
       if (v === 'Other') return document.getElementById('hw-equip-other').value.trim();
       return v;
     }).filter(Boolean),
-    gas: Array.from(document.querySelectorAll('#screen-hotworks [data-hwgas].pass')).map(b => {
+    gas: Array.from(document.querySelectorAll('#screen-hw-form [data-hwgas].pass')).map(b => {
       const v = b.getAttribute('data-hwgas');
       if (v === 'Other') return document.getElementById('hw-gas-other').value.trim();
       return v;
@@ -8879,8 +9040,12 @@ function submitHotWorks() {
   hwSaveAll(list);
 
   // Success feedback — simple alert for now; richer screen added in next step
-  alert('Permit ' + permit.permit_id + ' submitted successfully.');
-  goTo('screen-home');
+  // Go to success screen
+  document.getElementById('hw-success-id').textContent = permit.permit_id;
+  document.getElementById('hw-success-sub').textContent = permit.subtype || permit.type || 'Hot Works';
+  document.getElementById('hw-success-time').textContent = now.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
+  try { hwUpdateChip(); } catch(e) {}
+  goTo('screen-hw-success');
 }
 
 // Make goToHotWorks call hwInitForm when entering
@@ -8888,8 +9053,151 @@ function submitHotWorks() {
 function goToHotWorks() {
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
-  goTo('screen-hotworks');
+  hwRenderList();
+  goTo('screen-hw-list');
+}
+
+function goToHotWorksForm() {
+  const p = getProfile();
+  if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+  goTo('screen-hw-form');
   setTimeout(hwInitForm, 20);
+}
+
+function hwStatusLabel(s) {
+  if (s === 'pending')  return 'Pending approval';
+  if (s === 'approved') return 'Approved';
+  if (s === 'active')   return 'Active';
+  if (s === 'rejected') return 'Rejected';
+  if (s === 'expired')  return 'Expired';
+  if (s === 'closed')   return 'Closed';
+  if (s === 'revoked')  return 'Revoked';
+  if (s === 'submitted') return 'Pending approval';
+  return s || 'Unknown';
+}
+function hwStatusColor(s) {
+  if (s === 'active' || s === 'approved') return '#1B6E3A';
+  if (s === 'rejected' || s === 'revoked') return '#B83232';
+  if (s === 'expired' || s === 'closed')   return '#5C6B62';
+  return '#B8960C';
+}
+function hwPermitBucket(p) {
+  // Now: only 'submitted'/'pending' exist on worker side until Step 3.
+  // But we lay foundations: active = approved + within time, history = terminal states.
+  const now = Date.now();
+  const end = p.end_time ? new Date(p.end_time).getTime() : 0;
+  if (p.status === 'approved' || p.status === 'active') {
+    if (end && end < now) return 'history';
+    return 'active';
+  }
+  if (p.status === 'submitted' || p.status === 'pending') return 'pending';
+  return 'history';
+}
+function hwRenderList() {
+  const p = getProfile();
+  if (!p) return;
+  const all = hwLoadAll().filter(x => x.worker_name === p.name);
+  const active  = all.filter(x => hwPermitBucket(x) === 'active');
+  const pending = all.filter(x => hwPermitBucket(x) === 'pending');
+  const history = all.filter(x => hwPermitBucket(x) === 'history');
+
+  function cardHtml(pm) {
+    const badgeText  = hwStatusLabel(pm.status);
+    const badgeColor = hwStatusColor(pm.status);
+    const subtypeText = pm.subtype || pm.type || 'Hot Works';
+    const locText = pm.location || '';
+    return `<div class="hw-card" onclick="hwViewPermit('${pm.permit_id}')">
+      <div class="hw-card-top">
+        <div class="hw-card-id">${pm.permit_id}</div>
+        <div class="hw-badge" style="background:${badgeColor}20;color:${badgeColor};border:1px solid ${badgeColor}40">${badgeText}</div>
+      </div>
+      <div class="hw-card-mid">${subtypeText}</div>
+      <div class="hw-card-sub">${locText}</div>
+      <div class="hw-card-foot">${pm.date || ''}</div>
+    </div>`;
+  }
+
+  const activeWrap  = document.getElementById('hw-list-active-wrap');
+  const pendingWrap = document.getElementById('hw-list-pending-wrap');
+  const historyWrap = document.getElementById('hw-list-history-wrap');
+  const activeBody  = document.getElementById('hw-list-active');
+  const pendingBody = document.getElementById('hw-list-pending');
+  const historyBody = document.getElementById('hw-list-history');
+  const empty       = document.getElementById('hw-list-empty');
+
+  if (active.length)  { activeWrap.style.display = 'block';  activeBody.innerHTML  = active.map(cardHtml).join(''); }
+  else activeWrap.style.display = 'none';
+  if (pending.length) { pendingWrap.style.display = 'block'; pendingBody.innerHTML = pending.map(cardHtml).join(''); }
+  else pendingWrap.style.display = 'none';
+  if (history.length) { historyWrap.style.display = 'block'; historyBody.innerHTML = history.map(cardHtml).join(''); }
+  else historyWrap.style.display = 'none';
+
+  if (empty) empty.style.display = (all.length === 0) ? 'block' : 'none';
+}
+
+function hwViewPermit(permitId) {
+  const p = hwLoadAll().find(x => x.permit_id === permitId);
+  if (!p) return;
+  const d = document.getElementById('hw-view-body');
+  if (!d) return;
+  function row(label, val) {
+    if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) return '';
+    const v = Array.isArray(val) ? val.join(', ') : String(val);
+    return `<div class="hw-view-row"><div class="hw-view-label">${label}</div><div class="hw-view-val">${v}</div></div>`;
+  }
+  const badgeColor = hwStatusColor(p.status);
+  const badgeText = hwStatusLabel(p.status);
+  let checksHtml = '';
+  if (p.checks) {
+    const chkLabels = [
+      'Combustible materials cleared within 10m',
+      'Floor swept clean',
+      'Drains, openings & penetrations covered',
+      'Gas/flammable services isolated',
+      'Fire extinguisher within 5m',
+      'Fire blanket available',
+      'PPE confirmed',
+      'Ventilation adequate',
+      'Adjacent workers notified',
+      'Not a Total Fire Ban day'
+    ];
+    checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
+    for (let i = 1; i <= 10; i++) {
+      const k = 'chk' + i;
+      if (p.checks[k]) {
+        checksHtml += `<div style="font-size:12.5px;margin-bottom:3px">✓ ${chkLabels[i-1]}</div>`;
+      }
+    }
+    checksHtml += '</div></div>';
+  }
+  d.innerHTML = `
+    <div class="hw-view-hdr">
+      <div>
+        <div class="hw-view-id">${p.permit_id}</div>
+        <div class="hw-view-sub">${p.subtype || p.type || 'Hot Works'}</div>
+      </div>
+      <div class="hw-badge" style="background:${badgeColor}20;color:${badgeColor};border:1px solid ${badgeColor}40">${badgeText}</div>
+    </div>
+    ${row('Date', p.date)}
+    ${row('Site', p.site)}
+    ${row('Worker', p.worker_name)}
+    ${row('Company', p.company)}
+    ${row('Role', p.role)}
+    ${row('Work description', p.description)}
+    ${row('Location', p.location)}
+    ${row('Equipment', p.equipment)}
+    ${row('Gas / fuel', p.gas)}
+    ${row('Number of workers', p.num_workers)}
+    ${row('Start', p.start_time ? p.start_time.replace('T', ' ') : '')}
+    ${row('End',   p.end_time   ? p.end_time.replace('T', ' ')   : '')}
+    ${row('Weather', p.weather)}
+    ${checksHtml}
+    ${row('Fire watch required', p.fire_watch_required ? 'Yes' : 'No')}
+    ${row('Fire watch duration', p.fire_watch_duration)}
+    ${row('Nearest muster point', p.muster_point)}
+    ${row('Submitted at', p.submitted_at ? new Date(p.submitted_at).toLocaleString('en-AU') : '')}
+  `;
+  goTo('screen-hw-view');
 }
 // ═══════════════════ END HOT WORKS PERMIT — Step 2 ═══════════════════
 
