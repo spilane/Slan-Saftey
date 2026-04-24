@@ -816,6 +816,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <!-- ═══════════════════ HOME ═══ -->
 <div id="screen-home" class="screen">
+  <div id="hw-revoke-banner" style="display:none;padding:14px 16px;background:#A32D2D;color:#fff;position:relative;z-index:10">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px">⚠ Permit Revoked — Stop Work Immediately</div>
+    <div id="hw-revoke-banner-text" style="font-size:12.5px;line-height:1.5;opacity:.95"></div>
+    <button onclick="hwDismissRevokeBanner()" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:13px;cursor:pointer;font-size:16px;line-height:1">×</button>
+  </div>
   <div class="sb"></div>
 
   <!-- TOP BAR with profile photo -->
@@ -2425,6 +2430,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
+    <!-- Hot Works Permits card -->
+    <div class="fcard" id="sup-hw-card" style="cursor:pointer" onclick="goToHotWorksSup()">
+      <div class="fcard-hdr" style="display:flex;align-items:center;justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+          Hot Works Permits
+        </span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--muted)"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div id="sup-hw-summary" style="padding:4px 14px 14px;font-size:13px;color:var(--muted)">No permits today</div>
+    </div>
+
     <!-- Refresh button -->
     <button onclick="loadSupervisorDashboard()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--card);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer">
       Refresh dashboard
@@ -2690,6 +2707,102 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       Submit hazard report
     </button>
+  </div>
+</div>
+
+<!-- ═══════════════════ HOT WORKS PERMIT — SUPERVISOR QUEUE ═══ -->
+<div id="screen-hw-sup-queue" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-supervisor')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon ic-amber" style="width:28px;height:28px;border-radius:7px;background:rgba(184,150,12,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" style="width:14px;height:14px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Hot Works Permits</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:60px">
+    <div id="sup-hw-pending-wrap" style="display:none">
+      <div class="hw-list-section-hdr">Pending approval</div>
+      <div id="sup-hw-pending"></div>
+    </div>
+    <div id="sup-hw-active-wrap" style="display:none">
+      <div class="hw-list-section-hdr">Active on site</div>
+      <div id="sup-hw-active"></div>
+    </div>
+    <div id="sup-hw-history-wrap" style="display:none">
+      <div class="hw-list-section-hdr">History (today)</div>
+      <div id="sup-hw-history"></div>
+    </div>
+    <div id="sup-hw-empty" class="hw-empty">
+      <div class="hw-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="hw-empty-title">No permits today</div>
+      <div class="hw-empty-sub">Worker-submitted Hot Works permits will appear here for your review.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HOT WORKS PERMIT — SUPERVISOR REVIEW ═══ -->
+<div id="screen-hw-sup-review" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goToHotWorksSup()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Review Permit</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div id="sup-hw-review-body" style="padding:18px;padding-bottom:20px"></div>
+
+  <!-- Action buttons (pending state) -->
+  <div id="sup-hw-review-actions" style="padding:0 18px 24px;display:none">
+    <button class="submit-btn" onclick="hwSupApprove()" style="width:100%;background:#1B6E3A;margin-bottom:9px">
+      ✓ Approve Permit
+    </button>
+    <button onclick="hwSupShowConditions()" style="width:100%;padding:13px;border-radius:var(--r);background:#F5C48A;border:1px solid #BA7517;color:#633806;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:9px">
+      ⚠ Approve with Conditions
+    </button>
+    <button onclick="hwSupShowReject()" style="width:100%;padding:13px;border-radius:var(--r);background:#FCEBEB;border:1px solid rgba(184,50,50,.3);color:#A32D2D;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+      ✕ Reject Permit
+    </button>
+  </div>
+
+  <!-- Conditions input (hidden by default) -->
+  <div id="sup-hw-conditions-wrap" style="display:none;padding:0 18px 24px">
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Conditions for approval</div>
+    <textarea id="sup-hw-conditions-text" rows="4" placeholder="e.g. Stop work if wind exceeds 20 km/h; mandatory hourly fire watch checks; buddy required at all times." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="hwSupCancelConditions()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="hwSupApproveWithConditions()" style="flex:1;padding:13px;border-radius:var(--r);background:#BA7517;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Approve with Conditions</button>
+    </div>
+  </div>
+
+  <!-- Reject reason input (hidden by default) -->
+  <div id="sup-hw-reject-wrap" style="display:none;padding:0 18px 24px">
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Reason for rejection <span style="color:#A32D2D">*</span></div>
+    <textarea id="sup-hw-reject-text" rows="4" placeholder="Explain why this permit is being rejected. Worker will need to submit a new permit." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="hwSupCancelReject()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="hwSupReject()" style="flex:1;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Confirm Rejection</button>
+    </div>
+  </div>
+
+  <!-- Revoke button (shown for ACTIVE permits) -->
+  <div id="sup-hw-revoke-wrap" style="display:none;padding:0 18px 24px">
+    <div style="padding:11px 13px;background:#FAEEDA;border:1px solid #BA7517;border-radius:var(--rs);font-size:12.5px;color:#633806;margin-bottom:10px;line-height:1.5">
+      This permit is currently <strong>active</strong>. Revoking will immediately invalidate it and notify the worker to stop work.
+    </div>
+    <button onclick="hwSupShowRevoke()" style="width:100%;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+      ⚠ Revoke Active Permit
+    </button>
+  </div>
+
+  <!-- Revoke reason input (hidden by default) -->
+  <div id="sup-hw-revokein-wrap" style="display:none;padding:0 18px 24px">
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Reason for revocation <span style="color:#A32D2D">*</span></div>
+    <textarea id="sup-hw-revoke-text" rows="4" placeholder="e.g. Weather change - wind exceeding safe limits; emergency on site." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="hwSupCancelRevoke()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="hwSupRevoke()" style="flex:1;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Confirm Revocation</button>
+    </div>
   </div>
 </div>
 
@@ -7221,6 +7334,7 @@ async function updateStatusStrip() {
   } catch(e) {}
 
   try { hwUpdateChip(); } catch(e) {}
+  try { hwCheckRevokeBanner(); } catch(e) {}
 }
 
 function setPill(id, done) {
@@ -7258,6 +7372,288 @@ function chipTapTalk()     { goTo('screen-talk'); if (typeof initTalk === 'funct
 
 // Update the "Permits" chip on the worker home status strip.
 // Only visible when worker has permits today. Shows counts by bucket.
+// ========================================================
+// HOT WORKS SUPERVISOR FUNCTIONS
+// ========================================================
+
+function goToHotWorksSup() {
+  hwSupRenderQueue();
+  goTo('screen-hw-sup-queue');
+}
+
+function hwSupRenderQueue() {
+  const today = new Date().toLocaleDateString('en-AU');
+  const all = (typeof hwLoadAll === 'function' ? hwLoadAll() : []).filter(x => x.date === today);
+
+  const pending = all.filter(x => hwPermitBucket(x) === 'pending');
+  const active  = all.filter(x => hwPermitBucket(x) === 'active');
+  const history = all.filter(x => hwPermitBucket(x) === 'history');
+
+  function supCardHtml(pm) {
+    const badgeText  = hwStatusLabel(pm.status);
+    const badgeClass = hwStatusBadgeClass(pm.status);
+    const subtypeText = pm.subtype || pm.type || 'Hot Works';
+    const locText = pm.location || '';
+    const workerName = pm.worker_name || 'Unknown';
+    return `<div class="hw-card" onclick="hwSupOpenReview('${pm.permit_id}')">
+      <div class="hw-card-top">
+        <div class="hw-card-id">${pm.permit_id}</div>
+        <div class="hw-badge ${badgeClass}" style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px">${badgeText}</div>
+      </div>
+      <div class="hw-card-mid">${subtypeText}</div>
+      <div class="hw-card-sub">${workerName} · ${locText}</div>
+      <div class="hw-card-foot">${pm.date || ''}</div>
+    </div>`;
+  }
+
+  const pendingWrap = document.getElementById('sup-hw-pending-wrap');
+  const activeWrap  = document.getElementById('sup-hw-active-wrap');
+  const historyWrap = document.getElementById('sup-hw-history-wrap');
+  const empty       = document.getElementById('sup-hw-empty');
+
+  if (pending.length) { pendingWrap.style.display='block'; document.getElementById('sup-hw-pending').innerHTML = pending.map(supCardHtml).join(''); }
+  else pendingWrap.style.display='none';
+  if (active.length)  { activeWrap.style.display='block';  document.getElementById('sup-hw-active').innerHTML  = active.map(supCardHtml).join(''); }
+  else activeWrap.style.display='none';
+  if (history.length) { historyWrap.style.display='block'; document.getElementById('sup-hw-history').innerHTML = history.map(supCardHtml).join(''); }
+  else historyWrap.style.display='none';
+
+  if (empty) empty.style.display = (all.length === 0) ? 'block' : 'none';
+}
+
+let _hwSupCurrentPermit = null;
+
+function hwSupOpenReview(permitId) {
+  const p = hwLoadAll().find(x => x.permit_id === permitId);
+  if (!p) return;
+  _hwSupCurrentPermit = p;
+
+  // Reset all action panels
+  document.getElementById('sup-hw-review-actions').style.display = 'none';
+  document.getElementById('sup-hw-conditions-wrap').style.display = 'none';
+  document.getElementById('sup-hw-reject-wrap').style.display = 'none';
+  document.getElementById('sup-hw-revoke-wrap').style.display = 'none';
+  document.getElementById('sup-hw-revokein-wrap').style.display = 'none';
+
+  // Render permit body (same as worker view)
+  const d = document.getElementById('sup-hw-review-body');
+  function row(label, val) {
+    if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) return '';
+    const v = Array.isArray(val) ? val.join(', ') : String(val);
+    return `<div class="hw-view-row"><div class="hw-view-label">${label}</div><div class="hw-view-val">${v}</div></div>`;
+  }
+  const badgeClass = hwStatusBadgeClass(p.status);
+  const badgeText = hwStatusLabel(p.status);
+
+  let checksHtml = '';
+  if (p.checks) {
+    const chkLabels = [
+      'Combustible materials cleared within 10m',
+      'Floor swept clean',
+      'Drains, openings & penetrations covered',
+      'Gas/flammable services isolated',
+      'Fire extinguisher within 5m',
+      'Fire blanket available',
+      'PPE confirmed',
+      'Ventilation adequate',
+      'Adjacent workers notified',
+      'Not a Total Fire Ban day'
+    ];
+    checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
+    for (let i = 1; i <= 10; i++) {
+      const k = 'chk' + i;
+      if (p.checks[k]) checksHtml += `<div style="font-size:12.5px;margin-bottom:3px">✓ ${chkLabels[i-1]}</div>`;
+    }
+    checksHtml += '</div></div>';
+  }
+
+  let conditionsRow = '';
+  if (p.approval_conditions) {
+    conditionsRow = `<div class="hw-view-row" style="border-left:3px solid #BA7517;background:#FAEEDA"><div class="hw-view-label" style="color:#854F0B">Conditions of approval</div><div class="hw-view-val" style="color:#633806">${p.approval_conditions}</div></div>`;
+  }
+  let rejectRow = '';
+  if (p.reject_reason) {
+    rejectRow = `<div class="hw-view-row" style="border-left:3px solid #A32D2D;background:#FCEBEB"><div class="hw-view-label" style="color:#A32D2D">Reason for rejection</div><div class="hw-view-val" style="color:#A32D2D">${p.reject_reason}</div></div>`;
+  }
+  let revokeRow = '';
+  if (p.revoke_reason) {
+    revokeRow = `<div class="hw-view-row" style="border-left:3px solid #A32D2D;background:#FCEBEB"><div class="hw-view-label" style="color:#A32D2D">Reason for revocation</div><div class="hw-view-val" style="color:#A32D2D">${p.revoke_reason}</div></div>`;
+  }
+
+  d.innerHTML = `
+    <div class="hw-view-hdr">
+      <div>
+        <div class="hw-view-id">${p.permit_id}</div>
+        <div class="hw-view-sub">${p.subtype || p.type || 'Hot Works'} · ${p.worker_name || ''}</div>
+      </div>
+      <div class="hw-badge ${badgeClass}" style="font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px">${badgeText}</div>
+    </div>
+    ${rejectRow}
+    ${revokeRow}
+    ${conditionsRow}
+    ${row('Date', p.date)}
+    ${row('Worker', p.worker_name)}
+    ${row('Company', p.company)}
+    ${row('Role', p.role)}
+    ${row('Work description', p.description)}
+    ${row('Location', p.location)}
+    ${row('Equipment', p.equipment)}
+    ${row('Gas / fuel', p.gas)}
+    ${row('Number of workers', p.num_workers)}
+    ${row('Start', p.start_time ? p.start_time.replace('T', ' ') : '')}
+    ${row('End',   p.end_time   ? p.end_time.replace('T', ' ')   : '')}
+    ${row('Weather', p.weather)}
+    ${checksHtml}
+    ${row('Fire watch required', p.fire_watch_required ? 'Yes' : 'No')}
+    ${row('Fire watch duration', p.fire_watch_duration)}
+    ${row('Nearest muster point', p.muster_point)}
+    ${row('Submitted at', p.submitted_at ? new Date(p.submitted_at).toLocaleString('en-AU') : '')}
+  `;
+
+  // Show appropriate action buttons
+  if (p.status === 'submitted' || p.status === 'pending') {
+    document.getElementById('sup-hw-review-actions').style.display = 'block';
+  } else if (p.status === 'approved' || p.status === 'active') {
+    document.getElementById('sup-hw-revoke-wrap').style.display = 'block';
+  }
+
+  goTo('screen-hw-sup-review');
+}
+
+function hwSupApprove() {
+  if (!_hwSupCurrentPermit) return;
+  const p = getProfile();
+  const all = hwLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _hwSupCurrentPermit.permit_id);
+  if (idx < 0) return;
+  all[idx].status = 'approved';
+  all[idx].approved_at = new Date().toISOString();
+  all[idx].approved_by = p ? p.name : 'Supervisor';
+  localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
+  goToHotWorksSup();
+}
+
+function hwSupShowConditions() {
+  document.getElementById('sup-hw-review-actions').style.display = 'none';
+  document.getElementById('sup-hw-conditions-wrap').style.display = 'block';
+  document.getElementById('sup-hw-conditions-text').focus();
+}
+function hwSupCancelConditions() {
+  document.getElementById('sup-hw-conditions-wrap').style.display = 'none';
+  document.getElementById('sup-hw-review-actions').style.display = 'block';
+}
+function hwSupApproveWithConditions() {
+  if (!_hwSupCurrentPermit) return;
+  const conditions = (document.getElementById('sup-hw-conditions-text').value || '').trim();
+  if (!conditions) { alert('Please enter the conditions for approval.'); return; }
+  const p = getProfile();
+  const all = hwLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _hwSupCurrentPermit.permit_id);
+  if (idx < 0) return;
+  all[idx].status = 'approved';
+  all[idx].approval_conditions = conditions;
+  all[idx].approved_at = new Date().toISOString();
+  all[idx].approved_by = p ? p.name : 'Supervisor';
+  localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
+  goToHotWorksSup();
+}
+
+function hwSupShowReject() {
+  document.getElementById('sup-hw-review-actions').style.display = 'none';
+  document.getElementById('sup-hw-reject-wrap').style.display = 'block';
+  document.getElementById('sup-hw-reject-text').focus();
+}
+function hwSupCancelReject() {
+  document.getElementById('sup-hw-reject-wrap').style.display = 'none';
+  document.getElementById('sup-hw-review-actions').style.display = 'block';
+}
+function hwSupReject() {
+  if (!_hwSupCurrentPermit) return;
+  const reason = (document.getElementById('sup-hw-reject-text').value || '').trim();
+  if (!reason) { alert('Please enter a reason for rejection.'); return; }
+  const p = getProfile();
+  const all = hwLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _hwSupCurrentPermit.permit_id);
+  if (idx < 0) return;
+  all[idx].status = 'rejected';
+  all[idx].reject_reason = reason;
+  all[idx].rejected_at = new Date().toISOString();
+  all[idx].rejected_by = p ? p.name : 'Supervisor';
+  localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
+  goToHotWorksSup();
+}
+
+function hwSupShowRevoke() {
+  document.getElementById('sup-hw-revoke-wrap').style.display = 'none';
+  document.getElementById('sup-hw-revokein-wrap').style.display = 'block';
+  document.getElementById('sup-hw-revoke-text').focus();
+}
+function hwSupCancelRevoke() {
+  document.getElementById('sup-hw-revokein-wrap').style.display = 'none';
+  document.getElementById('sup-hw-revoke-wrap').style.display = 'block';
+}
+function hwSupRevoke() {
+  if (!_hwSupCurrentPermit) return;
+  const reason = (document.getElementById('sup-hw-revoke-text').value || '').trim();
+  if (!reason) { alert('Please enter a reason for revocation.'); return; }
+  const p = getProfile();
+  const all = hwLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _hwSupCurrentPermit.permit_id);
+  if (idx < 0) return;
+  all[idx].status = 'revoked';
+  all[idx].revoke_reason = reason;
+  all[idx].revoked_at = new Date().toISOString();
+  all[idx].revoked_by = p ? p.name : 'Supervisor';
+  // Mark for in-app banner notification to the worker
+  const notified = JSON.parse(localStorage.getItem('slan_hw_revoke_notify') || '[]');
+  notified.push({ permit_id: all[idx].permit_id, worker_name: all[idx].worker_name, reason: reason, ts: Date.now() });
+  localStorage.setItem('slan_hw_revoke_notify', JSON.stringify(notified));
+  localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
+  goToHotWorksSup();
+}
+
+// Update supervisor dashboard summary
+function hwUpdateSupSummary() {
+  const el = document.getElementById('sup-hw-summary');
+  if (!el) return;
+  const today = new Date().toLocaleDateString('en-AU');
+  const all = (typeof hwLoadAll === 'function' ? hwLoadAll() : []).filter(x => x.date === today);
+  const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
+  const active  = all.filter(x => hwPermitBucket(x) === 'active').length;
+  if (pending > 0) {
+    el.innerHTML = `<span style="color:#854F0B;font-weight:600">⚠ ${pending} pending approval</span>${active > 0 ? ` · ${active} active on site` : ''}`;
+  } else if (active > 0) {
+    el.innerHTML = `<span style="color:#1B6E3A;font-weight:600">${active} active on site</span>`;
+  } else {
+    el.innerHTML = '<span>No permits today</span>';
+  }
+}
+
+// Revoke banner on worker home
+function hwCheckRevokeBanner() {
+  const banner = document.getElementById('hw-revoke-banner');
+  const txt = document.getElementById('hw-revoke-banner-text');
+  const p = getProfile && getProfile();
+  if (!banner || !txt || !p) return;
+  const notified = JSON.parse(localStorage.getItem('slan_hw_revoke_notify') || '[]');
+  const dismissed = JSON.parse(localStorage.getItem('slan_hw_revoke_dismissed') || '[]');
+  const mine = notified.filter(n => n.worker_name === p.name && !dismissed.includes(n.permit_id));
+  if (mine.length === 0) { banner.style.display = 'none'; return; }
+  const latest = mine[mine.length - 1];
+  txt.innerHTML = `Permit <strong>${latest.permit_id}</strong> has been revoked by site supervisor.<br>Reason: ${latest.reason}`;
+  banner.style.display = 'block';
+}
+function hwDismissRevokeBanner() {
+  const p = getProfile && getProfile();
+  if (!p) return;
+  const notified = JSON.parse(localStorage.getItem('slan_hw_revoke_notify') || '[]');
+  const dismissed = JSON.parse(localStorage.getItem('slan_hw_revoke_dismissed') || '[]');
+  notified.filter(n => n.worker_name === p.name).forEach(n => { if (!dismissed.includes(n.permit_id)) dismissed.push(n.permit_id); });
+  localStorage.setItem('slan_hw_revoke_dismissed', JSON.stringify(dismissed));
+  const banner = document.getElementById('hw-revoke-banner');
+  if (banner) banner.style.display = 'none';
+}
+
 function hwUpdateChip() {
   const p = getProfile && getProfile();
   const strip = document.querySelector('#status-strip .status-pill')?.parentElement;
@@ -10587,6 +10983,7 @@ function requestLocationPermission() {
 }
 
 function loadSupervisorDashboard() {
+  try { hwUpdateSupSummary(); } catch(e) {}
   loadSuperDash();
 }
 
