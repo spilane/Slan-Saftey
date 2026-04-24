@@ -1184,30 +1184,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="sync-r" id="d-sright"></div>
   </div>
 
-  <!-- SUPERVISOR ACTIVITY STRIP -->
+  <!-- SUPERVISOR TODAY'S ACTIVITY STRIP -->
   <div id="d-status-strip" style="background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px">
-    <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Site overview</div>
+    <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Today's activity</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <div class="status-pill" id="d-pill-signin"><div class="sp-dot sp-pending"></div><span id="d-pill-signin-lbl">0 on site</span></div>
-      <div class="status-pill" id="d-pill-talk"><div class="sp-dot sp-pending"></div><span id="d-pill-talk-lbl">0 talks signed</span></div>
-      <div class="status-pill" id="d-pill-ps"><div class="sp-dot sp-pending"></div><span id="d-pill-ps-lbl">0 pre-starts</span></div>
-      <div class="status-pill" id="d-pill-haz"><div class="sp-dot sp-pending"></div><span id="d-pill-haz-lbl">0 hazards</span></div>
+      <div class="status-pill" id="d-pill-signin" onclick="supChipTapSignIn()"><div class="sp-dot sp-pending"></div><span id="d-pill-signin-lbl">Sign In</span></div>
+      <div class="status-pill" id="d-pill-ps" onclick="supChipTapPrestart()"><div class="sp-dot sp-pending"></div><span id="d-pill-ps-lbl">Site Pre-Start</span></div>
+      <div class="status-pill" id="d-pill-swms" onclick="supChipTapSwms()"><div class="sp-dot sp-pending"></div><span id="d-pill-swms-lbl">SWMS</span></div>
+      <div class="status-pill" id="d-pill-talk" onclick="supChipTapTalk()"><div class="sp-dot sp-pending"></div><span id="d-pill-talk-lbl">Toolbox Talk</span></div>
+      <div class="status-pill" id="d-pill-haz" onclick="supChipTapHazards()"><div class="sp-dot sp-pending"></div><span id="d-pill-haz-lbl">Hazards</span></div>
     </div>
   </div>
 
   <div class="tiles">
 
-    <!-- SITE PRE-START ALERT -->
-    <div id="d-sps-alert" style="display:none;background:#FEF0E6;border:1.5px solid rgba(212,99,10,.25);border-radius:var(--r);padding:13px 15px;cursor:pointer;display:flex;align-items:center;gap:11px" onclick="openSupTile('prestart','site')">
-      <div style="width:38px;height:38px;border-radius:10px;background:#FAEBEB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#D4630A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
-      </div>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:600;color:#D4630A">Site pre-start not completed</div>
-        <div style="font-size:11px;color:#C06030;margin-top:1px">Tap to complete before work starts</div>
-      </div>
-      <div style="font-size:11px;font-weight:600;color:#D4630A;background:#FAEBEB;padding:5px 10px;border-radius:20px;border:1px solid rgba(212,99,10,.2);white-space:nowrap">Open</div>
-    </div>
+    <!-- SITE PRE-START ALERT (removed - chip handles this signal now) -->
+    <div id="d-sps-alert" style="display:none"></div>
 
     <!-- ACTION TILES — same grid style as worker -->
     <div class="grid">
@@ -6054,10 +6046,9 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
     }
     if (lbl) lbl.textContent = count + ' ' + label;
   };
-  setP('d-pill-signin', 'd-pill-signin-lbl', signedIn.length, 'on site',    signedIn.length > 0);
-  setP('d-pill-talk',   'd-pill-talk-lbl',   talks.length,   'talks signed', missing.length === 0 && talks.length > 0);
-  setP('d-pill-ps',     'd-pill-ps-lbl',     workerPs.length, 'pre-starts',  workerPs.length > 0);
-  setP('d-pill-haz',    'd-pill-haz-lbl',    hazards.length,  'hazards',     hazards.length === 0);
+  // Old setP calls replaced with new updater (chips reworked to action-oriented)
+  try { updateSupActivityStrip(); } catch(e) {}
+  try { ptwUpdateTileSubtitle(); } catch(e) {}
   if (document.getElementById('d-pill-haz')) {
     const dot = document.getElementById('d-pill-haz').querySelector('.sp-dot');
     if (dot && hazards.length > 0) dot.className = 'sp-dot sp-warn';
@@ -7414,6 +7405,126 @@ function chipTapPrestart() { goTo('screen-prestart'); if (typeof initPrestart ==
 function chipTapSwms()     { goTo('screen-swms-library'); if (typeof initSwmsLibrary === 'function') setTimeout(initSwmsLibrary, 20); }
 function chipTapTalk()     { goTo('screen-talk'); if (typeof initTalk === 'function') setTimeout(initTalk, 20); }
 
+// ───────────────────────────────────────────────
+// SUPERVISOR CHIP TAP HANDLERS
+// ───────────────────────────────────────────────
+function supChipTapSignIn() {
+  // Same sign-in/out flow as worker
+  chipTapSignIn();
+}
+function supChipTapPrestart() {
+  // Go to site pre-start (supervisor creates it)
+  if (typeof goToSitePreStart === 'function') goToSitePreStart();
+  else goTo('screen-prestart');
+}
+function supChipTapSwms() {
+  if (typeof goToSwmsLibrary === 'function') goToSwmsLibrary();
+  else goTo('screen-swms-library');
+}
+function supChipTapTalk() {
+  if (typeof initTalk === 'function') { goTo('screen-talk'); setTimeout(initTalk, 20); }
+  else goTo('screen-talk');
+}
+function supChipTapHazards() {
+  // Go to open hazards list
+  if (typeof goToHazardList === 'function') goToHazardList();
+  else goTo('screen-hazard');
+}
+
+// Update supervisor activity strip - 5 chips (no Permits; that's the tile)
+function updateSupActivityStrip() {
+  const p = getProfile && getProfile();
+  if (!p) return;
+  const today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
+  const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+
+  // Sign In — dynamic like worker
+  const signedInToday  = !!localStorage.getItem('slan_signed_in_today')  || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign In'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  const signedOutToday = !!localStorage.getItem('slan_signed_out_today') || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign Out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  const sinLbl = document.getElementById('d-pill-signin-lbl');
+  if (sinLbl) {
+    if (signedInToday && !signedOutToday) {
+      sinLbl.textContent = 'On Site · Tap To Sign Out';
+      setPillState('d-pill-signin', 'done');
+    } else {
+      sinLbl.textContent = 'Sign In';
+      setPillState('d-pill-signin', 'warn');
+    }
+  }
+
+  // Site Pre-Start — amber until supervisor creates it today
+  const sitePsCreated = !!localStorage.getItem('site_prestart_created_' + today);
+  const psLbl = document.getElementById('d-pill-ps-lbl');
+  if (psLbl) {
+    if (sitePsCreated) {
+      psLbl.textContent = 'Site Pre-Start';
+      setPillState('d-pill-ps', 'done');
+    } else {
+      psLbl.textContent = 'Site Pre-Start';
+      setPillState('d-pill-ps', 'warn');
+    }
+  }
+
+  // SWMS — same as worker (persist green until new one published)
+  const swmsSignedAny = !!localStorage.getItem('swms_signed_latest');
+  const swmsNewAvail  = !!localStorage.getItem('swms_new_available');
+  setPillState('d-pill-swms', (swmsSignedAny && !swmsNewAvail) ? 'done' : 'warn');
+
+  // Toolbox talk — same as worker (persist green until new one added)
+  const talkSignedAny = !!localStorage.getItem('talk_signed_latest') || !!localStorage.getItem('talk_signed_' + today);
+  const talkNewAvail  = !!localStorage.getItem('talk_new_available');
+  setPillState('d-pill-talk', (talkSignedAny && !talkNewAvail) ? 'done' : 'warn');
+
+  // Hazards — count open hazards
+  const hazards = JSON.parse(localStorage.getItem('slan_hazards') || '[]');
+  const openHazards = hazards.filter(h => h.status !== 'closed' && h.status !== 'resolved');
+  const hazLbl = document.getElementById('d-pill-haz-lbl');
+  if (hazLbl) {
+    if (openHazards.length > 0) {
+      hazLbl.textContent = 'Hazards (' + openHazards.length + ' open)';
+      setPillState('d-pill-haz', 'warn');
+    } else {
+      hazLbl.textContent = 'Hazards';
+      setPillState('d-pill-haz', 'done');
+    }
+  }
+
+  // Add or update Permits chip as 6th chip
+  supUpdatePermitsChip();
+}
+
+function supUpdatePermitsChip() {
+  const strip = document.querySelector('#d-status-strip > div:last-child');
+  if (!strip) return;
+  let chip = document.getElementById('d-pill-permits');
+  const today = new Date().toLocaleDateString('en-AU');
+  const all = (typeof ptwLoadAllPermits === 'function' ? ptwLoadAllPermits() : []).filter(x => x.date === today);
+  const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
+  const active  = all.filter(x => hwPermitBucket(x) === 'active').length;
+
+  if (all.length === 0) { if (chip) chip.remove(); return; }
+
+  if (!chip) {
+    chip = document.createElement('div');
+    chip.id = 'd-pill-permits';
+    chip.onclick = function() { goToPermitsToWork(); };
+    strip.appendChild(chip);
+  }
+  chip.className = 'status-pill';
+  let label, state;
+  if (pending > 0) {
+    label = 'Permits (' + pending + ' pending)'; state = 'warn';
+  } else if (active > 0) {
+    label = 'Permits (' + active + ' active)'; state = 'done';
+  } else {
+    label = 'Permits'; state = 'done';
+  }
+  chip.innerHTML = '<div class="sp-dot"></div><span>' + label + '</span>';
+  setPillState('d-pill-permits', state);
+}
+
+
+
 // Update the "Permits" chip on the worker home status strip.
 // Only visible when worker has permits today. Shows counts by bucket.
 // ========================================================
@@ -7994,6 +8105,14 @@ function goTo(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+  // Auto-refresh chip strip when landing on worker home or supervisor dash
+  if (id === 'screen-home') {
+    try { if (typeof updateStatusStrip === 'function') updateStatusStrip(); } catch(e) {}
+  }
+  if (id === 'screen-dash') {
+    try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
+    try { if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip(); } catch(e) {}
+  }
   // Apply language translation if set
   if (typeof _currentLang !== 'undefined' && _currentLang !== 'en' && typeof LANG !== 'undefined') {
     setTimeout(function(){ if(typeof translateAllVisibleText==='function') translateAllVisibleText(LANG[_currentLang]); }, 60);
