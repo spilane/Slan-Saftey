@@ -538,6 +538,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .hw-success-sub{font-size:13.5px;color:var(--muted);line-height:1.5;max-width:320px}
 .hw-success-time{font-size:12.5px;color:var(--muted);font-family:'DM Mono',monospace}
 
+
+/* ─── Permit type tags (for multi-type support) ─────────────── */
+.ptw-type-tag { display:inline-block; font-size:9.5px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:.04em; text-transform:uppercase; vertical-align:middle }
+.ptw-type-tag.t-hotworks   { background:rgba(184,150,12,.15); color:#854F0B }
+.ptw-type-tag.t-wah        { background:rgba(60,110,180,.15); color:#234A7A }
+.ptw-type-tag.t-confined   { background:rgba(112,66,155,.15); color:#5A3880 }
+.ptw-type-tag.t-excavation { background:rgba(140,95,45,.15);  color:#5E3D1A }
+.ptw-type-tag.t-electrical { background:rgba(180,140,40,.15); color:#6B5220 }
+
 </style>
 </head>
 <body>
@@ -1317,10 +1326,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-name">Broadcast</div>
         <div class="tile-sub">Message all on site</div>
       </div>
-      <div class="tile" onclick="goToPermits()">
+      <div class="tile" onclick="goToPermitsToWork()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg></div>
         <div class="tile-name">Permits to Work</div>
-        <div class="tile-sub">Log &amp; track permits</div>
+        <div class="tile-sub" id="ptw-tile-sub">Log &amp; track permits</div>
       </div>
 
       <div class="tile" onclick="goToWorkerContacts()">
@@ -2430,18 +2439,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <!-- Hot Works Permits card -->
-    <div class="fcard" id="sup-hw-card" style="cursor:pointer" onclick="goToHotWorksSup()">
-      <div class="fcard-hdr" style="display:flex;align-items:center;justify-content:space-between">
-        <span style="display:flex;align-items:center;gap:8px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-          Hot Works Permits
-        </span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--muted)"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-      <div id="sup-hw-summary" style="padding:4px 14px 14px;font-size:13px;color:var(--muted)">No permits today</div>
-    </div>
-
     <!-- Refresh button -->
     <button onclick="loadSupervisorDashboard()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--card);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer">
       Refresh dashboard
@@ -2710,6 +2707,52 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ═══════════════════ PERMITS TO WORK — UNIFIED SUPERVISOR SCREEN ═══ -->
+<div id="screen-ptw-unified" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon ic-amber" style="width:28px;height:28px;border-radius:7px;background:rgba(184,150,12,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" style="width:14px;height:14px"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Permits to Work</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+
+  <div style="padding:18px;padding-bottom:60px">
+
+    <!-- PENDING section (always shows ALL types, no filter) -->
+    <div id="ptw-pending-wrap" style="display:none">
+      <div class="hw-list-section-hdr" style="display:flex;align-items:center;gap:7px">
+        Pending approval
+        <span id="ptw-pending-count" style="background:#F5C48A;color:#633806;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;letter-spacing:0">0</span>
+      </div>
+      <div id="ptw-pending-list"></div>
+    </div>
+
+    <!-- ACTIVE & HISTORY section with dropdown filter -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 2px 7px">
+      <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase">Active &amp; history</div>
+      <select id="ptw-type-filter" onchange="ptwRenderUnified()" style="background:var(--card);border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:600;color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer">
+        <option value="all">All types</option>
+        <option value="hotworks">Hot Works</option>
+        <option value="wah">Working at Heights</option>
+        <option value="confined">Confined Space</option>
+        <option value="excavation">Excavation</option>
+        <option value="electrical">Electrical</option>
+      </select>
+    </div>
+    <div id="ptw-history-list"></div>
+
+    <!-- Empty state shown when nothing at all -->
+    <div id="ptw-empty" class="hw-empty">
+      <div class="hw-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
+      <div class="hw-empty-title">No permits today</div>
+      <div class="hw-empty-sub">When workers submit permits, they'll appear here for your review and approval.</div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ═══════════════════ HOT WORKS PERMIT — SUPERVISOR QUEUE ═══ -->
 <div id="screen-hw-sup-queue" class="screen">
   <div class="tbar" style="background:var(--deep)">
@@ -2744,7 +2787,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <!-- ═══════════════════ HOT WORKS PERMIT — SUPERVISOR REVIEW ═══ -->
 <div id="screen-hw-sup-review" class="screen">
   <div class="tbar" style="background:var(--deep)">
-    <button class="back-btn" onclick="goToHotWorksSup()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="back-btn" onclick="goToPermitsToWork()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
     <div style="display:flex;align-items:center;gap:8px">
       <span style="font-size:14px;font-weight:600;color:#fff">Review Permit</span>
     </div>
@@ -7335,6 +7378,7 @@ async function updateStatusStrip() {
 
   try { hwUpdateChip(); } catch(e) {}
   try { hwCheckRevokeBanner(); } catch(e) {}
+  try { ptwUpdateTileSubtitle(); } catch(e) {}
 }
 
 function setPill(id, done) {
@@ -7380,6 +7424,157 @@ function goToHotWorksSup() {
   hwSupRenderQueue();
   goTo('screen-hw-sup-queue');
 }
+
+// Unified Permits to Work screen (supervisor)
+function goToPermitsToWork() {
+  ptwRenderUnified();
+  goTo('screen-ptw-unified');
+}
+
+// Determine permit type for a record (for now only hot works exists)
+function ptwGetType(pm) {
+  if (pm.permit_type) return pm.permit_type;
+  if (pm.permit_id && pm.permit_id.startsWith('HW-')) return 'hotworks';
+  // Default to hotworks for now since that's what we build
+  return 'hotworks';
+}
+function ptwGetTypeLabel(t) {
+  if (t === 'hotworks')   return 'Hot Works';
+  if (t === 'wah')        return 'Working at Heights';
+  if (t === 'confined')   return 'Confined Space';
+  if (t === 'excavation') return 'Excavation';
+  if (t === 'electrical') return 'Electrical';
+  return 'Permit';
+}
+function ptwGetTypeClass(t) {
+  if (t === 'hotworks')   return 't-hotworks';
+  if (t === 'wah')        return 't-wah';
+  if (t === 'confined')   return 't-confined';
+  if (t === 'excavation') return 't-excavation';
+  if (t === 'electrical') return 't-electrical';
+  return 't-hotworks';
+}
+
+// Load all permits from all types (currently just hot works)
+function ptwLoadAllPermits() {
+  const all = [];
+  // Hot Works permits
+  if (typeof hwLoadAll === 'function') {
+    hwLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'hotworks' })); });
+  }
+  // Future: WAH permits, Confined Space permits, etc.
+  return all;
+}
+
+// Open the review screen for whatever permit type this is
+function ptwOpenPermit(permitId) {
+  const all = ptwLoadAllPermits();
+  const p = all.find(x => x.permit_id === permitId);
+  if (!p) return;
+  const type = ptwGetType(p);
+  if (type === 'hotworks') {
+    hwSupOpenReview(permitId);
+  } else {
+    // Future: WAH review, Confined Space review, etc.
+    alert('Review flow for ' + ptwGetTypeLabel(type) + ' permits not yet built.');
+  }
+}
+
+// Render the unified queue
+function ptwRenderUnified() {
+  const today = new Date().toLocaleDateString('en-AU');
+  const typeFilter = (document.getElementById('ptw-type-filter') || {}).value || 'all';
+  const all = ptwLoadAllPermits().filter(x => x.date === today);
+
+  const pending = all.filter(x => hwPermitBucket(x) === 'pending');
+  let activeAndHistory = all.filter(x => hwPermitBucket(x) !== 'pending');
+  if (typeFilter !== 'all') {
+    activeAndHistory = activeAndHistory.filter(x => ptwGetType(x) === typeFilter);
+  }
+  // Sort: active first, then history (recent first)
+  activeAndHistory.sort((a, b) => {
+    const aBuck = hwPermitBucket(a), bBuck = hwPermitBucket(b);
+    if (aBuck !== bBuck) return aBuck === 'active' ? -1 : 1;
+    return (b.submitted_at || '').localeCompare(a.submitted_at || '');
+  });
+
+  function cardHtml(pm) {
+    const type = ptwGetType(pm);
+    const typeLabel = ptwGetTypeLabel(type);
+    const typeClass = ptwGetTypeClass(type);
+    const badgeText = hwStatusLabel(pm.status);
+    const badgeClass = hwStatusBadgeClass(pm.status);
+    const workerName = pm.worker_name || 'Unknown';
+    const subtypeText = pm.subtype || pm.type || '';
+    const locText = pm.location || '';
+    let timeNote = pm.date || '';
+    if (pm.approved_at) {
+      const d = new Date(pm.approved_at);
+      timeNote += ' · approved ' + d.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:false});
+    } else if (pm.rejected_at) {
+      timeNote += ' · rejected';
+    } else if (pm.revoked_at) {
+      timeNote += ' · revoked';
+    } else if (pm.submitted_at) {
+      const d = new Date(pm.submitted_at);
+      timeNote += ' · ' + d.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:false});
+    }
+
+    return `<div class="hw-card" onclick="ptwOpenPermit('${pm.permit_id}')">
+      <div class="hw-card-top">
+        <div style="display:inline-flex;align-items:center;gap:6px">
+          <span class="ptw-type-tag ${typeClass}">${typeLabel}</span>
+          <span class="hw-card-id">${pm.permit_id}</span>
+        </div>
+        <div class="hw-badge ${badgeClass}" style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px">${badgeText}</div>
+      </div>
+      <div class="hw-card-mid" style="font-size:13px">${workerName}${subtypeText ? ' · ' + subtypeText : ''}</div>
+      <div class="hw-card-sub">${locText}</div>
+      <div class="hw-card-foot">${timeNote}</div>
+    </div>`;
+  }
+
+  const pendingWrap  = document.getElementById('ptw-pending-wrap');
+  const pendingList  = document.getElementById('ptw-pending-list');
+  const pendingCount = document.getElementById('ptw-pending-count');
+  const historyList  = document.getElementById('ptw-history-list');
+  const empty        = document.getElementById('ptw-empty');
+
+  if (pending.length) {
+    pendingWrap.style.display = 'block';
+    pendingList.innerHTML = pending.map(cardHtml).join('');
+    if (pendingCount) pendingCount.textContent = pending.length;
+  } else {
+    pendingWrap.style.display = 'none';
+  }
+
+  if (activeAndHistory.length) {
+    historyList.innerHTML = activeAndHistory.map(cardHtml).join('');
+  } else {
+    historyList.innerHTML = '<div style="padding:14px 2px;font-size:12.5px;color:var(--muted);font-style:italic">No permits in this category</div>';
+  }
+
+  if (empty) empty.style.display = (all.length === 0) ? 'block' : 'none';
+}
+
+// Update the tile subtitle on supervisor home with live permit status
+function ptwUpdateTileSubtitle() {
+  const sub = document.getElementById('ptw-tile-sub');
+  if (!sub) return;
+  const today = new Date().toLocaleDateString('en-AU');
+  const all = ptwLoadAllPermits().filter(x => x.date === today);
+  const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
+  const active  = all.filter(x => hwPermitBucket(x) === 'active').length;
+  if (pending > 0) {
+    sub.innerHTML = '<span style="color:#854F0B;font-weight:600">⚠ ' + pending + ' pending approval</span>' + (active > 0 ? ' · ' + active + ' active' : '');
+  } else if (active > 0) {
+    sub.innerHTML = '<span style="color:#1B6E3A;font-weight:600">' + active + ' active on site</span>';
+  } else {
+    sub.textContent = 'No permits today';
+  }
+}
+
+
 
 function hwSupRenderQueue() {
   const today = new Date().toLocaleDateString('en-AU');
@@ -7530,7 +7725,7 @@ function hwSupApprove() {
   all[idx].approved_at = new Date().toISOString();
   all[idx].approved_by = p ? p.name : 'Supervisor';
   localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
-  goToHotWorksSup();
+  goToPermitsToWork();
 }
 
 function hwSupShowConditions() {
@@ -7555,7 +7750,7 @@ function hwSupApproveWithConditions() {
   all[idx].approved_at = new Date().toISOString();
   all[idx].approved_by = p ? p.name : 'Supervisor';
   localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
-  goToHotWorksSup();
+  goToPermitsToWork();
 }
 
 function hwSupShowReject() {
@@ -7580,7 +7775,7 @@ function hwSupReject() {
   all[idx].rejected_at = new Date().toISOString();
   all[idx].rejected_by = p ? p.name : 'Supervisor';
   localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
-  goToHotWorksSup();
+  goToPermitsToWork();
 }
 
 function hwSupShowRevoke() {
@@ -7609,7 +7804,7 @@ function hwSupRevoke() {
   notified.push({ permit_id: all[idx].permit_id, worker_name: all[idx].worker_name, reason: reason, ts: Date.now() });
   localStorage.setItem('slan_hw_revoke_notify', JSON.stringify(notified));
   localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
-  goToHotWorksSup();
+  goToPermitsToWork();
 }
 
 // Update supervisor dashboard summary
@@ -10983,7 +11178,7 @@ function requestLocationPermission() {
 }
 
 function loadSupervisorDashboard() {
-  try { hwUpdateSupSummary(); } catch(e) {}
+  try { ptwUpdateTileSubtitle(); } catch(e) {}
   loadSuperDash();
 }
 
