@@ -7062,7 +7062,28 @@ let isOnline=navigator.onLine;
 let sigCanvas,sigCtx,isSigning=false,hasSig=false;
 
 document.addEventListener('DOMContentLoaded',()=>{
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // Check for updates every time app opens
+      reg.update().catch(()=>{});
+      // When a new service worker takes over, reload the page
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        if (newSW) {
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          });
+        }
+      });
+    }).catch(()=>{});
+    // Also listen for controller change (another way to detect update)
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) { refreshing = true; window.location.reload(); }
+    });
+  }
   initFirebase();
   checkOnboarding();
   window.addEventListener('online',()=>{isOnline=true;updateSync();syncQ();});
@@ -7163,7 +7184,7 @@ async function updateStatusStrip() {
     // After sign-out (or never signed in), show amber pulsing "Sign In"
     // Worker can always sign in again if they return to site
     if (signedInToday && !signedOutToday) {
-      signinLbl.textContent = 'On site · Tap to sign out';
+      signinLbl.textContent = 'On Site · Tap To Sign Out';
       setPillState('sp-signin', 'done');
     } else {
       signinLbl.textContent = 'Sign In';
