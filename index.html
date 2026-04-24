@@ -7151,8 +7151,10 @@ async function updateStatusStrip() {
   const q = JSON.parse(localStorage.getItem('slan_queue')||'[]');
 
   // Sign In / Sign Out (dynamic chip)
-  const signedInToday  = q.some(s => s.data && s.data.form_type === 'attendance' && s.data.form_mode === 'in'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
-  const signedOutToday = q.some(s => s.data && s.data.form_type === 'attendance' && s.data.form_mode === 'out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  // Primary source: localStorage flags set when user signs in/out (reliable)
+  // Fallback: check slan_queue for today's attendance records by submission_type
+  const signedInToday  = !!localStorage.getItem('slan_signed_in_today')  || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign In'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  const signedOutToday = !!localStorage.getItem('slan_signed_out_today') || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign Out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
   const signinLbl  = document.getElementById('sp-signin-lbl');
   const signinPill = document.getElementById('sp-signin');
   if (signinLbl && signinPill) {
@@ -7219,8 +7221,8 @@ function setPillState(id, state) {
 function chipTapSignIn() {
   const q = JSON.parse(localStorage.getItem('slan_queue')||'[]');
   const today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
-  const signedInToday  = q.some(s => s.data && s.data.form_type === 'attendance' && s.data.form_mode === 'in'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
-  const signedOutToday = q.some(s => s.data && s.data.form_type === 'attendance' && s.data.form_mode === 'out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  const signedInToday  = !!localStorage.getItem('slan_signed_in_today')  || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign In'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  const signedOutToday = !!localStorage.getItem('slan_signed_out_today') || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign Out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
   if (signedInToday && !signedOutToday) {
     if (typeof startFlow === 'function') startFlow('out'); else goTo('screen-confirm');
   } else {
