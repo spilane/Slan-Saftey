@@ -547,6 +547,52 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .ptw-type-tag.t-excavation { background:rgba(140,95,45,.15);  color:#5E3D1A }
 .ptw-type-tag.t-electrical { background:rgba(180,140,40,.15); color:#6B5220 }
 
+
+/* ─── HOT WORKS CLOSEOUT + SIGN-OUT GATE + PHOTOS ─────────── */
+.hw-gate-wrap{padding:24px 20px;text-align:left;max-width:460px;margin:0 auto}
+.hw-gate-icon{width:56px;height:56px;border-radius:14px;background:#FCEBEB;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.hw-gate-icon svg{width:30px;height:30px;stroke:#A32D2D}
+.hw-gate-title{font-size:18px;font-weight:600;color:var(--text);text-align:center;margin-bottom:6px}
+.hw-gate-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.5;margin-bottom:20px}
+.hw-gate-permit{background:var(--card);border:1.5px solid var(--border);border-left:4px solid #A32D2D;border-radius:var(--rs);padding:13px 14px;margin-bottom:9px;cursor:pointer;transition:all .12s}
+.hw-gate-permit:active{transform:scale(.98)}
+.hw-gate-permit-id{font-family:'DM Mono',monospace;font-size:12.5px;font-weight:700;color:var(--text)}
+.hw-gate-permit-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.hw-gate-permit-cta{font-size:11.5px;color:#A32D2D;font-weight:600;margin-top:6px;display:flex;align-items:center;gap:4px}
+
+.hw-closeout-tick{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--rs);margin-bottom:7px;cursor:pointer;transition:all .12s}
+.hw-closeout-tick:active{transform:scale(.99)}
+.hw-closeout-tick.checked{background:#B7E1C4;border-color:#1B6E3A}
+.hw-closeout-check{width:22px;height:22px;border:2px solid var(--mid);border-radius:6px;flex-shrink:0;background:#fff;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.hw-closeout-tick.checked .hw-closeout-check{background:#1B6E3A;border-color:#1B6E3A}
+.hw-closeout-tick.checked .hw-closeout-check svg{opacity:1}
+.hw-closeout-check svg{width:14px;height:14px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.hw-closeout-label{font-size:13.5px;line-height:1.4;color:var(--text);flex:1}
+.hw-closeout-tick.checked .hw-closeout-label{color:#0F4A27;font-weight:500}
+
+.hw-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.hw-photo-slot{background:var(--card);border:1.5px dashed var(--border);border-radius:var(--rs);padding:11px 10px 9px;text-align:center;cursor:pointer;transition:all .12s;position:relative;min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.hw-photo-slot:active{transform:scale(.98);border-color:var(--mid)}
+.hw-photo-slot.filled{border-style:solid;border-color:#1B6E3A;background:#fff;padding:0;overflow:hidden}
+.hw-photo-slot.filled img{width:100%;height:100%;object-fit:cover;display:block}
+.hw-photo-slot.filled .hw-photo-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);color:#fff;font-size:10px;padding:3px 6px}
+.hw-photo-slot svg{width:22px;height:22px;stroke:var(--muted)}
+.hw-photo-label{font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.03em}
+.hw-photo-remove{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:11px;background:rgba(0,0,0,.7);color:#fff;border:none;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2}
+
+.hw-fw-timer{background:#FAEEDA;border:1.5px solid #BA7517;border-radius:var(--rs);padding:14px 16px;margin-bottom:13px;text-align:center}
+.hw-fw-timer.complete{background:#B7E1C4;border-color:#1B6E3A}
+.hw-fw-timer-lbl{font-size:10.5px;font-weight:700;color:#854F0B;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.hw-fw-timer.complete .hw-fw-timer-lbl{color:#0F4A27}
+.hw-fw-timer-val{font-size:28px;font-weight:700;color:#633806;font-family:'DM Mono',monospace;letter-spacing:.03em}
+.hw-fw-timer.complete .hw-fw-timer-val{color:#0F4A27}
+.hw-fw-timer-hint{font-size:11.5px;color:#854F0B;margin-top:3px}
+.hw-fw-timer.complete .hw-fw-timer-hint{color:#0F4A27}
+
+.hw-closeout-btn{width:100%;padding:14px;border-radius:var(--r);border:none;background:#1B6E3A;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:10px}
+.hw-closeout-btn:disabled{background:#CCC;color:#888;cursor:not-allowed}
+.hw-closeout-btn:active:not(:disabled){background:#0F4A27}
+
 </style>
 </head>
 <body>
@@ -2838,6 +2884,51 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button onclick="hwSupCancelRevoke()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
       <button onclick="hwSupRevoke()" style="flex:1;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Confirm Revocation</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HOT WORKS — SIGN-OUT GATE ═══ -->
+<div id="screen-hw-gate" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Cannot Sign Out</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="hw-gate-wrap">
+    <div class="hw-gate-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="hw-gate-title">You have active Hot Works permits</div>
+    <div class="hw-gate-sub">You must close each active permit before signing out of site. Tap a permit below to complete its closeout declaration.</div>
+    <div id="hw-gate-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HOT WORKS — CLOSEOUT DECLARATION ═══ -->
+<div id="screen-hw-closeout" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="hwBackFromCloseout()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon ic-amber" style="width:28px;height:28px;border-radius:7px;background:rgba(184,150,12,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" style="width:14px;height:14px"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Close Permit</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:30px">
+    <div id="hw-closeout-header" style="padding:11px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:13px"></div>
+
+    <!-- Fire watch timer (shown only if fire watch required) -->
+    <div id="hw-fw-timer-wrap" style="display:none"></div>
+
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 8px">Closeout checks</div>
+    <div id="hw-closeout-ticks"></div>
+
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:16px 2px 8px">Comments (optional)</div>
+    <textarea id="hw-closeout-comments" rows="3" placeholder="Any observations, issues or notes about the completed work" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+
+    <button id="hw-closeout-submit" class="hw-closeout-btn" onclick="hwSubmitCloseout()" disabled>Close Permit</button>
   </div>
 </div>
 
@@ -7542,6 +7633,253 @@ function goToPermitsToWork() {
   goTo('screen-ptw-unified');
 }
 
+// ────────────────────────────────────────────
+// HOT WORKS PHOTOS
+// ────────────────────────────────────────────
+let _hwPhotoSlot = null;
+const _hwPhotos = { 1:null, 2:null, 3:null, 4:null };
+
+function hwPhotoPick(slotNum) {
+  _hwPhotoSlot = slotNum;
+  const input = document.getElementById('hw-photo-input');
+  if (input) { input.value = ''; input.click(); }
+}
+
+function hwPhotoHandle(ev) {
+  const file = ev.target.files && ev.target.files[0];
+  if (!file || !_hwPhotoSlot) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const now = new Date();
+    const ts = now.toLocaleString('en-AU', { hour12: false });
+    // Get location if we can
+    let gpsText = '';
+    if (navigator.geolocation) {
+      try {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          const lat = pos.coords.latitude.toFixed(5);
+          const lng = pos.coords.longitude.toFixed(5);
+          hwPhotoStore(_hwPhotoSlot, e.target.result, ts, lat + ',' + lng);
+        }, function() {
+          hwPhotoStore(_hwPhotoSlot, e.target.result, ts, '');
+        }, { timeout: 3000, maximumAge: 60000 });
+        return;
+      } catch(err) {}
+    }
+    hwPhotoStore(_hwPhotoSlot, e.target.result, ts, '');
+  };
+  reader.readAsDataURL(file);
+}
+
+function hwPhotoStore(slot, dataUrl, ts, gps) {
+  _hwPhotos[slot] = { data: dataUrl, ts: ts, gps: gps };
+  const el = document.getElementById('hw-photo-' + slot);
+  if (!el) return;
+  const labels = { 1: '1 · Work area', 2: '2 · 10m clear zone', 3: '3 · Extinguisher', 4: '4 · Equipment' };
+  el.classList.add('filled');
+  el.innerHTML = '<button class="hw-photo-remove" onclick="event.stopPropagation();hwPhotoRemove(' + slot + ')">×</button>' +
+                 '<img src="' + dataUrl + '" alt="Photo ' + slot + '">' +
+                 '<div class="hw-photo-label">' + labels[slot] + '</div>';
+  _hwPhotoSlot = null;
+}
+
+function hwPhotoRemove(slot) {
+  _hwPhotos[slot] = null;
+  const el = document.getElementById('hw-photo-' + slot);
+  if (!el) return;
+  const labels = { 1: '1 · Work area', 2: '2 · 10m clear zone', 3: '3 · Extinguisher', 4: '4 · Equipment' };
+  el.classList.remove('filled');
+  el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">' + labels[slot] + '</div>';
+}
+
+function hwResetPhotoSlots() {
+  [1,2,3,4].forEach(hwPhotoRemove);
+}
+
+function hwGetPhotosForSubmit() {
+  const out = [];
+  [1,2,3,4].forEach(s => { if (_hwPhotos[s]) out.push({ slot: s, data: _hwPhotos[s].data, ts: _hwPhotos[s].ts, gps: _hwPhotos[s].gps }); });
+  return out;
+}
+
+// ────────────────────────────────────────────
+// HOT WORKS SIGN-OUT GATE
+// ────────────────────────────────────────────
+function hwCheckActivePermitsForSignOut() {
+  const p = getProfile && getProfile();
+  if (!p) return false;
+  const all = hwLoadAll().filter(x => x.worker_name === p.name && (x.status === 'approved' || x.status === 'active'));
+  const now = Date.now();
+  const active = all.filter(x => {
+    const end = x.end_time ? new Date(x.end_time).getTime() : 0;
+    return !end || end > now;
+  });
+  if (active.length === 0) return false;
+  // Show the gate screen
+  const list = document.getElementById('hw-gate-list');
+  if (list) {
+    list.innerHTML = active.map(pm => {
+      return '<div class="hw-gate-permit" onclick="hwOpenCloseout(\''+pm.permit_id+'\', true)">' +
+               '<div class="hw-gate-permit-id">'+pm.permit_id+'</div>' +
+               '<div class="hw-gate-permit-meta">'+(pm.subtype || pm.type || 'Hot Works')+' · '+(pm.location || '')+'</div>' +
+               '<div class="hw-gate-permit-cta">Tap to close permit →</div>' +
+             '</div>';
+    }).join('');
+  }
+  goTo('screen-hw-gate');
+  return true;
+}
+
+// ────────────────────────────────────────────
+// HOT WORKS CLOSEOUT
+// ────────────────────────────────────────────
+let _hwCloseoutPermit = null;
+let _hwCloseoutTicks = {};
+let _hwFwTimerInterval = null;
+let _hwFromGate = false;
+
+function hwOpenCloseout(permitId, fromGate) {
+  _hwFromGate = !!fromGate || false;
+  const p = hwLoadAll().find(x => x.permit_id === permitId);
+  if (!p) return;
+  _hwCloseoutPermit = p;
+  _hwCloseoutTicks = {};
+
+  const hdr = document.getElementById('hw-closeout-header');
+  if (hdr) {
+    hdr.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:12.5px;font-weight:700;color:var(--text)">'+p.permit_id+'</div>' +
+                    '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+(p.subtype || 'Hot Works')+' · '+(p.location || '')+'</div>';
+  }
+
+  const checks = [
+    { id: 'work_done',      label: 'Work has been completed' },
+    { id: 'area_inspected', label: 'Area inspected — no smouldering, sparks, or hot materials' },
+    { id: 'materials',      label: 'Materials and equipment cleared from area' },
+    { id: 'extinguisher',   label: 'Fire extinguisher remains in place' },
+    { id: 'area_safe',      label: 'Area left in safe condition' }
+  ];
+  if (p.fire_watch_required) {
+    checks.splice(1, 0, { id: 'fire_watch', label: 'Fire watch duration completed' });
+  }
+
+  const ticksEl = document.getElementById('hw-closeout-ticks');
+  if (ticksEl) {
+    ticksEl.innerHTML = checks.map(c => (
+      '<div class="hw-closeout-tick" id="hw-ct-'+c.id+'" onclick="hwToggleTick(\''+c.id+'\')">' +
+        '<div class="hw-closeout-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+        '<div class="hw-closeout-label">'+c.label+'</div>' +
+      '</div>'
+    )).join('');
+  }
+  document.getElementById('hw-closeout-comments').value = '';
+
+  // Fire watch timer
+  const fwWrap = document.getElementById('hw-fw-timer-wrap');
+  if (_hwFwTimerInterval) { clearInterval(_hwFwTimerInterval); _hwFwTimerInterval = null; }
+  if (p.fire_watch_required && fwWrap) {
+    const duration = parseInt(p.fire_watch_duration, 10) || 60; // minutes
+    const startedKey = 'hw_fw_start_' + p.permit_id;
+    let startTs = parseInt(localStorage.getItem(startedKey), 10);
+    if (!startTs) {
+      startTs = Date.now();
+      localStorage.setItem(startedKey, String(startTs));
+    }
+    const endTs = startTs + duration * 60 * 1000;
+    fwWrap.style.display = 'block';
+    function renderTimer() {
+      const remaining = endTs - Date.now();
+      if (remaining <= 0) {
+        fwWrap.className = 'hw-fw-timer complete';
+        fwWrap.innerHTML = '<div class="hw-fw-timer-lbl">Fire watch complete</div><div class="hw-fw-timer-val">✓ 00:00</div><div class="hw-fw-timer-hint">You may close this permit</div>';
+        if (_hwFwTimerInterval) { clearInterval(_hwFwTimerInterval); _hwFwTimerInterval = null; }
+        hwUpdateCloseoutButton();
+        return;
+      }
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      const timeStr = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+      fwWrap.className = 'hw-fw-timer';
+      fwWrap.innerHTML = '<div class="hw-fw-timer-lbl">Fire watch countdown · ' + duration + ' min</div><div class="hw-fw-timer-val">' + timeStr + '</div><div class="hw-fw-timer-hint">Permit cannot be closed until this completes</div>';
+      hwUpdateCloseoutButton();
+    }
+    renderTimer();
+    _hwFwTimerInterval = setInterval(renderTimer, 1000);
+  } else if (fwWrap) {
+    fwWrap.style.display = 'none';
+  }
+
+  hwUpdateCloseoutButton();
+  goTo('screen-hw-closeout');
+}
+
+function hwToggleTick(id) {
+  _hwCloseoutTicks[id] = !_hwCloseoutTicks[id];
+  const el = document.getElementById('hw-ct-' + id);
+  if (el) el.classList.toggle('checked', !!_hwCloseoutTicks[id]);
+  hwUpdateCloseoutButton();
+}
+
+function hwUpdateCloseoutButton() {
+  const btn = document.getElementById('hw-closeout-submit');
+  if (!btn || !_hwCloseoutPermit) return;
+  // Count required ticks
+  const required = ['work_done','area_inspected','materials','extinguisher','area_safe'];
+  if (_hwCloseoutPermit.fire_watch_required) required.push('fire_watch');
+  const allTicked = required.every(r => !!_hwCloseoutTicks[r]);
+  // Fire watch timer must be complete
+  let fwOk = true;
+  if (_hwCloseoutPermit.fire_watch_required) {
+    const startedKey = 'hw_fw_start_' + _hwCloseoutPermit.permit_id;
+    const startTs = parseInt(localStorage.getItem(startedKey), 10);
+    const duration = parseInt(_hwCloseoutPermit.fire_watch_duration, 10) || 60;
+    if (!startTs || (Date.now() - startTs) < duration * 60 * 1000) fwOk = false;
+  }
+  btn.disabled = !(allTicked && fwOk);
+}
+
+function hwSubmitCloseout() {
+  if (!_hwCloseoutPermit) return;
+  const p = getProfile();
+  const all = hwLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _hwCloseoutPermit.permit_id);
+  if (idx < 0) return;
+  const comments = (document.getElementById('hw-closeout-comments').value || '').trim();
+  all[idx].status = 'closed';
+  all[idx].closed_at = new Date().toISOString();
+  all[idx].closed_by = p ? p.name : 'Worker';
+  all[idx].closeout_ticks = Object.assign({}, _hwCloseoutTicks);
+  all[idx].closeout_comments = comments;
+  localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
+  if (_hwFwTimerInterval) { clearInterval(_hwFwTimerInterval); _hwFwTimerInterval = null; }
+  // Clear fire watch timer flag
+  localStorage.removeItem('hw_fw_start_' + _hwCloseoutPermit.permit_id);
+  _hwCloseoutPermit = null;
+  _hwCloseoutTicks = {};
+  // If came from gate, check remaining active permits
+  if (_hwFromGate) {
+    _hwFromGate = false;
+    if (hwCheckActivePermitsForSignOut()) return; // still more permits to close
+    // No more active permits — proceed with sign out
+    if (typeof startFlow === 'function') {
+      // Temporarily disable the gate by setting a flag
+      window._hwGateBypass = true;
+      startFlow('out');
+      window._hwGateBypass = false;
+    }
+    return;
+  }
+  goTo('screen-hw-list');
+  if (typeof hwRenderList === 'function') hwRenderList();
+  if (typeof hwUpdateChip === 'function') hwUpdateChip();
+}
+
+function hwBackFromCloseout() {
+  if (_hwFwTimerInterval) { clearInterval(_hwFwTimerInterval); _hwFwTimerInterval = null; }
+  if (_hwFromGate) { goTo('screen-hw-gate'); return; }
+  goTo('screen-hw-list');
+}
+
+
 // Determine permit type for a record (for now only hot works exists)
 function ptwGetType(pm) {
   if (pm.permit_type) return pm.permit_type;
@@ -8120,6 +8458,10 @@ function goTo(id){
 }
 
 function startFlow(m){
+  // SIGN-OUT GATE: block sign-out if worker has active Hot Works permits
+  if (m === 'out' && typeof hwCheckActivePermitsForSignOut === 'function' && !window._hwGateBypass) {
+    if (hwCheckActivePermitsForSignOut()) return; // gate handled, user redirected
+  }
   mode=m;
   const p=getProfile();
   if(!p){goTo('screen-profile');initSig();return;}
@@ -9626,6 +9968,7 @@ function hwSelectFWDur(btnEl) {
 
 // Called when opening the form — resets everything and pre-fills
 function hwInitForm() {
+  try { hwResetPhotoSlots(); } catch(e) {}
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
 
@@ -9797,6 +10140,7 @@ function submitHotWorks() {
   const p = getProfile();
   const now = new Date();
   const permit = {
+    photos: hwGetPhotosForSubmit(),
     permit_id: document.getElementById('hw-permit-id').value,
     type: 'Hot Works',
     subtype: hwSelectedType === 'Other' ? document.getElementById('hw-type-other').value.trim() : hwSelectedType,
@@ -10001,6 +10345,17 @@ function hwViewPermit(permitId) {
     ${row('Nearest muster point', p.muster_point)}
     ${row('Submitted at', p.submitted_at ? new Date(p.submitted_at).toLocaleString('en-AU') : '')}
   `;
+  // Add Close Permit button if this permit is active and belongs to current worker
+  const profile = getProfile && getProfile();
+  if (profile && p.worker_name === profile.name && (p.status === 'approved' || p.status === 'active') && (!p.end_time || new Date(p.end_time).getTime() > Date.now())) {
+    const viewBody = document.getElementById('hw-view-body');
+    if (viewBody) {
+      const btnDiv = document.createElement('div');
+      btnDiv.style.marginTop = '20px';
+      btnDiv.innerHTML = '<button class="hw-closeout-btn" onclick="hwOpenCloseout(\''+p.permit_id+'\', false)" style="background:#1B6E3A">Close This Permit</button>';
+      viewBody.appendChild(btnDiv);
+    }
+  }
   goTo('screen-hw-view');
 }
 // ═══════════════════ END HOT WORKS PERMIT — Step 2 ═══════════════════
