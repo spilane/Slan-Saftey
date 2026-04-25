@@ -750,6 +750,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <input type="hidden" id="p-lic-other-name" value="">
       </div>
     </div>
+
+    <!-- SIGNATURE -->
+    <div class="fcard">
+      <div class="fcard-hdr">Signature</div>
       <div class="fcard-body">
         <div class="sig-wrap">
           <canvas id="sig-canvas" width="600" height="180"></canvas>
@@ -760,56 +764,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <!-- LOCATION PERMISSION CARD -->
-    <div class="fcard" id="loc-permission-card">
-      <div class="fcard-hdr">Location access</div>
-      <div class="fcard-body">
-        <div style="display:flex;align-items:flex-start;gap:13px">
-          <div style="width:42px;height:42px;border-radius:11px;background:#E2F4F2;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#136D65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:21px;height:21px">
-              <path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/>
-              <circle cx="12" cy="9" r="2.5"/>
-            </svg>
-          </div>
-          <div style="flex:1">
-            <div style="font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:4px">Allow location access</div>
-            <div style="font-size:12.5px;color:var(--muted);line-height:1.6">Your GPS location is recorded on every sign in and out. This lets your employer verify your attendance and is required under site WHS compliance rules.<br><br>Your location is <strong>only</strong> recorded at the moment you sign in or out — the app does not track you at any other time.</div>
-          </div>
-        </div>
-
-        <!-- Status display -->
-        <div id="loc-status-granted" style="display:none;background:#E6F5ED;border:1px solid rgba(27,110,58,.2);border-radius:var(--rs);padding:12px 14px;display:none;align-items:center;gap:10px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>
-          <div style="font-size:13px;font-weight:600;color:#1B6E3A">Location access granted ✓</div>
-        </div>
-
-        <div id="loc-status-denied" style="display:none;background:#FAEEBA;border:1px solid rgba(160,100,0,.2);border-radius:var(--rs);padding:12px 14px">
-          <div style="font-size:12.5px;font-weight:600;color:#7A6000;margin-bottom:3px">Location access denied</div>
-          <div style="font-size:12px;color:#5A4800;line-height:1.5">To enable: go to your phone Settings → Safari/Chrome → Location → Allow. Then come back and try again.</div>
-        </div>
-
-        <button class="submit-btn" id="loc-grant-btn" onclick="requestLocationPermission()" style="background:var(--mid);margin:0">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:19px;height:19px">
-            <path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/>
-            <circle cx="12" cy="9" r="2.5"/>
-          </svg>
-          Allow location access
-        </button>
-      </div>
+    <!-- Old location & privacy cards removed — handled by permissions onboarding screen now -->
+    <div id="loc-permission-card" style="display:none">
+      <div id="loc-status-granted" style="display:none"></div>
+      <div id="loc-status-denied" style="display:none"></div>
+      <button id="loc-grant-btn" style="display:none"></button>
     </div>
-
-    <div class="fcard">
-      <div class="fcard-hdr">Privacy &amp; data</div>
-      <div class="fcard-body">
-        <div style="font-size:12.5px;color:var(--muted);line-height:1.65;margin-bottom:12px">
-          This app collects your name, photo, GPS location at sign in/out, and form submissions for site WHS compliance purposes. Your information is stored securely in Australia and managed by Slán Safety on behalf of your employer. It is never sold or shared with third parties.
-        </div>
-        <div class="check-row checked" id="privacy-check-row" onclick="togglePrivacyCheck()">
-          <div class="check-box checked" id="privacy-check-box">
-            <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div class="check-text">I understand my information is collected for site compliance purposes</div>
-        </div>
-      </div>
+    <div id="privacy-check-row" style="display:none" class="checked">
+      <div id="privacy-check-box" class="checked"></div>
     </div>
 
     <button class="submit-btn" onclick="saveProfile()">
@@ -7538,7 +7500,21 @@ function saveProfile(){
   };
   localStorage.setItem('slan_profile',JSON.stringify(prof));
   localStorage.removeItem('slan_pending_photo'); // Clean up temp storage after save
-  initHome(prof);if (permIsOnboardingComplete()) { goTo('screen-home'); } else { goTo('screen-permissions'); }
+  initHome(prof);
+  if (permIsOnboardingComplete()) {
+    // Onboarding done — route to role-correct landing screen
+    if (prof.role === 'Company Director') {
+      if (typeof goToAnalytics === 'function') goToAnalytics('director');
+      else goTo('screen-home');
+    } else if (prof.role === 'Site Supervisor') {
+      if (typeof _doOpenSuperDash === 'function') _doOpenSuperDash();
+      else goTo('screen-home');
+    } else {
+      goTo('screen-home');
+    }
+  } else {
+    goTo('screen-permissions');
+  }
   // Request push permission for supervisors (for pre-start reminders)
   if (prof.role === 'Site Supervisor') {
     requestPushPermission(prof.name, prof.role, SITE);
@@ -7801,7 +7777,15 @@ function permUpdateContinue() {
 function permFinishOnboarding() {
   localStorage.setItem('slan_onboarding_complete', 'true');
   localStorage.setItem('slan_onboarding_date', new Date().toISOString());
-  // Reset state for any future re-runs
+  // Route to correct landing screen based on role
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (p && p.role === 'Company Director') {
+    if (typeof goToAnalytics === 'function') { goToAnalytics('director'); return; }
+  }
+  if (p && p.role === 'Site Supervisor') {
+    if (typeof _doOpenSuperDash === 'function') { _doOpenSuperDash(); return; }
+  }
+  // Default: worker home
   goTo('screen-home');
   if (typeof updateStatusStrip === 'function') updateStatusStrip();
 }
