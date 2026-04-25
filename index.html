@@ -3512,25 +3512,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
-  <!-- Final confirmation + signature -->
-  <div class="fcard">
-    <div class="fcard-hdr">Confirmation &amp; Sign-off</div>
-    <div class="fcard-body">
-      <div class="check-row" id="hw-confirm" onclick="toggleCheck('hw-confirm')">
-        <div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="check-text">I confirm all information is accurate and I have read the site SWMS for this task</div>
-      </div>
-      <div class="fgroup">
-        <label class="flabel">Signature — your saved signature will be applied</label>
-        <div class="sig-preview-wrap" id="hw-sig-preview">
-          <span class="no-sig">No saved signature — go to Profile to add one</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- PHOTO EVIDENCE -->
+  <!-- PHOTO EVIDENCE (moved BEFORE confirmation — photos are the evidence the worker is signing off on) -->
   <div class="fcard">
     <div class="fcard-hdr">Photo evidence</div>
     <div class="fcard-body">
@@ -3573,6 +3555,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </label>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- Final confirmation + signature (now AFTER photos — confirms accuracy of all info AND photos) -->
+  <div class="fcard">
+    <div class="fcard-hdr">Confirmation &amp; Sign-off</div>
+    <div class="fcard-body">
+      <div class="check-row" id="hw-confirm" onclick="toggleCheck('hw-confirm')">
+        <div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="check-text">I confirm all information is accurate and I have read the site SWMS for this task</div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Signature — your saved signature will be applied</label>
+        <div class="sig-preview-wrap" id="hw-sig-preview">
+          <span class="no-sig">No saved signature — go to Profile to add one</span>
+        </div>
       </div>
     </div>
   </div>
@@ -14099,6 +14098,36 @@ function generatePermitPDF(permit) {
   function setStroke(c) { const [r,g,b] = hexToRgb(c); doc.setDrawColor(r,g,b); }
   function setText(c) { const [r,g,b] = hexToRgb(c); doc.setTextColor(r,g,b); }
 
+  // Draw a checkmark shape (replaces Unicode ticks which don't render in jsPDF Helvetica)
+  function drawTick(x, y, color, size) {
+    size = size || 2.5;
+    const oldDraw = doc.internal.collections.colorMode || doc.getDrawColor && doc.getDrawColor();
+    setStroke(color || '#1B6E3A');
+    doc.setLineWidth(0.5);
+    // Two-stroke checkmark: short stroke down-right, long stroke up-right
+    doc.line(x, y - 0.6, x + size * 0.4, y - size * 0.05);
+    doc.line(x + size * 0.4, y - size * 0.05, x + size, y - size);
+    doc.setLineWidth(0.2);
+  }
+  // Draw a cross shape (for unticked items, optional)
+  function drawCross(x, y, color, size) {
+    size = size || 2.5;
+    setStroke(color || '#A32D2D');
+    doc.setLineWidth(0.4);
+    doc.line(x, y, x + size, y - size);
+    doc.line(x, y - size, x + size, y);
+    doc.setLineWidth(0.2);
+  }
+  // Draw a warning triangle shape
+  function drawWarning(x, y, color, size) {
+    size = size || 2.5;
+    setStroke(color || '#A32D2D');
+    setFill(color || '#A32D2D');
+    doc.setLineWidth(0.3);
+    // Triangle outline
+    doc.triangle(x + size/2, y - size, x, y, x + size, y, 'F');
+  }
+
   function drawHeader(pageNum, totalPages) {
     const logoW = 30, logoH = 13;
     const logoX = PAGE_W - MR - logoW;
@@ -14278,8 +14307,16 @@ function generatePermitPDF(permit) {
     const col = i % 2;
     const row = Math.floor(i / 2);
     const x = ML + 4 + col * half;
+    const ty = innerY + row * 3.5;
     const checked = permit.checks && permit.checks['chk' + (i+1)];
-    doc.text((checked ? '✓ ' : '✗ ') + lbl, x, innerY + row * 3.5);
+    if (checked) {
+      drawTick(x, ty, '#1B6E3A', 2.5);
+    } else {
+      drawCross(x, ty - 0.6, '#A32D2D', 2.2);
+    }
+    setText(PDF_COLOURS.darkText);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+    doc.text(lbl, x + 4, ty);
   });
   y += cardH + 3;
 
@@ -14468,7 +14505,19 @@ function generatePermitPDF(permit) {
     doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
     HW_CLOSEOUT_LABELS.forEach((lbl, i) => {
       const checked = ticks['co' + (i+1)] || ticks['ch' + (i+1)] || ticks[i+1];
-      doc.text((checked ? '✓ ' : '○ ') + lbl, ML + 4, innerY + i * 3.5);
+      const ty = innerY + i * 3.5;
+      if (checked) {
+        drawTick(ML + 4, ty, '#1B6E3A', 2.5);
+      } else {
+        // Empty circle for unticked
+        setStroke(PDF_COLOURS.greyLabel);
+        doc.setLineWidth(0.3);
+        doc.circle(ML + 5.2, ty - 1, 1.1, 'D');
+        doc.setLineWidth(0.2);
+      }
+      setText(PDF_COLOURS.darkText);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+      doc.text(lbl, ML + 9, ty);
     });
     y += cardH + 3;
 
@@ -14531,9 +14580,14 @@ function generatePermitPDF(permit) {
     // Incidents — green if none, red if any
     const incidentsText = permit.incidents || 'No incidents reported';
     const hasIncidents = !/no incidents/i.test(incidentsText);
+    if (hasIncidents) {
+      drawWarning(rx + 4, innerY + 15, PDF_COLOURS.redDark, 2.5);
+    } else {
+      drawTick(rx + 4, innerY + 16, PDF_COLOURS.greenDark, 2.5);
+    }
     setText(hasIncidents ? PDF_COLOURS.redDark : PDF_COLOURS.greenDark);
     doc.setFont('helvetica','bold'); doc.setFontSize(8);
-    doc.text((hasIncidents ? '⚠ ' : '✓ ') + incidentsText, rx + 4, innerY + 16);
+    doc.text(incidentsText, rx + 9, innerY + 16);
     y += cardH + 3;
   }
 
