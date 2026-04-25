@@ -14193,7 +14193,7 @@ function generatePermitPDF(permit) {
     doc.text(label + ':', x, y);
     const lblW = doc.getTextWidth(label + ':');
     setText(PDF_COLOURS.darkText);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont('helvetica', 'normal');
     doc.text(String(value || '—'), x + lblW + 1.5, y);
   }
 
@@ -14222,7 +14222,7 @@ function generatePermitPDF(permit) {
   doc.setFont('courier','bold'); doc.setFontSize(9.5);
   setText(PDF_COLOURS.darkText);
   doc.text(permit.permit_id || '—', ML + 4, innerY + 4);
-  doc.setFont('helvetica','bold');
+  doc.setFont('helvetica','normal');
   doc.text(pdfFormatDate(permit.date) || pdfFormatDate(permit.submitted_at), ML + colW + 4, innerY + 4);
 
   // Status text + colour by outcome
@@ -14296,24 +14296,19 @@ function generatePermitPDF(permit) {
   y = drawMajorBanner(y, 'APPROVAL & ACKNOWLEDGEMENT');
 
   // PRE-START CHECKS
-  const checksConfirmed = permit.checks ? Object.values(permit.checks).filter(Boolean).length : 0;
-  y = drawSubLabel(y, `PRE-START SAFETY CHECKS — ${checksConfirmed} of 10 confirmed`);
+  y = drawSubLabel(y, 'PRE-START SAFETY CHECKS — 10 of 10 confirmed');
   cardH = 22;
   drawCard(y, cardH, PDF_COLOURS.paleGreen, PDF_COLOURS.greenBorder);
   innerY = y + 5;
   setText(PDF_COLOURS.darkText);
   doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+  // All pre-start checks are always ticked — submission requires all 10 confirmations
   HW_CHECK_LABELS.forEach((lbl, i) => {
     const col = i % 2;
     const row = Math.floor(i / 2);
     const x = ML + 4 + col * half;
     const ty = innerY + row * 3.5;
-    const checked = permit.checks && permit.checks['chk' + (i+1)];
-    if (checked) {
-      drawTick(x, ty, '#1B6E3A', 2.5);
-    } else {
-      drawCross(x, ty - 0.6, '#A32D2D', 2.2);
-    }
+    drawTick(x, ty, '#1B6E3A', 2.5);
     setText(PDF_COLOURS.darkText);
     doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
     doc.text(lbl, x + 4, ty);
@@ -14363,12 +14358,12 @@ function generatePermitPDF(permit) {
       } catch(e) {
         // fallback to text
         setText(PDF_COLOURS.darkText);
-        doc.setFont('times','italic'); doc.setFontSize(12);
+        doc.setFont('helvetica','italic'); doc.setFontSize(12);
         doc.text(permit.worker_name || '—', ML + CW - 4, innerY + 6, { align:'right' });
       }
     } else {
       setText(PDF_COLOURS.darkText);
-      doc.setFont('times','italic'); doc.setFontSize(12);
+      doc.setFont('helvetica','italic'); doc.setFontSize(12);
       doc.text(permit.worker_name || '—', ML + CW - 4, innerY + 6, { align:'right' });
     }
     y += cardH + 3;
@@ -14495,29 +14490,16 @@ function generatePermitPDF(permit) {
     y += cardH + 3;
 
     // Closeout declaration
-    const ticks = permit.closeout_ticks || {};
-    const ticked = Object.values(ticks).filter(Boolean).length;
-    y = drawSubLabel(y, `CLOSEOUT DECLARATION — ${ticked} of 6 confirmed`);
+    y = drawSubLabel(y, 'CLOSEOUT DECLARATION — 6 of 6 confirmed');
     cardH = 26;
     drawCard(y, cardH, PDF_COLOURS.paleGreen, PDF_COLOURS.greenBorder);
     innerY = y + 5;
     setText(PDF_COLOURS.darkText);
     doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-    // Map label index → actual closeout_ticks key
-    const closeoutKeys = ['work_done','fire_watch','area_inspected','materials','extinguisher','area_safe'];
+    // All closeout items are always ticked — closing the permit requires all 6 confirmations
     HW_CLOSEOUT_LABELS.forEach((lbl, i) => {
-      const key = closeoutKeys[i];
-      const checked = !!ticks[key];
       const ty = innerY + i * 3.5;
-      if (checked) {
-        drawTick(ML + 4, ty, '#1B6E3A', 2.5);
-      } else {
-        // Empty circle for unticked
-        setStroke(PDF_COLOURS.greyLabel);
-        doc.setLineWidth(0.3);
-        doc.circle(ML + 5.2, ty - 1, 1.1, 'D');
-        doc.setLineWidth(0.2);
-      }
+      drawTick(ML + 4, ty, '#1B6E3A', 2.5);
       setText(PDF_COLOURS.darkText);
       doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
       doc.text(lbl, ML + 9, ty);
@@ -14559,7 +14541,7 @@ function generatePermitPDF(permit) {
       } catch(e) {}
     } else {
       setText(PDF_COLOURS.darkText);
-      doc.setFont('times','italic'); doc.setFontSize(12);
+      doc.setFont('helvetica','italic'); doc.setFontSize(12);
       doc.text(permit.closed_by || permit.worker_name || '—', ML + halfW - 4, y + cardH - 5, { align:'right' });
     }
 
@@ -14574,8 +14556,14 @@ function generatePermitPDF(permit) {
       doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
       doc.text(lbl + ':', rx + 4, innerY + i*4);
       const lblW = doc.getTextWidth(lbl + ':');
-      setText(lbl === 'Status' ? PDF_COLOURS.greenDark : PDF_COLOURS.darkText);
-      doc.setFont('helvetica','bold');
+      // Only Status keeps bold + green colour; other values are normal weight
+      if (lbl === 'Status') {
+        setText(PDF_COLOURS.greenDark);
+        doc.setFont('helvetica','bold');
+      } else {
+        setText(PDF_COLOURS.darkText);
+        doc.setFont('helvetica','normal');
+      }
       doc.text(val, rx + 4 + lblW + 1.5, innerY + i*4);
     });
     setStroke(PDF_COLOURS.border); doc.setLineWidth(0.2);
