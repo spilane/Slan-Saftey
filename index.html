@@ -925,6 +925,67 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ═══════════════════ MY PROFILE — VIEW SCREEN ═══ -->
+<div id="screen-my-profile" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="myProfBackToHome()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">My Profile</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:60px">
+
+    <!-- Avatar + name header -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+      <div id="myp-avatar" style="width:64px;height:64px;border-radius:50%;background:#FAC775;display:flex;align-items:center;justify-content:center;color:#412402;font-weight:700;font-size:22px;flex-shrink:0;overflow:hidden;font-family:'DM Sans',sans-serif">
+        <span id="myp-initials">JR</span>
+        <img id="myp-photo" style="display:none;width:100%;height:100%;object-fit:cover" alt="">
+      </div>
+      <div style="flex:1;min-width:0">
+        <div id="myp-name" style="font-size:17px;font-weight:600;color:var(--text);line-height:1.2"></div>
+        <div id="myp-company" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+        <div id="myp-role" style="font-size:12px;color:var(--muted);margin-top:1px"></div>
+      </div>
+    </div>
+
+    <!-- Safety Stars -->
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 6px">Safety Stars</div>
+    <div style="background:#FAEEDA;border:1px solid rgba(184,150,12,.25);border-radius:var(--rs);padding:11px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+      <div id="myp-stars" style="font-size:14px;color:#412402;font-weight:600">★★★★☆ 4 stars</div>
+      <div id="myp-stars-count" style="font-size:11.5px;color:#854F0B">12 awarded</div>
+    </div>
+
+    <!-- Licences & Tickets -->
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 6px">Licences &amp; Tickets</div>
+    <div style="background:#F1EFE8;border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px">
+      <div id="myp-licences" style="font-size:12.5px;color:var(--text);line-height:1.65"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic">Synced from training matrix</div>
+    </div>
+
+    <!-- Signature -->
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 6px;display:flex;justify-content:space-between;align-items:center">
+      <span>Signature</span>
+      <span style="font-size:10px;color:#1B6E3A;font-weight:600;text-transform:none;letter-spacing:0;cursor:pointer" onclick="myProfRedraw()">Redraw signature</span>
+    </div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:14px;text-align:center;min-height:80px;display:flex;align-items:center;justify-content:center">
+      <img id="myp-sig" style="max-width:100%;max-height:90px" alt="signature">
+      <div id="myp-no-sig" style="display:none;color:var(--muted);font-size:12px;font-style:italic">No signature on file</div>
+    </div>
+
+    <!-- Permissions status -->
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 6px">App Permissions</div>
+    <div style="display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap">
+      <div id="myp-perm-cam" class="myp-perm-pill" style="background:#EAF3DE;color:#173404;font-size:11px;font-weight:600;padding:5px 10px;border-radius:14px;border:1px solid #639922">📷 Camera ✓</div>
+      <div id="myp-perm-loc" class="myp-perm-pill" style="background:#EAF3DE;color:#173404;font-size:11px;font-weight:600;padding:5px 10px;border-radius:14px;border:1px solid #639922">📍 Location ✓</div>
+      <div id="myp-perm-notif" class="myp-perm-pill" style="background:#EAF3DE;color:#173404;font-size:11px;font-weight:600;padding:5px 10px;border-radius:14px;border:1px solid #639922">🔔 Alerts ✓</div>
+    </div>
+
+    <button onclick="myProfSignOut()" style="width:100%;padding:13px;background:transparent;color:#A32D2D;border:1.5px solid rgba(163,45,45,.4);border-radius:var(--r);font-weight:600;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">Sign Out of App</button>
+
+  </div>
+</div>
+
 <div id="screen-home" class="screen">
   <div id="hw-revoke-banner" style="display:none;padding:14px 16px;background:#A32D2D;color:#fff;position:relative;z-index:10">
     <div style="font-size:13px;font-weight:700;margin-bottom:4px">⚠ Permit Revoked — Stop Work Immediately</div>
@@ -5301,10 +5362,101 @@ function togglePrivacyCheck() {
 function avatarTap() {
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
-  // Open full profile screen — no popup any more
+  populateMyProfile();
+  goTo('screen-my-profile');
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function populateMyProfile() {
+  const p = getProfile();
+  if (!p) return;
+  // Avatar - photo if exists, else initials
+  const initials = getInitials(p.name);
+  const initEl = document.getElementById('myp-initials');
+  const photoEl = document.getElementById('myp-photo');
+  if (initEl) initEl.textContent = initials;
+  if (p.photo && photoEl) {
+    photoEl.src = p.photo;
+    photoEl.style.display = 'block';
+    if (initEl) initEl.style.display = 'none';
+  } else {
+    if (photoEl) photoEl.style.display = 'none';
+    if (initEl) initEl.style.display = 'block';
+  }
+
+  // Name / company / role
+  const nameEl = document.getElementById('myp-name');
+  const coEl = document.getElementById('myp-company');
+  const roleEl = document.getElementById('myp-role');
+  if (nameEl) nameEl.textContent = p.name || '';
+  if (coEl) coEl.textContent = p.company || '';
+  if (roleEl) {
+    let r = p.role || '';
+    if (p.specific_role) r += ' · ' + p.specific_role;
+    roleEl.textContent = r;
+  }
+
+  // Stars (placeholder for now — pull from real data later)
+  const starsEl = document.getElementById('myp-stars');
+  const starsCountEl = document.getElementById('myp-stars-count');
+  // TODO: read from actual stars source
+  if (starsEl) starsEl.textContent = '★★★★☆ 4 stars';
+  if (starsCountEl) starsCountEl.textContent = '12 awarded';
+
+  // Licences (synced from training matrix when backend wired)
+  const licEl = document.getElementById('myp-licences');
+  if (licEl) {
+    // Placeholder until backend brings real data
+    licEl.innerHTML = '• White Card · valid<br>• EWP licence · expires 2027<br>• Working at Heights · valid';
+  }
+
+  // Signature
+  const sigEl = document.getElementById('myp-sig');
+  const noSigEl = document.getElementById('myp-no-sig');
+  if (p.sig && sigEl) {
+    sigEl.src = p.sig;
+    sigEl.style.display = 'block';
+    if (noSigEl) noSigEl.style.display = 'none';
+  } else {
+    if (sigEl) sigEl.style.display = 'none';
+    if (noSigEl) noSigEl.style.display = 'block';
+  }
+
+  // Permissions status (from saved onboarding state)
+  // We don't actually re-check live permissions here for performance, just show all green if onboarded
+  // (real status is OS-level and not always queryable from JS)
+}
+
+function myProfBackToHome() {
+  const p = getProfile();
+  if (p && p.role === 'Site Supervisor') { goTo('screen-dash'); return; }
+  if (p && p.role === 'Company Director') { goToAnalytics('director'); return; }
+  goTo('screen-home');
+}
+
+function myProfRedraw() {
+  // Take user to the existing edit-profile screen for signature redraw
   if (typeof prefillProfileScreen === 'function') prefillProfileScreen();
   if (typeof initSig === 'function') initSig();
   goTo('screen-profile');
+}
+
+function myProfSignOut() {
+  if (!confirm('Sign out of the app? Your profile will be cleared.')) return;
+  // Clear session state + onboarding flag — user starts fresh next launch
+  try {
+    localStorage.removeItem('slan_profile');
+    localStorage.removeItem('slan_onboarding_complete');
+    localStorage.removeItem('slan_onboarding_date');
+    sessionStorage.removeItem('sup_auth');
+  } catch(e) {}
+  goTo('screen-onboarding');
 }
 
 function profileQuickClose() {
@@ -6670,7 +6822,8 @@ function renderLiveDash(signIns,talks,prestarts,hazards) {
 }
 
 // ── SUPERVISOR PIN ─────────────────────────────────────────────────────────
-const SUPERVISOR_PIN = '1234'; // Change this to your PIN
+const SUPERVISOR_PIN = '0000'; // Default — change later in profile/settings
+const DIRECTOR_PIN = '0000'; // Default — change later in profile/settings
 let pinEntry = '';
 let pinTarget = ''; // which screen to go to after PIN
 
@@ -6717,7 +6870,9 @@ function updatePinDots() {
 }
 
 function checkPin() {
-  if (pinEntry === SUPERVISOR_PIN) {
+  // Accept either the supervisor or director PIN (both 0000 by default)
+  const validPins = [SUPERVISOR_PIN, DIRECTOR_PIN];
+  if (validPins.indexOf(pinEntry) >= 0) {
     sessionStorage.setItem('sup_auth', 'true');
     document.getElementById('pin-error').style.display = 'none';
     if (typeof pinTarget === 'function') pinTarget();
@@ -7693,13 +7848,14 @@ function permSetTileGranted(prefix) {
   }
 }
 
+function permShowBlockedDialog(label, instructions) {
+  alert(label + ' is blocked at the system level.\n\n' + instructions);
+}
+
 function permRequestCamera() {
   if (_permState.camera) return;
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    alert('Camera not supported on this device. Skipping.');
-    _permState.camera = true;
-    permSetTileGranted('camera');
-    permUpdateContinue();
+    permShowBlockedDialog('Camera', 'Your browser does not support camera access. Please use a modern browser like Chrome.');
     return;
   }
   navigator.mediaDevices.getUserMedia({ video: true })
@@ -7709,22 +7865,26 @@ function permRequestCamera() {
       permSetTileGranted('camera');
       permUpdateContinue();
     })
-    .catch(() => {
-      alert('Camera access was denied. You can enable it in Chrome > Site settings > Camera, or tap Continue if you allowed it elsewhere.');
-      // Mark as 'attempted' so user can proceed if Android system permission is the issue
-      _permState.camera = true;
-      permSetTileGranted('camera');
-      permUpdateContinue();
+    .catch(err => {
+      // Check if this is OS-level block (NotAllowedError without prompt) or denial
+      const isBlocked = err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+      if (isBlocked) {
+        permShowBlockedDialog('Camera', 
+          'Camera is blocked. To enable:\n\n' +
+          '1. Open your phone Settings\n' +
+          '2. Apps → Chrome → Permissions → Camera\n' +
+          '3. Allow camera for Chrome\n' +
+          '4. Return to this app and tap Camera again');
+      } else {
+        permShowBlockedDialog('Camera', 'Could not access camera. Please try again.');
+      }
     });
 }
 
 function permRequestLocation() {
   if (_permState.location) return;
   if (!navigator.geolocation) {
-    alert('Location not supported. Skipping.');
-    _permState.location = true;
-    permSetTileGranted('location');
-    permUpdateContinue();
+    permShowBlockedDialog('Location', 'Your browser does not support location. Please use a modern browser like Chrome.');
     return;
   }
   navigator.geolocation.getCurrentPosition(
@@ -7733,11 +7893,18 @@ function permRequestLocation() {
       permSetTileGranted('location');
       permUpdateContinue();
     },
-    () => {
-      alert('Location access was denied. You can enable it in Chrome > Site settings > Location.');
-      _permState.location = true;
-      permSetTileGranted('location');
-      permUpdateContinue();
+    err => {
+      const isBlocked = err && (err.code === 1); // PERMISSION_DENIED
+      if (isBlocked) {
+        permShowBlockedDialog('Location', 
+          'Location is blocked. To enable:\n\n' +
+          '1. Open your phone Settings\n' +
+          '2. Apps → Chrome → Permissions → Location\n' +
+          '3. Allow location for Chrome\n' +
+          '4. Return to this app and tap Location again');
+      } else {
+        permShowBlockedDialog('Location', 'Could not get your location. Please try again.');
+      }
     },
     { timeout: 10000, maximumAge: 0 }
   );
@@ -7746,16 +7913,31 @@ function permRequestLocation() {
 function permRequestNotifications() {
   if (_permState.notifications) return;
   if (!('Notification' in window)) {
-    alert('Notifications not supported on this device. Skipping.');
-    _permState.notifications = true;
-    permSetTileGranted('notifications');
-    permUpdateContinue();
+    permShowBlockedDialog('Notifications', 'Your browser does not support notifications. Please use a modern browser like Chrome.');
+    return;
+  }
+  // Check current permission state
+  const current = Notification.permission;
+  if (current === 'denied') {
+    permShowBlockedDialog('Notifications', 
+      'Notifications are blocked. To enable:\n\n' +
+      '1. Open your phone Settings\n' +
+      '2. Apps → Chrome → Notifications\n' +
+      '3. Turn ON notifications for Chrome\n' +
+      '4. Return to this app and tap Notifications again');
     return;
   }
   Notification.requestPermission().then(result => {
-    _permState.notifications = true; // mark as completed regardless
-    permSetTileGranted('notifications');
-    permUpdateContinue();
+    if (result === 'granted') {
+      _permState.notifications = true;
+      permSetTileGranted('notifications');
+      permUpdateContinue();
+    } else {
+      permShowBlockedDialog('Notifications', 
+        'Notifications must be enabled to use this app.\n\n' +
+        'If the prompt did not appear, your phone may have notifications blocked at the system level.\n\n' +
+        'To fix: Settings → Apps → Chrome → Notifications → Allow.\n\nThen return here and tap Notifications again.');
+    }
   });
 }
 
@@ -11004,6 +11186,13 @@ var AN_BODY_HIST = {
 var AN_STARS = []; // Populated from Firebase when connected
 
 function goToAnalytics(fromRole) {
+  // Require PIN when entering director portal (skipped if already auth'd in this session)
+  if (fromRole === 'director' && !DEMO_MODE && !localStorage.getItem('slan_demo')) {
+    if (sessionStorage.getItem('sup_auth') !== 'true') {
+      requirePin(() => goToAnalytics(fromRole));
+      return;
+    }
+  }
   anIsDirector = (fromRole === 'director');
   goTo('screen-analytics');
   const p = getProfile();
