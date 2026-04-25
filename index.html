@@ -7995,7 +7995,37 @@ function hwPhotoHandleNew(slotNum, ev) {
 }
 
 function hwPhotoStore(slot, dataUrl, ts, gps) {
-  _hwPhotos[slot] = { data: dataUrl, ts: ts, gps: gps };
+  // Downscale large photos to keep localStorage from filling up
+  hwShrinkImage(dataUrl, function(smallDataUrl) {
+    _hwPhotos[slot] = { data: smallDataUrl, ts: ts, gps: gps };
+    hwPhotoStoreUI(slot, smallDataUrl, ts, gps);
+  });
+}
+
+function hwShrinkImage(dataUrl, callback) {
+  try {
+    const img = new Image();
+    img.onload = function() {
+      const maxDim = 800; // Cap at 800px on longest edge - plenty for evidence photos
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = h * (maxDim / w); w = maxDim; }
+        else       { w = w * (maxDim / h); h = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      // JPEG at 0.7 quality - good balance of size and clarity
+      const small = canvas.toDataURL('image/jpeg', 0.7);
+      callback(small);
+    };
+    img.onerror = function() { callback(dataUrl); }; // fallback to original
+    img.src = dataUrl;
+  } catch(e) { callback(dataUrl); }
+}
+
+function hwPhotoStoreUI(slot, dataUrl, ts, gps) {
   const el = document.getElementById('hw-photo-' + slot);
   if (!el) return;
   const labels = { 1: '1 · Work area', 2: '2 · 10m clear zone', 3: '3 · Extinguisher', 4: '4 · Equipment' };
@@ -10296,7 +10326,13 @@ function hwLoadAll() {
 }
 
 function hwSaveAll(list) {
-  try { localStorage.setItem(HW_STORAGE_KEY, JSON.stringify(list)); } catch(e) {}
+  try { 
+    localStorage.setItem(HW_STORAGE_KEY, JSON.stringify(list));
+    return { ok: true };
+  } catch(e) {
+    console.error('hwSaveAll failed:', e);
+    return { ok: false, error: e };
+  }
 }
 
 function hwGenerateId() {
@@ -10565,7 +10601,12 @@ function submitHotWorks() {
 
   const list = hwLoadAll();
   list.unshift(permit);
-  hwSaveAll(list);
+  const saveResult = hwSaveAll(list);
+  if (!saveResult.ok) {
+    // Storage failed — most commonly because photos are too big
+    alert('Could not save permit. Storage may be full. Try removing a photo or clearing old permits.\n\nDetails: ' + (saveResult.error && saveResult.error.message ? saveResult.error.message : 'unknown'));
+    return;
+  }
 
   // Success feedback — simple alert for now; richer screen added in next step
   // Go to success screen
