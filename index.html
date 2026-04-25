@@ -727,45 +727,27 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <!-- LICENCES & EXPIRY -->
-    <div class="fcard">
-      <div class="fcard-hdr">Licences &amp; tickets</div>
-      <div class="fcard-body">
-        <div class="fhint" style="margin-bottom:8px">Add your expiry dates so you get alerts before anything lapses. You and your supervisor will be notified at 30 days and 7 days before expiry.</div>
-        <div class="fgroup">
-          <label class="flabel">White Card number</label>
-          <input type="text" id="p-whitecard" placeholder="e.g. QLD-1234567">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fgroup">
-            <label class="flabel">Driver licence expiry</label>
-            <input type="date" id="p-lic-driver" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;color:var(--text)">
+    <!-- LICENCES & TICKETS — sourced from training matrix (when backend wired) -->
+    <div class="fcard" style="background:#F1EFE8;border:1px solid var(--border)">
+      <div class="fcard-body" style="padding:14px">
+        <div style="display:flex;align-items:flex-start;gap:11px">
+          <div style="width:34px;height:34px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5C6B62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           </div>
-          <div class="fgroup">
-            <label class="flabel">White Card expiry</label>
-            <input type="date" id="p-lic-whitecard" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;color:var(--text)">
-          </div>
-          <div class="fgroup">
-            <label class="flabel">HRWL expiry</label>
-            <input type="date" id="p-lic-hrwl" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;color:var(--text)">
-          </div>
-          <div class="fgroup">
-            <label class="flabel">EWP / Yellow Card expiry</label>
-            <input type="date" id="p-lic-ewp" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;color:var(--text)">
-          </div>
-          <div class="fgroup">
-            <label class="flabel">First Aid expiry</label>
-            <input type="date" id="p-lic-firstaid" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;color:var(--text)">
-          </div>
-          <div class="fgroup">
-            <label class="flabel">Other ticket expiry</label>
-            <input type="date" id="p-lic-other" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;color:var(--text)">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">Licences &amp; tickets</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.5">These are sourced from your induction record and training matrix. You will see them in your profile — no need to enter them here.</div>
           </div>
         </div>
-        <div class="fgroup" style="margin-top:4px">
-          <label class="flabel">Other ticket / licence name</label>
-          <input type="text" id="p-lic-other-name" placeholder="e.g. Dogman, Traffic Controller, Asbestos">
-        </div>
+        <!-- Hidden inputs preserved so existing JS doesn't break -->
+        <input type="hidden" id="p-whitecard" value="">
+        <input type="hidden" id="p-lic-driver" value="">
+        <input type="hidden" id="p-lic-whitecard" value="">
+        <input type="hidden" id="p-lic-hrwl" value="">
+        <input type="hidden" id="p-lic-ewp" value="">
+        <input type="hidden" id="p-lic-firstaid" value="">
+        <input type="hidden" id="p-lic-other" value="">
+        <input type="hidden" id="p-lic-other-name" value="">
       </div>
     </div>
       <div class="fcard-body">
@@ -872,6 +854,115 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </div>
 
 <!-- ═══════════════════ HOME ═══ -->
+<!-- ═══════════════════ PERMISSIONS ONBOARDING ═══ -->
+<div id="screen-permissions" class="screen">
+  <div class="setup-hero" style="padding:24px 18px 14px">
+    <div style="width:48px;height:48px;border-radius:12px;background:rgba(184,150,12,.18);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <h2 style="font-size:18px">App permissions</h2>
+    <p style="font-size:13px;line-height:1.5">A few permissions are needed to keep you and your team safe.</p>
+  </div>
+  <div class="fbody">
+    <div class="fcard" style="background:#F1EFE8;border:1px solid var(--border)">
+      <div class="fcard-body" style="padding:13px 14px">
+        <div style="font-size:12.5px;color:var(--text);line-height:1.55"><strong>Why we need these</strong></div>
+        <div style="font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:4px">This app uses your camera, location and notifications to keep you and your team safe on site. Photos and locations are stored on your company's secure systems for compliance and audit purposes, and may be accessed by an external WHS compliance service engaged by your company. By tapping <strong>Allow</strong> you consent to this use.</div>
+        <div style="margin-top:8px"><a href="#" onclick="event.preventDefault();goTo('screen-privacy');return false" style="color:#1B6E3A;font-size:11.5px;font-weight:600;text-decoration:underline">View full privacy policy →</a></div>
+      </div>
+    </div>
+
+    <!-- Camera permission tile -->
+    <div class="fcard" id="perm-camera-card" onclick="permRequestCamera()" style="cursor:pointer">
+      <div class="fcard-body" style="padding:13px 14px;display:flex;align-items:center;gap:12px">
+        <div id="perm-camera-icon" style="width:42px;height:42px;border-radius:10px;background:#FAEEDA;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:21px;height:21px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13.5px;font-weight:600;color:var(--text)">Camera</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:1px">Photos for permits and hazard reports</div>
+        </div>
+        <div id="perm-camera-status" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;background:#1B3A2D;color:#fff;flex-shrink:0">Tap to allow</div>
+      </div>
+    </div>
+
+    <!-- Location permission tile -->
+    <div class="fcard" id="perm-location-card" onclick="permRequestLocation()" style="cursor:pointer">
+      <div class="fcard-body" style="padding:13px 14px;display:flex;align-items:center;gap:12px">
+        <div id="perm-location-icon" style="width:42px;height:42px;border-radius:10px;background:#FAEEDA;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:21px;height:21px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13.5px;font-weight:600;color:var(--text)">Location</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:1px">Sign in/out, weather, GPS-tagged photos</div>
+        </div>
+        <div id="perm-location-status" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;background:#1B3A2D;color:#fff;flex-shrink:0">Tap to allow</div>
+      </div>
+    </div>
+
+    <!-- Notifications permission tile -->
+    <div class="fcard" id="perm-notif-card" onclick="permRequestNotifications()" style="cursor:pointer">
+      <div class="fcard-body" style="padding:13px 14px;display:flex;align-items:center;gap:12px">
+        <div id="perm-notif-icon" style="width:42px;height:42px;border-radius:10px;background:#FAEEDA;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:21px;height:21px"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13.5px;font-weight:600;color:var(--text)">Notifications</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:1px">Permit updates, alerts, supervisor messages</div>
+        </div>
+        <div id="perm-notif-status" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;background:#1B3A2D;color:#fff;flex-shrink:0">Tap to allow</div>
+      </div>
+    </div>
+
+    <!-- Acknowledge tickbox -->
+    <div class="fcard" style="background:#fff;border:1px solid var(--border);margin-top:6px">
+      <div class="fcard-body" style="padding:12px 14px">
+        <label style="display:flex;align-items:flex-start;gap:11px;cursor:pointer;user-select:none">
+          <input type="checkbox" id="perm-acknowledge" onchange="permUpdateContinue()" style="width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:#1B6E3A">
+          <span style="font-size:12.5px;color:var(--text);line-height:1.5">I have read and understood the privacy policy and consent to the use described above.</span>
+        </label>
+      </div>
+    </div>
+
+    <button id="perm-continue-btn" class="submit-btn" onclick="permFinishOnboarding()" disabled style="opacity:0.5;margin-top:6px">Continue</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ PRIVACY POLICY ═══ -->
+<div id="screen-privacy" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-permissions')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Privacy Policy</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:20px 18px;padding-bottom:60px;color:var(--text);line-height:1.7;font-size:13.5px">
+    <h3 style="font-size:16px;font-weight:600;margin:0 0 14px">[Company Name] Safety App — Privacy Policy</h3>
+
+    <div style="font-weight:600;margin-top:14px">What we collect</div>
+    <p style="margin:4px 0 0">Camera (photos for permits and hazard reports), Location (sign in/out, weather data, GPS-tagged photos), Notifications (alerts only).</p>
+
+    <div style="font-weight:600;margin-top:14px">How we store it</div>
+    <p style="margin:4px 0 0">Data is held on [Company Name]'s secure systems for the duration required by Australian workplace safety law — including audit, insurance, and incident retention requirements.</p>
+
+    <div style="font-weight:600;margin-top:14px">Who has access</div>
+    <ul style="margin:4px 0 0;padding-left:18px">
+      <li>Your site supervisor, project director, and authorised company personnel</li>
+      <li>An external WHS compliance service engaged by [Company Name] to manage safety records and reporting on their behalf</li>
+      <li>Regulators (e.g. SafeWork) if required by law or during an investigation</li>
+    </ul>
+
+    <div style="font-weight:600;margin-top:14px">Your rights</div>
+    <p style="margin:4px 0 0">You can request to see your data at any time by contacting your supervisor or company. Data is held for compliance and may not be deleted before retention requirements are met.</p>
+
+    <div style="font-weight:600;margin-top:14px">Contact</div>
+    <p style="margin:4px 0 0">[provided by your company]</p>
+
+    <button onclick="goTo('screen-permissions')" class="submit-btn" style="margin-top:24px">Back to permissions</button>
+  </div>
+</div>
+
 <div id="screen-home" class="screen">
   <div id="hw-revoke-banner" style="display:none;padding:14px 16px;background:#A32D2D;color:#fff;position:relative;z-index:10">
     <div style="font-size:13px;font-weight:700;margin-bottom:4px">⚠ Permit Revoked — Stop Work Immediately</div>
@@ -1043,7 +1134,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>Alerts
     </div>
     <div class="ni" onclick="goToHistory ? goToHistory() : goTo('screen-history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12"/></svg>History</div>
-    <div class="ni" onclick="goTo('screen-profile');prefillProfileScreen();initSig()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile</div>
+
   </nav>
 </div>
 
@@ -2502,9 +2593,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="ni" onclick="goToAnalytics('supervisor')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics
     </div>
-    <div class="ni" onclick="goTo('screen-profile');prefillProfileScreen();initSig()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile
-    </div>
+
   </nav>
 </div>
 
@@ -4483,9 +4572,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="ni" onclick="goTo('screen-history')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:22px;height:22px;stroke-width:1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History
     </div>
-    <div class="ni" onclick="goTo('screen-profile');prefillProfileScreen();initSig()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:22px;height:22px;stroke-width:1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Profile
-    </div>
+
   </nav>
 </div>
 
@@ -5251,44 +5338,11 @@ function togglePrivacyCheck() {
 // ── AVATAR TAP → HISTORY ─────────────────────────────────────────────────
 function avatarTap() {
   const p = getProfile();
-  if (!p) { goTo('screen-profile'); initSig(); return; }
-  // Show a quick profile sheet
-  const tier = typeof getTier === 'function' ? getTier(p.safetyPoints || 0) : '';
-  const tierLabel = tier === 'gold' ? '🥇 Gold' : tier === 'silver' ? '🥈 Silver' : tier === 'bronze' ? '🥉 Bronze' : 'No tier yet';
-  const licLines = p.licences ? Object.entries(p.licences).filter(([k,v])=>v&&v.expiry).map(([k,v])=>{
-    const names = { driver:'Driver Licence', whitecard:'White Card', hrwl:'HRWL', ewp:'EWP', firstaid:'First Aid', other: v.name||'Other' };
-    const exp = new Date(v.expiry);
-    const days = Math.round((exp - new Date())/(1000*60*60*24));
-    const colour = days < 0 ? '#B83232' : days < 30 ? '#B8960C' : '#1B6E3A';
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--muted)">'+(names[k]||k)+'</span><span style="font-weight:600;color:'+colour+'">'+(days<0?'Expired':'Expires '+exp.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}))+'</span></div>';
-  }).join('') : '';
-  
-  // Create or update modal
-  let modal = document.getElementById('profile-quick-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'profile-quick-modal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9900;display:flex;align-items:flex-end;justify-content:center';
-    modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
-    document.body.appendChild(modal);
-  }
-  modal.innerHTML = '<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:20px 20px calc(32px + env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto">' +
-    '<div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 18px"></div>' +
-    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">' +
-      '<div style="width:58px;height:58px;border-radius:50%;background:rgba(184,150,12,.15);border:2px solid rgba(184,150,12,.4);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
-        (p.photo ? '<img src="'+p.photo+'" style="width:100%;height:100%;object-fit:cover">' : '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(184,150,12,.8)" stroke-width="1.8" style="width:26px;height:26px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>') +
-      '</div>' +
-      '<div><div style="font-size:17px;font-weight:600;color:var(--text)">'+p.name+'</div>' +
-      '<div style="font-size:12px;color:var(--muted);margin-top:2px">'+p.company+' · '+p.role+'</div>' +
-      '<div style="font-size:11px;font-weight:600;color:var(--gold);margin-top:4px">'+tierLabel+(p.safetyPoints?' · '+(p.safetyPoints)+' pts':'')+'</div></div>' +
-    '</div>' +
-    (licLines ? '<div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Licences &amp; certificates</div>' + licLines : '') +
-    '<div style="display:flex;gap:10px;margin-top:16px">' +
-      '<button onclick="profileQuickEdit()" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit">Edit profile</button>' +
-      '<button onclick="profileQuickClose()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--deep);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Close</button>' +
-    '</div>' +
-  '</div>';
-  document.body.appendChild(modal);
+  if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+  // Open full profile screen — no popup any more
+  if (typeof prefillProfileScreen === 'function') prefillProfileScreen();
+  if (typeof initSig === 'function') initSig();
+  goTo('screen-profile');
 }
 
 function profileQuickClose() {
@@ -7484,7 +7538,7 @@ function saveProfile(){
   };
   localStorage.setItem('slan_profile',JSON.stringify(prof));
   localStorage.removeItem('slan_pending_photo'); // Clean up temp storage after save
-  initHome(prof);goTo('screen-home');
+  initHome(prof);if (permIsOnboardingComplete()) { goTo('screen-home'); } else { goTo('screen-permissions'); }
   // Request push permission for supervisors (for pre-start reminders)
   if (prof.role === 'Site Supervisor') {
     requestPushPermission(prof.name, prof.role, SITE);
@@ -7642,6 +7696,120 @@ function chipTapSignIn() {
 function chipTapPrestart() { goTo('screen-prestart'); if (typeof initPrestart === 'function') setTimeout(initPrestart, 20); }
 function chipTapSwms()     { goTo('screen-swms-library'); if (typeof initSwmsLibrary === 'function') setTimeout(initSwmsLibrary, 20); }
 function chipTapTalk()     { goTo('screen-talk'); if (typeof initTalk === 'function') setTimeout(initTalk, 20); }
+
+// ────────────────────────────────────────────
+// PERMISSIONS ONBOARDING
+// ────────────────────────────────────────────
+let _permState = { camera: false, location: false, notifications: false };
+
+function permSetTileGranted(prefix) {
+  const card = document.getElementById('perm-' + prefix + '-card');
+  const icon = document.getElementById('perm-' + prefix + '-icon');
+  const status = document.getElementById('perm-' + prefix + '-status');
+  if (card) card.style.background = '#EAF3DE';
+  if (card) card.style.borderColor = '#639922';
+  if (icon) icon.style.background = '#fff';
+  if (icon) { const svg = icon.querySelector('svg'); if (svg) svg.setAttribute('stroke', '#3B6D11'); }
+  if (status) {
+    status.style.background = '#EAF3DE';
+    status.style.color = '#173404';
+    status.textContent = '✓ Allowed';
+  }
+}
+
+function permRequestCamera() {
+  if (_permState.camera) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Camera not supported on this device. Skipping.');
+    _permState.camera = true;
+    permSetTileGranted('camera');
+    permUpdateContinue();
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      stream.getTracks().forEach(t => t.stop());
+      _permState.camera = true;
+      permSetTileGranted('camera');
+      permUpdateContinue();
+    })
+    .catch(() => {
+      alert('Camera access was denied. You can enable it in Chrome > Site settings > Camera, or tap Continue if you allowed it elsewhere.');
+      // Mark as 'attempted' so user can proceed if Android system permission is the issue
+      _permState.camera = true;
+      permSetTileGranted('camera');
+      permUpdateContinue();
+    });
+}
+
+function permRequestLocation() {
+  if (_permState.location) return;
+  if (!navigator.geolocation) {
+    alert('Location not supported. Skipping.');
+    _permState.location = true;
+    permSetTileGranted('location');
+    permUpdateContinue();
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    () => {
+      _permState.location = true;
+      permSetTileGranted('location');
+      permUpdateContinue();
+    },
+    () => {
+      alert('Location access was denied. You can enable it in Chrome > Site settings > Location.');
+      _permState.location = true;
+      permSetTileGranted('location');
+      permUpdateContinue();
+    },
+    { timeout: 10000, maximumAge: 0 }
+  );
+}
+
+function permRequestNotifications() {
+  if (_permState.notifications) return;
+  if (!('Notification' in window)) {
+    alert('Notifications not supported on this device. Skipping.');
+    _permState.notifications = true;
+    permSetTileGranted('notifications');
+    permUpdateContinue();
+    return;
+  }
+  Notification.requestPermission().then(result => {
+    _permState.notifications = true; // mark as completed regardless
+    permSetTileGranted('notifications');
+    permUpdateContinue();
+  });
+}
+
+function permUpdateContinue() {
+  const btn = document.getElementById('perm-continue-btn');
+  const ack = document.getElementById('perm-acknowledge');
+  if (!btn || !ack) return;
+  const allGranted = _permState.camera && _permState.location && _permState.notifications;
+  const ackTicked = ack.checked;
+  if (allGranted && ackTicked) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+  }
+}
+
+function permFinishOnboarding() {
+  localStorage.setItem('slan_onboarding_complete', 'true');
+  localStorage.setItem('slan_onboarding_date', new Date().toISOString());
+  // Reset state for any future re-runs
+  goTo('screen-home');
+  if (typeof updateStatusStrip === 'function') updateStatusStrip();
+}
+
+function permIsOnboardingComplete() {
+  return localStorage.getItem('slan_onboarding_complete') === 'true';
+}
+
 
 // ───────────────────────────────────────────────
 // SUPERVISOR CHIP TAP HANDLERS
