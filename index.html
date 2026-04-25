@@ -3322,24 +3322,27 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px;line-height:1.4">Photograph the work area and setup. Photos will be timestamped and GPS-tagged.</p>
       <div class="hw-photo-grid">
-        <div id="hw-photo-1" class="hw-photo-slot" onclick="hwPhotoPick(1)">
+        <label for="hw-photo-input-1" id="hw-photo-1" class="hw-photo-slot">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           <div class="hw-photo-label">1 · Work area</div>
-        </div>
-        <div id="hw-photo-2" class="hw-photo-slot" onclick="hwPhotoPick(2)">
+          <input type="file" id="hw-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(1, event)">
+        </label>
+        <label for="hw-photo-input-2" id="hw-photo-2" class="hw-photo-slot">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           <div class="hw-photo-label">2 · 10m clear zone</div>
-        </div>
-        <div id="hw-photo-3" class="hw-photo-slot" onclick="hwPhotoPick(3)">
+          <input type="file" id="hw-photo-input-2" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(2, event)">
+        </label>
+        <label for="hw-photo-input-3" id="hw-photo-3" class="hw-photo-slot">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           <div class="hw-photo-label">3 · Extinguisher</div>
-        </div>
-        <div id="hw-photo-4" class="hw-photo-slot" onclick="hwPhotoPick(4)">
+          <input type="file" id="hw-photo-input-3" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(3, event)">
+        </label>
+        <label for="hw-photo-input-4" id="hw-photo-4" class="hw-photo-slot">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           <div class="hw-photo-label">4 · Equipment</div>
-        </div>
+          <input type="file" id="hw-photo-input-4" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(4, event)">
+        </label>
       </div>
-      <input type="file" id="hw-photo-input" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandle(event)">
     </div>
   </div>
 
@@ -7796,13 +7799,37 @@ function hwPhotoHandle(ev) {
   reader.readAsDataURL(file);
 }
 
+function hwPhotoHandleNew(slotNum, ev) {
+  const file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const now = new Date();
+    const ts = now.toLocaleString('en-AU', { hour12: false });
+    if (navigator.geolocation) {
+      try {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          const lat = pos.coords.latitude.toFixed(5);
+          const lng = pos.coords.longitude.toFixed(5);
+          hwPhotoStore(slotNum, e.target.result, ts, lat + ',' + lng);
+        }, function() {
+          hwPhotoStore(slotNum, e.target.result, ts, '');
+        }, { timeout: 3000, maximumAge: 60000 });
+        return;
+      } catch(err) {}
+    }
+    hwPhotoStore(slotNum, e.target.result, ts, '');
+  };
+  reader.readAsDataURL(file);
+}
+
 function hwPhotoStore(slot, dataUrl, ts, gps) {
   _hwPhotos[slot] = { data: dataUrl, ts: ts, gps: gps };
   const el = document.getElementById('hw-photo-' + slot);
   if (!el) return;
   const labels = { 1: '1 · Work area', 2: '2 · 10m clear zone', 3: '3 · Extinguisher', 4: '4 · Equipment' };
   el.classList.add('filled');
-  el.innerHTML = '<button class="hw-photo-remove" onclick="event.stopPropagation();hwPhotoRemove(' + slot + ')">×</button>' +
+  el.innerHTML = '<button type="button" class="hw-photo-remove" onclick="event.preventDefault();event.stopPropagation();hwPhotoRemove(' + slot + ')">×</button>' +
                  '<img src="' + dataUrl + '" alt="Photo ' + slot + '">' +
                  '<div class="hw-photo-label">' + labels[slot] + '</div>';
   _hwPhotoSlot = null;
@@ -7814,7 +7841,7 @@ function hwPhotoRemove(slot) {
   if (!el) return;
   const labels = { 1: '1 · Work area', 2: '2 · 10m clear zone', 3: '3 · Extinguisher', 4: '4 · Equipment' };
   el.classList.remove('filled');
-  el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">' + labels[slot] + '</div>';
+  el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">' + labels[slot] + '</div><input type="file" id="hw-photo-input-' + slot + '" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(' + slot + ', event)">';
 }
 
 function hwResetPhotoSlots() {
