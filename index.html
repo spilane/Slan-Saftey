@@ -8078,14 +8078,8 @@ function permFinishOnboarding() {
   localStorage.setItem('slan_onboarding_complete', 'true');
   localStorage.setItem('slan_onboarding_date', new Date().toISOString());
   const p = (typeof getProfile === 'function') ? getProfile() : null;
-  // Supervisor/Director need PIN before showing the polished profile
-  if (p && (p.role === 'Site Supervisor' || p.role === 'Company Director')) {
-    sessionStorage.removeItem('sup_auth');
-    if (typeof requirePin === 'function') {
-      requirePin(showProfileSummaryThenLand);
-      return;
-    }
-  }
+  // Supervisor/Director already PIN'd at role selection — no need to PIN again here
+  // (PIN session persists during onboarding flow)
   // Worker — show polished profile directly
   showProfileSummaryThenLand();
 }
@@ -8213,7 +8207,10 @@ function supUpdatePermitsChip() {
   const today = new Date().toLocaleDateString('en-AU');
   const all = (typeof ptwLoadAllPermits === 'function' ? ptwLoadAllPermits() : []).filter(x => x.date === today);
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
-  const active  = all.filter(x => hwPermitBucket(x) === 'active').length;
+  // Permits awaiting worker acknowledgement — supervisor should know about these
+  const needsAck = all.filter(x => x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')).length;
+  // Truly active = approved/active AND (no conditions OR conditions acknowledged)
+  const active = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
 
   if (all.length === 0) { if (chip) chip.remove(); return; }
 
@@ -8227,6 +8224,8 @@ function supUpdatePermitsChip() {
   let label, state;
   if (pending > 0) {
     label = 'Permits (' + pending + ' pending)'; state = 'warn';
+  } else if (needsAck > 0) {
+    label = 'Permits (' + needsAck + ' awaiting ack)'; state = 'warn';
   } else if (active > 0) {
     label = 'Permits (' + active + ' active)'; state = 'done';
   } else {
@@ -8896,9 +8895,12 @@ function ptwUpdateTileSubtitle() {
   const today = new Date().toLocaleDateString('en-AU');
   const all = ptwLoadAllPermits().filter(x => x.date === today);
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
-  const active  = all.filter(x => hwPermitBucket(x) === 'active').length;
+  const needsAck = all.filter(x => x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')).length;
+  const active = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
   if (pending > 0) {
     sub.innerHTML = '<span style="color:#854F0B;font-weight:600">⚠ ' + pending + ' pending approval</span>' + (active > 0 ? ' · ' + active + ' active' : '');
+  } else if (needsAck > 0) {
+    sub.innerHTML = '<span style="color:#854F0B;font-weight:600">' + needsAck + ' awaiting acknowledgement</span>' + (active > 0 ? ' · ' + active + ' active' : '');
   } else if (active > 0) {
     sub.innerHTML = '<span style="color:#1B6E3A;font-weight:600">' + active + ' active on site</span>';
   } else {
@@ -9232,17 +9234,22 @@ function hwUpdateChip() {
 
   if (all.length === 0) { if (chip) chip.remove(); return; }
 
-  let pending = 0, active = 0, other = 0, rejected = 0;
+  let pending = 0, active = 0, other = 0, rejected = 0, needsAck = 0;
   all.forEach(x => {
     const b = hwPermitBucket(x);
-    if (b === 'pending') pending++;
+    // Permits that are approved/active but have unacknowledged conditions count as "needs acknowledgement"
+    if ((b === 'active' || b === 'pending') && x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')) {
+      needsAck++;
+    } else if (b === 'pending') pending++;
     else if (b === 'active') active++;
     else if (x.status === 'rejected') rejected++;
     else other++;
   });
 
   let label, state;
-  if (pending > 0) {
+  if (needsAck > 0) {
+    label = 'Permits (' + needsAck + ' to acknowledge)'; state = 'warn';
+  } else if (pending > 0) {
     label = 'Permits (' + pending + ' pending)'; state = 'warn';
   } else if (rejected > 0 && active === 0) {
     label = 'Permits (' + rejected + ' rejected)'; state = 'fail';
@@ -9276,6 +9283,18 @@ function callContact(type) {
 
 // ── ROLE SELECTION ───────────────────────────────────────────────────────
 function selectRole(role) {
+  // GATE: Supervisor and Director require PIN before they can even pick the role
+  // Worker has no PIN
+  if ((role === 'supervisor' || role === 'director') && sessionStorage.getItem('sup_auth') !== 'true') {
+    if (typeof requirePin === 'function') {
+      requirePin(function() { selectRoleAfterPin(role); });
+      return;
+    }
+  }
+  selectRoleAfterPin(role);
+}
+
+function selectRoleAfterPin(role) {
   // Highlight selected card
   ['supervisor','worker','director'].forEach(r => {
     const el = document.getElementById('role-opt-' + r);
