@@ -572,6 +572,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 .hw-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
 .hw-photo-slot{background:var(--card);border:1.5px dashed var(--border);border-radius:var(--rs);padding:11px 10px 9px;text-align:center;cursor:pointer;transition:all .12s;position:relative;min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.hw-photo-fileinput{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0;font-size:0;z-index:3}
+.hw-photo-slot.filled .hw-photo-fileinput{display:none}
 .hw-photo-slot:active{transform:scale(.98);border-color:var(--mid)}
 .hw-photo-slot.filled{border-style:solid;border-color:#1B6E3A;background:#fff;padding:0;overflow:hidden}
 .hw-photo-slot.filled img{width:100%;height:100%;object-fit:cover;display:block}
@@ -3322,26 +3324,26 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px;line-height:1.4">Photograph the work area and setup. Photos will be timestamped and GPS-tagged.</p>
       <div class="hw-photo-grid">
-        <label for="hw-photo-input-1" id="hw-photo-1" class="hw-photo-slot">
+        <div id="hw-photo-1" class="hw-photo-slot">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           <div class="hw-photo-label">1 · Work area</div>
-          <input type="file" id="hw-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(1, event)">
-        </label>
-        <label for="hw-photo-input-2" id="hw-photo-2" class="hw-photo-slot">
+          <input type="file" accept="image/*" capture="environment" class="hw-photo-fileinput" onchange="hwPhotoHandleNew(1, event)">
+        </div>
+        <div id="hw-photo-2" class="hw-photo-slot">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           <div class="hw-photo-label">2 · 10m clear zone</div>
-          <input type="file" id="hw-photo-input-2" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(2, event)">
-        </label>
-        <label for="hw-photo-input-3" id="hw-photo-3" class="hw-photo-slot">
+          <input type="file" accept="image/*" capture="environment" class="hw-photo-fileinput" onchange="hwPhotoHandleNew(2, event)">
+        </div>
+        <div id="hw-photo-3" class="hw-photo-slot">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           <div class="hw-photo-label">3 · Extinguisher</div>
-          <input type="file" id="hw-photo-input-3" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(3, event)">
-        </label>
-        <label for="hw-photo-input-4" id="hw-photo-4" class="hw-photo-slot">
+          <input type="file" accept="image/*" capture="environment" class="hw-photo-fileinput" onchange="hwPhotoHandleNew(3, event)">
+        </div>
+        <div id="hw-photo-4" class="hw-photo-slot">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           <div class="hw-photo-label">4 · Equipment</div>
-          <input type="file" id="hw-photo-input-4" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(4, event)">
-        </label>
+          <input type="file" accept="image/*" capture="environment" class="hw-photo-fileinput" onchange="hwPhotoHandleNew(4, event)">
+        </div>
       </div>
     </div>
   </div>
@@ -7841,7 +7843,7 @@ function hwPhotoRemove(slot) {
   if (!el) return;
   const labels = { 1: '1 · Work area', 2: '2 · 10m clear zone', 3: '3 · Extinguisher', 4: '4 · Equipment' };
   el.classList.remove('filled');
-  el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">' + labels[slot] + '</div><input type="file" id="hw-photo-input-' + slot + '" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoHandleNew(' + slot + ', event)">';
+  el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">' + labels[slot] + '</div><input type="file" accept="image/*" capture="environment" class="hw-photo-fileinput" onchange="hwPhotoHandleNew(' + slot + ', event)">';
 }
 
 function hwResetPhotoSlots() {
