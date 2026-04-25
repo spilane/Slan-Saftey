@@ -1002,7 +1002,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div id="myp-perm-notif" class="myp-perm-pill" style="background:#EAF3DE;color:#173404;font-size:11px;font-weight:600;padding:5px 10px;border-radius:14px;border:1px solid #639922">🔔 Alerts ✓</div>
     </div>
 
-    <button onclick="myProfSignOut()" style="width:100%;padding:13px;background:transparent;color:#A32D2D;border:1.5px solid rgba(163,45,45,.4);border-radius:var(--r);font-weight:600;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">Sign Out of App</button>
+    <button id="myp-continue-btn" onclick="myProfContinueToApp()" class="submit-btn" style="display:none;width:100%;background:#1B6E3A;margin-top:0">Continue to App</button>
+    <button id="myp-signout-btn" onclick="myProfSignOut()" style="width:100%;padding:13px;background:transparent;color:#A32D2D;border:1.5px solid rgba(163,45,45,.4);border-radius:var(--r);font-weight:600;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">Sign Out of App</button>
+    <button id="myp-reset-btn" onclick="myProfResetDemo()" style="width:100%;padding:11px;margin-top:8px;background:transparent;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r);font-weight:500;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">Reset Demo (clear all data)</button>
 
   </div>
 </div>
@@ -5451,10 +5453,10 @@ function togglePrivacyCheck() {
 
 // ── AVATAR TAP → HISTORY ─────────────────────────────────────────────────
 function avatarTap() {
-  const p = getProfile();
-  if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
-  populateMyProfile();
-  goTo('screen-my-profile');
+  // Always open the setup form — useful for demos and for editing profile
+  if (typeof prefillProfileScreen === 'function') prefillProfileScreen();
+  if (typeof initSig === 'function') initSig();
+  goTo('screen-profile');
 }
 
 function getInitials(name) {
@@ -5465,6 +5467,13 @@ function getInitials(name) {
 }
 
 function populateMyProfile() {
+  // Default: show Sign Out + Reset Demo, hide Continue (caller can override)
+  const _so = document.getElementById('myp-signout-btn');
+  const _cont = document.getElementById('myp-continue-btn');
+  const _reset = document.getElementById('myp-reset-btn');
+  if (_so) _so.style.display = 'block';
+  if (_cont) _cont.style.display = 'none';
+  if (_reset) _reset.style.display = 'block';
   const p = getProfile();
   if (!p) return;
   // Avatar - photo if exists, else initials
@@ -5540,7 +5549,6 @@ function myProfRedraw() {
 
 function myProfSignOut() {
   if (!confirm('Sign out of the app? Your profile will be cleared.')) return;
-  // Clear session state + onboarding flag — user starts fresh next launch
   try {
     localStorage.removeItem('slan_profile');
     localStorage.removeItem('slan_onboarding_complete');
@@ -5548,6 +5556,22 @@ function myProfSignOut() {
     sessionStorage.removeItem('sup_auth');
   } catch(e) {}
   goTo('screen-onboarding');
+}
+
+function myProfResetDemo() {
+  if (!confirm('Reset the demo? This clears profile, permissions, PIN session and all permits/data.\n\nThis is intended for demo testing only.')) return;
+  try {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith('slan_') || k.startsWith('hw_') || k.startsWith('site_') || k.startsWith('swms_') || k.startsWith('talk_') || k.startsWith('prestart_'))) {
+        keysToRemove.push(k);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    sessionStorage.clear();
+  } catch(e) {}
+  window.location.reload();
 }
 
 function profileQuickClose() {
@@ -7876,8 +7900,11 @@ function workerUpdatePermitsTileSub() {
   const today = new Date().toLocaleDateString('en-AU');
   const all = (typeof hwLoadAll === 'function' ? hwLoadAll() : []).filter(x => x.worker_name === p.name && x.date === today);
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
-  const active  = all.filter(x => hwPermitBucket(x) === 'active').length;
-  if (pending > 0) {
+  const needsAck = all.filter(x => x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')).length;
+  const active = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
+  if (needsAck > 0) {
+    sub.innerHTML = '<span style="color:#854F0B;font-weight:600">' + needsAck + ' to acknowledge</span>' + (pending > 0 ? ' · ' + pending + ' pending' : '');
+  } else if (pending > 0) {
     sub.innerHTML = '<span style="color:#854F0B;font-weight:600">' + pending + ' pending</span>' + (active > 0 ? ' · ' + active + ' active' : '');
   } else if (active > 0) {
     sub.innerHTML = '<span style="color:#1B6E3A;font-weight:600">' + active + ' active</span>';
@@ -8050,7 +8077,31 @@ function permUpdateContinue() {
 function permFinishOnboarding() {
   localStorage.setItem('slan_onboarding_complete', 'true');
   localStorage.setItem('slan_onboarding_date', new Date().toISOString());
-  // Route to correct landing screen based on role
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  // Supervisor/Director need PIN before showing the polished profile
+  if (p && (p.role === 'Site Supervisor' || p.role === 'Company Director')) {
+    sessionStorage.removeItem('sup_auth');
+    if (typeof requirePin === 'function') {
+      requirePin(showProfileSummaryThenLand);
+      return;
+    }
+  }
+  // Worker — show polished profile directly
+  showProfileSummaryThenLand();
+}
+
+function showProfileSummaryThenLand() {
+  if (typeof populateMyProfile === 'function') populateMyProfile();
+  const so = document.getElementById('myp-signout-btn');
+  const cont = document.getElementById('myp-continue-btn');
+  const reset = document.getElementById('myp-reset-btn');
+  if (so) so.style.display = 'none';
+  if (cont) cont.style.display = 'block';
+  if (reset) reset.style.display = 'none';
+  goTo('screen-my-profile');
+}
+
+function myProfContinueToApp() {
   const p = (typeof getProfile === 'function') ? getProfile() : null;
   if (p && p.role === 'Company Director') {
     if (typeof goToAnalytics === 'function') { goToAnalytics('director'); return; }
@@ -8058,7 +8109,6 @@ function permFinishOnboarding() {
   if (p && p.role === 'Site Supervisor') {
     if (typeof _doOpenSuperDash === 'function') { _doOpenSuperDash(); return; }
   }
-  // Default: worker home
   goTo('screen-home');
   if (typeof updateStatusStrip === 'function') updateStatusStrip();
 }
@@ -8784,8 +8834,8 @@ function ptwRenderUnified() {
     const type = ptwGetType(pm);
     const typeLabel = ptwGetTypeLabel(type);
     const typeClass = ptwGetTypeClass(type);
-    const badgeText = hwStatusLabel(pm.status);
-    const badgeClass = hwStatusBadgeClass(pm.status);
+    const badgeText = hwStatusLabel(pm.status, pm);
+    const badgeClass = hwStatusBadgeClass(pm.status, pm);
     const workerName = pm.worker_name || 'Unknown';
     const subtypeText = pm.subtype || pm.type || '';
     const locText = pm.location || '';
@@ -8867,8 +8917,8 @@ function hwSupRenderQueue() {
   const history = all.filter(x => hwPermitBucket(x) === 'history');
 
   function supCardHtml(pm) {
-    const badgeText  = hwStatusLabel(pm.status);
-    const badgeClass = hwStatusBadgeClass(pm.status);
+    const badgeText  = hwStatusLabel(pm.status, pm);
+    const badgeClass = hwStatusBadgeClass(pm.status, pm);
     const subtypeText = pm.subtype || pm.type || 'Hot Works';
     const locText = pm.location || '';
     const workerName = pm.worker_name || 'Unknown';
@@ -8919,8 +8969,8 @@ function hwSupOpenReview(permitId) {
     const v = Array.isArray(val) ? val.join(', ') : String(val);
     return `<div class="hw-view-row"><div class="hw-view-label">${label}</div><div class="hw-view-val">${v}</div></div>`;
   }
-  const badgeClass = hwStatusBadgeClass(p.status);
-  const badgeText = hwStatusLabel(p.status);
+  const badgeClass = hwStatusBadgeClass(p.status, p);
+  const badgeText = hwStatusLabel(p.status, p);
 
   let checksHtml = '';
   if (p.checks) {
@@ -11100,7 +11150,11 @@ function goToHotWorksForm() {
   setTimeout(hwInitForm, 20);
 }
 
-function hwStatusLabel(s) {
+function hwStatusLabel(s, p) {
+  // Special case: approved with conditions but worker hasn't acknowledged yet
+  if (p && p.approval_conditions && !p.conditions_acknowledged && (s === 'approved' || s === 'active')) {
+    return 'Action needed';
+  }
   if (s === 'pending')  return 'Pending approval';
   if (s === 'approved') return 'Approved';
   if (s === 'active')   return 'Active';
@@ -11117,7 +11171,11 @@ function hwStatusColor(s) {
   if (s === 'expired' || s === 'closed')   return '#5C6B62';
   return '#B8960C';
 }
-function hwStatusBadgeClass(s) {
+function hwStatusBadgeClass(s, p) {
+  // Special case: approved with conditions but not yet acknowledged → amber pending look
+  if (p && p.approval_conditions && !p.conditions_acknowledged && (s === 'approved' || s === 'active')) {
+    return 'hw-pending';
+  }
   if (s === 'active' || s === 'approved')  return 'hw-active';
   if (s === 'rejected' || s === 'revoked') return 'hw-reject';
   if (s === 'expired' || s === 'closed')   return 'hw-expired';
@@ -11144,8 +11202,8 @@ function hwRenderList() {
   const history = all.filter(x => hwPermitBucket(x) === 'history');
 
   function cardHtml(pm) {
-    const badgeText = hwStatusLabel(pm.status);
-    const badgeClass = hwStatusBadgeClass(pm.status);
+    const badgeText = hwStatusLabel(pm.status, pm);
+    const badgeClass = hwStatusBadgeClass(pm.status, pm);
     const subtypeText = pm.subtype || pm.type || 'Hot Works';
     const locText = pm.location || '';
     const typeKey = (typeof ptwGetType === 'function') ? ptwGetType(pm) : 'hotworks';
@@ -11194,7 +11252,7 @@ function hwViewPermit(permitId) {
     return `<div class="hw-view-row"><div class="hw-view-label">${label}</div><div class="hw-view-val">${v}</div></div>`;
   }
   const badgeColor = hwStatusColor(p.status);
-  const badgeText = hwStatusLabel(p.status);
+  const badgeText = hwStatusLabel(p.status, p);
   let checksHtml = '';
   if (p.checks) {
     const chkLabels = [
@@ -11272,7 +11330,7 @@ function hwViewPermit(permitId) {
         <div class="hw-view-id">${p.permit_id}</div>
         <div class="hw-view-sub">${p.subtype || p.type || 'Hot Works'}</div>
       </div>
-      <div class="hw-badge ${hwStatusBadgeClass(p.status)}" style="font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px">${badgeText}</div>
+      <div class="hw-badge ${hwStatusBadgeClass(p.status, p)}" style="font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px">${badgeText}</div>
     </div>
     ${statusBanner}
     ${row('Date', p.date)}
