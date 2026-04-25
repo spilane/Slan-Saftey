@@ -14503,8 +14503,11 @@ function generatePermitPDF(permit) {
     innerY = y + 5;
     setText(PDF_COLOURS.darkText);
     doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+    // Map label index → actual closeout_ticks key
+    const closeoutKeys = ['work_done','fire_watch','area_inspected','materials','extinguisher','area_safe'];
     HW_CLOSEOUT_LABELS.forEach((lbl, i) => {
-      const checked = ticks['co' + (i+1)] || ticks['ch' + (i+1)] || ticks[i+1];
+      const key = closeoutKeys[i];
+      const checked = !!ticks[key];
       const ty = innerY + i * 3.5;
       if (checked) {
         drawTick(ML + 4, ty, '#1B6E3A', 2.5);
