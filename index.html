@@ -539,6 +539,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .hw-success-time{font-size:12.5px;color:var(--muted);font-family:'DM Mono',monospace}
 
 
+/* ─── Condition chips (supervisor quick-pick) ─────────── */
+.cond-chip { background:#fff; border:1.5px solid var(--border); border-radius:18px; padding:7px 12px; font-size:12px; font-weight:500; color:var(--text); cursor:pointer; transition:all .15s; user-select:none; }
+.cond-chip:active { transform:scale(.96); }
+.cond-chip.selected { background:#F5C48A; border-color:#BA7517; color:#633806; font-weight:600; }
+.cond-chip.selected::before { content:'✓ '; }
+
 /* ─── Permit type tags (for multi-type support) ─────────────── */
 .ptw-type-tag { display:inline-block; font-size:9.5px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:.04em; text-transform:uppercase; vertical-align:middle }
 .ptw-type-tag.t-hotworks   { background:rgba(184,150,12,.15); color:#854F0B }
@@ -594,6 +600,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .hw-closeout-btn{width:100%;padding:14px;border-radius:var(--r);border:none;background:#1B6E3A;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:10px}
 .hw-closeout-btn:disabled{background:#CCC;color:#888;cursor:not-allowed}
 .hw-closeout-btn:active:not(:disabled){background:#0F4A27}
+
+
+/* ─── Pulsing revoke banner ─────────────── */
+@keyframes revokePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(163,45,45,0); } 50% { box-shadow: 0 0 0 6px rgba(163,45,45,.18); } }
+.revoke-pulse { animation: revokePulse 1.6s ease-in-out infinite; }
+
+/* ─── Acknowledgement screen tickboxes ───────────────── */
+.ack-tick { display:flex; align-items:flex-start; gap:11px; padding:13px 14px; background:var(--card); border:1.5px solid var(--border); border-radius:var(--rs); margin-bottom:8px; cursor:pointer; transition:all .12s; }
+.ack-tick.checked { background:#B7E1C4; border-color:#1B6E3A; }
+.ack-tick-box { width:22px; height:22px; border:2px solid var(--mid); border-radius:6px; flex-shrink:0; background:#fff; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+.ack-tick.checked .ack-tick-box { background:#1B6E3A; border-color:#1B6E3A; }
+.ack-tick-box svg { width:14px; height:14px; stroke:#fff; stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; opacity:0; }
+.ack-tick.checked .ack-tick-box svg { opacity:1; }
+.ack-tick-text { font-size:13.5px; line-height:1.4; color:var(--text); flex:1; }
+.ack-tick.checked .ack-tick-text { color:#0F4A27; font-weight:500; }
 
 </style>
 </head>
@@ -983,6 +1004,63 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <button onclick="myProfSignOut()" style="width:100%;padding:13px;background:transparent;color:#A32D2D;border:1.5px solid rgba(163,45,45,.4);border-radius:var(--r);font-weight:600;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">Sign Out of App</button>
 
+  </div>
+</div>
+
+<!-- ═══════════════════ HOT WORKS — ACKNOWLEDGE CONDITIONS ═══ -->
+<div id="screen-hw-ack-conditions" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="hwAckBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Acknowledge Conditions</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:30px">
+    <div style="background:#FAEEDA;border:1.5px solid #BA7517;border-radius:var(--r);padding:13px 14px;margin-bottom:16px">
+      <div style="font-size:13.5px;font-weight:700;color:#633806;margin-bottom:4px">⚠ Read each condition carefully</div>
+      <div style="font-size:12px;color:#412402;line-height:1.5">You must tick each condition to confirm you have read and will follow it. Then sign at the bottom.</div>
+    </div>
+    <div id="hw-ack-permit-info" style="padding:11px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:14px"></div>
+
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 8px">Conditions of approval</div>
+    <div id="hw-ack-conditions-list"></div>
+
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:18px 2px 8px">Worker confirmation</div>
+    <div class="ack-tick" id="hw-ack-final" onclick="hwAckToggleFinal()">
+      <div class="ack-tick-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ack-tick-text">I confirm I have read and will follow all conditions above. I understand I am responsible for working safely under these conditions.</div>
+    </div>
+
+    <button id="hw-ack-submit" class="hw-closeout-btn" onclick="hwSubmitAckConditions()" disabled style="margin-top:14px">Confirm and Begin Work</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ HOT WORKS — ACKNOWLEDGE REVOCATION ═══ -->
+<div id="screen-hw-ack-revocation" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="hwAckRevBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Acknowledge Revocation</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:30px">
+    <div style="background:#FCEBEB;border:1.5px solid #A32D2D;border-radius:var(--r);padding:13px 14px;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;color:#6B1818;margin-bottom:4px">STOP WORK</div>
+      <div style="font-size:12.5px;color:#412424;line-height:1.5">Your supervisor has revoked this permit. You must stop work immediately and acknowledge below.</div>
+    </div>
+    <div id="hw-ackrev-permit-info" style="padding:11px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:14px"></div>
+
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 8px">Revocation reason</div>
+    <div id="hw-ackrev-reason" style="padding:11px 14px;background:#FCEBEB;border:1px solid rgba(163,45,45,.3);border-radius:var(--r);margin-bottom:14px;font-size:13px;color:#412424;font-style:italic"></div>
+
+    <div class="ack-tick" id="hw-ackrev-final" onclick="hwAckRevToggleFinal()">
+      <div class="ack-tick-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ack-tick-text">I confirm I have stopped work and left the work area. I understand this permit is no longer valid.</div>
+    </div>
+
+    <button id="hw-ackrev-submit" class="hw-closeout-btn" onclick="hwSubmitAckRevocation()" disabled style="margin-top:14px;background:#A32D2D">Confirm Acknowledgement</button>
   </div>
 </div>
 
@@ -2963,7 +3041,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <!-- Conditions input (hidden by default) -->
   <div id="sup-hw-conditions-wrap" style="display:none;padding:0 18px 24px">
     <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Conditions for approval</div>
-    <textarea id="sup-hw-conditions-text" rows="4" placeholder="e.g. Stop work if wind exceeds 20 km/h; mandatory hourly fire watch checks; buddy required at all times." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+
+    <div style="background:#F1EFE8;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11.5px;color:var(--muted);line-height:1.55">
+      <strong>Conditions are extra rules to follow during work.</strong> If equipment is missing or setup is wrong, REJECT instead with the reason — workers should fix issues before a fresh permit.
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">Quick-pick conditions:</div>
+    <div id="sup-hw-cond-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+      <div class="cond-chip" onclick="hwSupToggleCondChip(this)" data-cond="Use buddy system at all times">Use buddy system</div>
+      <div class="cond-chip" onclick="hwSupToggleCondChip(this)" data-cond="Maintain extra 5m clearance">Extra 5m clearance</div>
+      <div class="cond-chip" onclick="hwSupToggleCondChip(this)" data-cond="Extended fire watch — 60 min after completion">Extended fire watch (60 min)</div>
+      <div class="cond-chip" onclick="hwSupToggleCondChip(this)" data-cond="Hourly check-in with supervisor">Hourly check-in</div>
+      <div class="cond-chip" onclick="hwSupToggleCondChip(this)" data-cond="Stop work if wind exceeds 25 km/h">Stop work if wind &gt;25 km/h</div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">Custom condition (optional):</div>
+    <textarea id="sup-hw-conditions-text" rows="3" placeholder="Add any additional conditions specific to this permit..." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
     <div style="display:flex;gap:8px;margin-top:10px">
       <button onclick="hwSupCancelConditions()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
       <button onclick="hwSupApproveWithConditions()" style="flex:1;padding:13px;border-radius:var(--r);background:#BA7517;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Approve with Conditions</button>
@@ -3434,7 +3525,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Photo evidence</div>
     <div class="fcard-body">
-      <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px;line-height:1.4">Take photos of the work area and setup. Each will be timestamped and GPS-tagged.</p>
+      <p style="font-size:11.5px;color:var(--muted);margin:0 0 10px;line-height:1.4">Take photos of the work area and setup. <strong>All 4 photos are required</strong>. Each will be timestamped and GPS-tagged.</p>
       <div class="hw-photo-grid">
 
         <div id="hw-photo-1" class="hw-photo-slot">
@@ -5233,9 +5324,9 @@ function checkOnboarding() {
     DEMO_MODE = true;
     if (!p) { goTo('screen-onboarding'); return; }
     if (p.role === 'Company Director') {
-      goToAnalytics('director');
+      goToAnalytics('director');  // PIN-gated within
     } else if (p.role === 'Site Supervisor') {
-      _doOpenSuperDash();
+      requirePin(() => _doOpenSuperDash());  // PIN required even in demo
     } else {
       goTo('screen-home');
       initHome(p);
@@ -6322,8 +6413,8 @@ function goViewSPS() {
 
 // ── SUPERVISOR SINGLE SCREEN ──────────────────────────────────────────────
 function goToSuperDash() {
-  // Skip PIN in demo mode
-  if (DEMO_MODE || localStorage.getItem('slan_demo')) {
+  // PIN required even in demo mode
+  if (sessionStorage.getItem('sup_auth') === 'true') {
     _doOpenSuperDash();
     return;
   }
@@ -8208,6 +8299,7 @@ function hwShrinkImage(dataUrl, callback) {
 }
 
 function hwPhotoStoreUI(slot, dataUrl, ts, gps) {
+  if (typeof hwValidate === 'function') setTimeout(hwValidate, 50);
   const el = document.getElementById('hw-photo-' + slot);
   if (!el) return;
   const labels = { 1: '1 · Work area', 2: '2 · 10m clear zone', 3: '3 · Extinguisher', 4: '4 · Equipment' };
@@ -8220,6 +8312,7 @@ function hwPhotoStoreUI(slot, dataUrl, ts, gps) {
 
 function hwPhotoRemove(slot) {
   _hwPhotos[slot] = null;
+  if (typeof hwValidate === 'function') setTimeout(hwValidate, 50);
   const el = document.getElementById('hw-photo-' + slot);
   if (!el) return;
   const labels = { 1: '1 · Work area', 2: '2 · 10m clear zone', 3: '3 · Extinguisher', 4: '4 · Equipment' };
@@ -8475,6 +8568,149 @@ function hwBackFromCloseout() {
   if (_hwFromGate) { goTo('screen-hw-gate'); return; }
   goTo('screen-hw-list');
 }
+// ────────────────────────────────────────────
+// CONDITIONS ACKNOWLEDGEMENT
+// ────────────────────────────────────────────
+let _hwAckPermit = null;
+let _hwAckTicks = {};
+let _hwAckFinal = false;
+
+function hwOpenAckConditions(permitId) {
+  const p = hwLoadAll().find(x => x.permit_id === permitId);
+  if (!p) return;
+  _hwAckPermit = p;
+  _hwAckTicks = {};
+  _hwAckFinal = false;
+
+  const hdr = document.getElementById('hw-ack-permit-info');
+  if (hdr) {
+    hdr.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:12.5px;font-weight:700;color:var(--text)">' + p.permit_id + '</div>' +
+                    '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">' + (p.subtype || 'Hot Works') + ' · ' + (p.location || '') + '</div>';
+  }
+
+  const condsArr = (p.approval_conditions_list && p.approval_conditions_list.length) ? p.approval_conditions_list : [p.approval_conditions];
+  const list = document.getElementById('hw-ack-conditions-list');
+  if (list) {
+    list.innerHTML = condsArr.map((c, idx) => 
+      '<div class="ack-tick" id="hw-ack-cond-' + idx + '" onclick="hwAckToggleCondition(' + idx + ')">' +
+        '<div class="ack-tick-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+        '<div class="ack-tick-text">' + c + '</div>' +
+      '</div>'
+    ).join('');
+  }
+
+  // Reset final tick
+  const finalEl = document.getElementById('hw-ack-final');
+  if (finalEl) finalEl.classList.remove('checked');
+  _hwAckFinal = false;
+
+  hwAckUpdateBtn();
+  goTo('screen-hw-ack-conditions');
+}
+
+function hwAckToggleCondition(idx) {
+  _hwAckTicks[idx] = !_hwAckTicks[idx];
+  const el = document.getElementById('hw-ack-cond-' + idx);
+  if (el) el.classList.toggle('checked', !!_hwAckTicks[idx]);
+  hwAckUpdateBtn();
+}
+
+function hwAckToggleFinal() {
+  _hwAckFinal = !_hwAckFinal;
+  const el = document.getElementById('hw-ack-final');
+  if (el) el.classList.toggle('checked', _hwAckFinal);
+  hwAckUpdateBtn();
+}
+
+function hwAckUpdateBtn() {
+  const btn = document.getElementById('hw-ack-submit');
+  if (!btn || !_hwAckPermit) return;
+  const condsArr = (_hwAckPermit.approval_conditions_list && _hwAckPermit.approval_conditions_list.length) ? _hwAckPermit.approval_conditions_list : [_hwAckPermit.approval_conditions];
+  const allTicked = condsArr.every((c, idx) => !!_hwAckTicks[idx]);
+  btn.disabled = !(allTicked && _hwAckFinal);
+}
+
+function hwSubmitAckConditions() {
+  if (!_hwAckPermit) return;
+  const p = getProfile();
+  const all = hwLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _hwAckPermit.permit_id);
+  if (idx < 0) return;
+  all[idx].conditions_acknowledged = true;
+  all[idx].conditions_acknowledged_at = new Date().toISOString();
+  all[idx].conditions_acknowledged_by = p ? p.name : 'Worker';
+  all[idx].conditions_acknowledged_signature = p && p.sig ? p.sig : null;
+  hwSaveAll(all);
+  alert('Conditions acknowledged. You may begin work safely.');
+  hwViewPermit(_hwAckPermit.permit_id);
+  _hwAckPermit = null;
+  _hwAckTicks = {};
+  _hwAckFinal = false;
+}
+
+function hwAckBack() {
+  if (_hwAckPermit) hwViewPermit(_hwAckPermit.permit_id);
+  else goTo('screen-hw-list');
+}
+
+// ────────────────────────────────────────────
+// REVOCATION ACKNOWLEDGEMENT
+// ────────────────────────────────────────────
+let _hwAckRevPermit = null;
+let _hwAckRevFinal = false;
+
+function hwOpenAckRevocation(permitId) {
+  const p = hwLoadAll().find(x => x.permit_id === permitId);
+  if (!p) return;
+  _hwAckRevPermit = p;
+  _hwAckRevFinal = false;
+
+  const hdr = document.getElementById('hw-ackrev-permit-info');
+  if (hdr) {
+    hdr.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:12.5px;font-weight:700;color:var(--text)">' + p.permit_id + '</div>' +
+                    '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">' + (p.subtype || 'Hot Works') + ' · ' + (p.location || '') + '</div>';
+  }
+
+  const reason = document.getElementById('hw-ackrev-reason');
+  if (reason) reason.textContent = p.revoke_reason || '(No reason given)';
+
+  const finalEl = document.getElementById('hw-ackrev-final');
+  if (finalEl) finalEl.classList.remove('checked');
+
+  document.getElementById('hw-ackrev-submit').disabled = true;
+  goTo('screen-hw-ack-revocation');
+}
+
+function hwAckRevToggleFinal() {
+  _hwAckRevFinal = !_hwAckRevFinal;
+  const el = document.getElementById('hw-ackrev-final');
+  if (el) el.classList.toggle('checked', _hwAckRevFinal);
+  document.getElementById('hw-ackrev-submit').disabled = !_hwAckRevFinal;
+}
+
+function hwSubmitAckRevocation() {
+  if (!_hwAckRevPermit) return;
+  const p = getProfile();
+  const all = hwLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _hwAckRevPermit.permit_id);
+  if (idx < 0) return;
+  all[idx].revocation_acknowledged = true;
+  all[idx].revocation_acknowledged_at = new Date().toISOString();
+  all[idx].revocation_acknowledged_by = p ? p.name : 'Worker';
+  all[idx].revocation_acknowledged_signature = p && p.sig ? p.sig : null;
+  hwSaveAll(all);
+  alert('Revocation acknowledged.');
+  hwViewPermit(_hwAckRevPermit.permit_id);
+  _hwAckRevPermit = null;
+  _hwAckRevFinal = false;
+}
+
+function hwAckRevBack() {
+  if (_hwAckRevPermit) hwViewPermit(_hwAckRevPermit.permit_id);
+  else goTo('screen-hw-list');
+}
+
+
 
 
 // Determine permit type for a record (for now only hot works exists)
@@ -8749,6 +8985,23 @@ function hwSupOpenReview(permitId) {
     ${row('Fire watch duration', p.fire_watch_duration)}
     ${row('Nearest muster point', p.muster_point)}
     ${row('Submitted at', p.submitted_at ? new Date(p.submitted_at).toLocaleString('en-AU') : '')}
+    ${(p.photos && p.photos.length > 0) ? `
+      <div class="hw-view-row" style="display:block">
+        <div class="hw-view-label" style="margin-bottom:8px">Photo evidence</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${p.photos.map(ph => {
+            const labels = { 1: 'Work area', 2: '10m clear zone', 3: 'Extinguisher', 4: 'Equipment' };
+            return `<div style="position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+              <img src="${ph.data}" style="width:100%;height:120px;object-fit:cover;display:block" alt="Photo ${ph.slot}">
+              <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);color:#fff;font-size:10px;padding:4px 6px">
+                <div style="font-weight:600">${ph.slot} · ${labels[ph.slot] || ''}</div>
+                <div style="opacity:.85;margin-top:1px">${ph.ts || ''}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    ` : ''}
   `;
 
   // Show appropriate action buttons
@@ -8775,6 +9028,7 @@ function hwSupApprove() {
 }
 
 function hwSupShowConditions() {
+  if (typeof hwSupResetCondChips === 'function') hwSupResetCondChips();
   document.getElementById('sup-hw-review-actions').style.display = 'none';
   document.getElementById('sup-hw-conditions-wrap').style.display = 'block';
   document.getElementById('sup-hw-conditions-text').focus();
@@ -8783,9 +9037,27 @@ function hwSupCancelConditions() {
   document.getElementById('sup-hw-conditions-wrap').style.display = 'none';
   document.getElementById('sup-hw-review-actions').style.display = 'block';
 }
+function hwSupToggleCondChip(el) {
+  el.classList.toggle('selected');
+}
+
+function hwSupGatherConditions() {
+  const chips = document.querySelectorAll('#sup-hw-cond-chips .cond-chip.selected');
+  const selected = Array.from(chips).map(c => c.getAttribute('data-cond'));
+  const custom = (document.getElementById('sup-hw-conditions-text').value || '').trim();
+  if (custom) selected.push(custom);
+  return selected;
+}
+
+function hwSupResetCondChips() {
+  document.querySelectorAll('#sup-hw-cond-chips .cond-chip.selected').forEach(c => c.classList.remove('selected'));
+  document.getElementById('sup-hw-conditions-text').value = '';
+}
+
 function hwSupApproveWithConditions() {
   if (!_hwSupCurrentPermit) return;
-  const conditions = (document.getElementById('sup-hw-conditions-text').value || '').trim();
+  const conditionsList = hwSupGatherConditions();
+  const conditions = conditionsList.join('\n');
   if (!conditions) { alert('Please enter the conditions for approval.'); return; }
   const p = getProfile();
   const all = hwLoadAll();
@@ -8793,6 +9065,8 @@ function hwSupApproveWithConditions() {
   if (idx < 0) return;
   all[idx].status = 'approved';
   all[idx].approval_conditions = conditions;
+  all[idx].approval_conditions_list = conditionsList;
+  all[idx].conditions_acknowledged = false;
   all[idx].approved_at = new Date().toISOString();
   all[idx].approved_by = p ? p.name : 'Supervisor';
   localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
@@ -10730,6 +11004,11 @@ function hwValidate() {
   const cf = document.getElementById('hw-confirm');
   if (!cf || !cf.classList.contains('checked')) ok = false;
 
+  // All 4 photos required
+  if (typeof _hwPhotos !== 'undefined') {
+    if (!_hwPhotos[1] || !_hwPhotos[2] || !_hwPhotos[3] || !_hwPhotos[4]) ok = false;
+  }
+
   const btn = document.getElementById('hw-submit-btn');
   if (btn) {
     btn.disabled = !ok;
@@ -10939,6 +11218,54 @@ function hwViewPermit(permitId) {
     }
     checksHtml += '</div></div>';
   }
+  // Status banners (conditions / rejection / revocation)
+  let statusBanner = '';
+  const profile = getProfile && getProfile();
+  const isOwner = profile && p.worker_name === profile.name;
+  if (isOwner && p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
+    const condsArr = (p.approval_conditions_list && p.approval_conditions_list.length) ? p.approval_conditions_list : [p.approval_conditions];
+    statusBanner = `<div style="background:#FAEEDA;border:2px solid #BA7517;border-radius:10px;padding:13px 14px;margin-bottom:14px;cursor:pointer" onclick="hwOpenAckConditions('${p.permit_id}')">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#854F0B" stroke-width="2.2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div style="font-size:13.5px;font-weight:700;color:#633806">Conditions not yet acknowledged</div>
+      </div>
+      <div style="font-size:12.5px;color:#412402;line-height:1.5">You must acknowledge each condition before starting work.</div>
+      <div style="font-size:11.5px;color:#854F0B;font-weight:600;margin-top:6px">Tap to acknowledge →</div>
+    </div>`;
+  } else if (isOwner && p.approval_conditions && p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
+    const condsArr = (p.approval_conditions_list && p.approval_conditions_list.length) ? p.approval_conditions_list : [p.approval_conditions];
+    statusBanner = `<div style="background:#EAF3DE;border:1.5px solid #639922;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:6px">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#3B6D11" stroke-width="2.2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <div style="font-size:13px;font-weight:700;color:#173404">Conditions acknowledged — you may begin work</div>
+      </div>
+      <div style="font-size:12px;color:#173404;line-height:1.55;padding-left:4px">${condsArr.map(c => '• ' + c).join('<br>')}</div>
+    </div>`;
+  } else if (isOwner && p.status === 'rejected' && p.reject_reason) {
+    statusBanner = `<div style="background:#FCEBEB;border:1.5px solid #A32D2D;border-radius:10px;padding:13px 14px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:6px">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#A32D2D" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <div style="font-size:13.5px;font-weight:700;color:#6B1818">Permit rejected</div>
+      </div>
+      <div style="font-size:12.5px;color:#412424;line-height:1.5">You may not begin this work. Reason given:</div>
+      <div style="font-size:12.5px;color:#412424;line-height:1.55;margin-top:6px;padding:8px 10px;background:rgba(255,255,255,.5);border-radius:6px;font-style:italic">"${p.reject_reason}"</div>
+    </div>`;
+  } else if (isOwner && p.status === 'revoked' && p.revoke_reason && !p.revocation_acknowledged) {
+    statusBanner = `<div class="revoke-pulse" style="background:#FCEBEB;border:2px solid #A32D2D;border-radius:10px;padding:13px 14px;margin-bottom:14px;cursor:pointer" onclick="hwOpenAckRevocation('${p.permit_id}')">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#A32D2D" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        <div style="font-size:14px;font-weight:700;color:#6B1818">STOP WORK — Permit revoked</div>
+      </div>
+      <div style="font-size:12.5px;color:#412424;line-height:1.5;margin-bottom:6px">Reason: <em>${p.revoke_reason}</em></div>
+      <div style="font-size:11.5px;color:#A32D2D;font-weight:700;margin-top:6px">Tap to acknowledge you have stopped work →</div>
+    </div>`;
+  } else if (isOwner && p.status === 'revoked' && p.revocation_acknowledged) {
+    statusBanner = `<div style="background:#F1EFE8;border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:14px">
+      <div style="font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:3px">Permit revoked — acknowledged</div>
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.5">Reason: <em>${p.revoke_reason}</em></div>
+    </div>`;
+  }
+
   d.innerHTML = `
     <div class="hw-view-hdr">
       <div>
@@ -10947,6 +11274,7 @@ function hwViewPermit(permitId) {
       </div>
       <div class="hw-badge ${hwStatusBadgeClass(p.status)}" style="font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px">${badgeText}</div>
     </div>
+    ${statusBanner}
     ${row('Date', p.date)}
     ${row('Site', p.site)}
     ${row('Worker', p.worker_name)}
@@ -10967,14 +11295,18 @@ function hwViewPermit(permitId) {
     ${row('Submitted at', p.submitted_at ? new Date(p.submitted_at).toLocaleString('en-AU') : '')}
   `;
   // Add Close Permit button if this permit is active and belongs to current worker
-  const profile = getProfile && getProfile();
+  // profile declared earlier
   if (profile && p.worker_name === profile.name && (p.status === 'approved' || p.status === 'active') && (!p.end_time || new Date(p.end_time).getTime() > Date.now())) {
-    const viewBody = document.getElementById('hw-view-body');
-    if (viewBody) {
-      const btnDiv = document.createElement('div');
-      btnDiv.style.marginTop = '20px';
-      btnDiv.innerHTML = '<button class="hw-closeout-btn" onclick="hwOpenCloseout(\''+p.permit_id+'\', false)" style="background:#1B6E3A">Close This Permit</button>';
-      viewBody.appendChild(btnDiv);
+    // Hide close button if there are unacknowledged conditions
+    const hasUnackConditions = p.approval_conditions && !p.conditions_acknowledged;
+    if (!hasUnackConditions) {
+      const viewBody = document.getElementById('hw-view-body');
+      if (viewBody) {
+        const btnDiv = document.createElement('div');
+        btnDiv.style.marginTop = '20px';
+        btnDiv.innerHTML = '<button class="hw-closeout-btn" onclick="hwOpenCloseout(\''+p.permit_id+'\', false)" style="background:#1B6E3A">Close This Permit</button>';
+        viewBody.appendChild(btnDiv);
+      }
     }
   }
   goTo('screen-hw-view');
@@ -11186,8 +11518,8 @@ var AN_BODY_HIST = {
 var AN_STARS = []; // Populated from Firebase when connected
 
 function goToAnalytics(fromRole) {
-  // Require PIN when entering director portal (skipped if already auth'd in this session)
-  if (fromRole === 'director' && !DEMO_MODE && !localStorage.getItem('slan_demo')) {
+  // Require PIN when entering director portal (always, even in demo mode)
+  if (fromRole === 'director') {
     if (sessionStorage.getItem('sup_auth') !== 'true') {
       requirePin(() => goToAnalytics(fromRole));
       return;
