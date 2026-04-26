@@ -7887,21 +7887,10 @@ function saveProfile(){
   localStorage.setItem('slan_profile',JSON.stringify(prof));
   localStorage.removeItem('slan_pending_photo'); // Clean up temp storage after save
   initHome(prof);
-  if (permIsOnboardingComplete()) {
-    // Onboarding done — route to role-correct landing screen
-    if (prof.role === 'Company Director') {
-      if (typeof goToAnalytics === 'function') goToAnalytics('director');
-      else goTo('screen-home');
-    } else if (prof.role === 'Site Supervisor') {
-      if (typeof _doOpenSuperDash === 'function') _doOpenSuperDash();
-      else goTo('screen-home');
-    } else {
-      goTo('screen-home');
-    }
-  } else {
-    goTo('screen-permissions');
-    if (DEMO_MODE) demoGrantPermissions();
-  }
+  // ALWAYS show permissions page after profile is saved.
+  // Previously this skipped to home if onboarding flag was set, which broke role-switching.
+  goTo('screen-permissions');
+  if (DEMO_MODE) demoGrantPermissions();
   // Request push permission for supervisors (for pre-start reminders)
   if (prof.role === 'Site Supervisor') {
     requestPushPermission(prof.name, prof.role, SITE);
@@ -15268,28 +15257,21 @@ function tfbApplyOverrideAndApprove() {
   if (!equipPhoto) missing.push('Photo of fire-fighting equipment');
 
   if (missing.length > 0) {
-    // Show inline error RIGHT ABOVE the Apply button so user sees it immediately on tap
-    let errEl = document.getElementById('tfb-override-error');
-    if (!errEl) {
-      errEl = document.createElement('div');
-      errEl.id = 'tfb-override-error';
-      errEl.style.cssText = 'background:#FCEBEB;border:2px solid #A32D2D;color:#6B1818;padding:13px 14px;border-radius:8px;margin:8px 0 12px;font-size:13px;font-weight:700;line-height:1.5';
-      // Find the Apply button and insert error just before it (right next to where finger is tapping)
-      const applyBtn = document.querySelector('#tfb-override-modal button[onclick*="tfbApplyOverrideAndApprove"]');
-      if (applyBtn && applyBtn.parentNode) {
-        applyBtn.parentNode.insertBefore(errEl, applyBtn);
-      } else {
-        // Fallback to top of modal
-        const modalContent = document.querySelector('#tfb-override-modal > div');
-        if (modalContent) modalContent.insertBefore(errEl, modalContent.firstChild);
-      }
-    }
-    errEl.innerHTML = 'Missing required fields:<br>' + missing.map(m => '&bull; ' + m).join('<br>');
+    // Fixed-position toast at top of viewport — overlays the modal, can't be missed
+    let toast = document.getElementById('tfb-override-toast');
+    if (toast) toast.remove();
+    toast = document.createElement('div');
+    toast.id = 'tfb-override-toast';
+    toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#A32D2D;color:white;padding:14px 18px;border-radius:10px;font-size:13px;font-weight:700;line-height:1.5;z-index:99999;box-shadow:0 6px 16px rgba(0,0,0,0.3);max-width:90vw;text-align:left';
+    toast.innerHTML = 'Missing required fields:<br>' + missing.map(m => '&bull; ' + m).join('<br>');
+    document.body.appendChild(toast);
+    // Auto-remove after 6 seconds
+    setTimeout(function() { if (toast && toast.parentNode) toast.remove(); }, 6000);
     return;
   }
-  // Clear any previous error
-  const prevErr = document.getElementById('tfb-override-error');
-  if (prevErr) prevErr.remove();
+  // Clear any previous error toast
+  const prevToast = document.getElementById('tfb-override-toast');
+  if (prevToast) prevToast.remove();
 
   const supName = (function() {
     const p = (typeof getProfile === 'function') ? getProfile() : null;
