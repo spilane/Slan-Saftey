@@ -5115,6 +5115,28 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <script>
 // ════════════════════════════════════════════════════════
+// PAGE LOAD COUNTER — detects if browser is reloading the tab
+// ════════════════════════════════════════════════════════
+try {
+  const loadCount = parseInt(localStorage.getItem('slan_load_count') || '0', 10) + 1;
+  localStorage.setItem('slan_load_count', loadCount.toString());
+  localStorage.setItem('slan_load_time', new Date().toISOString());
+  window._slanLoadCount = loadCount;
+  // Show a quiet notification ONLY if this is a reload during an active session (count > 1 within 5 min)
+  const lastLoadStr = localStorage.getItem('slan_last_load_time');
+  if (lastLoadStr) {
+    const sinceLast = Date.now() - new Date(lastLoadStr).getTime();
+    if (sinceLast < 5*60*1000 && loadCount > 1) {
+      // Recent reload — alert the user so they know
+      setTimeout(function() {
+        alert('PAGE RELOADED. This is reload #' + loadCount + '. The browser tab was killed and restarted (probably by your phone freeing memory while the camera was open).');
+      }, 500);
+    }
+  }
+  localStorage.setItem('slan_last_load_time', new Date().toISOString());
+} catch(e) {}
+
+// ════════════════════════════════════════════════════════
 // GLOBAL ERROR HANDLER — shows real errors as on-screen popup
 // ════════════════════════════════════════════════════════
 window.addEventListener('error', function(ev) {
@@ -15394,7 +15416,7 @@ function tfbApplyOverrideAndApprove() {
 </script>
 
 <!-- TFB SUPERVISOR APPROVAL-WITH-OVERRIDE MODAL — 8 fields including extra TFB-day safety measures -->
-<div id="tfb-override-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px">
+<div id="tfb-override-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px;box-sizing:border-box">
   <div style="background:white;border-radius:14px;max-width:420px;width:100%;padding:22px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div style="font-size:16px;font-weight:700;color:var(--text)">Override TFB &amp; Approve</div>
@@ -15469,7 +15491,7 @@ function tfbApplyOverrideAndApprove() {
 
 
 <!-- TFB SUBMIT BLOCK MODAL — shown when worker tries to submit on TFB day -->
-<div id="tfb-submit-block-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px">
+<div id="tfb-submit-block-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px;box-sizing:border-box">
   <div style="background:white;border-radius:14px;max-width:380px;width:100%;padding:22px">
     <div style="display:flex;justify-content:center;margin-bottom:14px">
       <div style="width:54px;height:54px;border-radius:50%;background:#FCEBEB;display:flex;align-items:center;justify-content:center">
@@ -15490,7 +15512,7 @@ function tfbApplyOverrideAndApprove() {
 <!-- DEV TFB TOGGLE -->
 <div id="dev-tfb-fab" style="position:fixed;bottom:14px;right:14px;z-index:9998;width:46px;height:46px;border-radius:50%;background:#BA7517;border:2px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="document.getElementById('dev-tfb-modal').style.display='flex';document.getElementById('dev-tfb-current').textContent=tfbGetDemoMode();" title="TFB Test Toggle">🔥</div>
 
-<div id="dev-tfb-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px">
+<div id="dev-tfb-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px;box-sizing:border-box">
   <div style="background:white;border-radius:14px;max-width:340px;width:100%;padding:22px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div style="font-size:15px;font-weight:700;color:#1A2A1F">🔥 TFB Test Toggle</div>
