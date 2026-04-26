@@ -979,9 +979,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- Safety Stars -->
     <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 6px">Safety Stars</div>
-    <div style="background:#FAEEDA;border:1px solid rgba(184,150,12,.25);border-radius:var(--rs);padding:11px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
-      <div id="myp-stars" style="font-size:14px;color:#412402;font-weight:600">★★★★☆ 4 stars</div>
-      <div id="myp-stars-count" style="font-size:11.5px;color:#854F0B">12 awarded</div>
+    <div onclick="goToStars()" style="background:#FAEEDA;border:1px solid rgba(184,150,12,.25);border-radius:var(--rs);padding:11px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s" onmousedown="this.style.background='#F5DCAA'" onmouseup="this.style.background='#FAEEDA'" ontouchstart="this.style.background='#F5DCAA'" ontouchend="this.style.background='#FAEEDA'">
+      <div style="display:flex;align-items:center;gap:8px;flex:1">
+        <div id="myp-stars" style="font-size:14px;color:#412402;font-weight:600">★★★★☆ 4 stars</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div id="myp-stars-count" style="font-size:11.5px;color:#854F0B">12 awarded</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
     </div>
 
     <!-- Licences & Tickets -->
@@ -7839,6 +7844,10 @@ function saveProfile(){
     }
   } else {
     goTo('screen-permissions');
+    // Demo mode: auto-grant permissions (so client demo can continue without real OS prompts)
+    if (DEMO_MODE) {
+      demoGrantPermissions();
+    }
   }
   // Request push permission for supervisors (for pre-start reminders)
   if (prof.role === 'Site Supervisor') {
@@ -12547,18 +12556,14 @@ function startDemoAs(role) {
   if (existingBanner) existingBanner.remove();
   showDemoBanner();
 
-  if (role === 'worker') {
-    goTo('screen-home');
-    var pr = JSON.parse(localStorage.getItem('slan_profile') || '{}');
-    if (typeof initHome === 'function') initHome(pr);
-    if (typeof updateAllTileSubs === 'function') updateAllTileSubs(pr);
-    var av = document.getElementById('h-avatar');
-    if (av) av.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(184,150,12,.8)" stroke-width="1.8" style="width:18px;height:18px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>';
-  } else if (role === 'director') {
-    goToAnalytics('director');
-  } else {
-    if (typeof _doOpenSuperDash === 'function') _doOpenSuperDash();
-  }
+  // DEMO MODE: walk through onboarding pre-filled, so the demo shows the full flow.
+  // Clear "onboarded" flag so the screens behave like first-time setup.
+  localStorage.removeItem('slan_onboarded');
+  // Stash the demo profile so populateMyProfile / saveProfile route correctly later
+  window._demoTargetRole = role;
+  // Route to profile setup (Step 1) with everything pre-filled
+  goTo('screen-profile');
+  demoPrefillAll(p, role);
 }
 
 function startDemo() {
@@ -14801,6 +14806,116 @@ function pdfSendToBackend(permit, doc) {
     fetch(SLAN_PDF_WEBHOOK_URL, { method:'POST', body: formData })
       .catch(err => console.warn('Webhook POST failed (non-fatal):', err));
   } catch(e) { console.warn('Webhook prep failed:', e); }
+}
+
+
+
+// ════════════════════════════════════════════════════════
+// DEMO PRE-FILL — fills profile, signature, permissions
+// so demo can be walked through step-by-step with clients
+// without needing to type anything live.
+// ════════════════════════════════════════════════════════
+function demoPrefillAll(profile, role) {
+  // Step 1 — profile fields
+  setTimeout(() => {
+    const nameEl = document.getElementById('p-name');
+    const coEl = document.getElementById('p-company');
+    if (nameEl) nameEl.value = profile.name || '';
+    if (coEl) coEl.value = profile.company || '';
+
+    // Highlight the role tile + set role detail dropdown
+    if (typeof selectRoleAfterPin === 'function') {
+      selectRoleAfterPin(role);
+    }
+    // Also fill the trade dropdown for worker
+    if (role === 'worker') {
+      const detail = document.getElementById('p-role-detail');
+      if (detail) {
+        detail.value = 'Concretor';
+        // trigger the onchange so p-role hidden input updates
+        const evt = new Event('change');
+        detail.dispatchEvent(evt);
+        const roleInput = document.getElementById('p-role');
+        if (roleInput) roleInput.value = 'Concretor';
+      }
+    }
+
+    // Pre-draw a signature on canvas
+    if (typeof initSig === 'function') initSig();
+    setTimeout(() => {
+      const canvas = document.getElementById('sig-canvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = '#1A2A1F';
+        ctx.lineWidth = 2.4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        // Draw a stylised signature loop
+        const w = canvas.width, h = canvas.height;
+        const cx = w * 0.35, cy = h * 0.55;
+        ctx.beginPath();
+        ctx.moveTo(cx - 80, cy + 10);
+        ctx.bezierCurveTo(cx - 40, cy - 50, cx - 20, cy + 30, cx + 20, cy - 20);
+        ctx.bezierCurveTo(cx + 60, cy - 60, cx + 100, cy + 10, cx + 140, cy - 10);
+        ctx.bezierCurveTo(cx + 180, cy - 30, cx + 200, cy + 20, cx + 220, cy);
+        ctx.stroke();
+        // Underline
+        ctx.beginPath();
+        ctx.moveTo(cx - 60, cy + 30);
+        ctx.lineTo(cx + 230, cy + 25);
+        ctx.stroke();
+        canvas.classList.add('signed');
+        if (typeof hasSig !== 'undefined') hasSig = true;
+        // Force the global flag
+        try { window.hasSig = true; } catch(e) {}
+      }
+    }, 50);
+
+    // Pre-fill a fake profile photo (a simple coloured placeholder)
+    // Build a small canvas-based photo placeholder
+    const photoCanvas = document.createElement('canvas');
+    photoCanvas.width = 200; photoCanvas.height = 200;
+    const pctx = photoCanvas.getContext('2d');
+    // Background gradient (avatar-style)
+    const grad = pctx.createLinearGradient(0, 0, 200, 200);
+    grad.addColorStop(0, '#1B3A2D');
+    grad.addColorStop(1, '#0F2419');
+    pctx.fillStyle = grad;
+    pctx.fillRect(0, 0, 200, 200);
+    // Initials
+    const initials = profile.name.split(' ').map(s => s[0]).join('').slice(0,2).toUpperCase();
+    pctx.fillStyle = '#B8960C';
+    pctx.font = 'bold 90px sans-serif';
+    pctx.textAlign = 'center';
+    pctx.textBaseline = 'middle';
+    pctx.fillText(initials, 100, 105);
+    const photoData = photoCanvas.toDataURL('image/jpeg', 0.85);
+    window._pendingPhoto = photoData;
+    const previewEl = document.getElementById('photo-preview');
+    if (previewEl) {
+      previewEl.src = photoData;
+      previewEl.style.display = 'block';
+    }
+  }, 30);
+}
+
+// Set permission tiles to granted state in demo (without actually requesting OS permission)
+function demoGrantPermissions() {
+  setTimeout(() => {
+    if (typeof _permState !== 'undefined') {
+      _permState.camera = true;
+      _permState.location = true;
+      _permState.notifications = true;
+    }
+    if (typeof permSetTileGranted === 'function') {
+      permSetTileGranted('camera');
+      permSetTileGranted('location');
+      permSetTileGranted('notif');
+    }
+    const ack = document.getElementById('perm-acknowledge');
+    if (ack) ack.checked = true;
+    if (typeof permUpdateContinue === 'function') permUpdateContinue();
+  }, 40);
 }
 
 
