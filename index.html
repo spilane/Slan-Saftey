@@ -1011,6 +1011,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <button id="myp-continue-btn" onclick="myProfContinueToApp()" class="submit-btn" style="display:none;width:100%;background:#1B6E3A;margin-top:0">Continue to App</button>
     <button id="myp-signout-btn" onclick="myProfSignOut()" style="width:100%;padding:13px;background:transparent;color:#A32D2D;border:1.5px solid rgba(163,45,45,.4);border-radius:var(--r);font-weight:600;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">Sign Out of App</button>
+
+    <!-- TFB Demo Toggle (for testing/demos without backend) -->
+    <div style="margin-top:14px;padding:11px 12px;background:#FAEEDA;border:1px dashed #BA7517;border-radius:var(--r)">
+      <div style="font-size:10.5px;font-weight:700;color:#633806;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">⚙ Demo Tools — TFB Simulation</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="tfbSetDemoMode('auto'); myProfRefreshTfbToggle();" id="tfb-mode-auto" style="flex:1;padding:7px;background:white;border:1.5px solid var(--border);border-radius:6px;font-size:11.5px;font-weight:600;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;min-width:80px">Auto</button>
+        <button onclick="tfbSetDemoMode('force_clear'); myProfRefreshTfbToggle();" id="tfb-mode-clear" style="flex:1;padding:7px;background:white;border:1.5px solid var(--border);border-radius:6px;font-size:11.5px;font-weight:600;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;min-width:80px">Force CLEAR</button>
+        <button onclick="tfbSetDemoMode('force_active'); myProfRefreshTfbToggle();" id="tfb-mode-active" style="flex:1;padding:7px;background:white;border:1.5px solid var(--border);border-radius:6px;font-size:11.5px;font-weight:600;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;min-width:80px">Force TFB</button>
+      </div>
+      <div style="font-size:10.5px;color:#633806;margin-top:6px;line-height:1.4">Toggle simulates a Total Fire Ban for demo. Set to "Force TFB" then open Hot Works permit to see the block. Auto = real check (or default clear if no backend).</div>
+    </div>
+
     <button id="myp-reset-btn" onclick="myProfResetDemo()" style="width:100%;padding:11px;margin-top:8px;background:transparent;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r);font-weight:500;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">Reset Demo (clear all data)</button>
 
   </div>
@@ -3036,13 +3048,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <!-- Action buttons (pending state) -->
   <div id="sup-hw-review-actions" style="padding:0 18px 24px;display:none">
-    <button class="submit-btn" onclick="hwSupApprove()" style="width:100%;background:#1B6E3A;margin-bottom:9px">
+    <button id="sup-hw-tfb-override-btn" onclick="tfbShowOverrideModal((window._hwSupCurrentPermit||{}).permit_id)" style="display:none;width:100%;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;margin-bottom:9px">
+      🔥 Override TFB &amp; Approve
+    </button>
+    <button class="submit-btn" id="sup-hw-approve-btn" onclick="hwSupApprove()" style="width:100%;background:#1B6E3A;margin-bottom:9px">
       ✓ Approve Permit
     </button>
-    <button onclick="hwSupShowConditions()" style="width:100%;padding:13px;border-radius:var(--r);background:#F5C48A;border:1px solid #BA7517;color:#633806;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:9px">
+    <button id="sup-hw-conditions-btn" onclick="hwSupShowConditions()" style="width:100%;padding:13px;border-radius:var(--r);background:#F5C48A;border:1px solid #BA7517;color:#633806;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;margin-bottom:9px">
       ⚠ Approve with Conditions
     </button>
-    <button onclick="hwSupShowReject()" style="width:100%;padding:13px;border-radius:var(--r);background:#FCEBEB;border:1px solid rgba(184,50,50,.3);color:#A32D2D;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+    <button onclick="hwSupShowReject()" style="width:100%;padding:13px;border-radius:var(--r);background:#FCEBEB;border:1px solid rgba(184,50,50,.3);color:#A32D2D;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">
       ✕ Reject Permit
     </button>
   </div>
@@ -3314,6 +3329,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </div>
 
 <div style="padding:18px;padding-bottom:120px;display:flex;flex-direction:column;gap:14px">
+  
+<!-- TFB worker-facing banners removed — TFB now blocks at submit time, override is supervisor-side only -->
+
+
+  
 
   <!-- Permit identification -->
   <div class="fcard">
@@ -5473,6 +5493,8 @@ function getInitials(name) {
 }
 
 function populateMyProfile() {
+  // Refresh TFB demo toggle highlight on profile open
+  try { if (typeof myProfRefreshTfbToggle === 'function') myProfRefreshTfbToggle(); } catch(e) {}
   // Default: show Sign Out + Reset Demo, hide Continue (caller can override)
   const _so = document.getElementById('myp-signout-btn');
   const _cont = document.getElementById('myp-continue-btn');
@@ -5562,6 +5584,26 @@ function myProfSignOut() {
     sessionStorage.removeItem('sup_auth');
   } catch(e) {}
   goTo('screen-onboarding');
+}
+
+function myProfRefreshTfbToggle() {
+  const mode = (typeof tfbGetDemoMode === 'function') ? tfbGetDemoMode() : 'auto';
+  const all = ['tfb-mode-auto','tfb-mode-clear','tfb-mode-active'];
+  all.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.background = 'white';
+    el.style.borderColor = 'var(--border)';
+    el.style.color = 'var(--text)';
+  });
+  const map = { auto:'tfb-mode-auto', force_clear:'tfb-mode-clear', force_active:'tfb-mode-active' };
+  const colorMap = { auto:'#1B6E3A', force_clear:'#1B6E3A', force_active:'#A32D2D' };
+  const sel = document.getElementById(map[mode]);
+  if (sel) {
+    sel.style.background = colorMap[mode];
+    sel.style.borderColor = colorMap[mode];
+    sel.style.color = 'white';
+  }
 }
 
 function myProfResetDemo() {
@@ -9021,6 +9063,37 @@ function hwSupOpenReview(permitId) {
     revokeRow = `<div class="hw-view-row" style="border-left:3px solid #A32D2D;background:#FCEBEB"><div class="hw-view-label" style="color:#A32D2D">Reason for revocation</div><div class="hw-view-val" style="color:#A32D2D">${p.revoke_reason}</div></div>`;
   }
 
+  // TFB warning: shown when permit was submitted on a Total Fire Ban day and no override applied yet
+  let tfbWarningRow = '';
+  if (p.tfb_active_at_submit && !p.tfb_override) {
+    tfbWarningRow = `<div style="background:#FCEBEB;border:2px solid #A32D2D;border-radius:10px;padding:13px 14px;margin-bottom:14px">
+      <div style="display:flex;align-items:flex-start;gap:9px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#6B1818;margin-bottom:3px">Total Fire Ban active when submitted</div>
+          <div style="font-size:11.5px;color:#6B1818;line-height:1.5">${p.tfb_check_district || 'District'} (${p.tfb_check_source || 'State Fire Service'})</div>
+          <div style="font-size:11.5px;color:#6B1818;line-height:1.5;margin-top:5px">Hot works can only be approved if you have obtained an external Fire Service TFB Permit. Use 'Override TFB &amp; Approve' below.</div>
+        </div>
+      </div>
+    </div>`;
+  }
+  // TFB override applied: show summary panel
+  let tfbAppliedRow = '';
+  if (p.tfb_override) {
+    const ov = p.tfb_override;
+    tfbAppliedRow = `<div style="background:#FDF8EC;border:1.5px solid #BA7517;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:#412402;margin-bottom:6px">TFB Override Applied</div>
+      <div style="font-size:11.5px;color:#412402;line-height:1.55">
+        <div><strong>TFB Permit:</strong> ${ov.tfb_permit_number || '—'} (expires ${ov.tfb_permit_expiry || '—'})</div>
+        <div><strong>Approved by:</strong> ${ov.override_supervisor || '—'} · ${ov.override_at ? new Date(ov.override_at).toLocaleString('en-AU') : '—'}</div>
+        <div><strong>Fire watcher:</strong> ${ov.fire_watcher || '—'}</div>
+        <div><strong>Fire watch duration:</strong> ${ov.fire_watch_duration_min || '—'} min</div>
+        <div><strong>Stand-down triggers:</strong> ${ov.standdown_triggers || '—'}</div>
+        <div style="margin-top:5px;padding-top:5px;border-top:1px dashed #d8c89a"><strong>Justification:</strong> ${ov.justification || '—'}</div>
+      </div>
+    </div>`;
+  }
+
   d.innerHTML = `
     <div class="hw-view-hdr">
       <div>
@@ -9029,6 +9102,8 @@ function hwSupOpenReview(permitId) {
       </div>
       <div class="hw-badge ${badgeClass}" style="font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px">${badgeText}</div>
     </div>
+    ${tfbWarningRow}
+    ${tfbAppliedRow}
     ${rejectRow}
     ${revokeRow}
     ${conditionsRow}
@@ -9079,9 +9154,25 @@ function hwSupOpenReview(permitId) {
     }
   })();
 
+  // Expose current permit for override button onclick handler
+  window._hwSupCurrentPermit = p;
   // Show appropriate action buttons
   if (p.status === 'submitted' || p.status === 'pending') {
     document.getElementById('sup-hw-review-actions').style.display = 'block';
+    // Show TFB override button only when permit was submitted on TFB day and not yet overridden
+    const tfbBtn = document.getElementById('sup-hw-tfb-override-btn');
+    const approveBtn = document.getElementById('sup-hw-approve-btn');
+    const condBtn = document.getElementById('sup-hw-conditions-btn');
+    if (p.tfb_active_at_submit && !p.tfb_override) {
+      if (tfbBtn) tfbBtn.style.display = 'block';
+      // Hide normal approve options — TFB override is the only path
+      if (approveBtn) approveBtn.style.display = 'none';
+      if (condBtn) condBtn.style.display = 'none';
+    } else {
+      if (tfbBtn) tfbBtn.style.display = 'none';
+      if (approveBtn) approveBtn.style.display = 'block';
+      if (condBtn) condBtn.style.display = 'block';
+    }
   } else if (p.status === 'approved' || p.status === 'active') {
     document.getElementById('sup-hw-revoke-wrap').style.display = 'block';
   }
@@ -11109,8 +11200,13 @@ function hwValidate() {
   return ok;
 }
 
-function submitHotWorks() {
+async function submitHotWorks() {
   if (!hwValidate()) { alert('Please complete all required fields and checks.'); return; }
+  // TFB check at submit time. If active, save permit with TFB flag and show block modal.
+  let _tfbBlocked = false;
+  try {
+    _tfbBlocked = await tfbCheckSubmitBlocked();
+  } catch(e) { console.warn('TFB check failed:', e); _tfbBlocked = false; }
 
   const p = getProfile();
   const now = new Date();
@@ -11146,7 +11242,13 @@ function submitHotWorks() {
     muster_point: document.getElementById('hw-muster').value.trim(),
     signature: p && p.sig ? p.sig : null,
     submitted_at: now.toISOString(),
-    status: 'submitted'
+    status: 'submitted',
+    // TFB audit fields — captured at submission time
+    tfb_active_at_submit: !!(_tfbStatus && _tfbStatus.active),
+    tfb_check_source: _tfbStatus ? _tfbStatus.source : null,
+    tfb_check_district: _tfbStatus ? _tfbStatus.district : null,
+    tfb_check_timestamp: _tfbStatus ? _tfbStatus.timestamp : null,
+    tfb_override: null  // populated by supervisor on approval if override is used
   };
   for (let i = 1; i <= 10; i++) {
     permit.checks['chk' + i] = document.getElementById('hw-chk' + i).classList.contains('checked');
@@ -11162,7 +11264,13 @@ function submitHotWorks() {
   }
 
   // Success feedback — simple alert for now; richer screen added in next step
-  // Go to success screen
+  // If TFB was active at submit time, the permit is saved but we don't show the regular success screen
+  // (the TFB submit-block modal is already showing on top to explain to the worker)
+  if (_tfbBlocked) {
+    try { hwUpdateChip(); } catch(e) {}
+    return; // Modal stays visible; worker has been told to contact supervisor.
+  }
+  // Go to success screen normally
   document.getElementById('hw-success-id').textContent = permit.permit_id;
   document.getElementById('hw-success-sub').textContent = permit.subtype || permit.type || 'Hot Works';
   document.getElementById('hw-success-time').textContent = now.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
@@ -14689,6 +14797,349 @@ function pdfSendToBackend(permit, doc) {
 }
 
 
+// ════════════════════════════════════════════════════════════════
+// TOTAL FIRE BAN (TFB) ENFORCEMENT SYSTEM — supervisor-side override design
+// Worker can fill out the form normally on TFB days. On submit, they're shown
+// a blocking modal explaining the situation. The permit is still saved with a
+// TFB flag so the supervisor sees it. Supervisor can override + approve with
+// extra TFB-day safety measures captured.
+// ════════════════════════════════════════════════════════════════
+
+// Backend webhook URL — developer plugs in Power Automate URL
+const SLAN_TFB_WEBHOOK_URL = ''; // e.g. 'https://prod-XX.australiasoutheast.logic.azure.com/...'
+
+// Demo mode for testing without backend
+function tfbGetDemoMode() {
+  return localStorage.getItem('slan_tfb_demo_mode') || 'auto';
+}
+function tfbSetDemoMode(mode) {
+  localStorage.setItem('slan_tfb_demo_mode', mode);
+}
+
+// Current TFB status (populated when needed)
+let _tfbStatus = null;
+// Pending override data captured by supervisor — used during approval
+window._tfbOverrideData = null;
+window._tfbOverridePhoto = null;
+window._tfbOverrideEquipPhoto = null;
+
+// Main check — returns { active, district, source, timestamp }
+async function tfbCheckStatus() {
+  const demoMode = tfbGetDemoMode();
+  const timestamp = new Date().toISOString();
+
+  if (demoMode === 'force_active') {
+    return { active: true, district: 'Greater Sydney (Demo)', source: 'Demo Mode', timestamp };
+  }
+  if (demoMode === 'force_clear') {
+    return { active: false, district: 'Greater Sydney (Demo)', source: 'Demo Mode', timestamp };
+  }
+  if (SLAN_TFB_WEBHOOK_URL) {
+    try {
+      const coords = await new Promise((res, rej) => {
+        if (!navigator.geolocation) return rej('No geolocation');
+        navigator.geolocation.getCurrentPosition(
+          p => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
+          e => rej(e.message),
+          { timeout: 5000 }
+        );
+      });
+      const r = await fetch(SLAN_TFB_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: coords.lat, lng: coords.lng })
+      });
+      if (!r.ok) throw new Error('Backend returned ' + r.status);
+      const data = await r.json();
+      return {
+        active: !!data.tfb_active,
+        district: data.district || 'your area',
+        source: data.source || 'State Fire Service',
+        timestamp
+      };
+    } catch (e) {
+      console.warn('TFB backend check failed:', e);
+      return { active: false, district: 'Unknown', source: 'Check unavailable', timestamp, error: true };
+    }
+  }
+  return { active: false, district: 'Not configured', source: 'No backend', timestamp };
+}
+
+// Called by worker submit flow. Returns true if TFB blocks submit,
+// false if submit can proceed. When blocked, also shows the explanatory modal.
+async function tfbCheckSubmitBlocked() {
+  const status = await tfbCheckStatus();
+  _tfbStatus = status;
+  if (status.active) {
+    const d = document.getElementById('tfb-submit-district');
+    const s = document.getElementById('tfb-submit-source');
+    if (d) d.textContent = status.district;
+    if (s) s.textContent = status.source;
+    const modal = document.getElementById('tfb-submit-block-modal');
+    if (modal) modal.style.display = 'flex';
+    return true;
+  }
+  return false;
+}
+
+function tfbCloseSubmitBlockModal() {
+  const modal = document.getElementById('tfb-submit-block-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// Worker contact supervisor button
+function tfbContactSupervisor() {
+  const supContact = '0400000000'; // demo placeholder — would be configured per site
+  if (confirm('Total Fire Ban active. Call your supervisor now to discuss?')) {
+    window.location.href = 'tel:' + supContact;
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────
+// SUPERVISOR-SIDE: TFB Override + Approve Modal
+// Called when supervisor taps "Override TFB & Approve" on a permit
+// that was submitted on a TFB day.
+// ──────────────────────────────────────────────────────────────────
+
+function tfbShowOverrideModal(permitId) {
+  // Stash which permit this override is for
+  window._tfbOverrideForPermitId = permitId;
+  const m = document.getElementById('tfb-override-modal');
+  if (!m) return;
+  m.style.display = 'flex';
+  // Reset fields
+  ['tfb-override-num','tfb-override-expiry','tfb-override-justification','tfb-override-watcher','tfb-override-triggers'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const dur = document.getElementById('tfb-override-fwduration');
+  if (dur) dur.value = '120';
+  ['tfb-override-photo-preview','tfb-override-equip-preview'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<span style="color:var(--muted);font-size:11.5px">No photo yet</span>';
+  });
+  window._tfbOverridePhoto = null;
+  window._tfbOverrideEquipPhoto = null;
+}
+
+function tfbCloseOverrideModal() {
+  const m = document.getElementById('tfb-override-modal');
+  if (m) m.style.display = 'none';
+}
+
+function _tfbCompressPhoto(file, cb) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxSize = 800;
+      let w = img.width, h = img.height;
+      if (w > h && w > maxSize) { h = h * (maxSize / w); w = maxSize; }
+      else if (h > maxSize) { w = w * (maxSize / h); h = maxSize; }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function tfbHandleOverridePhoto(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  _tfbCompressPhoto(file, function(dataUrl) {
+    window._tfbOverridePhoto = dataUrl;
+    const preview = document.getElementById('tfb-override-photo-preview');
+    if (preview) preview.innerHTML = '<img src="' + dataUrl + '" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px">';
+  });
+}
+
+function tfbHandleEquipPhoto(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  _tfbCompressPhoto(file, function(dataUrl) {
+    window._tfbOverrideEquipPhoto = dataUrl;
+    const preview = document.getElementById('tfb-override-equip-preview');
+    if (preview) preview.innerHTML = '<img src="' + dataUrl + '" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px">';
+  });
+}
+
+// Validate all 8 fields then approve the permit with TFB override attached
+function tfbApplyOverrideAndApprove() {
+  const num = (document.getElementById('tfb-override-num').value || '').trim();
+  const expiry = (document.getElementById('tfb-override-expiry').value || '').trim();
+  const justification = (document.getElementById('tfb-override-justification').value || '').trim();
+  const watcher = (document.getElementById('tfb-override-watcher').value || '').trim();
+  const triggers = (document.getElementById('tfb-override-triggers').value || '').trim();
+  const fwduration = (document.getElementById('tfb-override-fwduration').value || '120').trim();
+  const permitPhoto = window._tfbOverridePhoto;
+  const equipPhoto = window._tfbOverrideEquipPhoto;
+
+  if (!num) { alert('TFB Permit number required'); return; }
+  if (!expiry) { alert('Expiry date/time required'); return; }
+  if (!permitPhoto) { alert('Photo of Fire Service Permit required'); return; }
+  if (!justification) { alert('Justification required — explain why work cannot be deferred'); return; }
+  if (!watcher) { alert('Dedicated fire watcher name required'); return; }
+  if (!triggers) { alert('Stand-down trigger conditions required'); return; }
+  if (!equipPhoto) { alert('Photo of additional fire-fighting equipment required'); return; }
+
+  const supName = (function() {
+    const p = (typeof getProfile === 'function') ? getProfile() : null;
+    return p ? p.name : 'Supervisor';
+  })();
+
+  const overrideRecord = {
+    tfb_permit_number: num,
+    tfb_permit_expiry: expiry,
+    tfb_permit_photo: permitPhoto,
+    justification: justification,
+    fire_watcher: watcher,
+    fire_watch_duration_min: parseInt(fwduration, 10),
+    standdown_triggers: triggers,
+    additional_equipment_photo: equipPhoto,
+    override_supervisor: supName,
+    override_at: new Date().toISOString()
+  };
+
+  // Find the permit, attach override, set status to approved with conditions
+  const permitId = window._tfbOverrideForPermitId;
+  if (!permitId) { alert('Permit ID not found'); return; }
+
+  const all = (typeof hwLoadAll === 'function') ? hwLoadAll() : [];
+  const idx = all.findIndex(x => x.permit_id === permitId);
+  if (idx < 0) { alert('Permit not found'); return; }
+
+  // Mark approved + attach TFB override + auto-add conditions for the worker to acknowledge
+  all[idx].status = 'approved';
+  all[idx].approved_by = supName;
+  all[idx].approved_at = new Date().toISOString();
+  all[idx].tfb_override = overrideRecord;
+  // Build conditions list for worker to acknowledge — all TFB-derived
+  const tfbConditions = [
+    'Total Fire Ban day — work proceeds under TFB Permit ' + num,
+    'Dedicated fire watcher: ' + watcher + ' (separate from welder)',
+    'Extended fire watch — ' + fwduration + ' min after work end',
+    'Stand-down conditions: ' + triggers,
+    'Justification: ' + justification
+  ];
+  all[idx].approval_conditions = tfbConditions.join('\n');
+  all[idx].approval_conditions_list = tfbConditions;
+  all[idx].conditions_acknowledged = false;
+  // Override fire watch duration on the permit itself (extends the timer too)
+  all[idx].fire_watch_required = true;
+  all[idx].fire_watch_duration = fwduration;
+
+  if (typeof hwSaveAll === 'function') hwSaveAll(all);
+
+  tfbCloseOverrideModal();
+  alert('TFB override applied. Permit ' + permitId + ' approved with TFB conditions. Worker must acknowledge before starting work.');
+
+  // Refresh views
+  if (typeof hwSupRenderQueue === 'function') hwSupRenderQueue();
+  if (typeof ptwRenderUnified === 'function') ptwRenderUnified();
+  if (typeof goTo === 'function') goTo('screen-supervisor');
+}
+
+
 </script>
+
+<!-- TFB SUPERVISOR APPROVAL-WITH-OVERRIDE MODAL — 8 fields including extra TFB-day safety measures -->
+<div id="tfb-override-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px">
+  <div style="background:white;border-radius:14px;max-width:420px;width:100%;padding:22px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:16px;font-weight:700;color:var(--text)">Override TFB &amp; Approve</div>
+      <button onclick="tfbCloseOverrideModal()" style="background:transparent;border:none;font-size:22px;color:var(--muted);cursor:pointer;line-height:1;padding:0">×</button>
+    </div>
+    <div style="background:#FCEBEB;border:1.5px solid #A32D2D;padding:10px 12px;border-radius:8px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:#6B1818;margin-bottom:3px">Total Fire Ban active</div>
+      <div style="font-size:11.5px;color:#6B1818;line-height:1.4">Hot works can only proceed under a valid Fire Service TFB Permit. Complete all fields below to approve with override.</div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Fire Service authorisation</div>
+
+    <div style="margin-bottom:11px">
+      <label style="font-size:11.5px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">TFB Permit Number <span style="color:#B83232">*</span></label>
+      <input type="text" id="tfb-override-num" placeholder="e.g. NSW-RFS-2026-04-25-0042" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;box-sizing:border-box">
+    </div>
+
+    <div style="margin-bottom:11px">
+      <label style="font-size:11.5px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">TFB Permit expiry <span style="color:#B83232">*</span></label>
+      <input type="datetime-local" id="tfb-override-expiry" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;box-sizing:border-box">
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="font-size:11.5px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Photo of Fire Service Permit <span style="color:#B83232">*</span></label>
+      <input type="file" id="tfb-override-photo-input" accept="image/*" capture="environment" style="display:none" onchange="tfbHandleOverridePhoto(event)">
+      <button onclick="document.getElementById('tfb-override-photo-input').click()" style="width:100%;padding:11px;background:transparent;border:1.5px dashed var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif">📷 Take photo</button>
+      <div id="tfb-override-photo-preview" style="margin-top:8px;min-height:30px"></div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Additional TFB-day safety measures</div>
+
+    <div style="margin-bottom:11px">
+      <label style="font-size:11.5px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Justification — why work cannot be deferred <span style="color:#B83232">*</span></label>
+      <textarea id="tfb-override-justification" placeholder="e.g. Critical structural weld required to prevent collapse; cannot wait" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;box-sizing:border-box;resize:vertical"></textarea>
+    </div>
+
+    <div style="margin-bottom:11px">
+      <label style="font-size:11.5px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Dedicated fire watcher (separate person) <span style="color:#B83232">*</span></label>
+      <input type="text" id="tfb-override-watcher" placeholder="Name of person whose only job is fire watch" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;box-sizing:border-box">
+    </div>
+
+    <div style="margin-bottom:11px">
+      <label style="font-size:11.5px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Extended fire watch duration <span style="color:#B83232">*</span></label>
+      <select id="tfb-override-fwduration" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;box-sizing:border-box;background:white">
+        <option value="120">120 minutes (recommended for TFB)</option>
+        <option value="90">90 minutes</option>
+        <option value="180">180 minutes</option>
+        <option value="240">240 minutes</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:11px">
+      <label style="font-size:11.5px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Stand-down trigger conditions <span style="color:#B83232">*</span></label>
+      <textarea id="tfb-override-triggers" placeholder="e.g. Stop work if wind exceeds 20 km/h or temp exceeds 35°C" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;box-sizing:border-box;resize:vertical"></textarea>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="font-size:11.5px;font-weight:600;color:var(--text);display:block;margin-bottom:4px">Photo of additional fire-fighting equipment <span style="color:#B83232">*</span></label>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Beyond standard extinguisher — e.g. water source within 10m, additional extinguishers, fire hose connected, fire blanket</div>
+      <input type="file" id="tfb-override-equip-input" accept="image/*" capture="environment" style="display:none" onchange="tfbHandleEquipPhoto(event)">
+      <button onclick="document.getElementById('tfb-override-equip-input').click()" style="width:100%;padding:11px;background:transparent;border:1.5px dashed var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif">📷 Take photo</button>
+      <div id="tfb-override-equip-preview" style="margin-top:8px;min-height:30px"></div>
+    </div>
+
+    <div style="background:#FAEEDA;padding:10px 12px;border-radius:8px;font-size:11.5px;color:#633806;margin-bottom:14px;line-height:1.5">
+      ⚠ Override will be recorded on the permit audit trail with your name, signature, and timestamp. Worker must acknowledge all extra TFB conditions before starting work.
+    </div>
+
+    <button onclick="tfbApplyOverrideAndApprove()" style="width:100%;padding:13px;background:#BA7517;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;font-family:\'DM Sans\',sans-serif">Override TFB &amp; Approve Permit</button>
+  </div>
+</div>
+
+
+<!-- TFB SUBMIT BLOCK MODAL — shown when worker tries to submit on TFB day -->
+<div id="tfb-submit-block-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px">
+  <div style="background:white;border-radius:14px;max-width:380px;width:100%;padding:22px">
+    <div style="display:flex;justify-content:center;margin-bottom:14px">
+      <div style="width:54px;height:54px;border-radius:50%;background:#FCEBEB;display:flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+    </div>
+    <div style="font-size:17px;font-weight:700;color:#6B1818;text-align:center;margin-bottom:8px">Total Fire Ban Active</div>
+    <div style="font-size:13px;color:var(--text);text-align:center;line-height:1.5;margin-bottom:14px">
+      Hot works are not permitted in <strong id="tfb-submit-district">your district</strong> today (<span id="tfb-submit-source">State Fire Service</span>).
+    </div>
+    <div style="font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-bottom:18px">
+      Your permit will be submitted to your supervisor with a TFB flag. They will need a Fire Service Permit to approve it. Please contact your supervisor.
+    </div>
+    <button onclick="tfbContactSupervisor(); tfbCloseSubmitBlockModal();" style="width:100%;padding:13px;background:#A32D2D;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">📞 Contact Supervisor</button>
+    <button onclick="tfbCloseSubmitBlockModal()" style="width:100%;padding:11px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-weight:500;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Close</button>
+  </div>
+</div>
+
 </body>
 </html>
