@@ -3501,7 +3501,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="check-row" id="hw-chk7" onclick="toggleCheck('hw-chk7')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">PPE confirmed — gloves, helmet, eye / face protection</div></div>
       <div class="check-row" id="hw-chk8" onclick="toggleCheck('hw-chk8')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Ventilation adequate for the task</div></div>
       <div class="check-row" id="hw-chk9" onclick="toggleCheck('hw-chk9')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Adjacent workers notified</div></div>
-      <div class="check-row" id="hw-chk10" onclick="toggleCheck('hw-chk10')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text"><strong>Confirmed:</strong> Today is NOT a declared Total Fire Ban day</div></div>
     </div>
   </div>
 
@@ -9047,11 +9046,10 @@ function hwSupOpenReview(permitId) {
       'Fire blanket available',
       'PPE confirmed',
       'Ventilation adequate',
-      'Adjacent workers notified',
-      'Not a Total Fire Ban day'
+      'Adjacent workers notified'
     ];
     checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 9; i++) {
       const k = 'chk' + i;
       if (p.checks[k]) checksHtml += `<div style="font-size:12.5px;margin-bottom:3px">✓ ${chkLabels[i-1]}</div>`;
     }
@@ -9356,11 +9354,13 @@ function hwUpdateChip() {
 
   if (all.length === 0) { if (chip) chip.remove(); return; }
 
-  let pending = 0, active = 0, other = 0, rejected = 0, needsAck = 0;
+  let pending = 0, active = 0, other = 0, rejected = 0, needsAck = 0, tfbFlagged = 0;
   all.forEach(x => {
     const b = hwPermitBucket(x);
-    // Permits that are approved/active but have unacknowledged conditions count as "needs acknowledgement"
-    if ((b === 'active' || b === 'pending') && x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')) {
+    // TFB-flagged permits awaiting supervisor override (highest priority)
+    if (x.tfb_active_at_submit && !x.tfb_override && (x.status === 'submitted' || x.status === 'pending')) {
+      tfbFlagged++;
+    } else if ((b === 'active' || b === 'pending') && x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')) {
       needsAck++;
     } else if (b === 'pending') pending++;
     else if (b === 'active') active++;
@@ -9369,7 +9369,10 @@ function hwUpdateChip() {
   });
 
   let label, state;
-  if (needsAck > 0) {
+  // TFB-flagged takes priority — fail/red state matches the permit list badge
+  if (tfbFlagged > 0) {
+    label = '\uD83D\uDD25 ' + tfbFlagged + ' TFB pending'; state = 'fail';
+  } else if (needsAck > 0) {
     label = 'Permits (' + needsAck + ' to acknowledge)'; state = 'warn';
   } else if (pending > 0) {
     label = 'Permits (' + pending + ' pending)'; state = 'warn';
@@ -11209,7 +11212,7 @@ function hwValidate() {
   if (gasOtherReq && !gasOther) ok = false;
 
   // All 10 safety checks ticked
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 9; i++) {
     const el = document.getElementById('hw-chk' + i);
     if (!el || !el.classList.contains('checked')) ok = false;
   }
@@ -11251,6 +11254,8 @@ async function submitHotWorks() {
       _hwSubmitBtn.innerHTML = _hwSubmitOriginalHtml;
     }
   }
+  // CRITICAL: wrap entire body in try/catch/finally so button ALWAYS resets and errors are visible
+  try {
   if (!hwValidate()) {
     alert('Please complete all required fields and checks.');
     _hwResetSubmit();
@@ -11329,6 +11334,13 @@ async function submitHotWorks() {
   document.getElementById('hw-success-time').textContent = now.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
   try { hwUpdateChip(); } catch(e) {}
   goTo('screen-hw-success');
+  } catch(err) {
+    console.error('Submit error:', err);
+    alert('Could not submit permit. Error: ' + (err && err.message ? err.message : 'unknown') + '\n\nTry again or use Reset Demo from your profile.');
+  } finally {
+    // ALWAYS reset the button no matter what — fixes hang where button stuck on spinner
+    _hwResetSubmit();
+  }
 }
 
 // Make goToHotWorks call hwInitForm when entering
@@ -11471,8 +11483,7 @@ function hwViewPermit(permitId) {
       'Fire blanket available',
       'PPE confirmed',
       'Ventilation adequate',
-      'Adjacent workers notified',
-      'Not a Total Fire Ban day'
+      'Adjacent workers notified'
     ];
     checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
     for (let i = 1; i <= 10; i++) {
@@ -15010,13 +15021,21 @@ async function tfbCheckStatus() {
 async function tfbCheckSubmitBlocked() {
   const status = await tfbCheckStatus();
   _tfbStatus = status;
+  console.log('TFB check result:', status);
   if (status.active) {
     const d = document.getElementById('tfb-submit-district');
     const s = document.getElementById('tfb-submit-source');
     if (d) d.textContent = status.district;
     if (s) s.textContent = status.source;
     const modal = document.getElementById('tfb-submit-block-modal');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+      modal.style.display = 'flex';
+      // Force browser to paint modal — sometimes a redraw is needed
+      modal.offsetHeight;
+      console.log('TFB submit-block modal displayed');
+    } else {
+      console.error('TFB submit-block modal element not found!');
+    }
     return true;
   }
   return false;
@@ -15109,6 +15128,7 @@ function tfbHandleEquipPhoto(event) {
 
 // Validate all 8 fields then approve the permit with TFB override attached
 function tfbApplyOverrideAndApprove() {
+  try {
   const num = (document.getElementById('tfb-override-num').value || '').trim();
   const expiry = (document.getElementById('tfb-override-expiry').value || '').trim();
   const justification = (document.getElementById('tfb-override-justification').value || '').trim();
@@ -15181,6 +15201,10 @@ function tfbApplyOverrideAndApprove() {
   if (typeof hwSupRenderQueue === 'function') hwSupRenderQueue();
   if (typeof ptwRenderUnified === 'function') ptwRenderUnified();
   if (typeof goTo === 'function') goTo('screen-supervisor');
+  } catch(err) {
+    console.error('TFB override error:', err);
+    alert('Error applying override: ' + (err && err.message ? err.message : 'unknown') + '\n\nCheck console for details.');
+  }
 }
 
 
