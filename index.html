@@ -15218,7 +15218,7 @@ function tfbContactSupervisor() {
 // ──────────────────────────────────────────────────────────────────
 
 function tfbShowOverrideModal(permitId) {
-  alert('Function tfbShowOverrideModal RAN. permitId=' + permitId);
+  alert('Function tfbShowOverrideModal RAN [BUILD step12cc]. permitId=' + permitId);
   // Validate permitId is set
   if (!permitId) {
     console.error('tfbShowOverrideModal called with no permitId');
@@ -15232,7 +15232,8 @@ function tfbShowOverrideModal(permitId) {
     alert('MODAL DIAG A: tfb-override-modal element NOT FOUND in DOM');
     return;
   }
-  alert('MODAL DIAG B: modal element found. Current display=' + m.style.display);
+  // Show the actual current style of the modal so we know what build is loaded
+  alert('MODAL DIAG B [step12cc]: modal style = ' + m.getAttribute('style').substring(0, 250));
   m.style.display = 'flex';
   // Force a reflow
   m.offsetHeight;
