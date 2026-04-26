@@ -10231,8 +10231,10 @@ function setPsyField(field, val) {
 
 function togglePsyAnon() {
   psyAnon = !psyAnon;
-  document.getElementById('psy-anon-row').classList.toggle('checked', psyAnon);
-  document.getElementById('psy-anon-box').classList.toggle('checked', psyAnon);
+  var row = document.getElementById('psy-anon-row');
+  var box = document.getElementById('psy-anon-box');
+  if (row) row.classList.toggle('checked', psyAnon);
+  if (box) box.classList.toggle('checked', psyAnon);
 }
 
 async function submitPsychosocial() {
@@ -10346,7 +10348,10 @@ function checkLicenceExpiry() {
 
 // ── LICENCE EXPIRY CHECKER ───────────────────────────────────────────────
 function checkLicenceExpiry(p, now) {
-  if (!p.licences) return;
+  // If called without args, get profile and current time ourselves
+  if (!p) p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!now) now = new Date();
+  if (!p || !p.licences) return;
   const WARN_DAYS = 30;
   const alerts = [];
   const licenceNames = {
@@ -12796,9 +12801,17 @@ function wcCallWorker(name) {
   alert('Call ' + name + '\n\nIn the live app this would open the phone dialler with the worker\'s number from their profile.');
 }
 function wcSearch(val) {
-  var rows = document.querySelectorAll('#wc-list .worker-row');
-  var q = val.toLowerCase();
-  rows.forEach(function(r){ r.style.display = r.textContent.toLowerCase().indexOf(q) !== -1 ? '' : 'none'; });
+  // Caller may pass nothing — read input value as fallback (with null guard)
+  if (val === undefined || val === null) {
+    var inp = document.getElementById('wc-search');
+    val = inp ? (inp.value || '') : '';
+  }
+  var q = String(val).toLowerCase();
+  var rows = document.querySelectorAll('#wc-list .worker-row, .wc-worker');
+  rows.forEach(function(r){
+    var name = (r.getAttribute('data-name') || r.textContent || '').toLowerCase();
+    r.style.display = name.indexOf(q) !== -1 ? '' : 'none';
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
