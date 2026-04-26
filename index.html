@@ -10985,6 +10985,36 @@ function hwSaveAll(list) {
     localStorage.setItem(HW_STORAGE_KEY, JSON.stringify(list));
     return { ok: true };
   } catch(e) {
+    // Storage full — try clearing old closed/rejected/revoked permits (older than 7 days)
+    if (e.name === 'QuotaExceededError' || (e.message && (e.message.indexOf('quota') !== -1 || e.message.indexOf('storage') !== -1))) {
+      console.warn('Storage full — attempting to clear old permits');
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const trimmed = list.filter(p => {
+        // Keep all active permits (submitted, approved, active)
+        if (p.status === 'submitted' || p.status === 'approved' || p.status === 'active') return true;
+        // For closed/rejected/revoked: keep if recent
+        const closedAt = p.closed_at || p.rejected_at || p.revoked_at || p.submitted_at;
+        const t = closedAt ? new Date(closedAt).getTime() : Date.now();
+        return t > sevenDaysAgo;
+      });
+      try {
+        localStorage.setItem(HW_STORAGE_KEY, JSON.stringify(trimmed));
+        console.warn('Cleared ' + (list.length - trimmed.length) + ' old permits to free space');
+        return { ok: true, trimmed: list.length - trimmed.length };
+      } catch(e2) {
+        // Still failing — last resort: keep only most recent 10 permits
+        const recent = list.slice(-10);
+        try {
+          localStorage.setItem(HW_STORAGE_KEY, JSON.stringify(recent));
+          console.warn('Storage critical — kept only most recent 10 permits');
+          return { ok: true, trimmed: list.length - 10 };
+        } catch(e3) {
+          console.error('Storage exhausted:', e3);
+          alert('Storage is full. Please use Reset Demo from your profile to clear old data.');
+          return { ok: false, error: e3 };
+        }
+      }
+    }
     console.error('hwSaveAll failed:', e);
     return { ok: false, error: e };
   }
