@@ -5479,10 +5479,17 @@ function togglePrivacyCheck() {
 
 // ── AVATAR TAP → HISTORY ─────────────────────────────────────────────────
 function avatarTap() {
-  // Always open the setup form — useful for demos and for editing profile
-  if (typeof prefillProfileScreen === 'function') prefillProfileScreen();
-  if (typeof initSig === 'function') initSig();
-  goTo('screen-profile');
+  // Open the polished My Profile summary view (with Sign Out, TFB demo toggle, Reset Demo).
+  // Users can tap "Edit Profile" from there to reach the edit form if needed.
+  if (typeof populateMyProfile === 'function') populateMyProfile();
+  // Make sure all the bottom action buttons are visible (Sign Out + Demo Tools + Reset)
+  const so = document.getElementById('myp-signout-btn');
+  const cont = document.getElementById('myp-continue-btn');
+  const reset = document.getElementById('myp-reset-btn');
+  if (so) so.style.display = 'block';
+  if (cont) cont.style.display = 'none';
+  if (reset) reset.style.display = 'block';
+  goTo('screen-my-profile');
 }
 
 function getInitials(name) {
