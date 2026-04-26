@@ -8351,55 +8351,99 @@ function hwPhotoHandle(ev) {
 function hwPhotoHandleNew(slotNum, ev) {
   const file = ev.target.files && ev.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const now = new Date();
-    const ts = now.toLocaleString('en-AU', { hour12: false });
-    if (navigator.geolocation) {
-      try {
-        navigator.geolocation.getCurrentPosition(function(pos) {
-          const lat = pos.coords.latitude.toFixed(5);
-          const lng = pos.coords.longitude.toFixed(5);
-          hwPhotoStore(slotNum, e.target.result, ts, lat + ',' + lng);
-        }, function() {
-          hwPhotoStore(slotNum, e.target.result, ts, '');
-        }, { timeout: 3000, maximumAge: 60000 });
-        return;
-      } catch(err) {}
-    }
-    hwPhotoStore(slotNum, e.target.result, ts, '');
-  };
-  reader.readAsDataURL(file);
+  // Show "Processing..." feedback so user sees something is happening
+  const slotEl = document.getElementById('hw-photo-' + slotNum);
+  if (slotEl) {
+    slotEl.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;height:100%"><div style="width:24px;height:24px;border:3px solid rgba(0,0,0,0.1);border-top-color:#1B6E3A;border-radius:50%;animation:hwSpin 0.7s linear infinite"></div><div style="font-size:11px;color:#5C6B62">Processing\u2026</div></div>';
+  }
+  // Use setTimeout to give browser time to paint the spinner before heavy work
+  setTimeout(function() {
+    hwProcessPhoto(slotNum, file);
+  }, 30);
+  // Reset input so same photo can be re-selected if needed
+  if (ev && ev.target) ev.target.value = '';
 }
 
-function hwPhotoStore(slot, dataUrl, ts, gps) {
-  // Downscale large photos to keep localStorage from filling up
-  hwShrinkImage(dataUrl, function(smallDataUrl) {
-    _hwPhotos[slot] = { data: smallDataUrl, ts: ts, gps: gps };
-    hwPhotoStoreUI(slot, smallDataUrl, ts, gps);
-  });
-}
-
-function hwShrinkImage(dataUrl, callback) {
+function hwProcessPhoto(slotNum, file) {
+  const now = new Date();
+  const ts = now.toLocaleString('en-AU', { hour12: false });
+  // Log file size so we can diagnose if it's too big
+  console.log('Photo file:', file.name, 'size:', file.size, 'type:', file.type);
+  // Reject files larger than 25MB before they crash the browser
+  if (file.size > 25 * 1024 * 1024) {
+    alert('Photo too large (' + Math.round(file.size/1024/1024) + 'MB). Please use camera at lower resolution or pick a smaller photo.');
+    hwPhotoRemove(slotNum);
+    return;
+  }
+  let objectUrl = null;
   try {
-    const img = new Image();
-    img.onload = function() {
-      const maxDim = 600;
+    objectUrl = URL.createObjectURL(file);
+  } catch(err) {
+    console.error('createObjectURL failed:', err);
+    alert('Could not load photo. Try a smaller one.');
+    hwPhotoRemove(slotNum);
+    return;
+  }
+  const img = new Image();
+  img.onload = function() {
+    try {
+      console.log('Image loaded:', img.width, 'x', img.height);
+      // Aggressive: aim for 500px on longest edge — keeps memory pressure low
+      const maxDim = 500;
       let w = img.width, h = img.height;
       if (w > maxDim || h > maxDim) {
         if (w > h) { h = h * (maxDim / w); w = maxDim; }
         else       { w = w * (maxDim / h); h = maxDim; }
       }
       const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
+      canvas.width = Math.round(w);
+      canvas.height = Math.round(h);
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      const small = canvas.toDataURL('image/jpeg', 0.55);
-      callback(small);
-    };
-    img.onerror = function() { callback(dataUrl); }; // fallback to original
-    img.src = dataUrl;
-  } catch(e) { callback(dataUrl); }
+      if (!ctx) {
+        try { URL.revokeObjectURL(objectUrl); } catch(e) {}
+        alert('Browser cannot process photos right now. Try restarting the app.');
+        hwPhotoRemove(slotNum);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const smallDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+      console.log('Compressed photo size:', Math.round(smallDataUrl.length / 1024), 'KB');
+      // Free the object URL immediately
+      try { URL.revokeObjectURL(objectUrl); } catch(e) {}
+      // Try to get GPS but don't block on it
+      const finishPhoto = function(gps) {
+        try {
+          _hwPhotos[slotNum] = { data: smallDataUrl, ts: ts, gps: gps };
+          hwPhotoStoreUI(slotNum, smallDataUrl, ts, gps);
+        } catch(err) {
+          console.error('hwPhotoStoreUI failed:', err);
+          alert('Error saving photo: ' + (err && err.message ? err.message : 'unknown'));
+          hwPhotoRemove(slotNum);
+        }
+      };
+      if (navigator.geolocation) {
+        try {
+          navigator.geolocation.getCurrentPosition(function(pos) {
+            finishPhoto(pos.coords.latitude.toFixed(5) + ',' + pos.coords.longitude.toFixed(5));
+          }, function() { finishPhoto(''); }, { timeout: 3000, maximumAge: 60000 });
+        } catch(e) { finishPhoto(''); }
+      } else {
+        finishPhoto('');
+      }
+    } catch(err) {
+      console.error('Photo processing error:', err);
+      try { URL.revokeObjectURL(objectUrl); } catch(e) {}
+      alert('Error: ' + (err && err.message ? err.message : 'unknown') + '. Try a different photo.');
+      hwPhotoRemove(slotNum);
+    }
+  };
+  img.onerror = function(err) {
+    console.error('Image load failed:', err);
+    try { URL.revokeObjectURL(objectUrl); } catch(e) {}
+    alert('Could not load that photo. Try again.');
+    hwPhotoRemove(slotNum);
+  };
+  img.src = objectUrl;
 }
 
 function hwPhotoStoreUI(slot, dataUrl, ts, gps) {
@@ -9426,17 +9470,17 @@ function selectRoleAfterPin(role) {
     if (el) el.classList.toggle('selected', r === role);
   });
 
-  // Set hidden input value
+  // Set hidden input value (with null guards in case DOM isn't ready)
   const roleInput = document.getElementById('p-role');
   const detailWrap = document.getElementById('p-role-detail-wrap');
   const workStartWrap = document.getElementById('work-start-wrap');
 
   if (role === 'supervisor') {
-    roleInput.value = 'Site Supervisor';
+    if (roleInput) roleInput.value = 'Site Supervisor';
     if (detailWrap) detailWrap.style.display = 'none';
     if (workStartWrap) workStartWrap.style.display = 'block';
   } else if (role === 'director') {
-    roleInput.value = 'Company Director';
+    if (roleInput) roleInput.value = 'Company Director';
     if (detailWrap) detailWrap.style.display = 'none';
     if (workStartWrap) workStartWrap.style.display = 'none';
   } else {
@@ -9445,8 +9489,8 @@ function selectRoleAfterPin(role) {
     if (workStartWrap) workStartWrap.style.display = 'none';
     // Set role from detail dropdown
     const detail = document.getElementById('p-role-detail');
-    roleInput.value = detail ? detail.value || 'Worker' : 'Worker';
-    if (detail) detail.onchange = () => { roleInput.value = detail.value || 'Worker'; };
+    if (roleInput) roleInput.value = detail ? (detail.value || 'Worker') : 'Worker';
+    if (detail && roleInput) detail.onchange = () => { roleInput.value = detail.value || 'Worker'; };
   }
 }
 
@@ -14864,11 +14908,17 @@ function pdfSendToBackend(permit, doc) {
 // ════════════════════════════════════════════════════════
 function demoPrefillAll(profile, role) {
   setTimeout(() => {
+    try {
     const nameEl = document.getElementById('p-name');
     const coEl = document.getElementById('p-company');
     if (nameEl) nameEl.value = profile.name || '';
     if (coEl) coEl.value = profile.company || '';
-    if (typeof selectRoleAfterPin === 'function') selectRoleAfterPin(role);
+    if (typeof selectRoleAfterPin === 'function') {
+      // Only run if profile screen DOM is actually loaded
+      if (document.getElementById('p-role')) {
+        selectRoleAfterPin(role);
+      }
+    }
     if (role === 'worker') {
       const detail = document.getElementById('p-role-detail');
       if (detail) {
@@ -14925,6 +14975,9 @@ function demoPrefillAll(profile, role) {
     if (previewEl) {
       previewEl.src = photoData;
       previewEl.style.display = 'block';
+    }
+    } catch(err) {
+      console.warn('demoPrefillAll error (non-fatal):', err);
     }
   }, 30);
 }
@@ -15061,10 +15114,20 @@ function tfbContactSupervisor() {
 // ──────────────────────────────────────────────────────────────────
 
 function tfbShowOverrideModal(permitId) {
+  // Validate permitId is set
+  if (!permitId) {
+    console.error('tfbShowOverrideModal called with no permitId');
+    alert('Error: no permit selected. Please re-open the permit and try again.');
+    return;
+  }
   // Stash which permit this override is for
   window._tfbOverrideForPermitId = permitId;
   const m = document.getElementById('tfb-override-modal');
-  if (!m) return;
+  if (!m) {
+    console.error('tfb-override-modal not found in DOM');
+    alert('Error: override modal not found. Please refresh.');
+    return;
+  }
   m.style.display = 'flex';
   // Reset fields
   ['tfb-override-num','tfb-override-expiry','tfb-override-justification','tfb-override-watcher','tfb-override-triggers'].forEach(id => {
@@ -15087,23 +15150,35 @@ function tfbCloseOverrideModal() {
 }
 
 function _tfbCompressPhoto(file, cb) {
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
+  // Memory-efficient: use createObjectURL instead of FileReader (avoids huge base64 spike)
+  let objectUrl = null;
+  try { objectUrl = URL.createObjectURL(file); }
+  catch(err) { alert('Could not load photo'); return; }
+  const img = new Image();
+  img.onload = function() {
+    try {
       const canvas = document.createElement('canvas');
       const maxSize = 600;
       let w = img.width, h = img.height;
       if (w > h && w > maxSize) { h = h * (maxSize / w); w = maxSize; }
       else if (h > maxSize) { w = w * (maxSize / h); h = maxSize; }
-      canvas.width = w; canvas.height = h;
+      canvas.width = Math.round(w);
+      canvas.height = Math.round(h);
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      cb(canvas.toDataURL('image/jpeg', 0.55));
-    };
-    img.src = e.target.result;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const small = canvas.toDataURL('image/jpeg', 0.55);
+      try { URL.revokeObjectURL(objectUrl); } catch(e) {}
+      cb(small);
+    } catch(err) {
+      try { URL.revokeObjectURL(objectUrl); } catch(e) {}
+      alert('Error processing photo: ' + (err && err.message ? err.message : 'unknown'));
+    }
   };
-  reader.readAsDataURL(file);
+  img.onerror = function() {
+    try { URL.revokeObjectURL(objectUrl); } catch(e) {}
+    alert('Could not load photo');
+  };
+  img.src = objectUrl;
 }
 
 function tfbHandleOverridePhoto(event) {
