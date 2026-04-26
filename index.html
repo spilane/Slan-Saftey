@@ -3053,7 +3053,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <!-- Action buttons (pending state) -->
   <div id="sup-hw-review-actions" style="padding:0 18px 24px;display:none">
-    <button id="sup-hw-tfb-override-btn" onclick="tfbShowOverrideModal((window._hwSupCurrentPermit||{}).permit_id)" style="display:none;width:100%;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;margin-bottom:9px">
+    <button id="sup-hw-tfb-override-btn" onclick="alert('TAP REGISTERED on review screen Override button'); tfbShowOverrideModal((window._hwSupCurrentPermit||{}).permit_id)" style="display:none;width:100%;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;margin-bottom:9px">
       🔥 Override TFB &amp; Approve
     </button>
     <button class="submit-btn" id="sup-hw-approve-btn" onclick="hwSupApprove()" style="width:100%;background:#1B6E3A;margin-bottom:9px">
@@ -15147,6 +15147,7 @@ function tfbContactSupervisor() {
 // ──────────────────────────────────────────────────────────────────
 
 function tfbShowOverrideModal(permitId) {
+  alert('Function tfbShowOverrideModal RAN. permitId=' + permitId);
   // Validate permitId is set
   if (!permitId) {
     console.error('tfbShowOverrideModal called with no permitId');
