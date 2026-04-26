@@ -979,7 +979,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- Safety Stars -->
     <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 6px">Safety Stars</div>
-    <div onclick="goToStars()" style="background:#FAEEDA;border:1px solid rgba(184,150,12,.25);border-radius:var(--rs);padding:11px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s" onmousedown="this.style.background='#F5DCAA'" onmouseup="this.style.background='#FAEEDA'" ontouchstart="this.style.background='#F5DCAA'" ontouchend="this.style.background='#FAEEDA'">
+    <div onclick="goToStars()" style="background:#FAEEDA;border:1px solid rgba(184,150,12,.25);border-radius:var(--rs);padding:11px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer">
       <div style="display:flex;align-items:center;gap:8px;flex:1">
         <div id="myp-stars" style="font-size:14px;color:#412402;font-weight:600">★★★★☆ 4 stars</div>
       </div>
@@ -5483,9 +5483,7 @@ function togglePrivacyCheck() {
 // ── AVATAR TAP → HISTORY ─────────────────────────────────────────────────
 function avatarTap() {
   // Open the polished My Profile summary view (with Sign Out, TFB demo toggle, Reset Demo).
-  // Users can tap "Edit Profile" from there to reach the edit form if needed.
   if (typeof populateMyProfile === 'function') populateMyProfile();
-  // Make sure all the bottom action buttons are visible (Sign Out + Demo Tools + Reset)
   const so = document.getElementById('myp-signout-btn');
   const cont = document.getElementById('myp-continue-btn');
   const reset = document.getElementById('myp-reset-btn');
@@ -7842,10 +7840,7 @@ function saveProfile(){
     }
   } else {
     goTo('screen-permissions');
-    // Demo mode: auto-grant permissions (so client demo can continue without real OS prompts)
-    if (DEMO_MODE) {
-      demoGrantPermissions();
-    }
+    if (DEMO_MODE) demoGrantPermissions();
   }
   // Request push permission for supervisors (for pre-start reminders)
   if (prof.role === 'Site Supervisor') {
@@ -8390,7 +8385,7 @@ function hwShrinkImage(dataUrl, callback) {
   try {
     const img = new Image();
     img.onload = function() {
-      const maxDim = 600; // Cap at 600px on longest edge - lighter on storage
+      const maxDim = 600;
       let w = img.width, h = img.height;
       if (w > maxDim || h > maxDim) {
         if (w > h) { h = h * (maxDim / w); w = maxDim; }
@@ -8400,7 +8395,6 @@ function hwShrinkImage(dataUrl, callback) {
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      // JPEG at 0.7 quality - good balance of size and clarity
       const small = canvas.toDataURL('image/jpeg', 0.55);
       callback(small);
     };
@@ -10983,32 +10977,25 @@ function hwSaveAll(list) {
     localStorage.setItem(HW_STORAGE_KEY, JSON.stringify(list));
     return { ok: true };
   } catch(e) {
-    // Storage full — try clearing old closed/rejected/revoked permits (older than 7 days)
     if (e.name === 'QuotaExceededError' || (e.message && (e.message.indexOf('quota') !== -1 || e.message.indexOf('storage') !== -1))) {
-      console.warn('Storage full — attempting to clear old permits');
+      console.warn('Storage full, clearing old permits');
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
       const trimmed = list.filter(p => {
-        // Keep all active permits (submitted, approved, active)
         if (p.status === 'submitted' || p.status === 'approved' || p.status === 'active') return true;
-        // For closed/rejected/revoked: keep if recent
         const closedAt = p.closed_at || p.rejected_at || p.revoked_at || p.submitted_at;
         const t = closedAt ? new Date(closedAt).getTime() : Date.now();
         return t > sevenDaysAgo;
       });
       try {
         localStorage.setItem(HW_STORAGE_KEY, JSON.stringify(trimmed));
-        console.warn('Cleared ' + (list.length - trimmed.length) + ' old permits to free space');
         return { ok: true, trimmed: list.length - trimmed.length };
       } catch(e2) {
-        // Still failing — last resort: keep only most recent 10 permits
         const recent = list.slice(-10);
         try {
           localStorage.setItem(HW_STORAGE_KEY, JSON.stringify(recent));
-          console.warn('Storage critical — kept only most recent 10 permits');
           return { ok: true, trimmed: list.length - 10 };
         } catch(e3) {
-          console.error('Storage exhausted:', e3);
-          alert('Storage is full. Please use Reset Demo from your profile to clear old data.');
+          alert('Storage full. Tap Reset Demo from your profile to free space.');
           return { ok: false, error: e3 };
         }
       }
@@ -11245,8 +11232,30 @@ function hwValidate() {
 }
 
 async function submitHotWorks() {
-  if (!hwValidate()) { alert('Please complete all required fields and checks.'); return; }
-  // TFB check at submit time. If active, save permit with TFB flag and show block modal.
+  if (window._hwSubmitting) return;
+  window._hwSubmitting = true;
+  const _hwSubmitBtn = document.getElementById('hw-submit-btn');
+  const _hwSubmitOriginalHtml = _hwSubmitBtn ? _hwSubmitBtn.innerHTML : '';
+  if (_hwSubmitBtn) {
+    _hwSubmitBtn.disabled = true;
+    _hwSubmitBtn.style.opacity = '0.7';
+    _hwSubmitBtn.style.cursor = 'not-allowed';
+    _hwSubmitBtn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:hwSpin 0.7s linear infinite;margin-right:8px;vertical-align:-2px"></span>Submitting' + String.fromCharCode(8230);
+  }
+  function _hwResetSubmit() {
+    window._hwSubmitting = false;
+    if (_hwSubmitBtn) {
+      _hwSubmitBtn.disabled = false;
+      _hwSubmitBtn.style.opacity = '1';
+      _hwSubmitBtn.style.cursor = '';
+      _hwSubmitBtn.innerHTML = _hwSubmitOriginalHtml;
+    }
+  }
+  if (!hwValidate()) {
+    alert('Please complete all required fields and checks.');
+    _hwResetSubmit();
+    return;
+  }
   let _tfbBlocked = false;
   try {
     _tfbBlocked = await tfbCheckSubmitBlocked();
@@ -11345,9 +11354,11 @@ function goToHotWorksForm() {
 }
 
 function hwStatusLabel(s, p) {
-  // Special case: approved with conditions but worker hasn't acknowledged yet
   if (p && p.approval_conditions && !p.conditions_acknowledged && (s === 'approved' || s === 'active')) {
     return 'Action needed';
+  }
+  if (p && p.tfb_active_at_submit && !p.tfb_override && (s === 'submitted' || s === 'pending')) {
+    return '🔥 Pending — TFB flagged';
   }
   if (s === 'pending')  return 'Pending approval';
   if (s === 'approved') return 'Approved';
@@ -11366,9 +11377,11 @@ function hwStatusColor(s) {
   return '#B8960C';
 }
 function hwStatusBadgeClass(s, p) {
-  // Special case: approved with conditions but not yet acknowledged → amber pending look
   if (p && p.approval_conditions && !p.conditions_acknowledged && (s === 'approved' || s === 'active')) {
     return 'hw-pending';
+  }
+  if (p && p.tfb_active_at_submit && !p.tfb_override && (s === 'submitted' || s === 'pending')) {
+    return 'hw-reject';
   }
   if (s === 'active' || s === 'approved')  return 'hw-active';
   if (s === 'rejected' || s === 'revoked') return 'hw-reject';
@@ -12584,12 +12597,9 @@ function startDemoAs(role) {
   if (existingBanner) existingBanner.remove();
   showDemoBanner();
 
-  // DEMO MODE: walk through onboarding pre-filled, so the demo shows the full flow.
-  // Clear "onboarded" flag so the screens behave like first-time setup.
+  // DEMO MODE: walk through onboarding pre-filled
   localStorage.removeItem('slan_onboarded');
-  // Stash the demo profile so populateMyProfile / saveProfile route correctly later
   window._demoTargetRole = role;
-  // Route to profile setup (Step 1) with everything pre-filled
   goTo('screen-profile');
   demoPrefillAll(p, role);
 }
@@ -14840,35 +14850,24 @@ function pdfSendToBackend(permit, doc) {
 
 // ════════════════════════════════════════════════════════
 // DEMO PRE-FILL — fills profile, signature, permissions
-// so demo can be walked through step-by-step with clients
-// without needing to type anything live.
 // ════════════════════════════════════════════════════════
 function demoPrefillAll(profile, role) {
-  // Step 1 — profile fields
   setTimeout(() => {
     const nameEl = document.getElementById('p-name');
     const coEl = document.getElementById('p-company');
     if (nameEl) nameEl.value = profile.name || '';
     if (coEl) coEl.value = profile.company || '';
-
-    // Highlight the role tile + set role detail dropdown
-    if (typeof selectRoleAfterPin === 'function') {
-      selectRoleAfterPin(role);
-    }
-    // Also fill the trade dropdown for worker
+    if (typeof selectRoleAfterPin === 'function') selectRoleAfterPin(role);
     if (role === 'worker') {
       const detail = document.getElementById('p-role-detail');
       if (detail) {
         detail.value = 'Concretor';
-        // trigger the onchange so p-role hidden input updates
         const evt = new Event('change');
         detail.dispatchEvent(evt);
         const roleInput = document.getElementById('p-role');
         if (roleInput) roleInput.value = 'Concretor';
       }
     }
-
-    // Pre-draw a signature on canvas
     if (typeof initSig === 'function') initSig();
     setTimeout(() => {
       const canvas = document.getElementById('sig-canvas');
@@ -14878,7 +14877,6 @@ function demoPrefillAll(profile, role) {
         ctx.lineWidth = 2.4;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        // Draw a stylised signature loop
         const w = canvas.width, h = canvas.height;
         const cx = w * 0.35, cy = h * 0.55;
         ctx.beginPath();
@@ -14887,30 +14885,23 @@ function demoPrefillAll(profile, role) {
         ctx.bezierCurveTo(cx + 60, cy - 60, cx + 100, cy + 10, cx + 140, cy - 10);
         ctx.bezierCurveTo(cx + 180, cy - 30, cx + 200, cy + 20, cx + 220, cy);
         ctx.stroke();
-        // Underline
         ctx.beginPath();
         ctx.moveTo(cx - 60, cy + 30);
         ctx.lineTo(cx + 230, cy + 25);
         ctx.stroke();
         canvas.classList.add('signed');
         if (typeof hasSig !== 'undefined') hasSig = true;
-        // Force the global flag
         try { window.hasSig = true; } catch(e) {}
       }
     }, 50);
-
-    // Pre-fill a fake profile photo (a simple coloured placeholder)
-    // Build a small canvas-based photo placeholder
     const photoCanvas = document.createElement('canvas');
     photoCanvas.width = 200; photoCanvas.height = 200;
     const pctx = photoCanvas.getContext('2d');
-    // Background gradient (avatar-style)
     const grad = pctx.createLinearGradient(0, 0, 200, 200);
     grad.addColorStop(0, '#1B3A2D');
     grad.addColorStop(1, '#0F2419');
     pctx.fillStyle = grad;
     pctx.fillRect(0, 0, 200, 200);
-    // Initials
     const initials = profile.name.split(' ').map(s => s[0]).join('').slice(0,2).toUpperCase();
     pctx.fillStyle = '#B8960C';
     pctx.font = 'bold 90px sans-serif';
@@ -14927,7 +14918,6 @@ function demoPrefillAll(profile, role) {
   }, 30);
 }
 
-// Set permission tiles to granted state in demo (without actually requesting OS permission)
 function demoGrantPermissions() {
   setTimeout(() => {
     if (typeof _permState !== 'undefined') {
@@ -15284,14 +15274,13 @@ function tfbApplyOverrideAndApprove() {
       Hot works are not permitted in <strong id="tfb-submit-district">your district</strong> today (<span id="tfb-submit-source">State Fire Service</span>).
     </div>
     <div style="font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;margin-bottom:18px">
-      Your permit will be submitted to your supervisor with a TFB flag. They will need a Fire Service Permit to approve it. Please contact your supervisor.
+      Your permit will be submitted to your supervisor with a TFB flag.
     </div>
-    <button onclick="tfbContactSupervisor(); tfbCloseSubmitBlockModal();" style="width:100%;padding:13px;background:#A32D2D;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">📞 Contact Supervisor</button>
-    <button onclick="tfbCloseSubmitBlockModal()" style="width:100%;padding:11px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-weight:500;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Close</button>
+    <button onclick="tfbCloseSubmitBlockModal()" style="width:100%;padding:13px;background:#1B3A2D;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;font-family:\'DM Sans\',sans-serif">OK</button>
   </div>
 </div>
 
-<!-- DEV TFB TOGGLE — small floating button + modal so testing works without completing onboarding -->
+<!-- DEV TFB TOGGLE -->
 <div id="dev-tfb-fab" style="position:fixed;bottom:14px;right:14px;z-index:9998;width:46px;height:46px;border-radius:50%;background:#BA7517;border:2px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px" onclick="document.getElementById('dev-tfb-modal').style.display='flex';document.getElementById('dev-tfb-current').textContent=tfbGetDemoMode();" title="TFB Test Toggle">🔥</div>
 
 <div id="dev-tfb-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px">
@@ -15300,12 +15289,12 @@ function tfbApplyOverrideAndApprove() {
       <div style="font-size:15px;font-weight:700;color:#1A2A1F">🔥 TFB Test Toggle</div>
       <button onclick="document.getElementById('dev-tfb-modal').style.display='none'" style="background:transparent;border:none;font-size:22px;color:#888;cursor:pointer;line-height:1;padding:0">×</button>
     </div>
-    <div style="font-size:11.5px;color:#5C6B62;margin-bottom:14px;line-height:1.5">Simulate a Total Fire Ban for testing. Set to "Force TFB" then go submit a Hot Works permit to see the block.</div>
+    <div style="font-size:11.5px;color:#5C6B62;margin-bottom:14px;line-height:1.5">Simulate a Total Fire Ban for testing. Set to "Force TFB" then submit a Hot Works permit to see the block.</div>
     <div style="font-size:11px;color:#5C6B62;margin-bottom:8px">Currently: <strong id="dev-tfb-current" style="color:#1A2A1F">auto</strong></div>
     <div style="display:flex;gap:6px;margin-bottom:8px">
-      <button onclick="tfbSetDemoMode('auto'); document.getElementById('dev-tfb-current').textContent='auto'; alert('Set to AUTO');" style="flex:1;padding:9px;background:white;border:1.5px solid #ccc;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Auto</button>
-      <button onclick="tfbSetDemoMode('force_clear'); document.getElementById('dev-tfb-current').textContent='force_clear'; alert('Set to CLEAR — no fire ban');" style="flex:1;padding:9px;background:#1B6E3A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Force CLEAR</button>
-      <button onclick="tfbSetDemoMode('force_active'); document.getElementById('dev-tfb-current').textContent='force_active'; alert('Set to TFB ACTIVE — fire ban simulated');" style="flex:1;padding:9px;background:#A32D2D;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Force TFB</button>
+      <button onclick="tfbSetDemoMode('auto'); document.getElementById('dev-tfb-current').textContent='auto';" style="flex:1;padding:9px;background:white;border:1.5px solid #ccc;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Auto</button>
+      <button onclick="tfbSetDemoMode('force_clear'); document.getElementById('dev-tfb-current').textContent='force_clear';" style="flex:1;padding:9px;background:#1B6E3A;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Force CLEAR</button>
+      <button onclick="tfbSetDemoMode('force_active'); document.getElementById('dev-tfb-current').textContent='force_active';" style="flex:1;padding:9px;background:#A32D2D;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Force TFB</button>
     </div>
   </div>
 </div>
