@@ -748,7 +748,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             <img id="photo-preview" src="" alt="">
           </div>
-          <input type="file" id="photo-input" accept="image/*" capture="user" style="display:none" onchange="handlePhotoUpload(event)">
+          <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoUpload(event)">
           <button class="photo-upload-btn" onclick="document.getElementById('photo-input').click()">Take photo or upload</button>
           <div class="fhint" style="text-align:center">Optional — appears in the app header</div>
         </div>
@@ -3452,21 +3452,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
-  <!-- Validity -->
+  <!-- Work Times -->
   <div class="fcard">
-    <div class="fcard-hdr">Validity</div>
+    <div class="fcard-hdr">Work Times</div>
     <div class="fcard-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fgroup">
-          <label class="flabel">Start <span class="req">*</span></label>
-          <input type="datetime-local" id="hw-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:13px;width:100%;outline:none">
-        </div>
-        <div class="fgroup">
-          <label class="flabel">End <span class="req">*</span></label>
-          <input type="datetime-local" id="hw-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:13px;width:100%;outline:none">
-        </div>
+      <div class="fgroup">
+        <label class="flabel">Start <span class="req">*</span></label>
+        <input type="datetime-local" id="hw-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
-      <div style="font-size:11.5px;color:var(--muted);margin-top:-4px">Maximum 8 hours. End time will be capped automatically.</div>
+      <div class="fgroup">
+        <label class="flabel">End <span class="req">*</span></label>
+        <input type="datetime-local" id="hw-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 8 hours. End time will be capped automatically.</div>
     </div>
   </div>
 
@@ -8392,7 +8390,7 @@ function hwShrinkImage(dataUrl, callback) {
   try {
     const img = new Image();
     img.onload = function() {
-      const maxDim = 800; // Cap at 800px on longest edge - plenty for evidence photos
+      const maxDim = 600; // Cap at 600px on longest edge - lighter on storage
       let w = img.width, h = img.height;
       if (w > maxDim || h > maxDim) {
         if (w > h) { h = h * (maxDim / w); w = maxDim; }
@@ -8403,7 +8401,7 @@ function hwShrinkImage(dataUrl, callback) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
       // JPEG at 0.7 quality - good balance of size and clarity
-      const small = canvas.toDataURL('image/jpeg', 0.7);
+      const small = canvas.toDataURL('image/jpeg', 0.55);
       callback(small);
     };
     img.onerror = function() { callback(dataUrl); }; // fallback to original
@@ -15085,14 +15083,14 @@ function _tfbCompressPhoto(file, cb) {
     const img = new Image();
     img.onload = function() {
       const canvas = document.createElement('canvas');
-      const maxSize = 800;
+      const maxSize = 600;
       let w = img.width, h = img.height;
       if (w > h && w > maxSize) { h = h * (maxSize / w); w = maxSize; }
       else if (h > maxSize) { w = w * (maxSize / h); h = maxSize; }
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      cb(canvas.toDataURL('image/jpeg', 0.7));
+      cb(canvas.toDataURL('image/jpeg', 0.55));
     };
     img.src = e.target.result;
   };
