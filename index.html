@@ -5097,6 +5097,41 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 
 <script>
+// ════════════════════════════════════════════════════════
+// GLOBAL ERROR HANDLER — shows real errors as on-screen popup
+// ════════════════════════════════════════════════════════
+window.addEventListener('error', function(ev) {
+  try {
+    var msg = (ev && ev.message) ? ev.message : 'Unknown error';
+    var src = (ev && ev.filename) ? ev.filename.split('/').pop() : '';
+    var ln  = (ev && ev.lineno) ? ev.lineno : '';
+    var loc = src && ln ? (' [' + src + ':' + ln + ']') : '';
+    console.error('[GLOBAL ERROR]', msg, loc, ev && ev.error);
+    // Show user-visible popup so they can tell us what broke
+    if (!window._errPopupShowing) {
+      window._errPopupShowing = true;
+      setTimeout(function() {
+        alert('App error: ' + msg + loc + '\n\nPlease tell Pat exactly what you were doing when this happened.');
+        window._errPopupShowing = false;
+      }, 50);
+    }
+  } catch(e) {}
+});
+window.addEventListener('unhandledrejection', function(ev) {
+  try {
+    var msg = (ev && ev.reason) ? (ev.reason.message || ev.reason.toString()) : 'Promise rejection';
+    console.error('[UNHANDLED REJECTION]', msg, ev && ev.reason);
+    if (!window._errPopupShowing) {
+      window._errPopupShowing = true;
+      setTimeout(function() {
+        alert('App error (async): ' + msg + '\n\nPlease tell Pat exactly what you were doing when this happened.');
+        window._errPopupShowing = false;
+      }, 50);
+    }
+  } catch(e) {}
+});
+
+
 const PA_URL = 'YOUR_POWER_AUTOMATE_URL_HERE';
 // ═══════════════════════════════════════════════════════════════
 // FIREBASE CONFIG
@@ -11160,7 +11195,7 @@ function hwInitForm() {
   document.getElementById('hw-muster').value = '';
 
   // Clear all checks
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 9; i++) {
     const el = document.getElementById('hw-chk' + i);
     if (el) el.classList.remove('checked');
   }
@@ -11359,8 +11394,9 @@ async function submitHotWorks() {
     tfb_check_timestamp: _tfbStatus ? _tfbStatus.timestamp : null,
     tfb_override: null  // populated by supervisor on approval if override is used
   };
-  for (let i = 1; i <= 10; i++) {
-    permit.checks['chk' + i] = document.getElementById('hw-chk' + i).classList.contains('checked');
+  for (let i = 1; i <= 9; i++) {
+    const _chkEl = document.getElementById('hw-chk' + i);
+    permit.checks['chk' + i] = _chkEl ? _chkEl.classList.contains('checked') : false;
   }
 
   const list = hwLoadAll();
@@ -11537,7 +11573,7 @@ function hwViewPermit(permitId) {
       'Adjacent workers notified'
     ];
     checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 9; i++) {
       const k = 'chk' + i;
       if (p.checks[k]) {
         checksHtml += `<div style="font-size:12.5px;margin-bottom:3px">✓ ${chkLabels[i-1]}</div>`;
