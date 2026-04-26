@@ -3315,6 +3315,39 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- TFB-FLAGGED SUCCESS SCREEN — shown when worker submits on a Total Fire Ban day -->
+<div id="screen-hw-tfb-success" class="screen">
+  <div class="tbar" style="background:#A32D2D">
+    <div style="width:36px"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">🔥 TFB Flag — Submitted</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:24px 20px 100px;text-align:center">
+    <div style="width:70px;height:70px;border-radius:50%;background:#FCEBEB;display:flex;align-items:center;justify-content:center;margin:8px auto 16px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:36px;height:36px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div style="font-size:18px;font-weight:700;color:#6B1818;margin-bottom:6px">Total Fire Ban Active</div>
+    <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:18px;max-width:320px;margin-left:auto;margin-right:auto">
+      Hot works are not permitted in <strong id="hw-tfb-success-district">your district</strong> today (<span id="hw-tfb-success-source">State Fire Service</span>).
+    </div>
+
+    <div style="background:#FAEEDA;border:1.5px solid #BA7517;padding:13px 14px;border-radius:10px;margin-bottom:14px;max-width:340px;margin-left:auto;margin-right:auto;text-align:left">
+      <div style="font-size:12px;font-weight:700;color:#633806;margin-bottom:5px">⚠ Permit submitted with TFB flag</div>
+      <div style="font-size:12px;color:#633806;line-height:1.45">Your supervisor must review and decide whether to override under a Fire Service TFB Permit before work can proceed. You will be notified.</div>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Permit ID</div>
+    <div id="hw-tfb-success-id" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;font-family:'DM Sans',sans-serif;letter-spacing:0.3px">HW-YYYY-NNNN</div>
+    <div id="hw-tfb-success-sub" style="font-size:12px;color:var(--muted);margin-bottom:2px">Hot Works</div>
+    <div id="hw-tfb-success-time" style="font-size:12px;color:var(--muted);margin-bottom:24px"></div>
+
+    <button onclick="hwRenderList(); goTo('screen-hw-list');" style="width:100%;max-width:280px;padding:14px;background:#1B3A2D;color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">Done</button>
+    <button onclick="tfbContactSupervisor()" style="width:100%;max-width:280px;margin-top:10px;padding:13px;background:transparent;color:#A32D2D;border:1.5px solid #A32D2D;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Call supervisor now</button>
+  </div>
+</div>
+
 <!-- ═══════════════════ HOT WORKS PERMIT ═══ -->
 <div id="screen-hw-form" class="screen">
   <div class="tbar" style="background:var(--deep)">
@@ -7756,6 +7789,8 @@ function updateSitePsBanner(done, time, name) {
 // ═══════════════════════════════════════════════════════════════
 async function requestPushPermission(workerName, role, site) {
   if (!('Notification' in window) || !('PushManager' in window)) return;
+  // Guard against VAPID_PUBLIC_KEY not being defined (push notifications not configured)
+  if (typeof VAPID_PUBLIC_KEY === 'undefined') return;
   if (VAPID_PUBLIC_KEY === 'YOUR_VAPID_PUBLIC_KEY_HERE') return;
 
   const perm = await Notification.requestPermission();
@@ -11354,12 +11389,24 @@ async function submitHotWorks() {
     return;
   }
 
-  // Success feedback — simple alert for now; richer screen added in next step
-  // If TFB was active at submit time, the permit is saved but we don't show the regular success screen
-  // (the TFB submit-block modal is already showing on top to explain to the worker)
+  // Success feedback — TFB-flagged permits go to a clear dedicated success screen
   if (_tfbBlocked) {
     try { hwUpdateChip(); } catch(e) {}
-    return; // Modal stays visible; worker has been told to contact supervisor.
+    // Populate the TFB success screen with this permit's details
+    const tfbIdEl = document.getElementById('hw-tfb-success-id');
+    const tfbSubEl = document.getElementById('hw-tfb-success-sub');
+    const tfbTimeEl = document.getElementById('hw-tfb-success-time');
+    const tfbDistEl = document.getElementById('hw-tfb-success-district');
+    const tfbSrcEl = document.getElementById('hw-tfb-success-source');
+    if (tfbIdEl) tfbIdEl.textContent = permit.permit_id;
+    if (tfbSubEl) tfbSubEl.textContent = permit.subtype || permit.type || 'Hot Works';
+    if (tfbTimeEl) tfbTimeEl.textContent = now.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
+    if (tfbDistEl) tfbDistEl.textContent = (_tfbStatus && _tfbStatus.district) || 'your district';
+    if (tfbSrcEl) tfbSrcEl.textContent = (_tfbStatus && _tfbStatus.source) || 'State Fire Service';
+    // Close the modal that fired during the check (it served its purpose)
+    if (typeof tfbCloseSubmitBlockModal === 'function') tfbCloseSubmitBlockModal();
+    goTo('screen-hw-tfb-success');
+    return;
   }
   // Go to success screen normally
   document.getElementById('hw-success-id').textContent = permit.permit_id;
@@ -15210,13 +15257,33 @@ function tfbApplyOverrideAndApprove() {
   const permitPhoto = window._tfbOverridePhoto;
   const equipPhoto = window._tfbOverrideEquipPhoto;
 
-  if (!num) { alert('TFB Permit number required'); return; }
-  if (!expiry) { alert('Expiry date/time required'); return; }
-  if (!permitPhoto) { alert('Photo of Fire Service Permit required'); return; }
-  if (!justification) { alert('Justification required — explain why work cannot be deferred'); return; }
-  if (!watcher) { alert('Dedicated fire watcher name required'); return; }
-  if (!triggers) { alert('Stand-down trigger conditions required'); return; }
-  if (!equipPhoto) { alert('Photo of additional fire-fighting equipment required'); return; }
+  // Build list of missing fields and show inline (alerts can be hidden behind modals on some browsers)
+  const missing = [];
+  if (!num) missing.push('TFB Permit number');
+  if (!expiry) missing.push('Expiry date/time');
+  if (!permitPhoto) missing.push('Photo of Fire Service Permit');
+  if (!justification) missing.push('Justification');
+  if (!watcher) missing.push('Fire watcher name');
+  if (!triggers) missing.push('Stand-down conditions');
+  if (!equipPhoto) missing.push('Photo of fire-fighting equipment');
+
+  if (missing.length > 0) {
+    // Show inline error inside the modal so user actually sees it
+    let errEl = document.getElementById('tfb-override-error');
+    if (!errEl) {
+      errEl = document.createElement('div');
+      errEl.id = 'tfb-override-error';
+      errEl.style.cssText = 'background:#FCEBEB;border:1.5px solid #A32D2D;color:#6B1818;padding:11px 13px;border-radius:8px;margin-bottom:12px;font-size:12.5px;font-weight:600;line-height:1.5';
+      const modalContent = document.querySelector('#tfb-override-modal > div');
+      if (modalContent) modalContent.insertBefore(errEl, modalContent.firstChild);
+    }
+    errEl.innerHTML = 'Please complete these fields:<br>' + missing.map(m => '\u2022 ' + m).join('<br>');
+    errEl.scrollIntoView({behavior: 'smooth', block: 'start'});
+    return;
+  }
+  // Clear any previous error
+  const prevErr = document.getElementById('tfb-override-error');
+  if (prevErr) prevErr.remove();
 
   const supName = (function() {
     const p = (typeof getProfile === 'function') ? getProfile() : null;
