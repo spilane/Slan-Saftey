@@ -5616,17 +5616,24 @@ function myProfRefreshTfbToggle() {
 function myProfResetDemo() {
   if (!confirm('Reset the demo? This clears profile, permissions, PIN session and all permits/data.\n\nThis is intended for demo testing only.')) return;
   try {
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && (k.startsWith('slan_') || k.startsWith('hw_') || k.startsWith('site_') || k.startsWith('swms_') || k.startsWith('talk_') || k.startsWith('prestart_'))) {
-        keysToRemove.push(k);
-      }
-    }
-    keysToRemove.forEach(k => localStorage.removeItem(k));
+    // Clear EVERYTHING in localStorage - more reliable than prefix matching
+    localStorage.clear();
+  } catch(e) { console.error('localStorage.clear failed:', e); }
+  try {
     sessionStorage.clear();
-  } catch(e) {}
-  window.location.reload();
+  } catch(e) { console.error('sessionStorage.clear failed:', e); }
+  // Show confirmation so user knows it worked even if reload is slow
+  alert('Demo reset. The app will reload now.');
+  // Force hard reload bypassing cache - use a fresh URL with cache-bust param
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set('reset', Date.now().toString());
+    window.location.replace(url.toString());
+  } catch(err) {
+    // Fallback if URL API not available
+    try { window.location.href = window.location.pathname + '?reset=' + Date.now(); }
+    catch(e) { window.location.reload(); }
+  }
 }
 
 function profileQuickClose() {
