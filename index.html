@@ -15207,11 +15207,17 @@ function tfbShowOverrideModal(permitId) {
   window._tfbOverrideForPermitId = permitId;
   const m = document.getElementById('tfb-override-modal');
   if (!m) {
-    console.error('tfb-override-modal not found in DOM');
-    alert('Error: override modal not found. Please refresh.');
+    alert('MODAL DIAG A: tfb-override-modal element NOT FOUND in DOM');
     return;
   }
+  alert('MODAL DIAG B: modal element found. Current display=' + m.style.display);
   m.style.display = 'flex';
+  // Force a reflow
+  m.offsetHeight;
+  alert('MODAL DIAG C: after setting flex, computed display=' + window.getComputedStyle(m).display + ', visibility=' + window.getComputedStyle(m).visibility + ', z-index=' + window.getComputedStyle(m).zIndex);
+  // Check if it's actually visible
+  const rect = m.getBoundingClientRect();
+  alert('MODAL DIAG D: position rect — top=' + Math.round(rect.top) + ', left=' + Math.round(rect.left) + ', width=' + Math.round(rect.width) + ', height=' + Math.round(rect.height));
   // Reset fields
   ['tfb-override-num','tfb-override-expiry','tfb-override-justification','tfb-override-watcher','tfb-override-triggers'].forEach(id => {
     const el = document.getElementById(id);
