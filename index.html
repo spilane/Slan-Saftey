@@ -8745,37 +8745,41 @@ function updateSupActivityStrip() {
 
 function supUpdatePermitsChip() {
   const strip = document.querySelector('#d-status-strip > div:last-child');
+  // Remove all existing supervisor permit chips first (we re-create below)
+  ['d-pill-permits','d-pill-permits-pending','d-pill-permits-ack','d-pill-permits-approved','d-pill-permits-rejected'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
   if (!strip) return;
-  let chip = document.getElementById('d-pill-permits');
   const today = new Date().toLocaleDateString('en-AU');
   const all = (typeof ptwLoadAllPermits === 'function' ? ptwLoadAllPermits() : []).filter(x => x.date === today);
+  if (all.length === 0) return;
+
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
   // Permits awaiting worker acknowledgement — supervisor should know about these
   const needsAck = all.filter(x => x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')).length;
-  // Truly active = approved/active AND (no conditions OR conditions acknowledged)
-  const active = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
+  // Truly approved = approved/active AND (no conditions OR conditions acknowledged)
+  const approved = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
+  const rejected = all.filter(x => x.status === 'rejected').length;
 
-  if (all.length === 0) { if (chip) chip.remove(); return; }
-
-  if (!chip) {
-    chip = document.createElement('div');
-    chip.id = 'd-pill-permits';
-    chip.onclick = function() { goToPermitsToWork(); };
+  // Helper to add a chip — separate chip per outcome so each gets its own colour.
+  // Mirrors the worker-side chip pattern in hwUpdateChip().
+  function addChip(id, count, label, state) {
+    if (count <= 0) return;
+    const chip = document.createElement('div');
+    chip.id = id;
+    chip.className = 'status-pill';
+    chip.onclick = function(){ goToPermitsToWork(); };
+    chip.innerHTML = '<div class="sp-dot"></div><span>' + count + ' ' + label + '</span>';
     strip.appendChild(chip);
+    setPillState(id, state); // 'warn' = amber, 'done' = green, 'fail' = red
   }
-  chip.className = 'status-pill';
-  let label, state;
-  if (pending > 0) {
-    label = 'Permits (' + pending + ' pending)'; state = 'warn';
-  } else if (needsAck > 0) {
-    label = 'Permits (' + needsAck + ' awaiting ack)'; state = 'warn';
-  } else if (active > 0) {
-    label = 'Permits (' + active + ' active)'; state = 'done';
-  } else {
-    label = 'Permits'; state = 'done';
-  }
-  chip.innerHTML = '<div class="sp-dot"></div><span>' + label + '</span>';
-  setPillState('d-pill-permits', state);
+
+  // Order: most urgent on left
+  addChip('d-pill-permits-rejected', rejected, 'rejected', 'fail');
+  addChip('d-pill-permits-ack',      needsAck, 'awaiting ack', 'warn');
+  addChip('d-pill-permits-pending',  pending,  'pending',  'warn');
+  addChip('d-pill-permits-approved', approved, 'approved', 'done');
 }
 
 
@@ -9859,7 +9863,7 @@ function ptwUpdateTileSubtitle() {
   const parts = [];
   if (pending > 0)  parts.push('<span style="color:#854F0B;font-weight:600">' + pending + ' pending</span>');
   if (needsAck > 0) parts.push('<span style="color:#854F0B;font-weight:600">' + needsAck + ' awaiting ack</span>');
-  if (active > 0)   parts.push('<span style="color:#1B6E3A;font-weight:600">' + active + ' active</span>');
+  if (active > 0)   parts.push('<span style="color:#1B6E3A;font-weight:600">' + active + ' approved</span>');
   if (rejected > 0) parts.push('<span style="color:#A32D2D;font-weight:600">' + rejected + ' rejected</span>');
 
   if (parts.length === 0) sub.textContent = 'No permits today';
@@ -12481,6 +12485,12 @@ function wahViewPermit(permitId) {
     }
   }
 
+  // Always add "Download PDF" button at bottom of WAH permit view
+  const pdfBtnDiv = document.createElement('div');
+  pdfBtnDiv.style.marginTop = '12px';
+  pdfBtnDiv.innerHTML = '<button onclick="wahDownloadPermitPDF(\'' + p.permit_id + '\')" style="width:100%;padding:12px;background:transparent;color:#1B3A2D;border:1.5px solid #1B3A2D;border-radius:var(--r);font-weight:600;font-size:13.5px;cursor:pointer;font-family:DM Sans,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</button>';
+  body.appendChild(pdfBtnDiv);
+
   goTo('screen-wah-view');
 }
 
@@ -12592,6 +12602,12 @@ function wahSupOpenReview(permitId) {
     document.getElementById('sup-wah-review-actions').style.display = 'block';
   }
 
+  // Add Download PDF button at bottom of supervisor review (always available)
+  const pdfBtnDiv = document.createElement('div');
+  pdfBtnDiv.style.marginTop = '12px';
+  pdfBtnDiv.innerHTML = '<button onclick="wahDownloadPermitPDF(\'' + p.permit_id + '\')" style="width:100%;padding:12px;background:transparent;color:#1B3A2D;border:1.5px solid #1B3A2D;border-radius:var(--r);font-weight:600;font-size:13.5px;cursor:pointer;font-family:DM Sans,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</button>';
+  d.appendChild(pdfBtnDiv);
+
   goTo('screen-wah-sup-review');
 }
 
@@ -12601,8 +12617,9 @@ function wahStatusLabel(s, p) {
     return 'Action needed';
   }
   if (s === 'submitted' || s === 'pending') return 'Pending approval';
+  // 'approved' and 'active' both mean the supervisor has signed off
   if (s === 'approved') return 'Approved';
-  if (s === 'active')   return 'Active';
+  if (s === 'active')   return 'Approved';
   if (s === 'rejected') return 'Rejected';
   if (s === 'closed')   return 'Closed';
   if (s === 'expired')  return 'Expired';
@@ -12886,7 +12903,10 @@ function wahSubmitCloseout() {
   all[idx].closeout_ticks = Object.assign({}, _wahCloseoutTicks);
   wahSaveAll(all);
 
-  alert('Permit ' + all[idx].permit_id + ' closed.');
+  // Offer PDF download immediately after closeout
+  if (confirm('Permit closed successfully.\n\nDownload PDF for your records?')) {
+    try { wahDownloadPermitPDF(_wahCloseoutPermit && _wahCloseoutPermit.permit_id); } catch(e) { console.error(e); }
+  }
 
   // Refresh chips/tile so counts update
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
@@ -13533,8 +13553,11 @@ function hwStatusLabel(s, p) {
     return '🔥 Pending — TFB flagged';
   }
   if (s === 'pending')  return 'Pending approval';
+  // 'approved' and 'active' both mean the supervisor has signed off — show
+  // a single label so the worker/supervisor never see two different words
+  // for what is effectively the same state.
   if (s === 'approved') return 'Approved';
-  if (s === 'active')   return 'Active';
+  if (s === 'active')   return 'Approved';
   if (s === 'rejected') return 'Rejected';
   if (s === 'expired')  return 'Expired';
   if (s === 'closed')   return 'Closed';
@@ -16428,6 +16451,30 @@ const HW_CLOSEOUT_LABELS = [
 ];
 const HW_PHOTO_SLOT_LABELS = { 1: 'Work area', 2: '10m clear zone', 3: 'Extinguisher', 4: 'Equipment' };
 
+// WAH-specific labels (mirror HW shape so PDF generator can swap based on permit type)
+const WAH_CHECK_LABELS = [
+  'Anchor points rated/inspected',
+  'Harness in date',
+  'Lanyard / SRL in date',
+  'Edge protection in place',
+  'Exclusion zone set up',
+  'Weather acceptable',
+  'Rescue plan in place',
+  'Spotter assigned',
+  'Tools tethered',
+  'Working surface inspected'
+];
+const WAH_CLOSEOUT_LABELS = [
+  'Work has been completed',
+  'Fall arrest equipment de-rigged',
+  'Anchor points inspected — no damage',
+  'Exclusion zone barriers removed',
+  'All tools and PPE accounted for',
+  'Work area left in safe condition'
+];
+const WAH_PHOTO_SLOT_LABELS = { 1: 'Anchor point', 2: 'Harness / PPE', 3: 'Edge protection', 4: 'Work area' };
+
+
 // Main PDF generator — returns a jsPDF doc instance
 function generatePermitPDF(permit) {
   const { jsPDF } = window.jspdf;
@@ -16435,6 +16482,15 @@ function generatePermitPDF(permit) {
   const PAGE_W = 210, PAGE_H = 297;
   const ML = 22, MR = 22, MT = 18, MB = 16;
   const CW = PAGE_W - ML - MR;
+
+  // Detect permit type so this function can render either Hot Works or
+  // Working at Heights with the right title and labels
+  const isWAH = (permit.permit_id && permit.permit_id.startsWith('WAH-')) || permit.permit_type === 'wah';
+  const TITLE = isWAH ? 'WORKING AT HEIGHTS PERMIT' : 'HOT WORKS PERMIT';
+  const FOOTER_CODE = isWAH ? 'SLS-PERMIT-WAH · v1.0' : 'SLS-PERMIT-HW · v1.0';
+  const CHECK_LABELS = isWAH ? WAH_CHECK_LABELS : HW_CHECK_LABELS;
+  const CLOSEOUT_LABELS = isWAH ? WAH_CLOSEOUT_LABELS : HW_CLOSEOUT_LABELS;
+  const PHOTO_SLOT_LABELS = isWAH ? WAH_PHOTO_SLOT_LABELS : HW_PHOTO_SLOT_LABELS;
 
   // Determine document outcome
   const isRejected = permit.status === 'rejected';
@@ -16490,7 +16546,7 @@ function generatePermitPDF(permit) {
     }
     setText(PDF_COLOURS.darkText);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
-    doc.text('HOT WORKS PERMIT', PAGE_W/2, logoY + logoH/2 + 1.5, { align:'center' });
+    doc.text(TITLE, PAGE_W/2, logoY + logoH/2 + 1.5, { align:'center' });
     setStroke(PDF_COLOURS.darkGreen); doc.setLineWidth(0.5);
     doc.line(ML, logoY + logoH + 1, PAGE_W - MR, logoY + logoH + 1);
     return logoY + logoH + 5;  // y where content can start
@@ -16502,7 +16558,7 @@ function generatePermitPDF(permit) {
     doc.line(ML, footY - 4, PAGE_W - MR, footY - 4);
     setText(PDF_COLOURS.greyLabel);
     doc.setFont('courier', 'normal'); doc.setFontSize(7);
-    doc.text('SLS-PERMIT-HW · v1.0', ML, footY);
+    doc.text(FOOTER_CODE, ML, footY);
     doc.setFont('helvetica', 'normal');
     doc.text(`Page ${pageNum} of ${totalPages}`, PAGE_W - MR, footY, { align:'right' });
   }
@@ -16605,15 +16661,30 @@ function generatePermitPDF(permit) {
   cardH = 26;
   drawCard(y, cardH, PDF_COLOURS.neutralBg, PDF_COLOURS.border);
   innerY = y + 5;
-  drawField(ML + 4, innerY,         'Type',       permit.subtype || permit.type);
-  drawField(ML + 4, innerY + 4,     'Location',   permit.location);
-  drawField(ML + 4, innerY + 8,     'Start',      permit.start_time ? permit.start_time.replace('T',' ') : '—');
-  drawField(ML + 4, innerY + 12,    'Weather',    permit.weather);
-  drawField(ML + 4, innerY + 16,    'Fire watch', permit.fire_watch_required ? 'Required · ' + (permit.fire_watch_duration || 'duration TBD') : 'Not required');
-  drawField(ML + half + 2, innerY,        'Equipment',    Array.isArray(permit.equipment) ? permit.equipment.join(', ') : permit.equipment);
-  drawField(ML + half + 2, innerY + 4,    'Gas/Fuel',     Array.isArray(permit.gas) ? permit.gas.join(', ') : (permit.gas || 'None'));
-  drawField(ML + half + 2, innerY + 8,    'End',          permit.end_time ? permit.end_time.replace('T',' ') : '—');
-  drawField(ML + half + 2, innerY + 12,   'Muster point', permit.muster_point);
+  if (isWAH) {
+    // Working at Heights — WAH-specific fields
+    drawField(ML + 4, innerY,         'Type',         permit.subtype || permit.type);
+    drawField(ML + 4, innerY + 4,     'Location',     permit.location);
+    drawField(ML + 4, innerY + 8,     'Start',        permit.start ? permit.start.replace('T',' ') : '—');
+    drawField(ML + 4, innerY + 12,    'Weather',      permit.weather);
+    drawField(ML + 4, innerY + 16,    'Workers',      permit.num_workers);
+    drawField(ML + half + 2, innerY,        'Equipment',     Array.isArray(permit.equipment) ? permit.equipment.join(', ') : permit.equipment);
+    drawField(ML + half + 2, innerY + 4,    'Anchor type',   permit.anchor_type);
+    drawField(ML + half + 2, innerY + 8,    'End',           permit.end ? permit.end.replace('T',' ') : '—');
+    drawField(ML + half + 2, innerY + 12,   'Working height',(permit.working_height_m || '') + ' m');
+    drawField(ML + half + 2, innerY + 16,   'Exclusion zone',(permit.exclusion_zone_m || '') + ' m');
+  } else {
+    // Hot Works — original fields
+    drawField(ML + 4, innerY,         'Type',       permit.subtype || permit.type);
+    drawField(ML + 4, innerY + 4,     'Location',   permit.location);
+    drawField(ML + 4, innerY + 8,     'Start',      permit.start_time ? permit.start_time.replace('T',' ') : '—');
+    drawField(ML + 4, innerY + 12,    'Weather',    permit.weather);
+    drawField(ML + 4, innerY + 16,    'Fire watch', permit.fire_watch_required ? 'Required · ' + (permit.fire_watch_duration || 'duration TBD') : 'Not required');
+    drawField(ML + half + 2, innerY,        'Equipment',    Array.isArray(permit.equipment) ? permit.equipment.join(', ') : permit.equipment);
+    drawField(ML + half + 2, innerY + 4,    'Gas/Fuel',     Array.isArray(permit.gas) ? permit.gas.join(', ') : (permit.gas || 'None'));
+    drawField(ML + half + 2, innerY + 8,    'End',          permit.end_time ? permit.end_time.replace('T',' ') : '—');
+    drawField(ML + half + 2, innerY + 12,   'Muster point', permit.muster_point);
+  }
   y += cardH + 4;
 
   // ─── REJECTED → big red banner, footer, done ───
@@ -16653,7 +16724,7 @@ function generatePermitPDF(permit) {
   setText(PDF_COLOURS.darkText);
   doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
   // All pre-start checks are always ticked — submission requires all 10 confirmations
-  HW_CHECK_LABELS.forEach((lbl, i) => {
+  CHECK_LABELS.forEach((lbl, i) => {
     const col = i % 2;
     const row = Math.floor(i / 2);
     const x = ML + 4 + col * half;
@@ -16759,7 +16830,7 @@ function generatePermitPDF(permit) {
     doc.rect(px, py + photoH, photoW, labelH, 'FD');
     setText(PDF_COLOURS.darkText);
     doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
-    doc.text((i+1) + ' · ' + (HW_PHOTO_SLOT_LABELS[i+1] || ''), px + 3, py + photoH + 4);
+    doc.text((i+1) + ' · ' + (PHOTO_SLOT_LABELS[i+1] || ''), px + 3, py + photoH + 4);
     setText(PDF_COLOURS.greyLabel);
     doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
     const ts = ph && ph.ts ? ph.ts : (ph && ph.timestamp ? ph.timestamp : '—');
@@ -16821,23 +16892,25 @@ function generatePermitPDF(permit) {
     // ─── CLOSEOUT VARIANT (approved & closed normally) ───
     y = drawMajorBanner(y, 'CLOSEOUT');
 
-    // Fire watch result
-    y = drawSubLabel(y, 'FIRE WATCH');
-    cardH = 9;
-    if (permit.fire_watch_required) {
-      drawCard(y, cardH, PDF_COLOURS.greenDarkBg, PDF_COLOURS.greenDarkBorder, PDF_COLOURS.greenDark);
-      setText(PDF_COLOURS.greenDarkText);
-      doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
-      doc.text('Completed', ML + 4, y + 5);
-      doc.setFont('helvetica','normal');
-      doc.text('— ' + (permit.fire_watch_duration || '60 min') + ' after work end', ML + 22, y + 5);
-    } else {
-      drawCard(y, cardH, PDF_COLOURS.neutralBg, PDF_COLOURS.border);
-      setText(PDF_COLOURS.darkText);
-      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-      doc.text('Not required for this permit', ML + 4, y + 5);
+    // Fire watch result — only relevant for Hot Works
+    if (!isWAH) {
+      y = drawSubLabel(y, 'FIRE WATCH');
+      cardH = 9;
+      if (permit.fire_watch_required) {
+        drawCard(y, cardH, PDF_COLOURS.greenDarkBg, PDF_COLOURS.greenDarkBorder, PDF_COLOURS.greenDark);
+        setText(PDF_COLOURS.greenDarkText);
+        doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+        doc.text('Completed', ML + 4, y + 5);
+        doc.setFont('helvetica','normal');
+        doc.text('— ' + (permit.fire_watch_duration || '60 min') + ' after work end', ML + 22, y + 5);
+      } else {
+        drawCard(y, cardH, PDF_COLOURS.neutralBg, PDF_COLOURS.border);
+        setText(PDF_COLOURS.darkText);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+        doc.text('Not required for this permit', ML + 4, y + 5);
+      }
+      y += cardH + 3;
     }
-    y += cardH + 3;
 
     // Closeout declaration
     y = drawSubLabel(y, 'CLOSEOUT DECLARATION — 6 of 6 confirmed');
@@ -16847,7 +16920,7 @@ function generatePermitPDF(permit) {
     setText(PDF_COLOURS.darkText);
     doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
     // All closeout items are always ticked — closing the permit requires all 6 confirmations
-    HW_CLOSEOUT_LABELS.forEach((lbl, i) => {
+    CLOSEOUT_LABELS.forEach((lbl, i) => {
       const ty = innerY + i * 3.5;
       drawTick(ML + 4, ty, '#1B6E3A', 2.5);
       setText(PDF_COLOURS.darkText);
@@ -17013,6 +17086,23 @@ function hwDownloadPermitPDF(permitId) {
     const filename = pdfBuildFilename(permit);
     doc.save(filename);
     // Optional: also send to backend webhook (for OneDrive auto-upload)
+    pdfSendToBackend(permit, doc);
+  } catch(e) {
+    console.error('PDF generation error:', e);
+    alert('Could not generate PDF: ' + e.message);
+  }
+}
+
+// Download PDF for a given Working at Heights permit
+// Reuses generatePermitPDF — that function detects WAH from the permit_id prefix.
+function wahDownloadPermitPDF(permitId) {
+  const all = (typeof wahLoadAll === 'function') ? wahLoadAll() : [];
+  const permit = all.find(x => x.permit_id === permitId);
+  if (!permit) { alert('Permit not found.'); return; }
+  try {
+    const doc = generatePermitPDF(permit);
+    const filename = pdfBuildFilename(permit);
+    doc.save(filename);
     pdfSendToBackend(permit, doc);
   } catch(e) {
     console.error('PDF generation error:', e);
