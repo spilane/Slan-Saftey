@@ -15330,11 +15330,14 @@ function tfbApplyOverrideAndApprove() {
   const missing = [];
   if (!num) missing.push('TFB Permit number');
   if (!expiry) missing.push('Expiry date/time');
-  if (!permitPhoto) missing.push('Photo of Fire Service Permit');
+  // TEMPORARY for testing: photos optional until we add form-state persistence in Step 13
+  // (Android kills the browser tab while camera app is open, wiping the override form)
+  // TODO Step 13: re-enable these two checks once form state survives reloads
+  // if (!permitPhoto) missing.push('Photo of Fire Service Permit');
   if (!justification) missing.push('Justification');
   if (!watcher) missing.push('Fire watcher name');
   if (!triggers) missing.push('Stand-down conditions');
-  if (!equipPhoto) missing.push('Photo of fire-fighting equipment');
+  // if (!equipPhoto) missing.push('Photo of fire-fighting equipment');
 
   if (missing.length > 0) {
     // Fixed-position toast at top of viewport — overlays the modal, can't be missed
