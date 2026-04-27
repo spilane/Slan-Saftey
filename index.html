@@ -3115,6 +3115,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </button>
   </div>
 
+  <!-- Fire watch close button (shown when permit was handed over to this supervisor) -->
+  <div id="sup-hw-fwclose-wrap" style="display:none;padding:0 18px 24px">
+    <div style="padding:11px 13px;background:#FAEEDA;border:1px solid #BA7517;border-radius:var(--rs);font-size:12.5px;color:#633806;margin-bottom:10px;line-height:1.5">
+      Worker handed this fire watch to you. Once the <strong id="sup-hw-fwclose-duration">30</strong>-min watch is complete and the area is safe, close the permit below.
+    </div>
+    <button onclick="hwSupCloseHandoverPermit()" style="width:100%;padding:13px;border-radius:var(--r);background:#1B6E3A;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+      ✓ Close Permit (Fire watch complete)
+    </button>
+  </div>
+
   <!-- Revoke reason input (hidden by default) -->
   <div id="sup-hw-revokein-wrap" style="display:none;padding:0 18px 24px">
     <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Reason for revocation <span style="color:#A32D2D">*</span></div>
@@ -8793,7 +8803,7 @@ function updateSupActivityStrip() {
 function supUpdatePermitsChip() {
   const strip = document.querySelector('#d-status-strip > div:last-child');
   // Remove all existing supervisor permit chips first (we re-create below)
-  ['d-pill-permits','d-pill-permits-pending','d-pill-permits-ack','d-pill-permits-approved','d-pill-permits-rejected'].forEach(id => {
+  ['d-pill-permits','d-pill-permits-pending','d-pill-permits-ack','d-pill-permits-approved','d-pill-permits-rejected','d-pill-permits-fwatch'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
@@ -8808,21 +8818,25 @@ function supUpdatePermitsChip() {
   // Truly approved = approved/active AND (no conditions OR conditions acknowledged)
   const approved = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
   const rejected = all.filter(x => x.status === 'rejected').length;
+  // Fire watch handed over to me (this supervisor) — needs my action
+  const myName = (getProfile() || {}).name || '';
+  const fwHandover = all.filter(x => x.fire_watch_handover && x.fire_watch_handover.handed_to === myName && (x.status === 'approved' || x.status === 'active')).length;
 
   // Helper to add a chip — separate chip per outcome so each gets its own colour.
   // Mirrors the worker-side chip pattern in hwUpdateChip().
-  function addChip(id, count, label, state) {
+  function addChip(id, count, label, state, onclick) {
     if (count <= 0) return;
     const chip = document.createElement('div');
     chip.id = id;
     chip.className = 'status-pill';
-    chip.onclick = function(){ goToPermitsToWork(); };
+    chip.onclick = onclick || function(){ goToPermitsToWork(); };
     chip.innerHTML = '<div class="sp-dot"></div><span>' + count + ' ' + label + '</span>';
     strip.appendChild(chip);
     setPillState(id, state); // 'warn' = amber, 'done' = green, 'fail' = red
   }
 
   // Order: most urgent on left
+  addChip('d-pill-permits-fwatch',   fwHandover, '🔥 fire watch', 'fail');
   addChip('d-pill-permits-rejected', rejected, 'rejected', 'fail');
   addChip('d-pill-permits-ack',      needsAck, 'awaiting ack', 'warn');
   addChip('d-pill-permits-pending',  pending,  'pending',  'warn');
@@ -10155,6 +10169,8 @@ function hwSupOpenReview(permitId) {
   document.getElementById('sup-hw-reject-wrap').style.display = 'none';
   document.getElementById('sup-hw-revoke-wrap').style.display = 'none';
   document.getElementById('sup-hw-revokein-wrap').style.display = 'none';
+  const fwCloseWrap = document.getElementById('sup-hw-fwclose-wrap');
+  if (fwCloseWrap) fwCloseWrap.style.display = 'none';
 
   // Render permit body (same as worker view)
   const d = document.getElementById('sup-hw-review-body');
@@ -10201,6 +10217,28 @@ function hwSupOpenReview(permitId) {
     revokeRow = `<div class="hw-view-row" style="border-left:3px solid #A32D2D;background:#FCEBEB"><div class="hw-view-label" style="color:#A32D2D">Reason for revocation</div><div class="hw-view-val" style="color:#A32D2D">${p.revoke_reason}</div></div>`;
   }
 
+  // Fire watch handover banner — shown when worker has handed over the fire watch
+  // to a supervisor. This is the supervisor's prompt to take over and close out.
+  let handoverRow = '';
+  if (p.fire_watch_handover) {
+    const ho = p.fire_watch_handover;
+    const handedAt = ho.handed_at ? new Date(ho.handed_at).toLocaleString('en-AU', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'short', hour12:false}) : '';
+    const photoHtml = ho.photo && ho.photo.data
+      ? '<div style="margin-top:8px"><img src="' + ho.photo.data + '" style="width:100%;max-width:280px;border-radius:6px;border:1px solid #BA7517"><div style="font-size:10.5px;color:#854F0B;margin-top:3px">' + (ho.photo.ts || '') + (ho.photo.gps ? ' · ' + ho.photo.gps : '') + '</div></div>'
+      : '';
+    handoverRow = '<div class="hw-view-row" style="border-left:3px solid #BA7517;background:#FAEEDA">' +
+      '<div class="hw-view-label" style="color:#854F0B">🔥 Fire watch handover — action required</div>' +
+      '<div class="hw-view-val" style="color:#633806">' +
+        '<div style="font-size:13px;font-weight:600;margin-bottom:4px">Handed over to ' + (ho.handed_to || '—') + '</div>' +
+        '<div style="font-size:12px;line-height:1.5">' +
+          'Worker <strong>' + (ho.handed_by || p.worker_name || '—') + '</strong> handed over the fire watch at <strong>' + handedAt + '</strong>. ' +
+          'You are now responsible for completing the ' + (p.fire_watch_duration || '30') + '-min fire watch and closing this permit.' +
+        '</div>' +
+        photoHtml +
+      '</div>' +
+      '</div>';
+  }
+
   // TFB warning: shown when permit was submitted on a Total Fire Ban day and no override applied yet
   let tfbWarningRow = '';
   if (p.tfb_active_at_submit && !p.tfb_override) {
@@ -10242,6 +10280,7 @@ function hwSupOpenReview(permitId) {
     </div>
     ${tfbWarningRow}
     ${tfbAppliedRow}
+    ${handoverRow}
     ${rejectRow}
     ${revokeRow}
     ${conditionsRow}
@@ -10312,10 +10351,39 @@ function hwSupOpenReview(permitId) {
       if (condBtn) condBtn.style.display = 'block';
     }
   } else if (p.status === 'approved' || p.status === 'active') {
-    document.getElementById('sup-hw-revoke-wrap').style.display = 'block';
+    // If a fire watch was handed over to the current supervisor, show the
+    // close-permit button instead of (or alongside) the revoke button.
+    const myName = (getProfile() || {}).name || '';
+    if (p.fire_watch_handover && p.fire_watch_handover.handed_to === myName) {
+      const fwCloseWrap = document.getElementById('sup-hw-fwclose-wrap');
+      if (fwCloseWrap) fwCloseWrap.style.display = 'block';
+      const dur = document.getElementById('sup-hw-fwclose-duration');
+      if (dur) dur.textContent = String(p.fire_watch_duration || 30);
+    } else {
+      document.getElementById('sup-hw-revoke-wrap').style.display = 'block';
+    }
   }
 
   goTo('screen-hw-sup-review');
+}
+
+function hwSupCloseHandoverPermit() {
+  if (!_hwSupCurrentPermit) return;
+  if (!confirm('Confirm fire watch is complete and permit can be closed?\n\nPermit: ' + _hwSupCurrentPermit.permit_id)) return;
+  const sup = (getProfile() || {}).name || 'Supervisor';
+  const all = hwLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _hwSupCurrentPermit.permit_id);
+  if (idx < 0) { alert('Permit not found in storage.'); return; }
+  all[idx].status = 'closed';
+  all[idx].closed_at = new Date().toISOString();
+  all[idx].closed_by = sup;
+  all[idx].closed_via_handover = true; // marks that supervisor closed via handover (not worker closeout)
+  localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
+  alert('Permit ' + all[idx].permit_id + ' closed.');
+  try { if (typeof supUpdatePermitsChip === 'function') supUpdatePermitsChip(); } catch(e) {}
+  try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
+  try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
+  goToPermitsToWork();
 }
 
 function hwSupApprove() {
@@ -17223,22 +17291,45 @@ function generatePermitPDF(permit) {
       y += cardH + 3;
     }
 
-    // Closeout declaration
-    y = drawSubLabel(y, 'CLOSEOUT DECLARATION — 6 of 6 confirmed');
-    cardH = 26;
-    drawCard(y, cardH, PDF_COLOURS.paleGreen, PDF_COLOURS.greenBorder);
-    innerY = y + 5;
-    setText(PDF_COLOURS.darkText);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-    // All closeout items are always ticked — closing the permit requires all 6 confirmations
-    CLOSEOUT_LABELS.forEach((lbl, i) => {
-      const ty = innerY + i * 3.5;
-      drawTick(ML + 4, ty, '#1B6E3A', 2.5);
+    // Fire watch handover — supervisor took over watch from worker
+    if (permit.fire_watch_handover) {
+      const ho = permit.fire_watch_handover;
+      y = drawSubLabel(y, 'FIRE WATCH HANDOVER');
+      cardH = 18;
+      drawCard(y, cardH, PDF_COLOURS.amberBg, PDF_COLOURS.amberBorder, PDF_COLOURS.amberDark);
+      setText(PDF_COLOURS.amberDarkText);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9);
+      doc.text('Worker handed fire watch to supervisor', ML + 4, y + 5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+      setText(PDF_COLOURS.darkText);
+      doc.text('Handed by: ' + (ho.handed_by || permit.worker_name || '—'), ML + 4, y + 10);
+      doc.text('Accepted by: ' + (ho.handed_to || '—'), ML + 4, y + 14);
+      const haTs = ho.handed_at ? pdfShortDateTime(ho.handed_at) : '';
+      doc.text('At: ' + haTs, ML + half + 2, y + 10);
+      if (permit.closed_via_handover) {
+        doc.text('Closed by supervisor after watch complete', ML + half + 2, y + 14);
+      }
+      y += cardH + 3;
+    }
+
+    // Closeout declaration — only show if worker closed normally (not via supervisor handover)
+    if (!permit.closed_via_handover) {
+      y = drawSubLabel(y, 'CLOSEOUT DECLARATION — 6 of 6 confirmed');
+      cardH = 26;
+      drawCard(y, cardH, PDF_COLOURS.paleGreen, PDF_COLOURS.greenBorder);
+      innerY = y + 5;
       setText(PDF_COLOURS.darkText);
       doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-      doc.text(lbl, ML + 9, ty);
-    });
-    y += cardH + 3;
+      // All closeout items are always ticked — closing the permit requires all 6 confirmations
+      CLOSEOUT_LABELS.forEach((lbl, i) => {
+        const ty = innerY + i * 3.5;
+        drawTick(ML + 4, ty, '#1B6E3A', 2.5);
+        setText(PDF_COLOURS.darkText);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+        doc.text(lbl, ML + 9, ty);
+      });
+      y += cardH + 3;
+    }
 
     // Worker comments
     y = drawSubLabel(y, 'WORKER COMMENTS');
