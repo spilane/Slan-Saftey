@@ -870,7 +870,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div style="font-size:13.5px;font-weight:600;color:var(--text);margin:0;padding:0;line-height:0.8">Camera</div>
         <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 0 0;padding:0;line-height:0.9">Photos for permits and hazard reports</div>
-        <div id="perm-camera-status" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;background:#1B3A2D;color:#fff;margin:-6px 0 0 0;display:inline-block">Tap to allow</div>
+        <div id="perm-camera-status" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;background:#1B3A2D;color:#fff;margin:-10px 0 0 0;display:inline-block">Tap to allow</div>
       </div>
     </div>
 
@@ -882,7 +882,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div style="font-size:13.5px;font-weight:600;color:var(--text);margin:0;padding:0;line-height:0.8">Location</div>
         <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 0 0;padding:0;line-height:0.9">Sign in/out, weather, GPS-tagged photos</div>
-        <div id="perm-location-status" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;background:#1B3A2D;color:#fff;margin:-6px 0 0 0;display:inline-block">Tap to allow</div>
+        <div id="perm-location-status" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;background:#1B3A2D;color:#fff;margin:-10px 0 0 0;display:inline-block">Tap to allow</div>
       </div>
     </div>
 
@@ -894,7 +894,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div style="font-size:13.5px;font-weight:600;color:var(--text);margin:0;padding:0;line-height:0.8">Notifications</div>
         <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 0 0;padding:0;line-height:0.9">Permit updates, alerts, supervisor messages</div>
-        <div id="perm-notif-status" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;background:#1B3A2D;color:#fff;margin:-6px 0 0 0;display:inline-block">Tap to allow</div>
+        <div id="perm-notif-status" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:14px;background:#1B3A2D;color:#fff;margin:-10px 0 0 0;display:inline-block">Tap to allow</div>
       </div>
     </div>
 
@@ -3383,15 +3383,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <div class="hw-card" style="opacity:.5;cursor:not-allowed" onclick="alert('Confined Space permits are not yet available. Coming soon.')">
+    <div class="hw-card" style="border-left:4px solid #70429B;cursor:pointer" onclick="goToCSForm()">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:42px;height:42px;border-radius:11px;background:rgba(112,66,155,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg viewBox="0 0 24 24" fill="none" stroke="#5A3880" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
         </div>
         <div style="flex:1">
           <div style="font-size:14px;font-weight:600;color:var(--text)">Confined Space</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Coming soon</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Pit, tank, tunnel, trench, excavation >1.5m</div>
         </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--muted)"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </div>
 
@@ -5584,6 +5585,79 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
   
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     CONFINED SPACE FORM — Step 15 Build 1
+     ═══════════════════════════════════════════════════════ -->
+<div id="screen-cs-form" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-permit-picker')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:rgba(112,66,155,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#5A3880" stroke-width="2" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Confined Space</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+
+<div class="tbar-greeting" style="margin-top:10px">
+  <h1 style="font-size:19px">Confined Space Permit</h1>
+  <p style="font-size:12px">Fill in all fields — submit when complete</p>
+</div>
+
+<div style="padding:18px;padding-bottom:120px;display:flex;flex-direction:column;gap:14px">
+
+  <!-- Permit identification -->
+  <div class="fcard">
+    <div class="fcard-hdr">Permit Identification</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Permit number</label>
+        <input type="text" id="cs-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fgroup">
+          <label class="flabel">Date</label>
+          <input type="text" id="cs-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Site</label>
+          <input type="text" id="cs-site" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Applicant -->
+  <div class="fcard">
+    <div class="fcard-hdr">Applicant</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Worker name</label>
+        <input type="text" id="cs-worker-name" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Company</label>
+        <input type="text" id="cs-company" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Role</label>
+        <input type="text" id="cs-role" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Temporary: Form under construction notice -->
+  <div class="fcard" style="background:#FFF8E5;border:1.5px solid #E6C56A">
+    <div class="fcard-body">
+      <div style="font-size:13px;color:#8B6914;text-align:center;line-height:1.5">
+        <strong>Form under construction</strong><br>
+        Full AS 2865 checks, atmospheric tests, photos, and submission coming in next update.
+      </div>
+    </div>
+  </div>
+
 </div>
 </div>
 
@@ -13846,6 +13920,60 @@ function wahViewRescueTemplate() {
     console.error('Rescue plan template error:', err);
     alert('Could not open rescue plan template. Please try again.');
   }
+}
+
+// ═══════════════════════════════════════════════════════
+// CONFINED SPACE — Build 1 (Step 15 Build 1)
+// Storage key: slan_cs_permits_v1
+// ID format: CS-YYYY-NNNN
+// ═══════════════════════════════════════════════════════
+
+function csLoadAll() {
+  try {
+    const raw = localStorage.getItem('slan_cs_permits_v1');
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) {
+    console.error('csLoadAll error:', e);
+    return [];
+  }
+}
+
+function csSaveAll(arr) {
+  try {
+    localStorage.setItem('slan_cs_permits_v1', JSON.stringify(arr));
+  } catch(e) {
+    console.error('csSaveAll error:', e);
+  }
+}
+
+function csGenerateId() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const all = csLoadAll();
+  const thisYear = all.filter(p => p.permit_id && p.permit_id.startsWith('CS-' + yyyy));
+  const maxNum = thisYear.length > 0 
+    ? Math.max(...thisYear.map(p => {
+        const match = p.permit_id.match(/CS-\d{4}-(\d{4})/);
+        return match ? parseInt(match[1], 10) : 0;
+      }))
+    : 0;
+  const next = String(maxNum + 1).padStart(4, '0');
+  return `CS-${yyyy}-${next}`;
+}
+
+function goToCSForm() {
+  goTo('screen-cs-form');
+  setTimeout(csInitForm, 60);
+}
+
+function csInitForm() {
+  const profile = JSON.parse(localStorage.getItem('slan_profile') || '{}');
+  document.getElementById('cs-permit-id').value = csGenerateId();
+  document.getElementById('cs-date').value = new Date().toLocaleDateString('en-AU');
+  document.getElementById('cs-site').value = profile.site || 'Main Site';
+  document.getElementById('cs-worker-name').value = profile.fullName || '';
+  document.getElementById('cs-company').value = profile.company || '';
+  document.getElementById('cs-role').value = profile.role || '';
 }
 
 function hwSelectType(btnEl) {
