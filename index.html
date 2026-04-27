@@ -3121,6 +3121,90 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ═══════════════════ WORKING AT HEIGHTS — SUPERVISOR REVIEW ═══ -->
+<div id="screen-wah-sup-review" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goToPermitsToWork()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Review Heights Permit</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div id="sup-wah-review-body" style="padding:18px;padding-bottom:20px"></div>
+
+  <!-- Action buttons (pending state) -->
+  <div id="sup-wah-review-actions" style="padding:0 18px 24px;display:none">
+    <button class="submit-btn" id="sup-wah-approve-btn" onclick="wahSupApprove()" style="width:100%;background:#1B6E3A;margin-bottom:9px">
+      ✓ Approve Permit
+    </button>
+    <button id="sup-wah-conditions-btn" onclick="wahSupShowConditions()" style="width:100%;padding:13px;border-radius:var(--r);background:#F5C48A;border:1px solid #BA7517;color:#633806;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:9px">
+      ⚠ Approve with Conditions
+    </button>
+    <button onclick="wahSupShowReject()" style="width:100%;padding:13px;border-radius:var(--r);background:#FCEBEB;border:1px solid rgba(184,50,50,.3);color:#A32D2D;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+      ✕ Reject Permit
+    </button>
+  </div>
+
+  <!-- Conditions input (hidden by default) -->
+  <div id="sup-wah-conditions-wrap" style="display:none;padding:0 18px 24px">
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Conditions for approval</div>
+    <div style="background:#F1EFE8;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11.5px;color:var(--muted);line-height:1.55">
+      <strong>Conditions are extra rules to follow during work.</strong> If equipment is missing or rescue plan is not in place, REJECT instead with the reason — workers should fix issues before a fresh permit.
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">Quick-pick conditions:</div>
+    <div id="sup-wah-cond-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+      <div class="cond-chip" onclick="wahSupToggleCondChip(this)" data-cond="Stop work if wind exceeds 25 km/h">Stop if wind &gt;25 km/h</div>
+      <div class="cond-chip" onclick="wahSupToggleCondChip(this)" data-cond="Dedicated spotter required at all times">Dedicated spotter</div>
+      <div class="cond-chip" onclick="wahSupToggleCondChip(this)" data-cond="100% tie-off — never disconnect from anchor">100% tie-off</div>
+      <div class="cond-chip" onclick="wahSupToggleCondChip(this)" data-cond="Hourly check-in with supervisor">Hourly check-in</div>
+      <div class="cond-chip" onclick="wahSupToggleCondChip(this)" data-cond="Rescue plan briefed to all workers before commencing">Brief rescue plan</div>
+      <div class="cond-chip" onclick="wahSupToggleCondChip(this)" data-cond="Exclusion zone monitored continuously by spotter">Monitor exclusion zone</div>
+      <div class="cond-chip" onclick="wahSupToggleCondChip(this)" data-cond="Work to be completed before forecast weather change">Beat forecast weather</div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">Custom condition (optional):</div>
+    <textarea id="sup-wah-conditions-text" rows="3" placeholder="Add any additional conditions specific to this permit..." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="wahSupCancelConditions()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="wahSupApproveWithConditions()" style="flex:1;padding:13px;border-radius:var(--r);background:#BA7517;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Approve with Conditions</button>
+    </div>
+  </div>
+
+  <!-- Reject reason input (hidden by default) -->
+  <div id="sup-wah-reject-wrap" style="display:none;padding:0 18px 24px">
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Reason for rejection <span style="color:#A32D2D">*</span></div>
+    <textarea id="sup-wah-reject-text" rows="4" placeholder="Explain why this permit is being rejected. Worker will need to submit a new permit." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="wahSupCancelReject()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="wahSupReject()" style="flex:1;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ WORKING AT HEIGHTS — ACKNOWLEDGE CONDITIONS ═══ -->
+<div id="screen-wah-ack-conditions" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="wahAckBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Acknowledge Conditions</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:120px">
+    <div style="background:#FAEEDA;border:1.5px solid #BA7517;padding:13px 14px;border-radius:10px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:5px">⚠ Approval with conditions</div>
+      <div style="font-size:12px;color:#633806;line-height:1.5" id="wah-ack-permit-info">Your supervisor approved permit <strong>—</strong> with conditions. You must acknowledge each condition before work can commence.</div>
+    </div>
+    <div id="wah-ack-conditions-list" style="margin-bottom:14px"></div>
+    <div class="check-row" id="wah-ack-final" onclick="wahAckToggleFinal()" style="margin-top:14px">
+      <div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="check-text">I have read and accept all conditions above. I will follow them for the duration of this permit.</div>
+    </div>
+    <button class="submit-btn" id="wah-ack-submit-btn" onclick="wahSubmitAck()" disabled style="opacity:0.5;margin-top:18px">
+      Acknowledge &amp; Activate Permit
+    </button>
+  </div>
+</div>
+
 <!-- ═══════════════════ HOT WORKS — SIGN-OUT GATE ═══ -->
 <div id="screen-hw-gate" class="screen">
   <div class="tbar" style="background:var(--deep)">
@@ -9570,6 +9654,7 @@ function hwAckRevBack() {
 function ptwGetType(pm) {
   if (pm.permit_type) return pm.permit_type;
   if (pm.permit_id && pm.permit_id.startsWith('HW-')) return 'hotworks';
+  if (pm.permit_id && pm.permit_id.startsWith('WAH-')) return 'wah';
   // Default to hotworks for now since that's what we build
   return 'hotworks';
 }
@@ -9597,7 +9682,11 @@ function ptwLoadAllPermits() {
   if (typeof hwLoadAll === 'function') {
     hwLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'hotworks' })); });
   }
-  // Future: WAH permits, Confined Space permits, etc.
+  // Working at Heights permits
+  if (typeof wahLoadAll === 'function') {
+    wahLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'wah' })); });
+  }
+  // Future: Confined Space permits, etc.
   return all;
 }
 
@@ -9609,8 +9698,10 @@ function ptwOpenPermit(permitId) {
   const type = ptwGetType(p);
   if (type === 'hotworks') {
     hwSupOpenReview(permitId);
+  } else if (type === 'wah') {
+    wahSupOpenReview(permitId);
   } else {
-    // Future: WAH review, Confined Space review, etc.
+    // Future: Confined Space review, etc.
     alert('Review flow for ' + ptwGetTypeLabel(type) + ' permits not yet built.');
   }
 }
@@ -12180,7 +12271,7 @@ function wahRenderList() {
   all.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
 
   content.innerHTML = all.map(p => {
-    const statusBadge = wahStatusBadge(p.status);
+    const statusBadge = wahStatusBadge(p.status, p);
     const subType = p.subtype || 'Working at Heights';
     return '<div class="hw-card" onclick="wahViewPermit(\'' + p.permit_id + '\')" style="cursor:pointer;margin-bottom:10px">' +
       '<div style="display:flex;align-items:center;gap:12px">' +
@@ -12197,7 +12288,11 @@ function wahRenderList() {
   }).join('');
 }
 
-function wahStatusBadge(status) {
+function wahStatusBadge(status, p) {
+  // If permit was approved with conditions but worker hasn't acknowledged → show amber Action needed
+  if (p && p.approval_conditions && !p.conditions_acknowledged && (status === 'approved' || status === 'active')) {
+    return '<span style="display:inline-block;background:#FAEEDA;color:#854F0B;padding:3px 8px;border-radius:6px;font-size:11.5px;font-weight:600">Action needed</span>';
+  }
   const map = {
     submitted: { bg:'#FAEEDA', fg:'#633806', text:'Pending approval' },
     approved:  { bg:'#E0F2E9', fg:'#1B6E3A', text:'Approved' },
@@ -12249,7 +12344,7 @@ function wahViewPermit(permitId) {
     '<div style="background:white;border:1px solid var(--border);border-radius:12px;padding:18px">' +
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">' +
     '<div style="font-size:17px;font-weight:700">' + p.permit_id + '</div>' +
-    wahStatusBadge(p.status) +
+    wahStatusBadge(p.status, p) +
     '</div>' +
     '<div class="hw-view-row"><div class="hw-view-label">Type</div><div class="hw-view-val">' + (p.subtype || 'Working at Heights') + '</div></div>' +
     '<div class="hw-view-row"><div class="hw-view-label">Description</div><div class="hw-view-val">' + (p.description || '') + '</div></div>' +
@@ -12278,6 +12373,324 @@ function goToWAHList() {
   wahRenderList();
   goTo('screen-wah-list');
 }
+
+// ═══════════════════════════════════════════════════════
+// WAH — SUPERVISOR-SIDE LOGIC (Step 14 Build 2)
+// Mirrors the Hot Works supervisor flow exactly.
+// ═══════════════════════════════════════════════════════
+
+let _wahSupCurrentPermit = null;
+
+function wahSupOpenReview(permitId) {
+  const p = wahLoadAll().find(x => x.permit_id === permitId);
+  if (!p) { alert('Permit not found'); return; }
+  _wahSupCurrentPermit = p;
+
+  // Reset action panels
+  document.getElementById('sup-wah-review-actions').style.display = 'none';
+  document.getElementById('sup-wah-conditions-wrap').style.display = 'none';
+  document.getElementById('sup-wah-reject-wrap').style.display = 'none';
+
+  const d = document.getElementById('sup-wah-review-body');
+
+  function row(label, val) {
+    if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) return '';
+    const v = Array.isArray(val) ? val.join(', ') : String(val);
+    return '<div class="hw-view-row"><div class="hw-view-label">' + label + '</div><div class="hw-view-val">' + v + '</div></div>';
+  }
+
+  const badgeText = wahStatusLabel(p.status, p);
+  const badgeClass = wahStatusBadgeClass(p.status, p);
+
+  let checksHtml = '';
+  if (p.checks) {
+    const chkLabels = [
+      'Anchor points rated and pre-use inspected',
+      'Harness in date and undamaged',
+      'Lanyard / SRL in date, free running',
+      'Edge protection / guardrails in place',
+      'Exclusion zone below set up',
+      'Weather acceptable',
+      'Rescue plan in place and communicated',
+      'Spotter / observer assigned',
+      'Tools tethered or area cleared',
+      'Working surface inspected'
+    ];
+    checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
+    for (let i = 1; i <= 10; i++) {
+      if (p.checks['chk' + i]) checksHtml += '<div style="font-size:12.5px;margin-bottom:3px">✓ ' + chkLabels[i-1] + '</div>';
+    }
+    checksHtml += '</div></div>';
+  }
+
+  let conditionsRow = '';
+  if (p.approval_conditions) {
+    conditionsRow = '<div class="hw-view-row" style="border-left:3px solid #BA7517;background:#FAEEDA"><div class="hw-view-label" style="color:#854F0B">Conditions of approval</div><div class="hw-view-val" style="color:#633806">' + p.approval_conditions + '</div></div>';
+  }
+  let rejectRow = '';
+  if (p.reject_reason) {
+    rejectRow = '<div class="hw-view-row" style="border-left:3px solid #A32D2D;background:#FCEBEB"><div class="hw-view-label" style="color:#A32D2D">Reason for rejection</div><div class="hw-view-val" style="color:#A32D2D">' + p.reject_reason + '</div></div>';
+  }
+
+  let photoHtml = '';
+  if (p.photos && p.photos.length) {
+    photoHtml = '<div class="hw-view-row"><div class="hw-view-label" style="margin-bottom:8px">Photo evidence</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+      p.photos.map(ph => '<div><img src="' + ph.data + '" style="width:100%;border-radius:6px"><div style="font-size:10px;color:var(--muted);margin-top:2px">' + (ph.ts || '') + (ph.gps ? ' · ' + ph.gps : '') + '</div></div>').join('') +
+      '</div></div>';
+  }
+
+  d.innerHTML =
+    '<div style="background:white;border:1px solid var(--border);border-radius:12px;padding:18px">' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">' +
+    '<div style="font-size:17px;font-weight:700">' + p.permit_id + '</div>' +
+    '<span class="hw-badge ' + badgeClass + '" style="font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px">' + badgeText + '</span>' +
+    '</div>' +
+    rejectRow +
+    conditionsRow +
+    row('Worker', p.worker_name) +
+    row('Company', p.worker_company) +
+    row('Type', p.subtype) +
+    (p.subtype_other ? row('Specify', p.subtype_other) : '') +
+    row('Description', p.description) +
+    row('Location', p.location) +
+    row('Working height', (p.working_height_m || '') + ' m') +
+    row('Anchor type', p.anchor_type) +
+    row('Equipment', p.equipment) +
+    (p.equipment_other ? row('Other equipment', p.equipment_other) : '') +
+    row('Times', (p.start || '') + ' → ' + (p.end || '')) +
+    row('Workers at height', p.num_workers) +
+    row('Weather / wind', p.weather) +
+    row('Exclusion zone', (p.exclusion_zone_m || '') + ' m radius') +
+    row('Rescue plan', p.rescue_plan) +
+    checksHtml +
+    photoHtml +
+    '</div>';
+
+  // Show appropriate action panel
+  if (p.status === 'submitted' || p.status === 'pending') {
+    document.getElementById('sup-wah-review-actions').style.display = 'block';
+  }
+
+  goTo('screen-wah-sup-review');
+}
+
+// Status label helper for WAH (mirrors hwStatusLabel)
+function wahStatusLabel(s, p) {
+  if (p && p.approval_conditions && !p.conditions_acknowledged && (s === 'approved' || s === 'active')) {
+    return 'Action needed';
+  }
+  if (s === 'submitted' || s === 'pending') return 'Pending approval';
+  if (s === 'approved') return 'Approved';
+  if (s === 'active')   return 'Active';
+  if (s === 'rejected') return 'Rejected';
+  if (s === 'closed')   return 'Closed';
+  if (s === 'expired')  return 'Expired';
+  return s;
+}
+
+// Badge class helper (reuses Hot Works classes)
+function wahStatusBadgeClass(s, p) {
+  if (p && p.approval_conditions && !p.conditions_acknowledged && (s === 'approved' || s === 'active')) {
+    return 'b-needs-ack';
+  }
+  if (s === 'submitted' || s === 'pending') return 'b-pending';
+  if (s === 'approved' || s === 'active')   return 'b-approved';
+  if (s === 'rejected') return 'b-rejected';
+  return 'b-closed';
+}
+
+// Approve directly (no conditions)
+function wahSupApprove() {
+  if (!_wahSupCurrentPermit) return;
+  if (!confirm('Approve permit ' + _wahSupCurrentPermit.permit_id + '?\n\nThe worker will be notified and can begin work.')) return;
+  const supName = (getProfile() || {}).name || 'Supervisor';
+  const all = wahLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _wahSupCurrentPermit.permit_id);
+  if (idx < 0) { alert('Permit not found in storage'); return; }
+  all[idx].status = 'approved';
+  all[idx].approved_by = supName;
+  all[idx].approved_at = new Date().toISOString();
+  wahSaveAll(all);
+  alert('Permit ' + all[idx].permit_id + ' approved.');
+  _wahSupBackToQueue();
+}
+
+// Show conditions input
+function wahSupShowConditions() {
+  wahSupResetCondChips();
+  document.getElementById('sup-wah-review-actions').style.display = 'none';
+  document.getElementById('sup-wah-conditions-wrap').style.display = 'block';
+  setTimeout(function() {
+    const t = document.getElementById('sup-wah-conditions-text');
+    if (t) t.focus();
+  }, 60);
+}
+function wahSupCancelConditions() {
+  document.getElementById('sup-wah-conditions-wrap').style.display = 'none';
+  document.getElementById('sup-wah-review-actions').style.display = 'block';
+}
+function wahSupToggleCondChip(el) { el.classList.toggle('selected'); }
+function wahSupResetCondChips() {
+  document.querySelectorAll('#sup-wah-cond-chips .cond-chip.selected').forEach(c => c.classList.remove('selected'));
+  const t = document.getElementById('sup-wah-conditions-text');
+  if (t) t.value = '';
+}
+function wahSupGatherConditions() {
+  const chips = document.querySelectorAll('#sup-wah-cond-chips .cond-chip.selected');
+  const selected = Array.from(chips).map(c => c.getAttribute('data-cond'));
+  const custom = (document.getElementById('sup-wah-conditions-text').value || '').trim();
+  if (custom) selected.push(custom);
+  return selected;
+}
+
+function wahSupApproveWithConditions() {
+  if (!_wahSupCurrentPermit) return;
+  const conditions = wahSupGatherConditions();
+  if (conditions.length === 0) {
+    alert('Please select at least one condition or write a custom one before approving.');
+    return;
+  }
+  const supName = (getProfile() || {}).name || 'Supervisor';
+  const all = wahLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _wahSupCurrentPermit.permit_id);
+  if (idx < 0) { alert('Permit not found in storage'); return; }
+  all[idx].status = 'approved';
+  all[idx].approved_by = supName;
+  all[idx].approved_at = new Date().toISOString();
+  all[idx].approval_conditions = conditions.join('\n');
+  all[idx].approval_conditions_list = conditions; // store as list for ack screen
+  all[idx].conditions_acknowledged = false;
+  wahSaveAll(all);
+  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.\n\nWorker must acknowledge before commencing work.');
+  _wahSupBackToQueue();
+}
+
+// Reject flow
+function wahSupShowReject() {
+  document.getElementById('sup-wah-review-actions').style.display = 'none';
+  document.getElementById('sup-wah-reject-wrap').style.display = 'block';
+  const t = document.getElementById('sup-wah-reject-text');
+  if (t) { t.value = ''; setTimeout(() => t.focus(), 60); }
+}
+function wahSupCancelReject() {
+  document.getElementById('sup-wah-reject-wrap').style.display = 'none';
+  document.getElementById('sup-wah-review-actions').style.display = 'block';
+}
+function wahSupReject() {
+  if (!_wahSupCurrentPermit) return;
+  const reason = (document.getElementById('sup-wah-reject-text').value || '').trim();
+  if (!reason) { alert('Please provide a reason for rejection.'); return; }
+  const supName = (getProfile() || {}).name || 'Supervisor';
+  const all = wahLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _wahSupCurrentPermit.permit_id);
+  if (idx < 0) { alert('Permit not found in storage'); return; }
+  all[idx].status = 'rejected';
+  all[idx].rejected_by = supName;
+  all[idx].rejected_at = new Date().toISOString();
+  all[idx].reject_reason = reason;
+  wahSaveAll(all);
+  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  _wahSupBackToQueue();
+}
+
+function _wahSupBackToQueue() {
+  // Refresh all supervisor queues + return to PTW unified screen
+  try { if (typeof ptwRenderUnified === 'function') ptwRenderUnified(); } catch(e) {}
+  try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
+  try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
+  try { if (typeof goToPermitsToWork === 'function') goToPermitsToWork(); else goTo('screen-ptw-unified'); } catch(e) { goTo('screen-dash'); }
+}
+
+// ═══════════════════════════════════════════════════════
+// WAH — WORKER-SIDE: ACKNOWLEDGE CONDITIONS
+// Mirrors the Hot Works ack flow.
+// ═══════════════════════════════════════════════════════
+
+let _wahAckPermit = null;
+let _wahAckedSet = null;
+
+function wahOpenAckConditions(permitId) {
+  const p = wahLoadAll().find(x => x.permit_id === permitId);
+  if (!p) { alert('Permit not found'); return; }
+  if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) {
+    alert('No conditions to acknowledge for this permit.');
+    return;
+  }
+  _wahAckPermit = p;
+  _wahAckedSet = new Set();
+
+  document.getElementById('wah-ack-permit-info').innerHTML =
+    'Your supervisor approved permit <strong>' + p.permit_id + '</strong> with conditions. You must acknowledge each condition before work can commence.';
+
+  const list = document.getElementById('wah-ack-conditions-list');
+  list.innerHTML = p.approval_conditions_list.map((cond, idx) => {
+    return '<div class="check-row" id="wah-ack-cond-' + idx + '" onclick="wahAckToggleCondition(' + idx + ')" style="margin-bottom:8px">' +
+      '<div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+      '<div class="check-text">' + cond + '</div>' +
+      '</div>';
+  }).join('');
+
+  const final = document.getElementById('wah-ack-final');
+  if (final) final.classList.remove('checked');
+  wahAckUpdateBtn();
+  goTo('screen-wah-ack-conditions');
+}
+
+function wahAckToggleCondition(idx) {
+  const el = document.getElementById('wah-ack-cond-' + idx);
+  if (!el) return;
+  el.classList.toggle('checked');
+  if (el.classList.contains('checked')) _wahAckedSet.add(idx);
+  else _wahAckedSet.delete(idx);
+  wahAckUpdateBtn();
+}
+
+function wahAckToggleFinal() {
+  const el = document.getElementById('wah-ack-final');
+  if (el) el.classList.toggle('checked');
+  wahAckUpdateBtn();
+}
+
+function wahAckUpdateBtn() {
+  const btn = document.getElementById('wah-ack-submit-btn');
+  if (!btn || !_wahAckPermit) return;
+  const allAcked = _wahAckedSet.size === _wahAckPermit.approval_conditions_list.length;
+  const finalAcked = document.getElementById('wah-ack-final').classList.contains('checked');
+  const ok = allAcked && finalAcked;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.5';
+}
+
+function wahSubmitAck() {
+  if (!_wahAckPermit) return;
+  const all = wahLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _wahAckPermit.permit_id);
+  if (idx < 0) { alert('Permit not found'); return; }
+  all[idx].conditions_acknowledged = true;
+  all[idx].conditions_acknowledged_at = new Date().toISOString();
+  all[idx].status = 'active';
+  wahSaveAll(all);
+  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
+  wahRenderList();
+  goTo('screen-wah-list');
+}
+
+function wahAckBack() {
+  goTo('screen-wah-list');
+}
+
+// Update worker-side viewPermit to route to ack screen if conditions need ack
+const _wahOriginalViewPermit = wahViewPermit;
+wahViewPermit = function(permitId) {
+  const p = wahLoadAll().find(x => x.permit_id === permitId);
+  if (p && p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
+    wahOpenAckConditions(permitId);
+    return;
+  }
+  _wahOriginalViewPermit(permitId);
+};
 
 // View a sample rescue plan PDF — uses the same header/footer style as Hot Works permits.
 // In production this would link to the company's actual rescue plan from the safety library.
