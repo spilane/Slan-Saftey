@@ -3534,6 +3534,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="check-row" id="hw-chk7" onclick="toggleCheck('hw-chk7')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">PPE confirmed — gloves, helmet, eye / face protection</div></div>
       <div class="check-row" id="hw-chk8" onclick="toggleCheck('hw-chk8')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Ventilation adequate for the task</div></div>
       <div class="check-row" id="hw-chk9" onclick="toggleCheck('hw-chk9')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Adjacent workers notified</div></div>
+      <div class="check-row" id="hw-chk10" onclick="toggleCheck('hw-chk10')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Gas cylinders secured upright and &gt;3m from ignition source (if applicable)</div></div>
     </div>
   </div>
 
@@ -8396,8 +8397,348 @@ function goToPermitsToWork() {
 let _hwPhotoSlot = null;
 const _hwPhotos = { 1:null, 2:null, 3:null, 4:null };
 
+// ──────────────────────────────────────────────────────────────────
+// FORM STATE PERSISTENCE — Step 13
+// Saves the in-progress Hot Works form to localStorage so that if
+// Android kills the browser tab while the camera is open, the form
+// (including photos) is restored when the tab reloads.
+// ──────────────────────────────────────────────────────────────────
+const HW_DRAFT_KEY = 'slan_hw_draft_v1';
+const HW_DRAFT_MAX_AGE_MS = 30 * 60 * 1000; // 30 min — old drafts are discarded
+let _hwDraftSaveDebounce = null;
+let _hwDraftActive = false; // true while user is on the form
+
+function hwCollectFormState() {
+  const checks = {};
+  for (let i = 1; i <= 10; i++) {
+    const el = document.getElementById('hw-chk' + i);
+    checks['chk' + i] = el ? el.classList.contains('checked') : false;
+  }
+  const fw = document.getElementById('hw-fw-req');
+  const cf = document.getElementById('hw-confirm');
+  return {
+    saved_at: Date.now(),
+    permit_id: (document.getElementById('hw-permit-id') || {}).value || '',
+    type: window.hwSelectedType || null,
+    type_other: (document.getElementById('hw-type-other') || {}).value || '',
+    description: (document.getElementById('hw-description') || {}).value || '',
+    location: (document.getElementById('hw-location') || {}).value || '',
+    equip_selected: Array.from(document.querySelectorAll('#screen-hw-form [data-hwequip].pass')).map(el => el.getAttribute('data-hwequip')),
+    equip_other: (document.getElementById('hw-equip-other') || {}).value || '',
+    gas_selected: Array.from(document.querySelectorAll('#screen-hw-form [data-hwgas].pass')).map(el => el.getAttribute('data-hwgas')),
+    gas_other: (document.getElementById('hw-gas-other') || {}).value || '',
+    start: (document.getElementById('hw-start') || {}).value || '',
+    end: (document.getElementById('hw-end') || {}).value || '',
+    num_workers: (document.getElementById('hw-num-workers') || {}).value || '',
+    weather: (document.getElementById('hw-weather') || {}).value || '',
+    muster: (document.getElementById('hw-muster') || {}).value || '',
+    fw_dur: window.hwSelectedFwDur || null,
+    checks: checks,
+    fw_req: fw ? fw.classList.contains('checked') : false,
+    confirm: cf ? cf.classList.contains('checked') : false,
+    photos: { 1: _hwPhotos[1], 2: _hwPhotos[2], 3: _hwPhotos[3], 4: _hwPhotos[4] }
+  };
+}
+
+function hwSaveDraft() {
+  if (!_hwDraftActive) return;
+  if (_hwDraftSaveDebounce) clearTimeout(_hwDraftSaveDebounce);
+  _hwDraftSaveDebounce = setTimeout(function() {
+    try {
+      const state = hwCollectFormState();
+      localStorage.setItem(HW_DRAFT_KEY, JSON.stringify(state));
+    } catch(e) {
+      console.warn('Could not save draft:', e);
+      // If quota exceeded, try clearing photos and retry without them
+      try {
+        const state = hwCollectFormState();
+        state.photos = { 1: null, 2: null, 3: null, 4: null };
+        state._photos_dropped = true;
+        localStorage.setItem(HW_DRAFT_KEY, JSON.stringify(state));
+      } catch(e2) {
+        console.warn('Draft save failed even without photos:', e2);
+      }
+    }
+  }, 400); // debounce 400ms
+}
+
+function hwSaveDraftNow() {
+  // Synchronous save (no debounce) — used right before risky ops like opening camera
+  if (!_hwDraftActive) return;
+  try {
+    const state = hwCollectFormState();
+    localStorage.setItem(HW_DRAFT_KEY, JSON.stringify(state));
+  } catch(e) { console.warn('Immediate draft save failed:', e); }
+}
+
+function hwGetDraft() {
+  try {
+    const raw = localStorage.getItem(HW_DRAFT_KEY);
+    if (!raw) return null;
+    const state = JSON.parse(raw);
+    if (!state || !state.saved_at) return null;
+    // Discard drafts older than 30 min
+    if (Date.now() - state.saved_at > HW_DRAFT_MAX_AGE_MS) {
+      localStorage.removeItem(HW_DRAFT_KEY);
+      return null;
+    }
+    return state;
+  } catch(e) { return null; }
+}
+
+function hwClearDraft() {
+  try { localStorage.removeItem(HW_DRAFT_KEY); } catch(e) {}
+  _hwDraftActive = false;
+}
+
+function hwHasMeaningfulDraft(state) {
+  if (!state) return false;
+  // A draft is meaningful if user has filled in ANY work detail (not just opened the form)
+  return !!(state.type || state.description || state.location ||
+    (state.equip_selected && state.equip_selected.length) ||
+    (state.photos && (state.photos[1] || state.photos[2] || state.photos[3] || state.photos[4])));
+}
+
+function hwApplyDraft(state) {
+  if (!state) return;
+  try {
+    // Type
+    if (state.type) {
+      window.hwSelectedType = state.type;
+      const btn = document.querySelector('#screen-hw-form [data-hwtype="' + state.type + '"]');
+      if (btn) btn.classList.add('pass');
+      const otherWrap = document.getElementById('hw-type-other-wrap');
+      if (otherWrap) otherWrap.style.display = (state.type === 'Other') ? 'block' : 'none';
+    }
+    if (state.type_other) document.getElementById('hw-type-other').value = state.type_other;
+    if (state.description) document.getElementById('hw-description').value = state.description;
+    if (state.location) document.getElementById('hw-location').value = state.location;
+
+    // Equipment + gas (multi-select)
+    (state.equip_selected || []).forEach(v => {
+      const el = document.querySelector('#screen-hw-form [data-hwequip="' + v + '"]');
+      if (el) el.classList.add('pass');
+    });
+    if (state.equip_other) document.getElementById('hw-equip-other').value = state.equip_other;
+    const eqOtherWrap = document.getElementById('hw-equip-other-wrap');
+    if (eqOtherWrap && (state.equip_selected || []).indexOf('Other') >= 0) eqOtherWrap.style.display = 'block';
+
+    (state.gas_selected || []).forEach(v => {
+      const el = document.querySelector('#screen-hw-form [data-hwgas="' + v + '"]');
+      if (el) el.classList.add('pass');
+    });
+    if (state.gas_other) document.getElementById('hw-gas-other').value = state.gas_other;
+    const gasOtherWrap = document.getElementById('hw-gas-other-wrap');
+    if (gasOtherWrap && (state.gas_selected || []).indexOf('Other') >= 0) gasOtherWrap.style.display = 'block';
+
+    // Times
+    if (state.start) document.getElementById('hw-start').value = state.start;
+    if (state.end) document.getElementById('hw-end').value = state.end;
+    if (state.num_workers) document.getElementById('hw-num-workers').value = state.num_workers;
+    if (state.weather) document.getElementById('hw-weather').value = state.weather;
+    if (state.muster) document.getElementById('hw-muster').value = state.muster;
+
+    // Fire watch duration
+    if (state.fw_dur) {
+      window.hwSelectedFwDur = state.fw_dur;
+      const fwBtn = document.querySelector('#screen-hw-form [data-fwdur="' + state.fw_dur + '"]');
+      if (fwBtn) fwBtn.classList.add('pass');
+    }
+
+    // Checks
+    if (state.checks) {
+      for (let i = 1; i <= 10; i++) {
+        if (state.checks['chk' + i]) {
+          const el = document.getElementById('hw-chk' + i);
+          if (el) el.classList.add('checked');
+        }
+      }
+    }
+    if (state.fw_req) { const e = document.getElementById('hw-fw-req'); if (e) e.classList.add('checked'); }
+    if (state.confirm) { const e = document.getElementById('hw-confirm'); if (e) e.classList.add('checked'); }
+
+    // Photos — restore _hwPhotos AND repaint the slot UI
+    if (state.photos) {
+      [1,2,3,4].forEach(slot => {
+        if (state.photos[slot] && state.photos[slot].data) {
+          _hwPhotos[slot] = state.photos[slot];
+          if (typeof hwPhotoStoreUI === 'function') {
+            hwPhotoStoreUI(slot, state.photos[slot].data, state.photos[slot].ts, state.photos[slot].gps);
+          }
+        }
+      });
+    }
+
+    if (typeof hwValidate === 'function') hwValidate();
+  } catch(e) { console.warn('hwApplyDraft error:', e); }
+}
+
+// Hook into form open: check for existing draft and offer to restore
+function hwMaybeRestoreDraft() {
+  const draft = hwGetDraft();
+  if (!hwHasMeaningfulDraft(draft)) return false;
+  // Show a non-blocking banner at top of the form, not an alert (alerts are missed by users)
+  const formScreen = document.getElementById('screen-hw-form');
+  if (!formScreen) return false;
+  let banner = document.getElementById('hw-restore-banner');
+  if (banner) banner.remove();
+  banner = document.createElement('div');
+  banner.id = 'hw-restore-banner';
+  banner.style.cssText = 'background:#FAEEDA;border:1.5px solid #BA7517;padding:11px 14px;margin:10px 14px 0;border-radius:10px;font-size:12.5px;color:#633806;line-height:1.5;display:flex;flex-direction:column;gap:8px';
+  const minsAgo = Math.max(1, Math.round((Date.now() - draft.saved_at) / 60000));
+  const photoCount = [1,2,3,4].filter(s => draft.photos && draft.photos[s]).length;
+  banner.innerHTML =
+    '<div><strong>Restore in-progress permit?</strong></div>' +
+    '<div>You started a permit ' + minsAgo + ' min ago' + (photoCount ? ' with ' + photoCount + ' photo' + (photoCount===1?'':'s') : '') + '. Restore it?</div>' +
+    '<div style="display:flex;gap:8px;margin-top:2px">' +
+      '<button id="hw-restore-yes" style="flex:1;padding:10px;background:#1B3A2D;color:white;border:none;border-radius:8px;font-weight:600;font-size:12.5px;cursor:pointer;font-family:\'DM Sans\',sans-serif">Yes, restore</button>' +
+      '<button id="hw-restore-no" style="flex:1;padding:10px;background:white;color:#633806;border:1.5px solid #BA7517;border-radius:8px;font-weight:600;font-size:12.5px;cursor:pointer;font-family:\'DM Sans\',sans-serif">Start fresh</button>' +
+    '</div>';
+  // Insert banner right after the topbar (so it's at the top of the scrollable form)
+  const fbody = formScreen.querySelector('.fbody') || formScreen.querySelector('.body') || formScreen;
+  fbody.insertBefore(banner, fbody.firstChild);
+
+  document.getElementById('hw-restore-yes').onclick = function() {
+    hwApplyDraft(draft);
+    banner.remove();
+    _hwDraftActive = true; // keep auto-saving the now-restored form
+  };
+  document.getElementById('hw-restore-no').onclick = function() {
+    hwClearDraft();
+    banner.remove();
+    _hwDraftActive = true;
+  };
+  return true;
+}
+
+// ──────────────────────────────────────────────────────────────────
+// SUPERVISOR OVERRIDE MODAL — DRAFT PERSISTENCE (Step 13)
+// Same approach as Hot Works form: save state on every change, restore
+// when re-opening the modal if there's a recent unsubmitted draft.
+// ──────────────────────────────────────────────────────────────────
+const TFB_OVERRIDE_DRAFT_KEY = 'slan_tfb_override_draft_v1';
+const TFB_OVERRIDE_DRAFT_MAX_AGE_MS = 30 * 60 * 1000;
+let _tfbOverrideDraftActive = false;
+let _tfbOverrideSaveDebounce = null;
+
+function tfbOverrideCollectState() {
+  return {
+    saved_at: Date.now(),
+    permit_id: window._tfbOverrideForPermitId || null,
+    num: (document.getElementById('tfb-override-num') || {}).value || '',
+    expiry: (document.getElementById('tfb-override-expiry') || {}).value || '',
+    justification: (document.getElementById('tfb-override-justification') || {}).value || '',
+    watcher: (document.getElementById('tfb-override-watcher') || {}).value || '',
+    triggers: (document.getElementById('tfb-override-triggers') || {}).value || '',
+    fwduration: (document.getElementById('tfb-override-fwduration') || {}).value || '120',
+    photo: window._tfbOverridePhoto || null,
+    equip_photo: window._tfbOverrideEquipPhoto || null
+  };
+}
+
+function tfbOverrideSaveDraft() {
+  if (!_tfbOverrideDraftActive) return;
+  if (_tfbOverrideSaveDebounce) clearTimeout(_tfbOverrideSaveDebounce);
+  _tfbOverrideSaveDebounce = setTimeout(function() {
+    try {
+      localStorage.setItem(TFB_OVERRIDE_DRAFT_KEY, JSON.stringify(tfbOverrideCollectState()));
+    } catch(e) { console.warn('Override draft save failed:', e); }
+  }, 400);
+}
+
+function tfbOverrideSaveDraftNow() {
+  if (!_tfbOverrideDraftActive) return;
+  try {
+    localStorage.setItem(TFB_OVERRIDE_DRAFT_KEY, JSON.stringify(tfbOverrideCollectState()));
+  } catch(e) { console.warn('Override draft immediate save failed:', e); }
+}
+
+function tfbOverrideGetDraft() {
+  try {
+    const raw = localStorage.getItem(TFB_OVERRIDE_DRAFT_KEY);
+    if (!raw) return null;
+    const state = JSON.parse(raw);
+    if (!state || !state.saved_at) return null;
+    if (Date.now() - state.saved_at > TFB_OVERRIDE_DRAFT_MAX_AGE_MS) {
+      localStorage.removeItem(TFB_OVERRIDE_DRAFT_KEY);
+      return null;
+    }
+    return state;
+  } catch(e) { return null; }
+}
+
+function tfbOverrideClearDraft() {
+  try { localStorage.removeItem(TFB_OVERRIDE_DRAFT_KEY); } catch(e) {}
+  _tfbOverrideDraftActive = false;
+}
+
+function tfbOverrideHasMeaningfulDraft(s) {
+  if (!s) return false;
+  return !!(s.num || s.expiry || s.justification || s.watcher || s.triggers || s.photo || s.equip_photo);
+}
+
+function tfbOverrideApplyDraft(s) {
+  if (!s) return;
+  try {
+    if (s.num) document.getElementById('tfb-override-num').value = s.num;
+    if (s.expiry) document.getElementById('tfb-override-expiry').value = s.expiry;
+    if (s.justification) document.getElementById('tfb-override-justification').value = s.justification;
+    if (s.watcher) document.getElementById('tfb-override-watcher').value = s.watcher;
+    if (s.triggers) document.getElementById('tfb-override-triggers').value = s.triggers;
+    if (s.fwduration) document.getElementById('tfb-override-fwduration').value = s.fwduration;
+    if (s.photo) {
+      window._tfbOverridePhoto = s.photo;
+      const prev = document.getElementById('tfb-override-photo-preview');
+      if (prev) prev.innerHTML = '<img src="' + s.photo + '" style="max-width:100%;max-height:120px;border-radius:6px;border:1px solid var(--border)">';
+    }
+    if (s.equip_photo) {
+      window._tfbOverrideEquipPhoto = s.equip_photo;
+      const prev2 = document.getElementById('tfb-override-equip-preview');
+      if (prev2) prev2.innerHTML = '<img src="' + s.equip_photo + '" style="max-width:100%;max-height:120px;border-radius:6px;border:1px solid var(--border)">';
+    }
+  } catch(e) { console.warn('tfbOverrideApplyDraft error:', e); }
+}
+
+function tfbOverrideMaybeRestore(permitId) {
+  // Only restore if the saved draft is for the same permit
+  const draft = tfbOverrideGetDraft();
+  if (!tfbOverrideHasMeaningfulDraft(draft)) return false;
+  if (draft.permit_id && draft.permit_id !== permitId) return false; // different permit, ignore
+  // Inline banner inside the modal
+  const modalContent = document.querySelector('#tfb-override-modal > div');
+  if (!modalContent) return false;
+  let banner = document.getElementById('tfb-override-restore-banner');
+  if (banner) banner.remove();
+  banner = document.createElement('div');
+  banner.id = 'tfb-override-restore-banner';
+  banner.style.cssText = 'background:#FAEEDA;border:1.5px solid #BA7517;padding:11px 13px;margin-bottom:14px;border-radius:8px;font-size:12.5px;color:#633806;line-height:1.5';
+  const minsAgo = Math.max(1, Math.round((Date.now() - draft.saved_at) / 60000));
+  const photoCount = (draft.photo ? 1 : 0) + (draft.equip_photo ? 1 : 0);
+  banner.innerHTML =
+    '<div style="font-weight:700;margin-bottom:4px">Restore in-progress override?</div>' +
+    '<div style="margin-bottom:8px">You started this override ' + minsAgo + ' min ago' + (photoCount ? ' with ' + photoCount + ' photo' + (photoCount===1?'':'s') : '') + '.</div>' +
+    '<div style="display:flex;gap:8px">' +
+      '<button id="tfb-ov-restore-yes" style="flex:1;padding:9px;background:#1B3A2D;color:white;border:none;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;font-family:\'DM Sans\',sans-serif">Yes, restore</button>' +
+      '<button id="tfb-ov-restore-no" style="flex:1;padding:9px;background:white;color:#633806;border:1.5px solid #BA7517;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;font-family:\'DM Sans\',sans-serif">Start fresh</button>' +
+    '</div>';
+  modalContent.insertBefore(banner, modalContent.firstChild);
+  document.getElementById('tfb-ov-restore-yes').onclick = function() {
+    tfbOverrideApplyDraft(draft);
+    banner.remove();
+    _tfbOverrideDraftActive = true;
+  };
+  document.getElementById('tfb-ov-restore-no').onclick = function() {
+    tfbOverrideClearDraft();
+    banner.remove();
+    _tfbOverrideDraftActive = true;
+  };
+  return true;
+}
+
 function hwPhotoPick(slotNum) {
   _hwPhotoSlot = slotNum;
+  // Save current form state before camera opens — Android may kill the tab
+  try { hwSaveDraftNow(); } catch(e) {}
   const input = document.getElementById('hw-photo-input');
   if (input) { input.value = ''; input.click(); }
 }
@@ -8472,6 +8813,8 @@ function hwPhotoStore(slot, dataUrl, ts, gps) {
       try {
         _hwPhotos[slot] = { data: smallDataUrl, ts: ts, gps: gps };
         hwPhotoStoreUI(slot, smallDataUrl, ts, gps);
+        // Save draft immediately so photos survive an Android tab kill
+        try { hwSaveDraftNow(); } catch(e) { console.warn('hwSaveDraftNow after photo failed:', e); }
       } catch(err) {
         console.error('Photo store callback error:', err);
       }
@@ -9158,10 +9501,11 @@ function hwSupOpenReview(permitId) {
       'Fire blanket available',
       'PPE confirmed',
       'Ventilation adequate',
-      'Adjacent workers notified'
+      'Adjacent workers notified',
+      'Gas cylinders secured >3m from ignition source'
     ];
     checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
-    for (let i = 1; i <= 9; i++) {
+    for (let i = 1; i <= 10; i++) {
       const k = 'chk' + i;
       if (p.checks[k]) checksHtml += `<div style="font-size:12.5px;margin-bottom:3px">✓ ${chkLabels[i-1]}</div>`;
     }
@@ -9617,6 +9961,11 @@ function handlePhotoUpload(e) {
 function goTo(id){
   // Restore DEMO_MODE on every navigation so it never drops out
   if (localStorage.getItem('slan_demo') === 'true') DEMO_MODE = true;
+  // Deactivate Hot Works draft autosave when leaving the form
+  // (draft itself is preserved in localStorage; just stops autosave noise)
+  if (typeof _hwDraftActive !== 'undefined' && id !== 'screen-hw-form') {
+    _hwDraftActive = false;
+  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
@@ -11183,7 +11532,6 @@ function hwInitForm() {
   try { hwAutoFillWeather(); } catch(e) {}
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
-
   // Permit ID + date + site
   document.getElementById('hw-permit-id').value = hwGenerateId();
   const now = new Date();
@@ -11226,7 +11574,7 @@ function hwInitForm() {
   document.getElementById('hw-muster').value = '';
 
   // Clear all checks
-  for (let i = 1; i <= 9; i++) {
+  for (let i = 1; i <= 10; i++) {
     const el = document.getElementById('hw-chk' + i);
     if (el) el.classList.remove('checked');
   }
@@ -11247,20 +11595,45 @@ function hwInitForm() {
 
   hwValidate();
 
-  // Hook up input listeners for live validation
+  // Hook up input listeners for live validation + draft autosave (Step 13)
   ['hw-description','hw-location','hw-num-workers','hw-start','hw-end','hw-weather','hw-muster','hw-type-other','hw-equip-other','hw-gas-other'].forEach(id => {
     const el = document.getElementById(id);
     if (el && !el._hwhooked) {
-      el.addEventListener('input', hwValidate);
-      el.addEventListener('change', hwValidate);
+      el.addEventListener('input', function() { hwValidate(); hwSaveDraft(); });
+      el.addEventListener('change', function() { hwValidate(); hwSaveDraft(); });
       el._hwhooked = true;
     }
   });
   // Check-row clicks already call toggleCheck — we piggyback on that by revalidating shortly after
   document.querySelectorAll('#screen-hw-form .check-row').forEach(r => {
     if (!r._hwhooked) {
-      r.addEventListener('click', () => setTimeout(hwValidate, 20));
+      r.addEventListener('click', () => setTimeout(function() { hwValidate(); hwSaveDraft(); }, 20));
       r._hwhooked = true;
+    }
+  });
+  // Pill-button clicks (work type, equip, gas, fw duration) also save draft
+  document.querySelectorAll('#screen-hw-form [data-hwtype], #screen-hw-form [data-hwequip], #screen-hw-form [data-hwgas], #screen-hw-form [data-fwdur]').forEach(b => {
+    if (!b._hwdrafthooked) {
+      b.addEventListener('click', () => setTimeout(hwSaveDraft, 30));
+      b._hwdrafthooked = true;
+    }
+  });
+
+  // Mark form as active so autosave kicks in
+  _hwDraftActive = true;
+  // If there's a saved draft from <30 min ago, offer to restore — must run AFTER form is reset
+  // so that user sees a clean form + a banner offering to restore
+  setTimeout(function() {
+    try { hwMaybeRestoreDraft(); } catch(e) { console.warn('Restore prompt failed:', e); }
+  }, 100);
+
+  // Hook photo labels: save draft right before camera opens (in case Android kills the tab)
+  ['hw-fi-1','hw-fi-2','hw-fi-3','hw-fi-4'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input && !input._hwdraftpicked) {
+      // Native file input click happens before the file dialog opens
+      input.addEventListener('click', function() { try { hwSaveDraftNow(); } catch(e) {} });
+      input._hwdraftpicked = true;
     }
   });
 
@@ -11328,8 +11701,43 @@ function hwValidate() {
   if (gasSelected.length === 0) ok = false;
   if (gasOtherReq && !gasOther) ok = false;
 
+  // Duration check: hot works permits cannot exceed 12 hours per AS 1674.1
+  // (Australian Standard caps at 24h, but insurer/industry practice is one shift / 12h max)
+  const HW_MAX_DURATION_HOURS = 12;
+  let durationOk = true;
+  if (start && end) {
+    const startMs = new Date(start).getTime();
+    const endMs = new Date(end).getTime();
+    if (!isNaN(startMs) && !isNaN(endMs)) {
+      const hours = (endMs - startMs) / (1000 * 60 * 60);
+      if (hours <= 0) durationOk = false; // end before start
+      if (hours > HW_MAX_DURATION_HOURS) durationOk = false;
+    }
+    // Show / hide inline warning right below the End time field
+    let warn = document.getElementById('hw-duration-warn');
+    if (!warn) {
+      warn = document.createElement('div');
+      warn.id = 'hw-duration-warn';
+      warn.style.cssText = 'background:#FCEBEB;border:1.5px solid #A32D2D;color:#6B1818;padding:10px 12px;border-radius:8px;margin-top:8px;font-size:12px;font-weight:600;line-height:1.45;display:none';
+      const endEl = document.getElementById('hw-end');
+      if (endEl && endEl.parentNode) endEl.parentNode.appendChild(warn);
+    }
+    if (!durationOk && !isNaN(startMs) && !isNaN(endMs)) {
+      const hrs = ((endMs - startMs) / (1000 * 60 * 60));
+      if (hrs <= 0) {
+        warn.textContent = 'End time must be after start time.';
+      } else {
+        warn.innerHTML = 'Permits cannot exceed ' + HW_MAX_DURATION_HOURS + ' hours (AS 1674.1 / one-shift maximum). Your permit is currently <strong>' + hrs.toFixed(1) + ' hours</strong>. Please shorten the work window or split into separate permits.';
+      }
+      warn.style.display = 'block';
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+  if (!durationOk) ok = false;
+
   // All 10 safety checks ticked
-  for (let i = 1; i <= 9; i++) {
+  for (let i = 1; i <= 10; i++) {
     const el = document.getElementById('hw-chk' + i);
     if (!el || !el.classList.contains('checked')) ok = false;
   }
@@ -11426,7 +11834,7 @@ async function submitHotWorks() {
     tfb_check_timestamp: _tfbStatus ? _tfbStatus.timestamp : null,
     tfb_override: null  // populated by supervisor on approval if override is used
   };
-  for (let i = 1; i <= 9; i++) {
+  for (let i = 1; i <= 10; i++) {
     const _chkEl = document.getElementById('hw-chk' + i);
     permit.checks['chk' + i] = _chkEl ? _chkEl.classList.contains('checked') : false;
   }
@@ -11439,6 +11847,9 @@ async function submitHotWorks() {
     alert('Could not save permit. Storage may be full. Try removing a photo or clearing old permits.\n\nDetails: ' + (saveResult.error && saveResult.error.message ? saveResult.error.message : 'unknown'));
     return;
   }
+
+  // Permit saved successfully — clear the in-progress draft
+  try { hwClearDraft(); } catch(e) {}
 
   // Success feedback — TFB-flagged permits go to a clear dedicated success screen
   if (_tfbBlocked) {
@@ -11614,10 +12025,11 @@ function hwViewPermit(permitId) {
       'Fire blanket available',
       'PPE confirmed',
       'Ventilation adequate',
-      'Adjacent workers notified'
+      'Adjacent workers notified',
+      'Gas cylinders secured >3m from ignition source'
     ];
     checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
-    for (let i = 1; i <= 9; i++) {
+    for (let i = 1; i <= 10; i++) {
       const k = 'chk' + i;
       if (p.checks[k]) {
         checksHtml += `<div style="font-size:12.5px;margin-bottom:3px">✓ ${chkLabels[i-1]}</div>`;
@@ -15239,11 +15651,37 @@ function tfbShowOverrideModal(permitId) {
   });
   window._tfbOverridePhoto = null;
   window._tfbOverrideEquipPhoto = null;
+
+  // Activate draft autosave for the override modal — Step 13 form persistence
+  _tfbOverrideDraftActive = true;
+  // Hook all text inputs/selects/textareas in the modal to autosave on change
+  ['tfb-override-num','tfb-override-expiry','tfb-override-justification','tfb-override-watcher','tfb-override-triggers','tfb-override-fwduration'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el._tfbovhooked) {
+      el.addEventListener('input', tfbOverrideSaveDraft);
+      el.addEventListener('change', tfbOverrideSaveDraft);
+      el._tfbovhooked = true;
+    }
+  });
+  // Save draft synchronously when photo file pickers open (so any photo already taken is safe)
+  ['tfb-override-photo-input','tfb-override-equip-input'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el._tfbovphhooked) {
+      el.addEventListener('click', function() { try { tfbOverrideSaveDraftNow(); } catch(e) {} });
+      el._tfbovphhooked = true;
+    }
+  });
+  // Show restore banner if there's a recent draft for THIS permit
+  setTimeout(function() {
+    try { tfbOverrideMaybeRestore(permitId); } catch(e) { console.warn('Override restore failed:', e); }
+  }, 100);
 }
 
 function tfbCloseOverrideModal() {
   const m = document.getElementById('tfb-override-modal');
   if (m) m.style.display = 'none';
+  // Stop autosave when modal closes (draft itself stays in localStorage if not yet applied)
+  _tfbOverrideDraftActive = false;
 }
 
 function _tfbCompressPhoto(file, cb) {
@@ -15285,6 +15723,7 @@ function tfbHandleOverridePhoto(event) {
     window._tfbOverridePhoto = dataUrl;
     const preview = document.getElementById('tfb-override-photo-preview');
     if (preview) preview.innerHTML = '<img src="' + dataUrl + '" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px">';
+    try { tfbOverrideSaveDraftNow(); } catch(e) {}
   });
 }
 
@@ -15295,6 +15734,7 @@ function tfbHandleEquipPhoto(event) {
     window._tfbOverrideEquipPhoto = dataUrl;
     const preview = document.getElementById('tfb-override-equip-preview');
     if (preview) preview.innerHTML = '<img src="' + dataUrl + '" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px">';
+    try { tfbOverrideSaveDraftNow(); } catch(e) {}
   });
 }
 
@@ -15314,14 +15754,12 @@ function tfbApplyOverrideAndApprove() {
   const missing = [];
   if (!num) missing.push('TFB Permit number');
   if (!expiry) missing.push('Expiry date/time');
-  // TEMPORARY for testing: photos optional until we add form-state persistence in Step 13
-  // (Android kills the browser tab while camera app is open, wiping the override form)
-  // TODO Step 13: re-enable these two checks once form state survives reloads
-  // if (!permitPhoto) missing.push('Photo of Fire Service Permit');
+  // Photos required again now that Step 13 form-state persistence keeps them safe across Android tab kills
+  if (!permitPhoto) missing.push('Photo of Fire Service Permit');
   if (!justification) missing.push('Justification');
   if (!watcher) missing.push('Fire watcher name');
   if (!triggers) missing.push('Stand-down conditions');
-  // if (!equipPhoto) missing.push('Photo of fire-fighting equipment');
+  if (!equipPhoto) missing.push('Photo of fire-fighting equipment');
 
   if (missing.length > 0) {
     // Fixed-position toast at top of viewport — overlays the modal, can't be missed
@@ -15387,6 +15825,9 @@ function tfbApplyOverrideAndApprove() {
   all[idx].fire_watch_duration = fwduration;
 
   if (typeof hwSaveAll === 'function') hwSaveAll(all);
+
+  // Override applied successfully — clear the in-progress override draft
+  try { tfbOverrideClearDraft(); } catch(e) {}
 
   tfbCloseOverrideModal();
   alert('TFB override applied. Permit ' + permitId + ' approved with TFB conditions. Worker must acknowledge before starting work.');
