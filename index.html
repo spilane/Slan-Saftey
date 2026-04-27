@@ -1101,6 +1101,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="hw-fw-warning-text" style="font-size:12.5px;line-height:1.5;opacity:.95"></div>
     <button onclick="hwDismissFwWarning()" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:13px;cursor:pointer;font-size:16px;line-height:1">×</button>
   </div>
+  <div id="hw-handover-accepted-banner" style="display:none;padding:14px 16px;background:#1B6E3A;color:#fff;position:relative;z-index:10">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px">✓ Handover accepted</div>
+    <div id="hw-handover-accepted-text" style="font-size:12.5px;line-height:1.5;opacity:.95"></div>
+    <button onclick="hwDismissHandoverAccepted()" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:13px;cursor:pointer;font-size:16px;line-height:1">×</button>
+  </div>
   <div class="sb"></div>
 
   <!-- TOP BAR with profile photo -->
@@ -3312,6 +3317,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <option value="">Select supervisor...</option>
     </select>
     <div id="hw-handover-no-sups" style="display:none;font-size:11.5px;color:#A32D2D;margin-top:-10px;margin-bottom:14px;line-height:1.4">⚠ No supervisors are currently signed in to site. You cannot hand over right now — call your supervisor to come on site, or wait for the fire watch to complete.</div>
+    <button onclick="hwHandoverDiag()" style="display:block;width:100%;padding:8px;margin-bottom:14px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">🔧 Show diagnostic info</button>
+    <div id="hw-handover-diag-out" style="display:none;font-size:11px;font-family:monospace;background:#F8FAF8;border:1px solid var(--border);padding:10px;border-radius:6px;margin-bottom:14px;white-space:pre-wrap;word-break:break-all;line-height:1.5"></div>
 
     <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Photo of cooled work area <span style="color:#A32D2D">*</span></div>
     <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;line-height:1.4">Show the area where hot works took place. This proves no smouldering at handover.</div>
@@ -8502,6 +8509,7 @@ async function updateStatusStrip() {
   try { hwUpdateChip(); } catch(e) {}
   try { hwCheckRevokeBanner(); } catch(e) {}
   try { hwCheckFireWatchWarning(); } catch(e) {}
+  try { hwCheckHandoverAccepted(); } catch(e) {}
   try { ptwUpdateTileSubtitle(); } catch(e) {}
   try { workerUpdatePermitsTileSub(); } catch(e) {}
 }
@@ -9450,6 +9458,10 @@ function hwCheckActivePermitsForSignOut() {
     .filter(x => x.worker_name === p.name && (x.status === 'approved' || x.status === 'active'))
     .filter(x => !(x.fire_watch_handover && x.fire_watch_handover.accept_status === 'accepted'))
     .filter(x => {
+      // Don't auto-expire permits with fire watch required — they need explicit
+      // close or handover, not just elapsed time. Otherwise worker could sneak
+      // out by waiting for the end time to pass.
+      if (x.fire_watch_required) return true;
       const end = x.end_time ? new Date(x.end_time).getTime() : 0;
       return !end || end > now;
     })
@@ -9897,6 +9909,65 @@ function hwHandoverSubmit() {
 function hwHandoverBack() {
   if (_hwHandoverFromGate) { goTo('screen-hw-gate'); return; }
   goTo('screen-hw-list');
+}
+
+// Diagnostic helper — shows on screen what the supervisor filter sees, so we
+// don't need browser console to debug "no supervisors available" issues.
+function hwHandoverDiag() {
+  const out = document.getElementById('hw-handover-diag-out');
+  if (!out) return;
+  const today = new Date().toLocaleDateString('en-AU');
+  const myName = (getProfile() || {}).name || '(no profile)';
+  let report = '';
+  report += 'TODAY: ' + today + '\n';
+  report += 'MY NAME: ' + myName + '\n\n';
+
+  // Check DEMO_SIGNINS
+  if (typeof DEMO_SIGNINS === 'undefined' || !Array.isArray(DEMO_SIGNINS)) {
+    report += '✗ DEMO_SIGNINS: not defined or not an array\n';
+  } else {
+    report += '✓ DEMO_SIGNINS: ' + DEMO_SIGNINS.length + ' total entries\n';
+    const todayEntries = DEMO_SIGNINS.filter(s => s.date === today);
+    report += '  - matching today (' + today + '): ' + todayEntries.length + '\n';
+    const supEntries = todayEntries.filter(s => {
+      const r = (s.role || '').toLowerCase();
+      return r.indexOf('supervisor') !== -1 || r.indexOf('director') !== -1;
+    });
+    report += '  - with supervisor/director role: ' + supEntries.length + '\n';
+    if (supEntries.length > 0) {
+      report += '  - names: ' + supEntries.map(s => s.worker_name + '/' + s.type).join(', ') + '\n';
+    }
+  }
+
+  // Check queue
+  try {
+    const queue = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    report += '\n✓ slan_queue: ' + queue.length + ' total items\n';
+    const todayAtt = queue.filter(s => s && s.data && s.data.form_type === 'attendance' && s.data.date === today);
+    report += '  - attendance today: ' + todayAtt.length + '\n';
+    const supSubmissions = todayAtt.filter(s => {
+      const r = (s.data.role || '').toLowerCase();
+      return r.indexOf('supervisor') !== -1 || r.indexOf('director') !== -1;
+    });
+    report += '  - sup/director: ' + supSubmissions.length + '\n';
+    if (supSubmissions.length > 0) {
+      report += '  - names: ' + supSubmissions.map(s => s.data.worker_name + '/' + s.data.submission_type).join(', ') + '\n';
+    }
+  } catch(e) {
+    report += '\n✗ slan_queue: error reading - ' + e.message + '\n';
+  }
+
+  // Check what populate function found
+  const select = document.getElementById('hw-handover-supervisor');
+  if (select) {
+    report += '\n✓ Dropdown options: ' + select.options.length + '\n';
+    for (let i = 0; i < select.options.length; i++) {
+      report += '  - "' + select.options[i].text + '" (value=' + select.options[i].value + ')\n';
+    }
+  }
+
+  out.textContent = report;
+  out.style.display = 'block';
 }
 
 // Renders the "waiting for supervisor" screen the worker sees after submitting
@@ -10522,7 +10593,7 @@ function hwSupOpenReview(permitId) {
       if (fwCloseWrap) fwCloseWrap.style.display = 'block';
       if (ho.accept_status === 'accepted') {
         // Already accepted — show close button
-        if (fwCloseMsg) fwCloseMsg.innerHTML = 'You accepted this fire watch handover. Once the <strong>' + (p.fire_watch_duration || 30) + '</strong>-min watch is complete and the area is safe, close the permit below.';
+        if (fwCloseMsg) fwCloseMsg.innerHTML = 'You accepted this fire watch handover. Once the watch is complete and the area is safe, close the permit below.';
         if (fwCloseBtn) {
           fwCloseBtn.textContent = '✓ Close Permit (Fire watch complete)';
           fwCloseBtn.onclick = hwSupCloseHandoverPermit;
@@ -10530,7 +10601,7 @@ function hwSupOpenReview(permitId) {
         }
       } else {
         // Pending acceptance — show Accept button instead
-        if (fwCloseMsg) fwCloseMsg.innerHTML = 'Worker <strong>' + (ho.handed_by || p.worker_name) + '</strong> wants to hand the fire watch to you. <strong>Accept only if you are physically near the work area</strong> and can monitor for the full <strong>' + (p.fire_watch_duration || 30) + '</strong>-min watch.';
+        if (fwCloseMsg) fwCloseMsg.innerHTML = 'Worker <strong>' + (ho.handed_by || p.worker_name) + '</strong> wants to hand the fire watch to you. <strong>Accept only if you are physically near the work area</strong> and can monitor it until the watch is complete and the area is safe.';
         if (fwCloseBtn) {
           fwCloseBtn.textContent = '✓ Accept Fire Watch Handover';
           fwCloseBtn.onclick = hwSupAcceptHandover;
@@ -10572,7 +10643,7 @@ function hwSupAcceptHandover() {
   if (!_hwSupCurrentPermit) return;
   const ho = _hwSupCurrentPermit.fire_watch_handover;
   if (!ho) return;
-  if (!confirm('Accept handover of fire watch for permit ' + _hwSupCurrentPermit.permit_id + '?\n\nBy accepting, you confirm you are physically near the work area and will monitor for the full ' + (_hwSupCurrentPermit.fire_watch_duration || 30) + '-min watch.')) return;
+  if (!confirm('Accept handover of fire watch for permit ' + _hwSupCurrentPermit.permit_id + '?\n\nBy accepting, you confirm you are physically near the work area and will monitor it until the watch is complete and the area is safe.')) return;
   const sup = (getProfile() || {}).name || 'Supervisor';
   const all = hwLoadAll();
   const idx = all.findIndex(x => x.permit_id === _hwSupCurrentPermit.permit_id);
@@ -10821,6 +10892,50 @@ function hwDismissFwWarning() {
   localStorage.setItem('slan_hw_fw_dismissed_v1', JSON.stringify(dismissed));
   // Re-run check — may show next permit's warning, or hide if none
   hwCheckFireWatchWarning();
+}
+
+// Show a green banner on worker home when a supervisor has accepted a handover.
+// This way the worker knows immediately when they next visit home (without
+// staying on the waiting screen). Shown once per accepted handover.
+function hwCheckHandoverAccepted() {
+  const banner = document.getElementById('hw-handover-accepted-banner');
+  if (!banner) return;
+  const profile = getProfile && getProfile();
+  if (!profile) { banner.style.display = 'none'; return; }
+  const dismissed = JSON.parse(localStorage.getItem('slan_hw_handover_seen_v1') || '[]');
+
+  // Find any of this worker's permits that are accepted but not yet acknowledged
+  const accepted = hwLoadAll().filter(p =>
+    p.worker_name === profile.name &&
+    p.fire_watch_handover &&
+    p.fire_watch_handover.accept_status === 'accepted' &&
+    dismissed.indexOf(p.permit_id) === -1
+  );
+  if (accepted.length === 0) {
+    banner.style.display = 'none';
+    return;
+  }
+  // Show most recent
+  accepted.sort((a, b) => new Date(b.fire_watch_handover.accepted_at || 0) - new Date(a.fire_watch_handover.accepted_at || 0));
+  const p = accepted[0];
+  const sup = p.fire_watch_handover.handed_to || 'Supervisor';
+  document.getElementById('hw-handover-accepted-text').innerHTML =
+    sup + ' has accepted responsibility for the fire watch on permit <strong>' + p.permit_id + '</strong>. You can now sign out of site.';
+  banner.style.display = 'block';
+}
+
+function hwDismissHandoverAccepted() {
+  const profile = getProfile && getProfile();
+  if (!profile) return;
+  const accepted = hwLoadAll().filter(p =>
+    p.worker_name === profile.name &&
+    p.fire_watch_handover &&
+    p.fire_watch_handover.accept_status === 'accepted'
+  );
+  const seen = JSON.parse(localStorage.getItem('slan_hw_handover_seen_v1') || '[]');
+  accepted.forEach(p => { if (seen.indexOf(p.permit_id) === -1) seen.push(p.permit_id); });
+  localStorage.setItem('slan_hw_handover_seen_v1', JSON.stringify(seen));
+  hwCheckHandoverAccepted();
 }
 
 function hwUpdateChip() {
