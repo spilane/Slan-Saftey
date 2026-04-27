@@ -10500,7 +10500,10 @@ function hwCheckFireWatchWarning() {
     const fwDuration = parseInt(p.fire_watch_duration, 10) || 30;
     const leadMinutes = fwDuration + 15;
     const warnAt = endMs - leadMinutes * 60 * 1000;
-    return now >= warnAt && now <= endMs + 60 * 60 * 1000; // hide an hour after end
+    // Show banner from (end - fw_duration - 15min) onwards. No upper cutoff —
+    // if worker is past end time, that's exactly when they MOST need to see it.
+    // Banner only goes away when permit is closed, handed over, or dismissed.
+    return now >= warnAt;
   });
 
   if (candidates.length === 0) {
