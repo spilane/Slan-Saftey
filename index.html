@@ -5648,18 +5648,160 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
-  <!-- Temporary: Form under construction notice -->
-  <div class="fcard" style="background:#FFF8E5;border:1.5px solid #E6C56A">
+  <!-- Work Details -->
+  <div class="fcard">
+    <div class="fcard-hdr">Work Details <span class="req">*</span></div>
     <div class="fcard-body">
-      <div style="font-size:13px;color:#8B6914;text-align:center;line-height:1.5">
-        <strong>Form under construction</strong><br>
-        Full AS 2865 checks, atmospheric tests, photos, and submission coming in next update.
+      <div class="fgroup">
+        <label class="flabel">Type of confined space</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
+          <button type="button" class="ps-btn" data-cstype="Vertical entry" onclick="csSelectType(this)">Vertical entry</button>
+          <button type="button" class="ps-btn" data-cstype="Horizontal entry" onclick="csSelectType(this)">Horizontal entry</button>
+          <button type="button" class="ps-btn" data-cstype="Pit" onclick="csSelectType(this)">Pit</button>
+          <button type="button" class="ps-btn" data-cstype="Tank" onclick="csSelectType(this)">Tank</button>
+          <button type="button" class="ps-btn" data-cstype="Tunnel" onclick="csSelectType(this)">Tunnel</button>
+          <button type="button" class="ps-btn" data-cstype="Trench >1.5m" onclick="csSelectType(this)">Trench >1.5m</button>
+          <button type="button" class="ps-btn" data-cstype="Sewer" onclick="csSelectType(this)">Sewer</button>
+          <button type="button" class="ps-btn" data-cstype="Other" onclick="csSelectType(this)">Other</button>
+        </div>
+        <div id="cs-type-other-wrap" class="fgroup" style="display:none;margin-top:10px">
+          <label class="flabel">Specify type</label>
+          <input type="text" id="cs-type-other" placeholder="Describe the confined space" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+        </div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Description of work</label>
+        <textarea id="cs-description" rows="2" placeholder="e.g. Inspecting tank interior for corrosion" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;resize:vertical;font-family:inherit"></textarea>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Location</label>
+        <input type="text" id="cs-location" placeholder="e.g. Tank 3, North compound" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fgroup">
+          <label class="flabel">Entry time</label>
+          <input type="time" id="cs-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Expected exit time</label>
+          <input type="time" id="cs-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+        </div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Number of workers entering</label>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="cs-num-workers" placeholder="1" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Attendant name <span style="font-weight:400;color:var(--muted)">(must be on site today)</span></label>
+        <input type="text" id="cs-attendant" placeholder="Full name" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
       </div>
     </div>
   </div>
 
+  <!-- Atmospheric Testing -->
+  <div class="fcard">
+    <div class="fcard-hdr">Atmospheric Testing (AS 2865) <span class="req">*</span></div>
+    <div class="fcard-body">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">Test must be completed within 30 minutes of entry. Safe ranges: O₂ 19.5-23%, LEL <10%, H₂S <10ppm, CO <35ppm</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fgroup">
+          <label class="flabel">O₂ level (%)</label>
+          <input type="text" inputmode="decimal" id="cs-o2" placeholder="20.9" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">Safe: 19.5-23%</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">LEL (%)</label>
+          <input type="text" inputmode="decimal" id="cs-lel" placeholder="0" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">Safe: <10%</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">H₂S (ppm)</label>
+          <input type="text" inputmode="decimal" id="cs-h2s" placeholder="0" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">Safe: <10ppm</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">CO (ppm)</label>
+          <input type="text" inputmode="decimal" id="cs-co" placeholder="0" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">Safe: <35ppm</div>
+        </div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Time of test</label>
+        <input type="time" id="cs-test-time" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+    </div>
+  </div>
+
+  <!-- AS 2865 Pre-start Checks -->
+  <div class="fcard">
+    <div class="fcard-hdr">AS 2865 Pre-Start Checks <span class="req">*</span></div>
+    <div class="fcard-body">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">All checks must pass before entry. Tap each item to confirm.</div>
+      <div id="cs-checks" style="display:flex;flex-direction:column;gap:1px;border-radius:var(--rs);overflow:hidden"></div>
+    </div>
+  </div>
+
+  <!-- Photos -->
+  <div class="fcard">
+    <div class="fcard-hdr">Photo Evidence <span class="req">*</span></div>
+    <div class="fcard-body">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">4 photos required before submission. All photos include GPS coordinates and timestamp.</div>
+      <div id="cs-photos" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div style="position:fixed;bottom:0;left:0;right:0;padding:12px 18px;background:#fff;border-top:1px solid var(--border);z-index:100">
+    <button id="cs-submit-btn" class="submit-btn" onclick="submitConfinedSpace()" disabled style="width:100%;padding:14px;font-size:15px;font-weight:600;border-radius:var(--rs);border:none;cursor:not-allowed;opacity:.5">
+      Submit for Approval
+    </button>
+  </div>
+
 </div>
 </div>
+
+<!-- CS SUCCESS SCREEN -->
+<div id="screen-cs-success" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <div style="width:36px"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Permit Submitted</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+
+  <div style="padding:40px 24px;text-align:center">
+    <div style="width:80px;height:80px;border-radius:50%;background:#E6F5ED;display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1B6E3A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:42px;height:42px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">Confined Space Permit Submitted</h2>
+    <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:28px">Your permit is now pending supervisor approval. You'll be notified when it's been reviewed.</p>
+    <button class="submit-btn" onclick="goTo('screen-home')" style="padding:13px 28px;font-size:14px;border-radius:var(--rs);border:none;cursor:pointer">
+      Back to Home
+    </button>
+  </div>
+</div>
+
+<!-- CS LIST SCREEN -->
+<div id="screen-cs-list" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:rgba(112,66,155,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#5A3880" stroke-width="2" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Confined Space Permits</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+
+  <div style="padding:18px">
+    <button class="hw-new-btn" onclick="goToPermitTypePicker()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Permit
+    </button>
+    <div id="cs-list" style="margin-top:12px"></div>
+  </div>
+</div>
+
 
 
 
@@ -10310,7 +10452,10 @@ function ptwLoadAllPermits() {
   if (typeof wahLoadAll === 'function') {
     wahLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'wah' })); });
   }
-  // Future: Confined Space permits, etc.
+  // Confined Space permits
+  if (typeof csLoadAll === 'function') {
+    csLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'confinedspace' })); });
+  }
   return all;
 }
 
@@ -11220,6 +11365,9 @@ function goTo(id){
   }
   if (id === 'screen-wah-list') {
     try { if (typeof wahRenderList === 'function') wahRenderList(); } catch(e) {}
+  }
+  if (id === 'screen-cs-list') {
+    try { if (typeof csRenderList === 'function') csRenderList(); } catch(e) {}
   }
   if (id === 'screen-hw-handover-waiting') {
     try { if (typeof hwRenderHandoverWaiting === 'function') hwRenderHandoverWaiting(); } catch(e) {}
@@ -13967,13 +14115,227 @@ function goToCSForm() {
 }
 
 function csInitForm() {
-  const profile = JSON.parse(localStorage.getItem('slan_profile') || '{}');
+  const p = getProfile();
+  if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
   document.getElementById('cs-permit-id').value = csGenerateId();
   document.getElementById('cs-date').value = new Date().toLocaleDateString('en-AU');
-  document.getElementById('cs-site').value = profile.site || 'Main Site';
-  document.getElementById('cs-worker-name').value = profile.fullName || '';
-  document.getElementById('cs-company').value = profile.company || '';
-  document.getElementById('cs-role').value = profile.role || '';
+  document.getElementById('cs-site').value = (typeof SITE !== 'undefined' && SITE) ? SITE : 'Site';
+  document.getElementById('cs-worker-name').value = p.name || '';
+  document.getElementById('cs-company').value = p.company || '';
+  document.getElementById('cs-role').value = p.role || '';
+  
+  // Initialize checks and photos
+  csInitChecks();
+  csInitPhotos();
+}
+
+let csSelectedType = '';
+
+function csSelectType(btnEl) {
+  document.querySelectorAll('#screen-cs-form [data-cstype]').forEach(b => b.classList.remove('pass'));
+  btnEl.classList.add('pass');
+  csSelectedType = btnEl.getAttribute('data-cstype');
+  const otherWrap = document.getElementById('cs-type-other-wrap');
+  if (otherWrap) otherWrap.style.display = (csSelectedType === 'Other') ? 'flex' : 'none';
+  csValidate();
+}
+
+const CS_CHECKS = [
+  'Atmospheric test completed within last 30 minutes',
+  'Continuous ventilation system operating',
+  'Communication system tested and operational',
+  'Rescue plan reviewed and understood',
+  'Rescue equipment inspected and available',
+  'Attendant nominated and briefed',
+  'Required PPE confirmed (respirator/harness/boots)',
+  'All hazards isolated (electrical/mechanical/chemical)',
+  'Entry permit displayed at entry point',
+  'Emergency contacts confirmed'
+];
+
+let csChecksState = [];
+
+function csInitChecks() {
+  csChecksState = CS_CHECKS.map(() => false);
+  const container = document.getElementById('cs-checks');
+  if (!container) return;
+  container.innerHTML = CS_CHECKS.map((label, i) => `
+    <div class="check-row" id="cs-check-${i}" onclick="csToggleCheck(${i})" style="background:#F5F5F5;padding:13px 15px;cursor:pointer;display:flex;align-items:center;gap:12px">
+      <div class="check-box" style="width:20px;height:20px;border:2px solid #CCC;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;opacity:0"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:13px;color:var(--text);line-height:1.4;flex:1">${label}</div>
+    </div>
+  `).join('');
+  csValidate();
+}
+
+function csToggleCheck(idx) {
+  csChecksState[idx] = !csChecksState[idx];
+  const row = document.getElementById(`cs-check-${idx}`);
+  const box = row.querySelector('.check-box');
+  const svg = row.querySelector('svg');
+  if (csChecksState[idx]) {
+    row.style.background = '#E6F5ED';
+    box.style.borderColor = '#1B6E3A';
+    box.style.background = '#1B6E3A';
+    svg.style.opacity = '1';
+  } else {
+    row.style.background = '#F5F5F5';
+    box.style.borderColor = '#CCC';
+    box.style.background = 'transparent';
+    svg.style.opacity = '0';
+  }
+  csValidate();
+}
+
+const CS_PHOTO_LABELS = [
+  'Entry point clearly visible',
+  'Atmospheric test meter reading',
+  'Attendant station setup',
+  'Rescue equipment ready'
+];
+
+let csPhotos = [null, null, null, null];
+
+function csInitPhotos() {
+  const container = document.getElementById('cs-photos');
+  if (!container) return;
+  container.innerHTML = CS_PHOTO_LABELS.map((label, i) => `
+    <div class="photo-slot" style="border:1.5px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer" onclick="csTakePhoto(${i})">
+      <div id="cs-photo-preview-${i}" style="display:none;margin-bottom:10px">
+        <img id="cs-photo-img-${i}" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px" />
+      </div>
+      <div id="cs-photo-placeholder-${i}">
+        <div style="width:48px;height:48px;border-radius:50%;background:#F0F0F0;display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${label}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">Tap to capture</div>
+      </div>
+    </div>
+  `).join('');
+  csValidate();
+}
+
+function csTakePhoto(idx) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      csPhotos[idx] = ev.target.result;
+      document.getElementById(`cs-photo-img-${idx}`).src = ev.target.result;
+      document.getElementById(`cs-photo-preview-${idx}`).style.display = 'block';
+      document.getElementById(`cs-photo-placeholder-${idx}`).style.display = 'none';
+      csValidate();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function csValidate() {
+  const submitBtn = document.getElementById('cs-submit-btn');
+  if (!submitBtn) return;
+  
+  const typeSelected = csSelectedType !== '';
+  const descFilled = document.getElementById('cs-description')?.value.trim().length > 0;
+  const locFilled = document.getElementById('cs-location')?.value.trim().length > 0;
+  const startFilled = document.getElementById('cs-start')?.value.trim().length > 0;
+  const endFilled = document.getElementById('cs-end')?.value.trim().length > 0;
+  const numWorkersFilled = document.getElementById('cs-num-workers')?.value.trim().length > 0;
+  const attendantFilled = document.getElementById('cs-attendant')?.value.trim().length > 0;
+  
+  const o2Filled = document.getElementById('cs-o2')?.value.trim().length > 0;
+  const lelFilled = document.getElementById('cs-lel')?.value.trim().length > 0;
+  const h2sFilled = document.getElementById('cs-h2s')?.value.trim().length > 0;
+  const coFilled = document.getElementById('cs-co')?.value.trim().length > 0;
+  const testTimeFilled = document.getElementById('cs-test-time')?.value.trim().length > 0;
+  
+  const allChecks = csChecksState.every(x => x);
+  const allPhotos = csPhotos.every(x => x !== null);
+  
+  const valid = typeSelected && descFilled && locFilled && startFilled && endFilled && 
+                numWorkersFilled && attendantFilled && o2Filled && lelFilled && h2sFilled && 
+                coFilled && testTimeFilled && allChecks && allPhotos;
+  
+  submitBtn.disabled = !valid;
+  submitBtn.style.opacity = valid ? '1' : '.5';
+  submitBtn.style.cursor = valid ? 'pointer' : 'not-allowed';
+}
+
+function submitConfinedSpace() {
+  const permit = {
+    permit_id: document.getElementById('cs-permit-id').value,
+    date: document.getElementById('cs-date').value,
+    site: document.getElementById('cs-site').value,
+    worker_name: document.getElementById('cs-worker-name').value,
+    worker_company: document.getElementById('cs-company').value,
+    worker_role: document.getElementById('cs-role').value,
+    type: csSelectedType,
+    type_other: document.getElementById('cs-type-other')?.value || '',
+    description: document.getElementById('cs-description').value,
+    location: document.getElementById('cs-location').value,
+    start_time: document.getElementById('cs-start').value,
+    end_time: document.getElementById('cs-end').value,
+    num_workers: document.getElementById('cs-num-workers').value,
+    attendant: document.getElementById('cs-attendant').value,
+    o2_level: document.getElementById('cs-o2').value,
+    lel_level: document.getElementById('cs-lel').value,
+    h2s_level: document.getElementById('cs-h2s').value,
+    co_level: document.getElementById('cs-co').value,
+    test_time: document.getElementById('cs-test-time').value,
+    checks: csChecksState,
+    photos: csPhotos,
+    status: 'submitted',
+    submitted_at: new Date().toISOString()
+  };
+  
+  const all = csLoadAll();
+  all.push(permit);
+  csSaveAll(all);
+  
+  goTo('screen-cs-success');
+}
+
+function csRenderList() {
+  const all = csLoadAll();
+  const container = document.getElementById('cs-list');
+  if (!container) return;
+  
+  if (all.length === 0) {
+    container.innerHTML = `
+      <div class="hw-empty">
+        <div class="hw-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+        <div class="hw-empty-title">No confined space permits yet</div>
+        <div class="hw-empty-sub">Tap "New Permit" above to create your first one</div>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = all.map(p => {
+    const statusColor = p.status === 'approved' ? '#1B6E3A' : p.status === 'rejected' ? '#C93A3A' : '#B8960C';
+    const statusText = p.status === 'approved' ? 'Approved' : p.status === 'rejected' ? 'Rejected' : 'Pending';
+    return `
+      <div class="hw-card" style="border-left:4px solid #70429B;cursor:pointer" onclick="alert('View permit coming in Build 2')">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--text)">${p.permit_id}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">${p.date}</div>
+          </div>
+          <div class="badge t-confined" style="background:${statusColor};color:#fff;font-size:10px;padding:3px 8px;border-radius:12px">${statusText}</div>
+        </div>
+        <div style="font-size:13px;color:var(--text);margin-bottom:3px">${p.type}${p.type_other ? ' - ' + p.type_other : ''}</div>
+        <div style="font-size:12px;color:var(--muted)">${p.location}</div>
+      </div>
+    `;
+  }).join('');
 }
 
 function hwSelectType(btnEl) {
