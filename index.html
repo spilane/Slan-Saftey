@@ -3628,7 +3628,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <!-- ═══════════════════ WORKING AT HEIGHTS PERMITS — LIST ═══ -->
 <div id="screen-wah-list" class="screen">
   <div class="tbar" style="background:var(--deep)">
-    <button class="back-btn" onclick="goTo('screen-ptw-picker')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="back-btn" onclick="goTo('screen-permit-picker')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
     <div style="display:flex;align-items:center;gap:8px">
       <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:rgba(60,110,180,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#234A7A" stroke-width="2" style="width:14px;height:14px"><path d="M4 22h16"/><path d="M8 22V6"/><path d="M16 22V6"/><path d="M8 10h8"/><path d="M8 14h8"/><path d="M12 6V2"/></svg></div>
       <span style="font-size:14px;font-weight:600;color:#fff">Working at Heights</span>
@@ -3636,7 +3636,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="width:36px"></div>
   </div>
   <div style="padding:18px;padding-bottom:80px">
-    <button class="submit-btn" onclick="goToWAHForm()" style="margin-bottom:18px;background:#234A7A">+ New Heights Permit</button>
+    <button class="submit-btn" onclick="goToWAHForm()" style="margin-bottom:18px">+ New Heights Permit</button>
     <div id="wah-list-content"></div>
     <div id="wah-list-empty" class="hw-empty" style="display:none">
       <div class="hw-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M4 22h16"/><path d="M8 22V6"/><path d="M16 22V6"/><path d="M8 10h8"/><path d="M8 14h8"/><path d="M12 6V2"/></svg></div>
@@ -3674,7 +3674,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="hw-success-sub" id="wah-success-sub">Working at Heights</div>
     <div class="hw-success-time" id="wah-success-time"></div>
     <div class="hw-success-sub" style="margin-top:10px">Your permit is pending supervisor approval. You'll see it under <strong>Pending approval</strong> in your permits list.</div>
-    <button class="submit-btn" onclick="wahRenderList(); goTo('screen-wah-list');" style="margin-top:24px;max-width:280px;background:#234A7A">Done</button>
+    <button class="submit-btn" onclick="wahRenderList(); goTo('screen-wah-list');" style="margin-top:24px;max-width:280px">Done</button>
   </div>
 </div>
 
@@ -3742,14 +3742,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Type of work at heights</label>
-        <div class="pill-row">
-          <button type="button" class="pill" data-wahtype="Roofing" onclick="wahSelectType(this)">Roofing</button>
-          <button type="button" class="pill" data-wahtype="Scaffold work" onclick="wahSelectType(this)">Scaffold</button>
-          <button type="button" class="pill" data-wahtype="EWP / boom lift" onclick="wahSelectType(this)">EWP / Boom</button>
-          <button type="button" class="pill" data-wahtype="Mast climber" onclick="wahSelectType(this)">Mast climber</button>
-          <button type="button" class="pill" data-wahtype="Ladder work" onclick="wahSelectType(this)">Ladder work</button>
-          <button type="button" class="pill" data-wahtype="Harness only" onclick="wahSelectType(this)">Harness only</button>
-          <button type="button" class="pill" data-wahtype="Other" onclick="wahSelectType(this)">Other</button>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
+          <button type="button" class="ps-btn" data-wahtype="Roofing" onclick="wahSelectType(this)">Roofing</button>
+          <button type="button" class="ps-btn" data-wahtype="Scaffold work" onclick="wahSelectType(this)">Scaffold</button>
+          <button type="button" class="ps-btn" data-wahtype="EWP / boom lift" onclick="wahSelectType(this)">EWP / Boom</button>
+          <button type="button" class="ps-btn" data-wahtype="Mast climber" onclick="wahSelectType(this)">Mast climber</button>
+          <button type="button" class="ps-btn" data-wahtype="Ladder work" onclick="wahSelectType(this)">Ladder work</button>
+          <button type="button" class="ps-btn" data-wahtype="Harness only" onclick="wahSelectType(this)">Harness only</button>
+          <button type="button" class="ps-btn" data-wahtype="Other" onclick="wahSelectType(this)">Other</button>
         </div>
       </div>
       <div class="fgroup" id="wah-type-other-wrap" style="display:none">
@@ -3778,19 +3778,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Equipment in use (select all)</label>
-        <div class="pill-row">
-          <button type="button" class="pill" data-wahequip="Full body harness" onclick="wahToggleEquip(this)">Full body harness</button>
-          <button type="button" class="pill" data-wahequip="Lanyard" onclick="wahToggleEquip(this)">Lanyard</button>
-          <button type="button" class="pill" data-wahequip="SRL (self-retracting)" onclick="wahToggleEquip(this)">SRL</button>
-          <button type="button" class="pill" data-wahequip="Engineered anchor point" onclick="wahToggleEquip(this)">Engineered anchor</button>
-          <button type="button" class="pill" data-wahequip="Static line" onclick="wahToggleEquip(this)">Static line</button>
-          <button type="button" class="pill" data-wahequip="Edge protection" onclick="wahToggleEquip(this)">Edge protection</button>
-          <button type="button" class="pill" data-wahequip="Guardrails" onclick="wahToggleEquip(this)">Guardrails</button>
-          <button type="button" class="pill" data-wahequip="Safety net" onclick="wahToggleEquip(this)">Safety net</button>
-          <button type="button" class="pill" data-wahequip="EWP / boom lift" onclick="wahToggleEquip(this)">EWP / Boom</button>
-          <button type="button" class="pill" data-wahequip="Scaffold (compliant)" onclick="wahToggleEquip(this)">Scaffold</button>
-          <button type="button" class="pill" data-wahequip="Industrial ladder" onclick="wahToggleEquip(this)">Ladder</button>
-          <button type="button" class="pill" data-wahequip="Other" onclick="wahToggleEquip(this)">Other</button>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
+          <button type="button" class="ps-btn" data-wahequip="Full body harness" onclick="wahToggleEquip(this)">Full body harness</button>
+          <button type="button" class="ps-btn" data-wahequip="Lanyard" onclick="wahToggleEquip(this)">Lanyard</button>
+          <button type="button" class="ps-btn" data-wahequip="SRL (self-retracting)" onclick="wahToggleEquip(this)">SRL</button>
+          <button type="button" class="ps-btn" data-wahequip="Engineered anchor point" onclick="wahToggleEquip(this)">Engineered anchor</button>
+          <button type="button" class="ps-btn" data-wahequip="Static line" onclick="wahToggleEquip(this)">Static line</button>
+          <button type="button" class="ps-btn" data-wahequip="Edge protection" onclick="wahToggleEquip(this)">Edge protection</button>
+          <button type="button" class="ps-btn" data-wahequip="Guardrails" onclick="wahToggleEquip(this)">Guardrails</button>
+          <button type="button" class="ps-btn" data-wahequip="Safety net" onclick="wahToggleEquip(this)">Safety net</button>
+          <button type="button" class="ps-btn" data-wahequip="EWP / boom lift" onclick="wahToggleEquip(this)">EWP / Boom</button>
+          <button type="button" class="ps-btn" data-wahequip="Scaffold (compliant)" onclick="wahToggleEquip(this)">Scaffold</button>
+          <button type="button" class="ps-btn" data-wahequip="Industrial ladder" onclick="wahToggleEquip(this)">Ladder</button>
+          <button type="button" class="ps-btn" data-wahequip="Other" onclick="wahToggleEquip(this)">Other</button>
         </div>
       </div>
       <div class="fgroup" id="wah-equip-other-wrap" style="display:none">
@@ -3799,11 +3799,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Anchor point type</label>
-        <div class="pill-row">
-          <button type="button" class="pill" data-wahanchor="Engineered fixed" onclick="wahSelectAnchor(this)">Engineered fixed</button>
-          <button type="button" class="pill" data-wahanchor="Structural beam/column" onclick="wahSelectAnchor(this)">Structural</button>
-          <button type="button" class="pill" data-wahanchor="Temporary (rated)" onclick="wahSelectAnchor(this)">Temporary (rated)</button>
-          <button type="button" class="pill" data-wahanchor="N/A (using EWP/scaffold)" onclick="wahSelectAnchor(this)">N/A</button>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
+          <button type="button" class="ps-btn" data-wahanchor="Engineered fixed" onclick="wahSelectAnchor(this)">Engineered fixed</button>
+          <button type="button" class="ps-btn" data-wahanchor="Structural beam/column" onclick="wahSelectAnchor(this)">Structural</button>
+          <button type="button" class="ps-btn" data-wahanchor="Temporary (rated)" onclick="wahSelectAnchor(this)">Temporary (rated)</button>
+          <button type="button" class="ps-btn" data-wahanchor="N/A (using EWP/scaffold)" onclick="wahSelectAnchor(this)">N/A</button>
         </div>
       </div>
     </div>
@@ -3845,6 +3845,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fgroup">
         <label class="flabel">Rescue plan / emergency contact</label>
         <textarea id="wah-rescue" placeholder="How a fallen worker will be rescued; who to contact; rescue equipment available." rows="2" style="font-size:14px"></textarea>
+        <div style="margin-top:6px"><a href="javascript:wahViewRescueTemplate()" style="font-size:12px;color:#234A7A;text-decoration:underline;font-weight:600">View company rescue plan template (PDF)</a></div>
       </div>
     </div>
   </div>
@@ -3904,7 +3905,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
-  <button class="submit-btn" id="wah-submit-btn" onclick="submitWAH()" disabled style="opacity:0.5;background:#234A7A">
+  <button class="submit-btn" id="wah-submit-btn" onclick="submitWAH()" disabled style="opacity:0.5">
     Submit Heights Permit
   </button>
 
@@ -10092,8 +10093,10 @@ function hwUpdateChip() {
   if (!p || !strip) { if (chip) chip.remove(); return; }
 
   const today = new Date().toLocaleDateString('en-AU');
-  const all = (typeof hwLoadAll === 'function' ? hwLoadAll() : [])
-    .filter(x => x.worker_name === p.name && x.date === today);
+  // Combine Hot Works + Working at Heights so the chip reflects ALL permit types
+  const hwList = (typeof hwLoadAll === 'function' ? hwLoadAll() : []);
+  const wahList = (typeof wahLoadAll === 'function' ? wahLoadAll() : []);
+  const all = hwList.concat(wahList).filter(x => x.worker_name === p.name && x.date === today);
 
   if (all.length === 0) { if (chip) chip.remove(); return; }
 
@@ -12148,6 +12151,7 @@ async function submitWAH() {
     document.getElementById('wah-success-id').textContent = permit.permit_id;
     document.getElementById('wah-success-sub').textContent = permit.subtype || 'Working at Heights';
     document.getElementById('wah-success-time').textContent = now.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
+    try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
     goTo('screen-wah-success');
   } catch(err) {
     console.error('submitWAH error:', err);
@@ -12273,6 +12277,179 @@ function goToWAHForm() {
 function goToWAHList() {
   wahRenderList();
   goTo('screen-wah-list');
+}
+
+// View a sample rescue plan PDF — uses the same header/footer style as Hot Works permits.
+// In production this would link to the company's actual rescue plan from the safety library.
+function wahViewRescueTemplate() {
+  if (!window.jspdf) {
+    alert('PDF library not loaded. Please refresh and try again.');
+    return;
+  }
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const PAGE_W = 210, PAGE_H = 297;
+    const ML = 22, MR = 22, MT = 18, MB = 16;
+    const CW = PAGE_W - ML - MR;
+
+    function setFill(c) { const m = c.match(/#?(\w{2})(\w{2})(\w{2})/); doc.setFillColor(parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)); }
+    function setText(c) { const m = c.match(/#?(\w{2})(\w{2})(\w{2})/); doc.setTextColor(parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)); }
+
+    // ─────── HEADER ───────
+    const logoW = 30, logoH = 13;
+    const logoX = PAGE_W - MR - logoW;
+    const logoY = MT;
+    if (window.SLAN_LOGO_B64) {
+      try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', logoX, logoY, logoW, logoH); } catch(e) {}
+    }
+    setText('#1A2A1F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text('WORKING AT HEIGHTS', PAGE_W/2, logoY + 6, { align:'center' });
+    doc.setFontSize(13);
+    doc.text('Rescue Plan Template', PAGE_W/2, logoY + 12, { align:'center' });
+
+    // Header divider
+    setFill('#234A7A');
+    doc.rect(ML, MT + logoH + 4, CW, 0.6, 'F');
+
+    let y = MT + logoH + 14;
+
+    // ─────── TITLE BLOCK ───────
+    setText('#4F5965');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text('Document type: Rescue Plan Template', ML, y); y += 5;
+    doc.text('Issued by: Slán Safety on behalf of [Company Name]', ML, y); y += 5;
+    doc.text('Reviewed annually. Required reading for all working-at-heights permit holders.', ML, y); y += 10;
+
+    // ─────── SECTION 1 ───────
+    setText('#1A2A1F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text('1. Purpose', ML, y); y += 6;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    const purpose = 'This rescue plan describes the procedure for rescuing a worker who has fallen and is suspended in their fall-arrest harness. Suspension trauma can become life-threatening within 10–15 minutes, so the rescue must commence immediately.';
+    const purposeLines = doc.splitTextToSize(purpose, CW);
+    doc.text(purposeLines, ML, y); y += purposeLines.length * 5 + 4;
+
+    // ─────── SECTION 2 ───────
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text('2. Roles and Responsibilities', ML, y); y += 6;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    const roles = [
+      ['Site Supervisor:', 'Authorises the permit, ensures rescue plan is in place before work commences, coordinates emergency response.'],
+      ['Spotter / Standby:', 'Maintains continuous visual contact with the person at heights, raises the alarm, initiates rescue.'],
+      ['First Aider:', 'Provides immediate first aid on rescue, monitors for suspension trauma symptoms, hands over to paramedics.'],
+      ['Worker at heights:', 'Confirms harness is rigged correctly, knows the rescue procedure, carries trauma relief straps if rated.']
+    ];
+    roles.forEach(([role, desc]) => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(role, ML, y);
+      doc.setFont('helvetica', 'normal');
+      const descLines = doc.splitTextToSize(desc, CW - 38);
+      doc.text(descLines, ML + 38, y);
+      y += Math.max(5, descLines.length * 5) + 2;
+    });
+    y += 4;
+
+    // ─────── SECTION 3 ───────
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text('3. Rescue Procedure', ML, y); y += 6;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    const steps = [
+      '1. Spotter raises alarm immediately. Call 000 (ambulance) and notify site supervisor.',
+      '2. Do not approach the suspended worker until the area below is secured.',
+      '3. If the worker is conscious, instruct them to relieve pressure on their legs by pushing against the structure or using trauma relief straps.',
+      '4. Attempt rescue using one of the methods below — whichever the site has rated equipment for:',
+      '       (a) EWP / boom lift retrieval',
+      '       (b) Pre-rigged controlled descent device (e.g. Petzl ASAP, DBI Rollgliss)',
+      '       (c) Mechanical advantage rescue kit',
+      '       (d) Ladder rescue (only if anchor + casualty location permit)',
+      '5. Once on solid ground, lay the worker down with legs slightly raised and monitor for suspension trauma (pale skin, dizziness, nausea, loss of consciousness).',
+      '6. Hand over to paramedics on arrival. Do not leave the casualty unattended.'
+    ];
+    steps.forEach(step => {
+      const stepLines = doc.splitTextToSize(step, CW);
+      doc.text(stepLines, ML, y);
+      y += stepLines.length * 5 + 1;
+    });
+    y += 4;
+
+    // Page 2
+    doc.addPage();
+    y = MT;
+
+    setText('#1A2A1F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text('4. Rescue Equipment On Site', ML, y); y += 6;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    const equip = 'The following rescue equipment must be available before any work at heights commences. Confirm location and condition during pre-start.';
+    const equipLines = doc.splitTextToSize(equip, CW);
+    doc.text(equipLines, ML, y); y += equipLines.length * 5 + 4;
+
+    const items = [
+      '☐ EWP / boom lift (if applicable to the work area)',
+      '☐ Mechanical advantage rescue kit (3:1 or 4:1)',
+      '☐ Trauma relief straps fitted to harness',
+      '☐ First aid kit including burn dressings and oxygen (where rated)',
+      '☐ Two-way radio or mobile phone with confirmed signal',
+      '☐ Stretcher / spinal board for casualty transport'
+    ];
+    items.forEach(it => { doc.text(it, ML, y); y += 6; });
+    y += 4;
+
+    // Section 5
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text('5. Emergency Contacts', ML, y); y += 6;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    const contacts = [
+      ['Emergency services:', '000'],
+      ['Site supervisor:', '[populated from permit]'],
+      ['First aider on duty:', '[populated from sign-in register]'],
+      ['Site address:', '[populated from permit]'],
+      ['Nearest hospital:', '[populated from site setup]']
+    ];
+    contacts.forEach(([k, v]) => {
+      doc.setFont('helvetica', 'bold'); doc.text(k, ML, y);
+      doc.setFont('helvetica', 'normal'); doc.text(v, ML + 50, y);
+      y += 6;
+    });
+    y += 4;
+
+    // Section 6
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text('6. Acknowledgement', ML, y); y += 6;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    const ack = 'By signing below, I confirm I have read and understood this rescue plan and know my role in the event of a fall. I have inspected my fall-arrest equipment and confirmed it is in date and undamaged.';
+    const ackLines = doc.splitTextToSize(ack, CW);
+    doc.text(ackLines, ML, y); y += ackLines.length * 5 + 6;
+
+    // Signature line
+    doc.line(ML, y + 10, ML + 70, y + 10);
+    doc.line(ML + 90, y + 10, ML + 160, y + 10);
+    doc.setFontSize(9); setText('#4F5965');
+    doc.text('Worker signature', ML, y + 14);
+    doc.text('Date', ML + 90, y + 14);
+
+    // ─────── FOOTER on each page ───────
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      setText('#4F5965');
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      doc.text('Slán Safety · Rescue Plan Template (sample)', ML, PAGE_H - MB + 6);
+      doc.text('Page ' + i + ' of ' + totalPages, PAGE_W - MR, PAGE_H - MB + 6, { align:'right' });
+      setFill('#234A7A');
+      doc.rect(ML, PAGE_H - MB, CW, 0.4, 'F');
+    }
+
+    // Open the PDF in a new tab
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  } catch(err) {
+    console.error('Rescue plan template error:', err);
+    alert('Could not open rescue plan template. Please try again.');
+  }
 }
 
 function hwSelectType(btnEl) {
