@@ -12903,9 +12903,13 @@ function wahSubmitCloseout() {
   all[idx].closeout_ticks = Object.assign({}, _wahCloseoutTicks);
   wahSaveAll(all);
 
-  // Offer PDF download immediately after closeout
-  if (confirm('Permit closed successfully.\n\nDownload PDF for your records?')) {
-    try { wahDownloadPermitPDF(_wahCloseoutPermit && _wahCloseoutPermit.permit_id); } catch(e) { console.error(e); }
+  // Only offer PDF download if the worker is closing the permit on their own,
+  // NOT when they're rushing through the sign-out gate closing several permits.
+  // The PDF is always available later from the permit view anyway.
+  if (!_wahFromGate) {
+    if (confirm('Permit closed successfully.\n\nDownload PDF for your records?')) {
+      try { wahDownloadPermitPDF(_wahCloseoutPermit && _wahCloseoutPermit.permit_id); } catch(e) { console.error(e); }
+    }
   }
 
   // Refresh chips/tile so counts update
@@ -16649,8 +16653,8 @@ function generatePermitPDF(permit) {
   innerY = y + 5;
   const half = CW / 2;
   drawField(ML + 4, innerY,        'Worker',  permit.worker_name);
-  drawField(ML + 4, innerY + 4,    'Company', permit.company);
-  drawField(ML + 4, innerY + 8,    'Role',    permit.role);
+  drawField(ML + 4, innerY + 4,    'Company', permit.company || permit.worker_company);
+  drawField(ML + 4, innerY + 8,    'Role',    permit.role || permit.worker_role);
   drawField(ML + half + 2, innerY,        'Site',            permit.site);
   drawField(ML + half + 2, innerY + 4,    'Workers on task', permit.num_workers);
   drawField(ML + half + 2, innerY + 8,    'Submitted',       pdfShortDateTime(permit.submitted_at));
