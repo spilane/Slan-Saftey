@@ -3205,6 +3205,32 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ═══════════════════ WORKING AT HEIGHTS — CLOSEOUT DECLARATION ═══ -->
+<div id="screen-wah-closeout" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="wahBackFromCloseout()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:rgba(60,110,180,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#234A7A" stroke-width="2" style="width:14px;height:14px"><path d="M4 22h16"/><path d="M8 22V6"/><path d="M16 22V6"/><path d="M8 10h8"/><path d="M8 14h8"/><path d="M12 6V2"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Close Heights Permit</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:30px">
+    <div id="wah-closeout-header" style="padding:11px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:13px"></div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Closeout declaration</div>
+    <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">Tick each item below to confirm the work area has been left safe before closing this permit.</div>
+    <div id="wah-closeout-ticks"></div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:14px 0 6px">Comments (optional)</div>
+    <textarea id="wah-closeout-comments" rows="2" placeholder="Any incidents, near-misses, or notes for the supervisor..." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+
+    <button class="submit-btn" id="wah-closeout-btn" onclick="wahSubmitCloseout()" disabled style="opacity:0.5;margin-top:18px">
+      Close Permit
+    </button>
+  </div>
+</div>
+
 <!-- ═══════════════════ HOT WORKS — SIGN-OUT GATE ═══ -->
 <div id="screen-hw-gate" class="screen">
   <div class="tbar" style="background:var(--deep)">
@@ -3850,7 +3876,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Working height (m above ground/lower level)</label>
-        <input type="number" id="wah-height" min="2" max="200" step="1" placeholder="e.g. 6" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="wah-height" placeholder="e.g. 6" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
         <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4">A permit is required for any work over 2m where a fall could occur.</div>
       </div>
     </div>
@@ -3908,7 +3934,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Number of workers at height</label>
-        <input type="number" id="wah-num-workers" min="1" max="50" placeholder="e.g. 2" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="wah-num-workers" placeholder="e.g. 2" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
       </div>
     </div>
   </div>
@@ -3919,12 +3945,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Current weather / wind</label>
-        <input type="text" id="wah-weather" placeholder="e.g. Clear, wind 12 km/h SW" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+        <select id="wah-weather" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#fff">
+          <option value="">Select...</option>
+          <option>Clear</option>
+          <option>Overcast</option>
+          <option>Light rain</option>
+          <option>Windy</option>
+          <option>Hot (&gt;35°C)</option>
+        </select>
+        <div id="wah-weather-hint" style="font-size:11px;color:var(--muted);margin-top:5px;display:none"></div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4">Stop work if wind exceeds 30 km/h (or as per equipment manufacturer's limit).</div>
       </div>
       <div class="fgroup">
         <label class="flabel">Exclusion zone below (m radius)</label>
-        <input type="number" id="wah-exclusion" min="1" max="100" step="1" placeholder="e.g. 5" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="wah-exclusion" placeholder="e.g. 5" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
       </div>
       <div class="fgroup">
         <label class="flabel">Rescue plan / emergency contact</label>
@@ -9329,20 +9363,47 @@ function hwGetPhotosForSubmit() {
 function hwCheckActivePermitsForSignOut() {
   const p = getProfile && getProfile();
   if (!p) return false;
-  const all = hwLoadAll().filter(x => x.worker_name === p.name && (x.status === 'approved' || x.status === 'active'));
   const now = Date.now();
-  const active = all.filter(x => {
-    const end = x.end_time ? new Date(x.end_time).getTime() : 0;
-    return !end || end > now;
-  });
+
+  // Collect active Hot Works permits
+  const hwActive = hwLoadAll()
+    .filter(x => x.worker_name === p.name && (x.status === 'approved' || x.status === 'active'))
+    .filter(x => {
+      const end = x.end_time ? new Date(x.end_time).getTime() : 0;
+      return !end || end > now;
+    })
+    .map(pm => Object.assign({}, pm, { _permitType: 'hotworks' }));
+
+  // Collect active Working at Heights permits
+  const wahActive = (typeof wahLoadAll === 'function' ? wahLoadAll() : [])
+    .filter(x => x.worker_name === p.name && (x.status === 'approved' || x.status === 'active'))
+    .filter(x => {
+      const end = x.end ? new Date(x.end).getTime() : 0;
+      return !end || end > now;
+    })
+    .map(pm => Object.assign({}, pm, { _permitType: 'wah' }));
+
+  const active = hwActive.concat(wahActive);
   if (active.length === 0) return false;
-  // Show the gate screen
+
+  // Update gate title to reflect what's open (HW only / WAH only / both)
+  const titleEl = document.querySelector('#screen-hw-gate .hw-gate-title');
+  if (titleEl) {
+    if (hwActive.length && wahActive.length) titleEl.textContent = 'You have active permits';
+    else if (wahActive.length) titleEl.textContent = 'You have active Working at Heights permits';
+    else titleEl.textContent = 'You have active Hot Works permits';
+  }
+
+  // Show the gate screen with a card per permit, routed to its correct closeout
   const list = document.getElementById('hw-gate-list');
   if (list) {
     list.innerHTML = active.map(pm => {
-      return '<div class="hw-gate-permit" onclick="hwOpenCloseout(\''+pm.permit_id+'\', true)">' +
-               '<div class="hw-gate-permit-id">'+pm.permit_id+'</div>' +
-               '<div class="hw-gate-permit-meta">'+(pm.subtype || pm.type || 'Hot Works')+' · '+(pm.location || '')+'</div>' +
+      const isWAH = pm._permitType === 'wah';
+      const typeLabel = isWAH ? 'Working at Heights' : 'Hot Works';
+      const openFn = isWAH ? 'wahOpenCloseout' : 'hwOpenCloseout';
+      return '<div class="hw-gate-permit" onclick="' + openFn + '(\'' + pm.permit_id + '\', true)">' +
+               '<div class="hw-gate-permit-id">' + pm.permit_id + '</div>' +
+               '<div class="hw-gate-permit-meta">' + (pm.subtype || pm.type || typeLabel) + ' · ' + (pm.location || '') + '</div>' +
                '<div class="hw-gate-permit-cta">Tap to close permit →</div>' +
              '</div>';
     }).join('');
@@ -10033,6 +10094,9 @@ function hwSupApprove() {
   all[idx].approved_at = new Date().toISOString();
   all[idx].approved_by = p ? p.name : 'Supervisor';
   localStorage.setItem('slan_hw_permits_v1', JSON.stringify(all));
+  // Refresh supervisor tile + worker chip so counts update immediately
+  try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
+  try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   goToPermitsToWork();
 }
 
@@ -10181,9 +10245,13 @@ function hwDismissRevokeBanner() {
 function hwUpdateChip() {
   const p = getProfile && getProfile();
   const strip = document.querySelector('#status-strip .status-pill')?.parentElement;
-  let chip = document.getElementById('sp-permits');
 
-  if (!p || !strip) { if (chip) chip.remove(); return; }
+  // Remove all existing permit chips first (we re-create them below)
+  ['sp-permits','sp-permits-pending','sp-permits-ack','sp-permits-approved','sp-permits-rejected','sp-permits-tfb'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+  if (!p || !strip) return;
 
   const today = new Date().toLocaleDateString('en-AU');
   // Combine Hot Works + Working at Heights so the chip reflects ALL permit types
@@ -10191,12 +10259,11 @@ function hwUpdateChip() {
   const wahList = (typeof wahLoadAll === 'function' ? wahLoadAll() : []);
   const all = hwList.concat(wahList).filter(x => x.worker_name === p.name && x.date === today);
 
-  if (all.length === 0) { if (chip) chip.remove(); return; }
+  if (all.length === 0) return;
 
-  let pending = 0, active = 0, other = 0, rejected = 0, needsAck = 0, tfbFlagged = 0;
+  let pending = 0, active = 0, rejected = 0, needsAck = 0, tfbFlagged = 0;
   all.forEach(x => {
     const b = hwPermitBucket(x);
-    // TFB-flagged permits awaiting supervisor override (highest priority)
     if (x.tfb_active_at_submit && !x.tfb_override && (x.status === 'submitted' || x.status === 'pending')) {
       tfbFlagged++;
     } else if ((b === 'active' || b === 'pending') && x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')) {
@@ -10204,40 +10271,27 @@ function hwUpdateChip() {
     } else if (b === 'pending') pending++;
     else if (b === 'active') active++;
     else if (x.status === 'rejected') rejected++;
-    else other++;
   });
 
-  // Build a multi-part label so the chip shows ALL outcomes at once
-  // (e.g. "1 pending · 1 approved · 1 rejected" rather than a single priority state)
-  const parts = [];
-  if (tfbFlagged > 0) parts.push('\uD83D\uDD25 ' + tfbFlagged + ' TFB');
-  if (needsAck > 0)   parts.push(needsAck + ' to ack');
-  if (pending > 0)    parts.push(pending + ' pending');
-  if (active > 0)     parts.push(active + ' active');
-  if (rejected > 0)   parts.push(rejected + ' rejected');
-
-  let label, state;
-  if (parts.length === 0) {
-    label = 'Permits (' + all.length + ' today)';
-    state = 'done';
-  } else {
-    label = 'Permits: ' + parts.join(' · ');
-    // Pick chip colour based on most urgent state still present
-    if (tfbFlagged > 0 || rejected > 0) state = 'fail';
-    else if (needsAck > 0 || pending > 0) state = 'warn';
-    else state = 'done';
-  }
-
-  if (!chip) {
-    chip = document.createElement('div');
-    chip.id = 'sp-permits';
-    // Routes to unified My Permits list (which now shows both Hot Works and WAH)
+  // Helper to add a chip — separate chip per outcome so each gets its own colour
+  function addChip(id, count, label, state) {
+    if (count <= 0) return;
+    const chip = document.createElement('div');
+    chip.id = id;
+    chip.className = 'status-pill';
     chip.onclick = function(){ goToHotWorks(); };
+    chip.innerHTML = '<div class="sp-dot"></div><span>' + count + ' ' + label + '</span>';
     strip.appendChild(chip);
+    setPillState(id, state); // 'warn' = amber, 'done' = green, 'fail' = red
   }
-  chip.className = 'status-pill';
-  chip.innerHTML = '<div class="sp-dot"></div><span>' + label + '</span>';
-  setPillState('sp-permits', state);
+
+  // Add a chip for each non-zero category
+  // Order: most urgent on left
+  addChip('sp-permits-tfb',      tfbFlagged, '🔥 TFB',       'fail');
+  addChip('sp-permits-rejected', rejected,   'rejected',    'fail');
+  addChip('sp-permits-ack',      needsAck,   'to ack',      'warn');
+  addChip('sp-permits-pending',  pending,    'pending',     'warn');
+  addChip('sp-permits-approved', active,     'approved',    'done');
 }
 
 function sosCall() {
@@ -12045,8 +12099,56 @@ function wahResetPhotoSlots() {
 }
 
 // Form initialization — wipes form to a clean state and pre-fills user data
+// Weather auto-fill for WAH form — same logic as Hot Works, just targets WAH elements
+function wahAutoFillWeather() {
+  const sel = document.getElementById('wah-weather');
+  const hint = document.getElementById('wah-weather-hint');
+  if (!sel) return;
+  if (sel.value) return; // already chosen — don't override
+  if (hint) { hint.style.display = 'block'; hint.textContent = '📍 Locating…'; }
+  if (!navigator.geolocation) { if (hint) hint.style.display = 'none'; return; }
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng + '&current=temperature_2m,weather_code,wind_speed_10m,precipitation&timezone=auto';
+    fetch(url).then(r => r.json()).then(data => {
+      if (!data || !data.current) { if (hint) hint.style.display = 'none'; return; }
+      const t = data.current.temperature_2m;
+      const w = data.current.wind_speed_10m || 0;
+      const p = data.current.precipitation || 0;
+      const code = data.current.weather_code;
+      let choice = '';
+      if (p > 0.2) choice = 'Light rain';
+      else if (t >= 35) choice = 'Hot (>35°C)';
+      else if (w >= 25) choice = 'Windy';
+      else if (code >= 1 && code <= 3) choice = 'Overcast';
+      else choice = 'Clear';
+      let found = false;
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].text === choice || sel.options[i].value === choice) {
+          sel.value = sel.options[i].value || sel.options[i].text;
+          found = true;
+          break;
+        }
+      }
+      if (hint) {
+        if (found) {
+          hint.textContent = '📍 Auto-filled from your current location · ' + Math.round(t) + '°C · ' + Math.round(w) + ' km/h wind';
+          hint.style.display = 'block';
+        } else {
+          hint.style.display = 'none';
+        }
+      }
+      try { wahValidate(); } catch(e) {}
+    }).catch(() => { if (hint) hint.style.display = 'none'; });
+  }, function() {
+    if (hint) hint.style.display = 'none';
+  }, { timeout: 6000, maximumAge: 300000 });
+}
+
 function wahInitForm() {
   try { wahResetPhotoSlots(); } catch(e) {}
+  try { wahAutoFillWeather(); } catch(e) {}
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
 
@@ -12365,6 +12467,19 @@ function wahViewPermit(permitId) {
     checksHtml +
     photoHtml +
     '</div>';
+
+  // Add "Close This Permit" button if permit is owned by current worker and active
+  // (matches Hot Works pattern)
+  const profile = getProfile();
+  if (profile && p.worker_name === profile.name && (p.status === 'approved' || p.status === 'active')) {
+    const hasUnackConditions = p.approval_conditions && !p.conditions_acknowledged;
+    if (!hasUnackConditions) {
+      const btnDiv = document.createElement('div');
+      btnDiv.style.marginTop = '20px';
+      btnDiv.innerHTML = '<button class="hw-closeout-btn" onclick="wahOpenCloseout(\'' + p.permit_id + '\', false)" style="background:#1B6E3A">Close This Permit</button>';
+      body.appendChild(btnDiv);
+    }
+  }
 
   goTo('screen-wah-view');
 }
@@ -12685,6 +12800,119 @@ function wahSubmitAck() {
 
 function wahAckBack() {
   goTo('screen-wah-list');
+}
+
+// ═══════════════════════════════════════════════════════
+// WAH — CLOSEOUT FLOW (Step 14 Build 3)
+// Worker closes out an active permit when work is done.
+// Mirrors the Hot Works closeout flow but without fire watch.
+// ═══════════════════════════════════════════════════════
+
+let _wahCloseoutPermit = null;
+let _wahCloseoutTicks = {};
+let _wahFromGate = false;
+
+function wahOpenCloseout(permitId, fromGate) {
+  _wahFromGate = !!fromGate;
+  const p = wahLoadAll().find(x => x.permit_id === permitId);
+  if (!p) { alert('Permit not found'); return; }
+  _wahCloseoutPermit = p;
+  _wahCloseoutTicks = {};
+
+  const hdr = document.getElementById('wah-closeout-header');
+  if (hdr) {
+    hdr.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:12.5px;font-weight:700;color:var(--text)">' + p.permit_id + '</div>' +
+                    '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">' + (p.subtype || 'Working at Heights') + ' · ' + (p.location || '') + '</div>';
+  }
+
+  // Closeout checks tailored to working at heights
+  const checks = [
+    { id: 'work_done',         label: 'Work has been completed' },
+    { id: 'equipment_derigged', label: 'Fall arrest equipment de-rigged and accounted for' },
+    { id: 'anchors_inspected', label: 'Anchor points inspected — no damage from use' },
+    { id: 'exclusion_removed', label: 'Exclusion zone barriers removed and area handed back' },
+    { id: 'tools_accounted',   label: 'All tools, materials and PPE accounted for (none left at height)' },
+    { id: 'area_safe',         label: 'Work area left in safe condition' }
+  ];
+
+  const ticksEl = document.getElementById('wah-closeout-ticks');
+  if (ticksEl) {
+    ticksEl.innerHTML = checks.map(c => (
+      '<div class="hw-closeout-tick" id="wah-ct-' + c.id + '" onclick="wahToggleTick(\'' + c.id + '\')">' +
+        '<div class="hw-closeout-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+        '<div class="hw-closeout-label">' + c.label + '</div>' +
+      '</div>'
+    )).join('');
+  }
+  const comments = document.getElementById('wah-closeout-comments');
+  if (comments) comments.value = '';
+
+  wahUpdateCloseoutButton();
+  goTo('screen-wah-closeout');
+}
+
+function wahToggleTick(id) {
+  _wahCloseoutTicks[id] = !_wahCloseoutTicks[id];
+  const el = document.getElementById('wah-ct-' + id);
+  if (el) el.classList.toggle('checked', !!_wahCloseoutTicks[id]);
+  wahUpdateCloseoutButton();
+}
+
+function wahUpdateCloseoutButton() {
+  const btn = document.getElementById('wah-closeout-btn');
+  if (!btn) return;
+  // All 6 checks must be ticked
+  const allTicked = ['work_done','equipment_derigged','anchors_inspected','exclusion_removed','tools_accounted','area_safe']
+    .every(id => _wahCloseoutTicks[id]);
+  btn.disabled = !allTicked;
+  btn.style.opacity = allTicked ? '1' : '0.5';
+}
+
+function wahSubmitCloseout() {
+  if (!_wahCloseoutPermit) return;
+  const allTicked = ['work_done','equipment_derigged','anchors_inspected','exclusion_removed','tools_accounted','area_safe']
+    .every(id => _wahCloseoutTicks[id]);
+  if (!allTicked) { alert('Please tick all closeout items.'); return; }
+
+  const comments = (document.getElementById('wah-closeout-comments').value || '').trim();
+  const all = wahLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _wahCloseoutPermit.permit_id);
+  if (idx < 0) { alert('Permit not found in storage'); return; }
+
+  all[idx].status = 'closed';
+  all[idx].closed_at = new Date().toISOString();
+  all[idx].closed_by = (getProfile() || {}).name || 'Worker';
+  all[idx].closeout_comments = comments;
+  all[idx].closeout_ticks = Object.assign({}, _wahCloseoutTicks);
+  wahSaveAll(all);
+
+  alert('Permit ' + all[idx].permit_id + ' closed.');
+
+  // Refresh chips/tile so counts update
+  try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
+  try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
+
+  // If we came from the sign-out gate, re-check — there may be more permits to close.
+  // If not, return to permits list.
+  if (_wahFromGate && typeof hwCheckActivePermitsForSignOut === 'function') {
+    if (hwCheckActivePermitsForSignOut()) return; // still more permits open, gate handled
+    // No more open permits — let the worker complete sign-out
+    _wahFromGate = false;
+    window._hwGateBypass = true;
+    if (typeof signOut === 'function') {
+      try { signOut(); } finally { window._hwGateBypass = false; }
+    } else {
+      goTo('screen-home');
+    }
+    return;
+  }
+  // Normal path — back to unified My Permits list
+  goToHotWorks();
+}
+
+function wahBackFromCloseout() {
+  if (_wahFromGate) { goTo('screen-hw-gate'); return; }
+  goToHotWorks();
 }
 
 // Update worker-side viewPermit to route to ack screen if conditions need ack
