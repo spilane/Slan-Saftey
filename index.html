@@ -3117,10 +3117,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <!-- Fire watch close button (shown when permit was handed over to this supervisor) -->
   <div id="sup-hw-fwclose-wrap" style="display:none;padding:0 18px 24px">
-    <div style="padding:11px 13px;background:#FAEEDA;border:1px solid #BA7517;border-radius:var(--rs);font-size:12.5px;color:#633806;margin-bottom:10px;line-height:1.5">
-      Worker handed this fire watch to you. Once the <strong id="sup-hw-fwclose-duration">30</strong>-min watch is complete and the area is safe, close the permit below.
-    </div>
-    <button onclick="hwSupCloseHandoverPermit()" style="width:100%;padding:13px;border-radius:var(--r);background:#1B6E3A;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+    <div id="sup-hw-fwclose-msg" style="padding:11px 13px;background:#FAEEDA;border:1px solid #BA7517;border-radius:var(--rs);font-size:12.5px;color:#633806;margin-bottom:10px;line-height:1.5"></div>
+    <button id="sup-hw-fwclose-btn" onclick="hwSupCloseHandoverPermit()" style="width:100%;padding:13px;border-radius:var(--r);background:#1B6E3A;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
       ✓ Close Permit (Fire watch complete)
     </button>
   </div>
@@ -3312,9 +3310,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Hand over to <span style="color:#A32D2D">*</span></div>
     <select id="hw-handover-supervisor" onchange="hwHandoverUpdateBtn()" style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;outline:none;background:#fff;margin-bottom:14px">
       <option value="">Select supervisor...</option>
-      <option value="Eoin Burke">Eoin Burke (Site Supervisor)</option>
-      <option value="Patrick Murphy">Patrick Murphy (Director)</option>
     </select>
+    <div id="hw-handover-no-sups" style="display:none;font-size:11.5px;color:#A32D2D;margin-top:-10px;margin-bottom:14px;line-height:1.4">⚠ No supervisors are currently signed in to site. You cannot hand over right now — call your supervisor to come on site, or wait for the fire watch to complete.</div>
 
     <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Photo of cooled work area <span style="color:#A32D2D">*</span></div>
     <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;line-height:1.4">Show the area where hot works took place. This proves no smouldering at handover.</div>
@@ -3329,6 +3326,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <button class="submit-btn" id="hw-handover-submit" onclick="hwHandoverSubmit()" disabled style="opacity:0.5;background:#1B6E3A">Submit Handover</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ HOT WORKS — HANDOVER WAITING (worker side) ═══ -->
+<div id="screen-hw-handover-waiting" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <div style="width:36px"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Waiting for Supervisor</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:30px">
+    <div id="hw-handover-waiting-body" style="text-align:center"></div>
   </div>
 </div>
 
@@ -5747,6 +5758,9 @@ var DEMO_SIGNINS = [
   { worker_name:'Dean Mc Grath',   company:'Smith Formwork Pty Ltd',    role:'Carpenter',           type:'Sign In',  time:'07:25', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:7  },
   { worker_name:'Liam Brennan',    company:'Murphy Civil Construction', role:'Labourer',            type:'Sign In',  time:'07:28', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:9  },
   { worker_name:'Niall Costello',  company:'Burke Civil Contractors',   role:'Labourer',            type:'Sign In',  time:'07:30', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:6  },
+  // Supervisors / directors signed in today — needed for fire watch handover picker
+  { worker_name:'Eoin Burke',      company:'Murphy Civil Construction', role:'Site Supervisor',     type:'Sign In',  time:'06:30', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:5  },
+  { worker_name:'Patrick Murphy',  company:'Murphy Civil Construction', role:'Director',            type:'Sign In',  time:'06:35', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:6  },
   // Yesterday sign-outs
   { worker_name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',           type:'Sign Out', time:'16:32', date:_yest,   address:'45 Industrial Drive Northside', gps_accuracy_m:7  },
   { worker_name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',          type:'Sign Out', time:'16:28', date:_yest,   address:'45 Industrial Drive Northside', gps_accuracy_m:9  },
@@ -9430,10 +9444,11 @@ function hwCheckActivePermitsForSignOut() {
   if (!p) return false;
   const now = Date.now();
 
-  // Collect active Hot Works permits — exclude any already handed over to a supervisor
+  // Collect active Hot Works permits — exclude any handed over and ACCEPTED.
+  // A pending-acceptance handover still blocks the worker until supervisor accepts.
   const hwActive = hwLoadAll()
     .filter(x => x.worker_name === p.name && (x.status === 'approved' || x.status === 'active'))
-    .filter(x => !x.fire_watch_handover) // handed-over permits no longer block the worker
+    .filter(x => !(x.fire_watch_handover && x.fire_watch_handover.accept_status === 'accepted'))
     .filter(x => {
       const end = x.end_time ? new Date(x.end_time).getTime() : 0;
       return !end || end > now;
@@ -9478,6 +9493,18 @@ function hwCheckActivePermitsForSignOut() {
       }
       // Hot Works — offer both close and handover when fire watch is required
       const fwRequired = !!pm.fire_watch_required;
+      const handoverPending = pm.fire_watch_handover && pm.fire_watch_handover.accept_status === 'pending';
+
+      // If handover is pending, show waiting status only — no actions
+      if (handoverPending) {
+        const sup = pm.fire_watch_handover.handed_to;
+        return '<div class="hw-gate-permit" onclick="goTo(\'screen-hw-handover-waiting\')" style="border-left:3px solid #BA7517;background:#FAEEDA">' +
+                 '<div class="hw-gate-permit-id">' + pm.permit_id + '</div>' +
+                 '<div class="hw-gate-permit-meta">' + (pm.subtype || pm.type || typeLabel) + ' · ' + (pm.location || '') + '</div>' +
+                 '<div class="hw-gate-permit-cta" style="color:#854F0B">⏳ Waiting for ' + sup + ' to accept handover →</div>' +
+               '</div>';
+      }
+
       let actionsHtml = '';
       if (fwRequired) {
         actionsHtml =
@@ -9681,12 +9708,66 @@ function hwOpenHandover(permitId, fromGate) {
   }
 
   // Reset form
+  hwHandoverPopulateSupervisors();
   document.getElementById('hw-handover-supervisor').value = '';
   const conf = document.getElementById('hw-handover-confirm');
   if (conf) conf.classList.remove('checked');
   hwHandoverResetPhoto();
   hwHandoverUpdateBtn();
   goTo('screen-hw-handover');
+}
+
+// Build the supervisor dropdown from the sign-in register — only people
+// currently on site (signed in today AND not signed out yet) AND with a
+// supervisor/director role.
+function hwHandoverPopulateSupervisors() {
+  const select = document.getElementById('hw-handover-supervisor');
+  const noSupsMsg = document.getElementById('hw-handover-no-sups');
+  if (!select) return;
+  // Wipe existing options except the placeholder
+  select.innerHTML = '<option value="">Select supervisor...</option>';
+
+  const today = new Date().toLocaleDateString('en-AU');
+  const queue = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+
+  // Find sign-ins / sign-outs from today
+  const todayAttendance = queue
+    .filter(s => s && s.data && s.data.form_type === 'attendance' && s.data.date)
+    .filter(s => s.data.date === today || s.data.date.replace(/\//g,'-') === today.replace(/\//g,'-'));
+
+  // Collect supervisors who are currently on site
+  const onSiteSups = {};
+  todayAttendance.forEach(s => {
+    const d = s.data;
+    const role = (d.role || '').toLowerCase();
+    if (role.indexOf('supervisor') === -1 && role.indexOf('director') === -1) return;
+    const name = d.worker_name || d.name;
+    if (!name) return;
+    if (d.submission_type === 'Sign In' || d.type === 'Sign In') {
+      onSiteSups[name] = { name: name, role: d.role || 'Supervisor', signedIn: true };
+    } else if (d.submission_type === 'Sign Out' || d.type === 'Sign Out') {
+      if (onSiteSups[name]) onSiteSups[name].signedIn = false;
+    }
+  });
+
+  // Don't include the worker themselves (can't hand over to yourself)
+  const myName = (getProfile() || {}).name || '';
+  const onSiteList = Object.values(onSiteSups).filter(s => s.signedIn && s.name !== myName);
+
+  if (onSiteList.length === 0) {
+    if (noSupsMsg) noSupsMsg.style.display = 'block';
+    select.disabled = true;
+    return;
+  }
+  if (noSupsMsg) noSupsMsg.style.display = 'none';
+  select.disabled = false;
+
+  onSiteList.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.name;
+    opt.textContent = s.name + ' (' + s.role + ')';
+    select.appendChild(opt);
+  });
 }
 
 function hwHandoverPhotoHandle(ev) {
@@ -9776,42 +9857,105 @@ function hwHandoverSubmit() {
   const idx = all.findIndex(x => x.permit_id === _hwHandoverPermit.permit_id);
   if (idx < 0) { alert('Permit not found in storage.'); return; }
 
-  // Mark permit as handed over — supervisor is now responsible for completing the fire watch.
-  // Permit stays 'active' until supervisor closes it (using the existing closeout flow).
+  // Mark handover as PENDING acceptance. Permit stays active. Worker cannot
+  // sign out until the supervisor explicitly accepts on their device.
   all[idx].fire_watch_handover = {
     handed_to: sup,
     handed_at: new Date().toISOString(),
     handed_by: (getProfile() || {}).name || 'Worker',
-    photo: _hwHandoverPhoto
+    photo: _hwHandoverPhoto,
+    accept_status: 'pending'
   };
   hwSaveAll(all);
 
-  alert('Handover submitted. ' + sup + ' is now responsible for completing the fire watch on permit ' + all[idx].permit_id + '.\n\nYou can now sign out of site.');
+  alert('Handover request sent to ' + sup + '.\n\nThey must accept on their device before you can sign out. Call them if needed to make sure they see it.');
 
   // Refresh chips so UI reflects the change
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   try { if (typeof supUpdatePermitsChip === 'function') supUpdatePermitsChip(); } catch(e) {}
 
-  // If we came from the sign-out gate, re-check (more permits may need closing/handover)
-  if (_hwHandoverFromGate && typeof hwCheckActivePermitsForSignOut === 'function') {
-    if (hwCheckActivePermitsForSignOut()) return;
-    // No more permits — let sign-out complete
-    _hwHandoverFromGate = false;
-    window._hwGateBypass = true;
-    if (typeof startFlow === 'function') {
-      try { startFlow('out'); } finally { window._hwGateBypass = false; }
-    } else {
-      goTo('screen-home');
-    }
-    return;
-  }
-  goTo('screen-hw-list');
+  // Worker stays on a "waiting for supervisor" screen.
+  // The gate (if they came from there) will keep blocking them until acceptance.
+  goTo('screen-hw-handover-waiting');
 }
 
 function hwHandoverBack() {
   if (_hwHandoverFromGate) { goTo('screen-hw-gate'); return; }
   goTo('screen-hw-list');
+}
+
+// Renders the "waiting for supervisor" screen the worker sees after submitting
+// a handover. Shows status, supervisor name, tap-to-call link, and refreshes
+// every 3 seconds so the worker sees the status change when supervisor accepts.
+let _hwHandoverWaitingInterval = null;
+
+function hwRenderHandoverWaiting() {
+  const body = document.getElementById('hw-handover-waiting-body');
+  if (!body) return;
+  // Find the worker's most recent pending handover
+  const profile = getProfile() || {};
+  const myName = profile.name;
+  const all = hwLoadAll();
+  const pending = all.filter(p =>
+    p.worker_name === myName &&
+    p.fire_watch_handover &&
+    p.fire_watch_handover.accept_status === 'pending'
+  ).sort((a,b) => new Date(b.fire_watch_handover.handed_at) - new Date(a.fire_watch_handover.handed_at));
+
+  if (pending.length === 0) {
+    // Either accepted or rejected — stop polling and route accordingly
+    if (_hwHandoverWaitingInterval) { clearInterval(_hwHandoverWaitingInterval); _hwHandoverWaitingInterval = null; }
+    // Look for most recently accepted handover for this worker
+    const accepted = all.filter(p => p.worker_name === myName && p.fire_watch_handover && p.fire_watch_handover.accept_status === 'accepted')
+      .sort((a,b) => new Date(b.fire_watch_handover.accepted_at || 0) - new Date(a.fire_watch_handover.accepted_at || 0))[0];
+    if (accepted) {
+      body.innerHTML =
+        '<div style="background:#E0F2E9;border:1.5px solid #1B6E3A;padding:18px;border-radius:12px;margin-bottom:14px">' +
+          '<div style="font-size:24px;margin-bottom:8px">✓</div>' +
+          '<div style="font-size:15px;font-weight:700;color:#0F4720;margin-bottom:6px">Handover accepted</div>' +
+          '<div style="font-size:13px;color:#1B3A2D;line-height:1.5">' + (accepted.fire_watch_handover.handed_to || '') + ' has accepted responsibility for the fire watch on ' + accepted.permit_id + '. You can now sign out of site.</div>' +
+        '</div>' +
+        '<button class="submit-btn" onclick="goTo(\'screen-home\')" style="margin-top:12px">Done</button>';
+      return;
+    }
+    // No pending and no accepted — fallback
+    body.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:30px 0">No pending handover.</div>' +
+      '<button class="submit-btn" onclick="goTo(\'screen-home\')">Back to home</button>';
+    return;
+  }
+
+  const p = pending[0];
+  const sup = p.fire_watch_handover.handed_to || '';
+  const handedAt = p.fire_watch_handover.handed_at ? new Date(p.fire_watch_handover.handed_at) : null;
+  const minsWaiting = handedAt ? Math.floor((Date.now() - handedAt.getTime()) / 60000) : 0;
+
+  // Look up supervisor's phone number from queue if available
+  let supPhone = '';
+  try {
+    const queue = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    const supRecord = queue.find(s => s && s.data && s.data.worker_name === sup && s.data.phone);
+    if (supRecord && supRecord.data.phone) supPhone = supRecord.data.phone;
+  } catch(e) {}
+  // Fallback demo number
+  if (!supPhone) supPhone = '0400 123 456';
+
+  body.innerHTML =
+    '<div style="background:#FAEEDA;border:1.5px solid #BA7517;padding:18px;border-radius:12px;margin-bottom:14px">' +
+      '<div style="font-size:30px;margin-bottom:8px;animation:hwSpin 2s linear infinite;display:inline-block">⏳</div>' +
+      '<div style="font-size:15px;font-weight:700;color:#633806;margin-bottom:6px">Waiting for ' + sup + ' to accept</div>' +
+      '<div style="font-size:13px;color:#633806;line-height:1.5">Permit ' + p.permit_id + ' was handed over ' + minsWaiting + ' min ago. ' + sup + ' must accept on their device before you can sign out.</div>' +
+    '</div>' +
+    '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px">' +
+      'If they haven\'t responded, call them now to make sure they see the request.' +
+    '</div>' +
+    '<a href="tel:' + supPhone.replace(/\s/g,'') + '" style="display:block;width:100%;padding:14px;background:#1B6E3A;color:#fff;border-radius:var(--r);text-align:center;font-weight:600;font-size:14px;text-decoration:none;font-family:DM Sans,sans-serif;box-sizing:border-box;margin-bottom:8px">📞 Call ' + sup + '</a>' +
+    '<button onclick="goTo(\'screen-home\')" style="width:100%;padding:13px;border-radius:var(--r);background:transparent;border:1.5px solid var(--border);color:var(--text);font-size:13.5px;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">Back to home</button>';
+
+  // Refresh every 3s to catch acceptance
+  if (!_hwHandoverWaitingInterval) {
+    _hwHandoverWaitingInterval = setInterval(hwRenderHandoverWaiting, 3000);
+  }
 }
 
 // ────────────────────────────────────────────
@@ -10352,13 +10496,33 @@ function hwSupOpenReview(permitId) {
     }
   } else if (p.status === 'approved' || p.status === 'active') {
     // If a fire watch was handed over to the current supervisor, show the
-    // close-permit button instead of (or alongside) the revoke button.
+    // accept-or-close panel. Two states:
+    //   pending  → "Accept Handover" button
+    //   accepted → "Close Permit (Fire watch complete)" button
     const myName = (getProfile() || {}).name || '';
-    if (p.fire_watch_handover && p.fire_watch_handover.handed_to === myName) {
+    const ho = p.fire_watch_handover;
+    if (ho && ho.handed_to === myName) {
       const fwCloseWrap = document.getElementById('sup-hw-fwclose-wrap');
+      const fwCloseBtn = document.getElementById('sup-hw-fwclose-btn');
+      const fwCloseMsg = document.getElementById('sup-hw-fwclose-msg');
       if (fwCloseWrap) fwCloseWrap.style.display = 'block';
-      const dur = document.getElementById('sup-hw-fwclose-duration');
-      if (dur) dur.textContent = String(p.fire_watch_duration || 30);
+      if (ho.accept_status === 'accepted') {
+        // Already accepted — show close button
+        if (fwCloseMsg) fwCloseMsg.innerHTML = 'You accepted this fire watch handover. Once the <strong>' + (p.fire_watch_duration || 30) + '</strong>-min watch is complete and the area is safe, close the permit below.';
+        if (fwCloseBtn) {
+          fwCloseBtn.textContent = '✓ Close Permit (Fire watch complete)';
+          fwCloseBtn.onclick = hwSupCloseHandoverPermit;
+          fwCloseBtn.style.background = '#1B6E3A';
+        }
+      } else {
+        // Pending acceptance — show Accept button instead
+        if (fwCloseMsg) fwCloseMsg.innerHTML = 'Worker <strong>' + (ho.handed_by || p.worker_name) + '</strong> wants to hand the fire watch to you. <strong>Accept only if you are physically near the work area</strong> and can monitor for the full <strong>' + (p.fire_watch_duration || 30) + '</strong>-min watch.';
+        if (fwCloseBtn) {
+          fwCloseBtn.textContent = '✓ Accept Fire Watch Handover';
+          fwCloseBtn.onclick = hwSupAcceptHandover;
+          fwCloseBtn.style.background = '#BA7517';
+        }
+      }
     } else {
       document.getElementById('sup-hw-revoke-wrap').style.display = 'block';
     }
@@ -10384,6 +10548,30 @@ function hwSupCloseHandoverPermit() {
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   goToPermitsToWork();
+}
+
+// Supervisor accepts a pending fire watch handover. Until this happens, the
+// worker cannot sign out. After acceptance, the worker is notified (their
+// waiting screen polls for state changes) and the supervisor can close the
+// permit when the fire watch is complete.
+function hwSupAcceptHandover() {
+  if (!_hwSupCurrentPermit) return;
+  const ho = _hwSupCurrentPermit.fire_watch_handover;
+  if (!ho) return;
+  if (!confirm('Accept handover of fire watch for permit ' + _hwSupCurrentPermit.permit_id + '?\n\nBy accepting, you confirm you are physically near the work area and will monitor for the full ' + (_hwSupCurrentPermit.fire_watch_duration || 30) + '-min watch.')) return;
+  const sup = (getProfile() || {}).name || 'Supervisor';
+  const all = hwLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _hwSupCurrentPermit.permit_id);
+  if (idx < 0) { alert('Permit not found in storage.'); return; }
+  all[idx].fire_watch_handover.accept_status = 'accepted';
+  all[idx].fire_watch_handover.accepted_at = new Date().toISOString();
+  all[idx].fire_watch_handover.accepted_by = sup;
+  hwSaveAll(all);
+  alert('Handover accepted. The worker can now sign out. You are responsible for closing the permit when the fire watch is complete.');
+  try { if (typeof supUpdatePermitsChip === 'function') supUpdatePermitsChip(); } catch(e) {}
+  try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
+  // Re-open the review screen so the button changes from "Accept" to "Close"
+  hwSupOpenReview(_hwSupCurrentPermit.permit_id);
 }
 
 function hwSupApprove() {
@@ -10805,6 +10993,15 @@ function goTo(id){
   }
   if (id === 'screen-wah-list') {
     try { if (typeof wahRenderList === 'function') wahRenderList(); } catch(e) {}
+  }
+  if (id === 'screen-hw-handover-waiting') {
+    try { if (typeof hwRenderHandoverWaiting === 'function') hwRenderHandoverWaiting(); } catch(e) {}
+  } else {
+    // Leaving the waiting screen — clear the polling interval
+    if (typeof _hwHandoverWaitingInterval !== 'undefined' && _hwHandoverWaitingInterval) {
+      clearInterval(_hwHandoverWaitingInterval);
+      _hwHandoverWaitingInterval = null;
+    }
   }
   // Apply language translation if set
   if (typeof _currentLang !== 'undefined' && _currentLang !== 'en' && typeof LANG !== 'undefined') {
