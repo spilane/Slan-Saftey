@@ -3192,15 +3192,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <div class="hw-card" style="opacity:.5;cursor:not-allowed" onclick="alert('Working at Heights permits are not yet available. Coming soon.')">
+    <div class="hw-card" style="border-left:4px solid #234A7A;cursor:pointer" onclick="goToWAHForm()">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:42px;height:42px;border-radius:11px;background:rgba(60,110,180,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg viewBox="0 0 24 24" fill="none" stroke="#234A7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px"><path d="M4 22h16"/><path d="M8 22V6"/><path d="M16 22V6"/><path d="M8 10h8"/><path d="M8 14h8"/><path d="M12 6V2"/></svg>
         </div>
         <div style="flex:1">
           <div style="font-size:14px;font-weight:600;color:var(--text)">Working at Heights</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Coming soon</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Roof, EWP, scaffold, ladder, harness work</div>
         </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--muted)"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </div>
 
@@ -3619,6 +3620,292 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <button class="submit-btn" id="hw-submit-btn" onclick="submitHotWorks()" disabled style="opacity:0.5">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
     Submit Hot Works Permit
+  </button>
+
+</div>
+</div>
+
+<!-- ═══════════════════ WORKING AT HEIGHTS PERMITS — LIST ═══ -->
+<div id="screen-wah-list" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-ptw-picker')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:rgba(60,110,180,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#234A7A" stroke-width="2" style="width:14px;height:14px"><path d="M4 22h16"/><path d="M8 22V6"/><path d="M16 22V6"/><path d="M8 10h8"/><path d="M8 14h8"/><path d="M12 6V2"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Working at Heights</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:80px">
+    <button class="submit-btn" onclick="goToWAHForm()" style="margin-bottom:18px;background:#234A7A">+ New Heights Permit</button>
+    <div id="wah-list-content"></div>
+    <div id="wah-list-empty" class="hw-empty" style="display:none">
+      <div class="hw-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M4 22h16"/><path d="M8 22V6"/><path d="M16 22V6"/><path d="M8 10h8"/><path d="M8 14h8"/><path d="M12 6V2"/></svg></div>
+      <div class="hw-empty-title">No heights permits yet</div>
+      <div class="hw-empty-sub">Tap "New Heights Permit" above to create your first one.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ WORKING AT HEIGHTS — VIEW (read-only) ═══ -->
+<div id="screen-wah-view" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-wah-list')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Permit Detail</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div id="wah-view-body" style="padding:18px;padding-bottom:80px"></div>
+</div>
+
+<!-- ═══════════════════ WORKING AT HEIGHTS — SUCCESS ═══ -->
+<div id="screen-wah-success" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <div style="width:36px"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Permit Submitted</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="hw-success-wrap">
+    <div class="hw-success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="hw-success-title">Permit submitted</div>
+    <div class="hw-success-id" id="wah-success-id">WAH-YYYY-NNNN</div>
+    <div class="hw-success-sub" id="wah-success-sub">Working at Heights</div>
+    <div class="hw-success-time" id="wah-success-time"></div>
+    <div class="hw-success-sub" style="margin-top:10px">Your permit is pending supervisor approval. You'll see it under <strong>Pending approval</strong> in your permits list.</div>
+    <button class="submit-btn" onclick="wahRenderList(); goTo('screen-wah-list');" style="margin-top:24px;max-width:280px;background:#234A7A">Done</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ WORKING AT HEIGHTS PERMIT FORM ═══ -->
+<div id="screen-wah-form" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-wah-list')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:rgba(60,110,180,.2)"><svg viewBox="0 0 24 24" fill="none" stroke="#234A7A" stroke-width="2" style="width:14px;height:14px"><path d="M4 22h16"/><path d="M8 22V6"/><path d="M16 22V6"/><path d="M8 10h8"/><path d="M8 14h8"/><path d="M12 6V2"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Heights Permit</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+
+<div class="tbar-greeting" style="margin-top:10px">
+  <h1 style="font-size:19px">Working at Heights Permit</h1>
+  <p style="font-size:12px">Fill in all fields — submit when complete</p>
+</div>
+
+<div style="padding:18px;padding-bottom:120px;display:flex;flex-direction:column;gap:14px">
+
+  <!-- Permit identification -->
+  <div class="fcard">
+    <div class="fcard-hdr">Permit Identification</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Permit number</label>
+        <input type="text" id="wah-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fgroup">
+          <label class="flabel">Date</label>
+          <input type="text" id="wah-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Site</label>
+          <input type="text" id="wah-site" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Applicant -->
+  <div class="fcard">
+    <div class="fcard-hdr">Applicant</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Worker name</label>
+        <input type="text" id="wah-worker-name" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Company</label>
+        <input type="text" id="wah-company" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Role</label>
+        <input type="text" id="wah-role" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Work details -->
+  <div class="fcard">
+    <div class="fcard-hdr">Work Details <span class="req">*</span></div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Type of work at heights</label>
+        <div class="pill-row">
+          <button type="button" class="pill" data-wahtype="Roofing" onclick="wahSelectType(this)">Roofing</button>
+          <button type="button" class="pill" data-wahtype="Scaffold work" onclick="wahSelectType(this)">Scaffold</button>
+          <button type="button" class="pill" data-wahtype="EWP / boom lift" onclick="wahSelectType(this)">EWP / Boom</button>
+          <button type="button" class="pill" data-wahtype="Mast climber" onclick="wahSelectType(this)">Mast climber</button>
+          <button type="button" class="pill" data-wahtype="Ladder work" onclick="wahSelectType(this)">Ladder work</button>
+          <button type="button" class="pill" data-wahtype="Harness only" onclick="wahSelectType(this)">Harness only</button>
+          <button type="button" class="pill" data-wahtype="Other" onclick="wahSelectType(this)">Other</button>
+        </div>
+      </div>
+      <div class="fgroup" id="wah-type-other-wrap" style="display:none">
+        <label class="flabel">Specify</label>
+        <input type="text" id="wah-type-other" placeholder="Describe the heights activity" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Description of work</label>
+        <textarea id="wah-description" placeholder="What's being done at height? Materials, scope, purpose." rows="3" style="font-size:14px"></textarea>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Location</label>
+        <input type="text" id="wah-location" placeholder="e.g. North roof, eastern parapet" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Working height (m above ground/lower level)</label>
+        <input type="number" id="wah-height" min="2" max="200" step="0.5" placeholder="e.g. 6" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4">A permit is required for any work over 2m where a fall could occur.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Equipment -->
+  <div class="fcard">
+    <div class="fcard-hdr">Fall Prevention &amp; Equipment <span class="req">*</span></div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Equipment in use (select all)</label>
+        <div class="pill-row">
+          <button type="button" class="pill" data-wahequip="Full body harness" onclick="wahToggleEquip(this)">Full body harness</button>
+          <button type="button" class="pill" data-wahequip="Lanyard" onclick="wahToggleEquip(this)">Lanyard</button>
+          <button type="button" class="pill" data-wahequip="SRL (self-retracting)" onclick="wahToggleEquip(this)">SRL</button>
+          <button type="button" class="pill" data-wahequip="Engineered anchor point" onclick="wahToggleEquip(this)">Engineered anchor</button>
+          <button type="button" class="pill" data-wahequip="Static line" onclick="wahToggleEquip(this)">Static line</button>
+          <button type="button" class="pill" data-wahequip="Edge protection" onclick="wahToggleEquip(this)">Edge protection</button>
+          <button type="button" class="pill" data-wahequip="Guardrails" onclick="wahToggleEquip(this)">Guardrails</button>
+          <button type="button" class="pill" data-wahequip="Safety net" onclick="wahToggleEquip(this)">Safety net</button>
+          <button type="button" class="pill" data-wahequip="EWP / boom lift" onclick="wahToggleEquip(this)">EWP / Boom</button>
+          <button type="button" class="pill" data-wahequip="Scaffold (compliant)" onclick="wahToggleEquip(this)">Scaffold</button>
+          <button type="button" class="pill" data-wahequip="Industrial ladder" onclick="wahToggleEquip(this)">Ladder</button>
+          <button type="button" class="pill" data-wahequip="Other" onclick="wahToggleEquip(this)">Other</button>
+        </div>
+      </div>
+      <div class="fgroup" id="wah-equip-other-wrap" style="display:none">
+        <label class="flabel">Specify other equipment</label>
+        <input type="text" id="wah-equip-other" placeholder="Describe equipment" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Anchor point type</label>
+        <div class="pill-row">
+          <button type="button" class="pill" data-wahanchor="Engineered fixed" onclick="wahSelectAnchor(this)">Engineered fixed</button>
+          <button type="button" class="pill" data-wahanchor="Structural beam/column" onclick="wahSelectAnchor(this)">Structural</button>
+          <button type="button" class="pill" data-wahanchor="Temporary (rated)" onclick="wahSelectAnchor(this)">Temporary (rated)</button>
+          <button type="button" class="pill" data-wahanchor="N/A (using EWP/scaffold)" onclick="wahSelectAnchor(this)">N/A</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Work Times -->
+  <div class="fcard">
+    <div class="fcard-hdr">Work Times <span class="req">*</span></div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Start</label>
+        <input type="datetime-local" id="wah-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">End</label>
+        <input type="datetime-local" id="wah-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per one-shift safe-work practice. End time will be capped automatically.</div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Number of workers at height</label>
+        <input type="number" id="wah-num-workers" min="1" max="50" placeholder="e.g. 2" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
+      </div>
+    </div>
+  </div>
+
+  <!-- Conditions -->
+  <div class="fcard">
+    <div class="fcard-hdr">Conditions &amp; Site Setup <span class="req">*</span></div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Current weather / wind</label>
+        <input type="text" id="wah-weather" placeholder="e.g. Clear, wind 12 km/h SW" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4">Stop work if wind exceeds 30 km/h (or as per equipment manufacturer's limit).</div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Exclusion zone below (m radius)</label>
+        <input type="number" id="wah-exclusion" min="1" max="100" step="0.5" placeholder="e.g. 5" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Rescue plan / emergency contact</label>
+        <textarea id="wah-rescue" placeholder="How a fallen worker will be rescued; who to contact; rescue equipment available." rows="2" style="font-size:14px"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pre-start checks -->
+  <div class="fcard">
+    <div class="fcard-hdr">Pre-start Safety Checks <span class="req">*</span></div>
+    <div class="fcard-body">
+      <div class="check-row" id="wah-chk1" onclick="toggleCheck('wah-chk1')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Anchor points rated, certified and pre-use inspected</div></div>
+      <div class="check-row" id="wah-chk2" onclick="toggleCheck('wah-chk2')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Harness in date, undamaged, fitted correctly</div></div>
+      <div class="check-row" id="wah-chk3" onclick="toggleCheck('wah-chk3')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Lanyard / SRL in date, free running, no damage</div></div>
+      <div class="check-row" id="wah-chk4" onclick="toggleCheck('wah-chk4')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Edge protection / guardrails in place where required</div></div>
+      <div class="check-row" id="wah-chk5" onclick="toggleCheck('wah-chk5')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Exclusion zone below set up with barriers and signage</div></div>
+      <div class="check-row" id="wah-chk6" onclick="toggleCheck('wah-chk6')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Weather acceptable (wind &lt;30 km/h, no rain on slippery surfaces)</div></div>
+      <div class="check-row" id="wah-chk7" onclick="toggleCheck('wah-chk7')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Rescue plan in place and communicated to all involved</div></div>
+      <div class="check-row" id="wah-chk8" onclick="toggleCheck('wah-chk8')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Spotter / observer assigned (especially if working alone)</div></div>
+      <div class="check-row" id="wah-chk9" onclick="toggleCheck('wah-chk9')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Tools tethered or area below cleared of personnel</div></div>
+      <div class="check-row" id="wah-chk10" onclick="toggleCheck('wah-chk10')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Working surface inspected (no holes, fragile material identified)</div></div>
+    </div>
+  </div>
+
+  <!-- Photo evidence -->
+  <div class="fcard">
+    <div class="fcard-hdr">Photo Evidence</div>
+    <div class="fcard-body">
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;line-height:1.4">Tap each box to take a photo. Photos are time-stamped and GPS-tagged automatically.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div id="wah-photo-1" class="hw-photo-slot">
+          <input type="file" id="wah-fi-1" accept="image/*" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" onchange="wahPhotoHandle(1, event)">
+          <label for="wah-fi-1" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">1 · Anchor point</div><div style="font-size:10px;color:#234A7A;font-weight:600;margin-top:2px">Tap to take photo</div></label>
+        </div>
+        <div id="wah-photo-2" class="hw-photo-slot">
+          <input type="file" id="wah-fi-2" accept="image/*" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" onchange="wahPhotoHandle(2, event)">
+          <label for="wah-fi-2" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">2 · Harness / PPE</div><div style="font-size:10px;color:#234A7A;font-weight:600;margin-top:2px">Tap to take photo</div></label>
+        </div>
+        <div id="wah-photo-3" class="hw-photo-slot">
+          <input type="file" id="wah-fi-3" accept="image/*" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" onchange="wahPhotoHandle(3, event)">
+          <label for="wah-fi-3" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">3 · Edge protection / exclusion</div><div style="font-size:10px;color:#234A7A;font-weight:600;margin-top:2px">Tap to take photo</div></label>
+        </div>
+        <div id="wah-photo-4" class="hw-photo-slot">
+          <input type="file" id="wah-fi-4" accept="image/*" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" onchange="wahPhotoHandle(4, event)">
+          <label for="wah-fi-4" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">4 · Work area from ground</div><div style="font-size:10px;color:#234A7A;font-weight:600;margin-top:2px">Tap to take photo</div></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signature + final confirmation -->
+  <div class="fcard">
+    <div class="fcard-hdr">Sign-off</div>
+    <div class="fcard-body">
+      <div class="fgroup">
+        <label class="flabel">Worker signature</label>
+        <div id="wah-sig-preview" style="border:1.5px solid var(--border);border-radius:var(--rs);padding:10px;background:#F8FAF8;min-height:64px;display:flex;align-items:center;justify-content:center"></div>
+      </div>
+      <div class="check-row" id="wah-confirm" onclick="toggleCheck('wah-confirm')"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">I confirm all of the above is correct and I will follow all safe-work practices for this permit.</div></div>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="wah-submit-btn" onclick="submitWAH()" disabled style="opacity:0.5;background:#234A7A">
+    Submit Heights Permit
   </button>
 
 </div>
@@ -11480,6 +11767,512 @@ function hwGenerateId() {
   const thisYear = list.filter(p => p.permit_id && p.permit_id.startsWith('HW-' + year + '-'));
   const next = (thisYear.length + 1).toString().padStart(4, '0');
   return 'HW-' + year + '-' + next;
+}
+
+// ═══════════════════════════════════════════════════════
+// WORKING AT HEIGHTS — WORKER-SIDE LOGIC (Step 14 Build 1)
+// Mirrors the Hot Works architecture exactly — same storage shape,
+// same status machine, same screens. Just different fields.
+// ═══════════════════════════════════════════════════════
+const WAH_STORAGE_KEY = 'slan_wah_permits_v1';
+let wahSelectedType = null;
+let wahSelectedAnchor = null;
+const _wahPhotos = { 1:null, 2:null, 3:null, 4:null };
+
+function wahLoadAll() {
+  try {
+    const raw = localStorage.getItem(WAH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function wahSaveAll(list) {
+  try {
+    localStorage.setItem(WAH_STORAGE_KEY, JSON.stringify(list));
+    return { ok: true };
+  } catch(e) {
+    if (e.name === 'QuotaExceededError' || (e.message && (e.message.indexOf('quota') !== -1 || e.message.indexOf('storage') !== -1))) {
+      console.warn('Storage full, clearing old permits');
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const trimmed = list.filter(p => {
+        if (p.status === 'submitted' || p.status === 'approved' || p.status === 'active') return true;
+        const closedAt = p.closed_at || p.rejected_at || p.revoked_at || p.submitted_at;
+        const t = closedAt ? new Date(closedAt).getTime() : Date.now();
+        return t > sevenDaysAgo;
+      });
+      try {
+        localStorage.setItem(WAH_STORAGE_KEY, JSON.stringify(trimmed));
+        return { ok: true, trimmed: list.length - trimmed.length };
+      } catch(e2) {
+        return { ok: false, error: e2 };
+      }
+    }
+    console.error('wahSaveAll failed:', e);
+    return { ok: false, error: e };
+  }
+}
+
+function wahGenerateId() {
+  const year = new Date().getFullYear();
+  const list = wahLoadAll();
+  const thisYear = list.filter(p => p.permit_id && p.permit_id.startsWith('WAH-' + year + '-'));
+  const next = (thisYear.length + 1).toString().padStart(4, '0');
+  return 'WAH-' + year + '-' + next;
+}
+
+// Pill-button selection helpers
+function wahSelectType(btnEl) {
+  document.querySelectorAll('#screen-wah-form [data-wahtype]').forEach(b => b.classList.remove('pass'));
+  btnEl.classList.add('pass');
+  wahSelectedType = btnEl.getAttribute('data-wahtype');
+  const otherWrap = document.getElementById('wah-type-other-wrap');
+  if (otherWrap) otherWrap.style.display = (wahSelectedType === 'Other') ? 'flex' : 'none';
+  wahValidate();
+}
+
+function wahToggleEquip(btnEl) {
+  btnEl.classList.toggle('pass');
+  const otherSelected = document.querySelector('#screen-wah-form [data-wahequip="Other"]').classList.contains('pass');
+  document.getElementById('wah-equip-other-wrap').style.display = otherSelected ? 'flex' : 'none';
+  wahValidate();
+}
+
+function wahSelectAnchor(btnEl) {
+  document.querySelectorAll('#screen-wah-form [data-wahanchor]').forEach(b => b.classList.remove('pass'));
+  btnEl.classList.add('pass');
+  wahSelectedAnchor = btnEl.getAttribute('data-wahanchor');
+  wahValidate();
+}
+
+// Photo handling — same approach as Hot Works
+function wahPhotoHandle(slotNum, ev) {
+  try {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onerror = function(err) { console.error('WAH FileReader error:', err); };
+    reader.onload = function(e) {
+      try {
+        const now = new Date();
+        const ts = now.toLocaleString('en-AU', { hour12: false });
+        if (navigator.geolocation) {
+          try {
+            navigator.geolocation.getCurrentPosition(function(pos) {
+              const lat = pos.coords.latitude.toFixed(5);
+              const lng = pos.coords.longitude.toFixed(5);
+              wahPhotoStore(slotNum, e.target.result, ts, lat + ',' + lng);
+            }, function() {
+              wahPhotoStore(slotNum, e.target.result, ts, '');
+            }, { timeout: 3000, maximumAge: 60000 });
+            return;
+          } catch(err) {}
+        }
+        wahPhotoStore(slotNum, e.target.result, ts, '');
+      } catch(err) { console.error('WAH photo onload:', err); }
+    };
+    reader.readAsDataURL(file);
+  } catch(err) { console.error('WAH photo handler:', err); }
+}
+
+function wahPhotoStore(slot, dataUrl, ts, gps) {
+  try {
+    wahShrinkImage(dataUrl, function(small) {
+      _wahPhotos[slot] = { data: small, ts: ts, gps: gps };
+      wahPhotoUpdateUI(slot, small, ts, gps);
+    });
+  } catch(err) { console.error('WAH photo store:', err); }
+}
+
+function wahShrinkImage(dataUrl, callback) {
+  try {
+    const img = new Image();
+    img.onload = function() {
+      try {
+        const maxDim = 800;
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = h * (maxDim / w); w = maxDim; }
+          else       { w = w * (maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL('image/jpeg', 0.7));
+      } catch(err) { callback(dataUrl); }
+    };
+    img.onerror = function() { callback(dataUrl); };
+    img.src = dataUrl;
+  } catch(e) { callback(dataUrl); }
+}
+
+function wahPhotoUpdateUI(slot, dataUrl, ts, gps) {
+  const slotEl = document.getElementById('wah-photo-' + slot);
+  if (!slotEl) return;
+  slotEl.innerHTML =
+    '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:6px">' +
+    '<button type="button" onclick="wahPhotoRemove(' + slot + ')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.65);color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1">×</button>' +
+    '<div style="position:absolute;bottom:4px;left:4px;right:4px;background:rgba(0,0,0,0.65);color:white;font-size:9px;padding:2px 4px;border-radius:3px;text-align:center;line-height:1.2">' + ts + (gps ? '<br>' + gps : '') + '</div>';
+}
+
+function wahPhotoRemove(slot) {
+  _wahPhotos[slot] = null;
+  const slotEl = document.getElementById('wah-photo-' + slot);
+  if (!slotEl) return;
+  const labels = {1:'1 · Anchor point', 2:'2 · Harness / PPE', 3:'3 · Edge protection / exclusion', 4:'4 · Work area from ground'};
+  slotEl.innerHTML =
+    '<input type="file" id="wah-fi-' + slot + '" accept="image/*" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" onchange="wahPhotoHandle(' + slot + ', event)">' +
+    '<label for="wah-fi-' + slot + '" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
+    '<div class="hw-photo-label">' + labels[slot] + '</div>' +
+    '<div style="font-size:10px;color:#234A7A;font-weight:600;margin-top:2px">Tap to take photo</div>' +
+    '</label>';
+  wahValidate();
+}
+
+function wahResetPhotoSlots() {
+  _wahPhotos[1] = _wahPhotos[2] = _wahPhotos[3] = _wahPhotos[4] = null;
+  [1,2,3,4].forEach(s => wahPhotoRemove(s));
+}
+
+// Form initialization — wipes form to a clean state and pre-fills user data
+function wahInitForm() {
+  try { wahResetPhotoSlots(); } catch(e) {}
+  const p = getProfile();
+  if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+
+  document.getElementById('wah-permit-id').value = wahGenerateId();
+  const now = new Date();
+  document.getElementById('wah-date').value = now.toLocaleDateString('en-AU');
+  document.getElementById('wah-site').value = (typeof SITE !== 'undefined' && SITE) ? SITE : 'Site';
+  document.getElementById('wah-worker-name').value = p.name || '';
+  document.getElementById('wah-company').value = p.company || '';
+  document.getElementById('wah-role').value = p.role || '';
+
+  // Clear selections
+  wahSelectedType = null;
+  wahSelectedAnchor = null;
+  document.querySelectorAll('#screen-wah-form [data-wahtype]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-wah-form [data-wahequip]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-wah-form [data-wahanchor]').forEach(b => b.classList.remove('pass'));
+  ['wah-type-other-wrap','wah-equip-other-wrap'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  ['wah-type-other','wah-equip-other','wah-description','wah-location','wah-height','wah-num-workers','wah-weather','wah-exclusion','wah-rescue'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+
+  // Default times — now + 4 hours
+  const start = new Date();
+  const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  document.getElementById('wah-start').value = hwToLocalInputValue(start);
+  document.getElementById('wah-end').value = hwToLocalInputValue(end);
+
+  // Clear all checks
+  for (let i = 1; i <= 10; i++) {
+    const el = document.getElementById('wah-chk' + i);
+    if (el) el.classList.remove('checked');
+  }
+  const cf = document.getElementById('wah-confirm');
+  if (cf) cf.classList.remove('checked');
+
+  // Signature preview
+  const sigWrap = document.getElementById('wah-sig-preview');
+  if (sigWrap) {
+    if (p.sig) {
+      sigWrap.innerHTML = '<img src="' + p.sig + '" alt="signature" style="max-height:60px;max-width:200px">';
+    } else {
+      sigWrap.innerHTML = '<span class="no-sig">No saved signature — go to Profile to add one</span>';
+    }
+  }
+
+  wahValidate();
+
+  // Hook live validation + clamp end time
+  ['wah-description','wah-location','wah-height','wah-num-workers','wah-start','wah-end','wah-weather','wah-exclusion','wah-rescue','wah-type-other','wah-equip-other'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el._wahhooked) {
+      el.addEventListener('input', wahValidate);
+      el.addEventListener('change', wahValidate);
+      el._wahhooked = true;
+    }
+  });
+  document.querySelectorAll('#screen-wah-form .check-row').forEach(r => {
+    if (!r._wahhooked) {
+      r.addEventListener('click', () => setTimeout(wahValidate, 20));
+      r._wahhooked = true;
+    }
+  });
+  // Clamp end time to start + 12h max
+  const startEl = document.getElementById('wah-start');
+  const endEl = document.getElementById('wah-end');
+  if (startEl && !startEl._wahclamphooked) {
+    startEl.addEventListener('change', wahClampEndTime);
+    endEl.addEventListener('change', wahClampEndTime);
+    startEl._wahclamphooked = true;
+  }
+}
+
+function wahClampEndTime() {
+  const startEl = document.getElementById('wah-start');
+  const endEl = document.getElementById('wah-end');
+  if (!startEl || !endEl || !startEl.value || !endEl.value) return;
+  const start = new Date(startEl.value);
+  const end = new Date(endEl.value);
+  const maxEnd = new Date(start.getTime() + 12 * 60 * 60 * 1000);
+  if (end > maxEnd) endEl.value = hwToLocalInputValue(maxEnd);
+  if (end <= start) endEl.value = hwToLocalInputValue(new Date(start.getTime() + 60 * 60 * 1000));
+  wahValidate();
+}
+
+function wahValidate() {
+  const type = wahSelectedType;
+  const typeOther = (document.getElementById('wah-type-other').value || '').trim();
+  const desc = (document.getElementById('wah-description').value || '').trim();
+  const loc = (document.getElementById('wah-location').value || '').trim();
+  const height = (document.getElementById('wah-height').value || '').trim();
+  const numW = (document.getElementById('wah-num-workers').value || '').trim();
+  const start = document.getElementById('wah-start').value;
+  const end = document.getElementById('wah-end').value;
+  const weather = (document.getElementById('wah-weather').value || '').trim();
+  const exclusion = (document.getElementById('wah-exclusion').value || '').trim();
+  const rescue = (document.getElementById('wah-rescue').value || '').trim();
+
+  const equipSelected = document.querySelectorAll('#screen-wah-form [data-wahequip].pass');
+  const equipOther = (document.getElementById('wah-equip-other').value || '').trim();
+  const equipOtherReq = Array.from(equipSelected).some(b => b.getAttribute('data-wahequip') === 'Other');
+
+  let ok = true;
+  if (!type) ok = false;
+  if (type === 'Other' && !typeOther) ok = false;
+  if (!desc || !loc || !height || !numW || !start || !end || !weather || !exclusion || !rescue) ok = false;
+  if (equipSelected.length === 0) ok = false;
+  if (equipOtherReq && !equipOther) ok = false;
+  if (!wahSelectedAnchor) ok = false;
+
+  // Working height must be >= 2m
+  if (height && parseFloat(height) < 2) ok = false;
+
+  // Duration check (12-hour cap)
+  if (start && end) {
+    const startMs = new Date(start).getTime();
+    const endMs = new Date(end).getTime();
+    if (!isNaN(startMs) && !isNaN(endMs)) {
+      const hours = (endMs - startMs) / (1000 * 60 * 60);
+      if (hours <= 0 || hours > 12) ok = false;
+    }
+  }
+
+  // 10 pre-start checks
+  for (let i = 1; i <= 10; i++) {
+    const el = document.getElementById('wah-chk' + i);
+    if (!el || !el.classList.contains('checked')) ok = false;
+  }
+
+  // Final confirmation
+  const cf = document.getElementById('wah-confirm');
+  if (!cf || !cf.classList.contains('checked')) ok = false;
+
+  const btn = document.getElementById('wah-submit-btn');
+  if (btn) {
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '1' : '0.5';
+  }
+  return ok;
+}
+
+async function submitWAH() {
+  if (window._wahSubmitting) return;
+  window._wahSubmitting = true;
+  const btn = document.getElementById('wah-submit-btn');
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:hwSpin 0.7s linear infinite;margin-right:8px;vertical-align:-2px"></span>Submitting' + String.fromCharCode(8230);
+  }
+  function reset() {
+    window._wahSubmitting = false;
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
+  }
+  try {
+    if (!wahValidate()) { alert('Please complete all required fields.'); reset(); return; }
+    const p = getProfile();
+    const now = new Date();
+
+    // Build permit object — same shape as Hot Works
+    const checks = {};
+    for (let i = 1; i <= 10; i++) {
+      const el = document.getElementById('wah-chk' + i);
+      checks['chk' + i] = el ? el.classList.contains('checked') : false;
+    }
+    const equipSelected = Array.from(document.querySelectorAll('#screen-wah-form [data-wahequip].pass')).map(el => el.getAttribute('data-wahequip'));
+
+    const permit = {
+      type: 'Working at Heights',
+      subtype: wahSelectedType,
+      subtype_other: (document.getElementById('wah-type-other').value || '').trim(),
+      permit_id: document.getElementById('wah-permit-id').value,
+      date: now.toLocaleDateString('en-AU'),
+      site: (typeof SITE !== 'undefined' ? SITE : 'Site'),
+      worker_name: p.name,
+      worker_company: p.company,
+      worker_role: p.role,
+      worker_signature: p.sig || null,
+      description: (document.getElementById('wah-description').value || '').trim(),
+      location: (document.getElementById('wah-location').value || '').trim(),
+      working_height_m: parseFloat(document.getElementById('wah-height').value),
+      equipment: equipSelected,
+      equipment_other: (document.getElementById('wah-equip-other').value || '').trim(),
+      anchor_type: wahSelectedAnchor,
+      start: document.getElementById('wah-start').value,
+      end: document.getElementById('wah-end').value,
+      num_workers: parseInt(document.getElementById('wah-num-workers').value, 10) || 1,
+      weather: (document.getElementById('wah-weather').value || '').trim(),
+      exclusion_zone_m: parseFloat(document.getElementById('wah-exclusion').value),
+      rescue_plan: (document.getElementById('wah-rescue').value || '').trim(),
+      checks: checks,
+      photos: [1,2,3,4].filter(s => _wahPhotos[s]).map(s => ({ slot: s, data: _wahPhotos[s].data, ts: _wahPhotos[s].ts, gps: _wahPhotos[s].gps })),
+      submitted_at: now.toISOString(),
+      status: 'submitted'
+    };
+
+    const list = wahLoadAll();
+    list.push(permit);
+    const result = wahSaveAll(list);
+    if (!result.ok) {
+      alert('Could not save permit. Storage may be full. Try removing photos or clearing old permits.');
+      reset();
+      return;
+    }
+
+    // Success screen
+    document.getElementById('wah-success-id').textContent = permit.permit_id;
+    document.getElementById('wah-success-sub').textContent = permit.subtype || 'Working at Heights';
+    document.getElementById('wah-success-time').textContent = now.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
+    goTo('screen-wah-success');
+  } catch(err) {
+    console.error('submitWAH error:', err);
+    alert('Could not submit permit: ' + (err && err.message ? err.message : 'unknown'));
+  } finally {
+    reset();
+  }
+}
+
+// Worker-side list rendering
+function wahRenderList() {
+  const p = getProfile();
+  if (!p) return;
+  const all = wahLoadAll().filter(x => x.worker_name === p.name);
+  const content = document.getElementById('wah-list-content');
+  const empty = document.getElementById('wah-list-empty');
+  if (!content) return;
+  if (all.length === 0) {
+    content.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  // Sort: most recent first
+  all.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+
+  content.innerHTML = all.map(p => {
+    const statusBadge = wahStatusBadge(p.status);
+    const subType = p.subtype || 'Working at Heights';
+    return '<div class="hw-card" onclick="wahViewPermit(\'' + p.permit_id + '\')" style="cursor:pointer;margin-bottom:10px">' +
+      '<div style="display:flex;align-items:center;gap:12px">' +
+      '<div style="width:42px;height:42px;border-radius:11px;background:rgba(60,110,180,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="#234A7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px"><path d="M4 22h16"/><path d="M8 22V6"/><path d="M16 22V6"/><path d="M8 10h8"/><path d="M8 14h8"/><path d="M12 6V2"/></svg>' +
+      '</div>' +
+      '<div style="flex:1;min-width:0">' +
+      '<div style="font-size:13.5px;font-weight:600;color:var(--text)">' + p.permit_id + '</div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + subType + ' · ' + (p.location || '') + '</div>' +
+      '<div style="margin-top:6px">' + statusBadge + '</div>' +
+      '</div>' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--muted);flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>' +
+      '</div></div>';
+  }).join('');
+}
+
+function wahStatusBadge(status) {
+  const map = {
+    submitted: { bg:'#FAEEDA', fg:'#633806', text:'Pending approval' },
+    approved:  { bg:'#E0F2E9', fg:'#1B6E3A', text:'Approved' },
+    active:    { bg:'#E0F2E9', fg:'#1B6E3A', text:'Active' },
+    rejected:  { bg:'#FCEBEB', fg:'#A32D2D', text:'Rejected' },
+    closed:    { bg:'#EAECEE', fg:'#4F5965', text:'Closed' },
+    expired:   { bg:'#EAECEE', fg:'#4F5965', text:'Expired' }
+  };
+  const s = map[status] || map.submitted;
+  return '<span style="display:inline-block;background:' + s.bg + ';color:' + s.fg + ';padding:3px 8px;border-radius:6px;font-size:11.5px;font-weight:600">' + s.text + '</span>';
+}
+
+function wahViewPermit(permitId) {
+  const p = wahLoadAll().find(x => x.permit_id === permitId);
+  if (!p) { alert('Permit not found'); return; }
+  const body = document.getElementById('wah-view-body');
+  if (!body) return;
+
+  const chkLabels = [
+    'Anchor points rated and inspected',
+    'Harness in date and undamaged',
+    'Lanyard / SRL in date',
+    'Edge protection / guardrails in place',
+    'Exclusion zone below set up',
+    'Weather acceptable',
+    'Rescue plan in place',
+    'Spotter / observer assigned',
+    'Tools tethered or area cleared',
+    'Working surface inspected'
+  ];
+  let checksHtml = '';
+  if (p.checks) {
+    checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
+    for (let i = 1; i <= 10; i++) {
+      if (p.checks['chk' + i]) checksHtml += '<div style="font-size:12.5px;margin-bottom:3px">✓ ' + chkLabels[i-1] + '</div>';
+    }
+    checksHtml += '</div></div>';
+  }
+
+  let photoHtml = '';
+  if (p.photos && p.photos.length) {
+    photoHtml = '<div class="hw-view-row"><div class="hw-view-label" style="margin-bottom:8px">Photo evidence</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+      p.photos.map(ph => '<div><img src="' + ph.data + '" style="width:100%;border-radius:6px"><div style="font-size:10px;color:var(--muted);margin-top:2px">' + (ph.ts || '') + (ph.gps ? ' · ' + ph.gps : '') + '</div></div>').join('') +
+      '</div></div>';
+  }
+
+  body.innerHTML =
+    '<div style="background:white;border:1px solid var(--border);border-radius:12px;padding:18px">' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">' +
+    '<div style="font-size:17px;font-weight:700">' + p.permit_id + '</div>' +
+    wahStatusBadge(p.status) +
+    '</div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Type</div><div class="hw-view-val">' + (p.subtype || 'Working at Heights') + '</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Description</div><div class="hw-view-val">' + (p.description || '') + '</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Location</div><div class="hw-view-val">' + (p.location || '') + '</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Working height</div><div class="hw-view-val">' + (p.working_height_m || '') + ' m</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Anchor type</div><div class="hw-view-val">' + (p.anchor_type || '') + '</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Equipment</div><div class="hw-view-val">' + ((p.equipment || []).join(', ') || '—') + '</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Times</div><div class="hw-view-val">' + (p.start || '') + ' → ' + (p.end || '') + '</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Workers at height</div><div class="hw-view-val">' + (p.num_workers || '') + '</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Weather / wind</div><div class="hw-view-val">' + (p.weather || '') + '</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Exclusion zone</div><div class="hw-view-val">' + (p.exclusion_zone_m || '') + ' m radius</div></div>' +
+    '<div class="hw-view-row"><div class="hw-view-label">Rescue plan</div><div class="hw-view-val">' + (p.rescue_plan || '') + '</div></div>' +
+    checksHtml +
+    photoHtml +
+    '</div>';
+
+  goTo('screen-wah-view');
+}
+
+function goToWAHForm() {
+  goTo('screen-wah-form');
+  setTimeout(wahInitForm, 60);
+}
+
+function goToWAHList() {
+  wahRenderList();
+  goTo('screen-wah-list');
 }
 
 function hwSelectType(btnEl) {
