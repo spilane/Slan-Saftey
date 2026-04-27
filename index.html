@@ -10224,6 +10224,7 @@ function hwUpdateChip() {
   if (!chip) {
     chip = document.createElement('div');
     chip.id = 'sp-permits';
+    // Routes to unified My Permits list (which now shows both Hot Works and WAH)
     chip.onclick = function(){ goToHotWorks(); };
     strip.appendChild(chip);
   }
@@ -10357,6 +10358,13 @@ function goTo(id){
   if (id === 'screen-dash') {
     try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
     try { if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip(); } catch(e) {}
+  }
+  // Auto-render permit lists when arriving — fixes empty-list bug on first visit
+  if (id === 'screen-hw-list') {
+    try { if (typeof hwRenderList === 'function') hwRenderList(); } catch(e) {}
+  }
+  if (id === 'screen-wah-list') {
+    try { if (typeof wahRenderList === 'function') wahRenderList(); } catch(e) {}
   }
   // Apply language translation if set
   if (typeof _currentLang !== 'undefined' && _currentLang !== 'en' && typeof LANG !== 'undefined') {
@@ -13341,20 +13349,32 @@ function hwPermitBucket(p) {
 function hwRenderList() {
   const p = getProfile();
   if (!p) return;
-  const all = hwLoadAll().filter(x => x.worker_name === p.name);
-  const active  = all.filter(x => hwPermitBucket(x) === 'active');
-  const pending = all.filter(x => hwPermitBucket(x) === 'pending');
-  const history = all.filter(x => hwPermitBucket(x) === 'history');
+  // Combine Hot Works + Working at Heights permits — list is now unified "My Permits"
+  const hwPermits = hwLoadAll().map(x => Object.assign({}, x, { _permitType: 'hotworks' }));
+  const wahPermits = (typeof wahLoadAll === 'function' ? wahLoadAll() : []).map(x => Object.assign({}, x, { _permitType: 'wah' }));
+  const all = hwPermits.concat(wahPermits).filter(x => x.worker_name === p.name);
+  // Sort each bucket by submitted_at descending so newest first
+  const active  = all.filter(x => hwPermitBucket(x) === 'active').sort((a,b) => (b.submitted_at||'').localeCompare(a.submitted_at||''));
+  const pending = all.filter(x => hwPermitBucket(x) === 'pending').sort((a,b) => (b.submitted_at||'').localeCompare(a.submitted_at||''));
+  const history = all.filter(x => hwPermitBucket(x) === 'history').sort((a,b) => (b.submitted_at||'').localeCompare(a.submitted_at||''));
 
   function cardHtml(pm) {
-    const badgeText = hwStatusLabel(pm.status, pm);
-    const badgeClass = hwStatusBadgeClass(pm.status, pm);
-    const subtypeText = pm.subtype || pm.type || 'Hot Works';
+    const isWAH = pm._permitType === 'wah';
+    // Use the appropriate label/class generator based on permit type
+    const badgeText = isWAH
+      ? (typeof wahStatusLabel === 'function' ? wahStatusLabel(pm.status, pm) : pm.status)
+      : hwStatusLabel(pm.status, pm);
+    const badgeClass = isWAH
+      ? (typeof wahStatusBadgeClass === 'function' ? wahStatusBadgeClass(pm.status, pm) : 'b-pending')
+      : hwStatusBadgeClass(pm.status, pm);
+    const subtypeText = pm.subtype || pm.type || (isWAH ? 'Working at Heights' : 'Hot Works');
     const locText = pm.location || '';
-    const typeKey = (typeof ptwGetType === 'function') ? ptwGetType(pm) : 'hotworks';
-    const typeLabel = (typeof ptwGetTypeLabel === 'function') ? ptwGetTypeLabel(typeKey) : 'Hot Works';
-    const typeClass = (typeof ptwGetTypeClass === 'function') ? ptwGetTypeClass(typeKey) : 't-hotworks';
-    return `<div class="hw-card" onclick="hwViewPermit('${pm.permit_id}')">
+    const typeKey = isWAH ? 'wah' : 'hotworks';
+    const typeLabel = (typeof ptwGetTypeLabel === 'function') ? ptwGetTypeLabel(typeKey) : (isWAH ? 'Working at Heights' : 'Hot Works');
+    const typeClass = (typeof ptwGetTypeClass === 'function') ? ptwGetTypeClass(typeKey) : (isWAH ? 't-wah' : 't-hotworks');
+    // Click routes to the type-correct view
+    const viewFn = isWAH ? 'wahViewPermit' : 'hwViewPermit';
+    return `<div class="hw-card" onclick="${viewFn}('${pm.permit_id}')">
       <div class="hw-card-top">
         <div style="display:inline-flex;align-items:center;gap:6px">
           <span class="ptw-type-tag ${typeClass}">${typeLabel}</span>
