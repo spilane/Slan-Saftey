@@ -3322,10 +3322,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <div class="check-row" id="hw-handover-confirm" onclick="toggleCheck('hw-handover-confirm'); hwHandoverUpdateBtn();" style="margin-bottom:14px">
       <div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
-      <div class="check-text">I confirm the work area is cooled, no smouldering observed, fire extinguisher remains in place, and the named supervisor has accepted handover of the fire watch.</div>
+      <div class="check-text">I confirm the work area is cooled, no smouldering observed, and fire extinguisher remains in place. The named supervisor will be asked to accept this handover on their device before I can sign out.</div>
     </div>
 
-    <button class="submit-btn" id="hw-handover-submit" onclick="hwHandoverSubmit()" disabled style="opacity:0.5;background:#1B6E3A">Submit Handover</button>
+    <button class="submit-btn" id="hw-handover-submit" onclick="hwHandoverSubmit()" disabled style="opacity:0.5;background:#1B6E3A">Send Handover Request</button>
   </div>
 </div>
 
@@ -9728,27 +9728,41 @@ function hwHandoverPopulateSupervisors() {
   select.innerHTML = '<option value="">Select supervisor...</option>';
 
   const today = new Date().toLocaleDateString('en-AU');
-  const queue = JSON.parse(localStorage.getItem('slan_queue') || '[]');
-
-  // Find sign-ins / sign-outs from today
-  const todayAttendance = queue
-    .filter(s => s && s.data && s.data.form_type === 'attendance' && s.data.date)
-    .filter(s => s.data.date === today || s.data.date.replace(/\//g,'-') === today.replace(/\//g,'-'));
-
-  // Collect supervisors who are currently on site
   const onSiteSups = {};
-  todayAttendance.forEach(s => {
+
+  // ── Source 1: real sign-ins from the queue (uses submission_type)
+  const queue = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+  const queueAttendance = queue
+    .filter(s => s && s.data && s.data.form_type === 'attendance' && s.data.date)
+    .filter(s => s.data.date === today);
+  queueAttendance.forEach(s => {
     const d = s.data;
     const role = (d.role || '').toLowerCase();
     if (role.indexOf('supervisor') === -1 && role.indexOf('director') === -1) return;
     const name = d.worker_name || d.name;
     if (!name) return;
-    if (d.submission_type === 'Sign In' || d.type === 'Sign In') {
+    if (d.submission_type === 'Sign In') {
       onSiteSups[name] = { name: name, role: d.role || 'Supervisor', signedIn: true };
-    } else if (d.submission_type === 'Sign Out' || d.type === 'Sign Out') {
+    } else if (d.submission_type === 'Sign Out') {
       if (onSiteSups[name]) onSiteSups[name].signedIn = false;
     }
   });
+
+  // ── Source 2: demo sign-ins (DEMO_SIGNINS uses 'type' not 'submission_type')
+  if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) {
+    DEMO_SIGNINS.forEach(s => {
+      if (s.date !== today) return;
+      const role = (s.role || '').toLowerCase();
+      if (role.indexOf('supervisor') === -1 && role.indexOf('director') === -1) return;
+      const name = s.worker_name;
+      if (!name) return;
+      if (s.type === 'Sign In') {
+        if (!onSiteSups[name]) onSiteSups[name] = { name: name, role: s.role || 'Supervisor', signedIn: true };
+      } else if (s.type === 'Sign Out') {
+        if (onSiteSups[name]) onSiteSups[name].signedIn = false;
+      }
+    });
+  }
 
   // Don't include the worker themselves (can't hand over to yourself)
   const myName = (getProfile() || {}).name || '';
@@ -9851,7 +9865,7 @@ function hwHandoverSubmit() {
   if (!sup) { alert('Please select a supervisor.'); return; }
   if (!_hwHandoverPhoto) { alert('Please take a photo of the cooled work area.'); return; }
   const conf = document.getElementById('hw-handover-confirm');
-  if (!conf || !conf.classList.contains('checked')) { alert('Please confirm the area is cool and supervisor has accepted handover.'); return; }
+  if (!conf || !conf.classList.contains('checked')) { alert('Please confirm the area is cooled before submitting.'); return; }
 
   const all = hwLoadAll();
   const idx = all.findIndex(x => x.permit_id === _hwHandoverPermit.permit_id);
