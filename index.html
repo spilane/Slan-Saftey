@@ -3850,7 +3850,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Working height (m above ground/lower level)</label>
-        <input type="number" id="wah-height" min="2" max="200" step="0.5" placeholder="e.g. 6" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
+        <input type="number" id="wah-height" min="2" max="200" step="1" placeholder="e.g. 6" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
         <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4">A permit is required for any work over 2m where a fall could occur.</div>
       </div>
     </div>
@@ -3924,7 +3924,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Exclusion zone below (m radius)</label>
-        <input type="number" id="wah-exclusion" min="1" max="100" step="0.5" placeholder="e.g. 5" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
+        <input type="number" id="wah-exclusion" min="1" max="100" step="1" placeholder="e.g. 5" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
       </div>
       <div class="fgroup">
         <label class="flabel">Rescue plan / emergency contact</label>
@@ -9792,15 +9792,17 @@ function ptwUpdateTileSubtitle() {
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
   const needsAck = all.filter(x => x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')).length;
   const active = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
-  if (pending > 0) {
-    sub.innerHTML = '<span style="color:#854F0B;font-weight:600">⚠ ' + pending + ' pending approval</span>' + (active > 0 ? ' · ' + active + ' active' : '');
-  } else if (needsAck > 0) {
-    sub.innerHTML = '<span style="color:#854F0B;font-weight:600">' + needsAck + ' awaiting acknowledgement</span>' + (active > 0 ? ' · ' + active + ' active' : '');
-  } else if (active > 0) {
-    sub.innerHTML = '<span style="color:#1B6E3A;font-weight:600">' + active + ' active on site</span>';
-  } else {
-    sub.textContent = 'No permits today';
-  }
+  const rejected = all.filter(x => x.status === 'rejected').length;
+
+  // Build multi-part subtitle showing every outcome
+  const parts = [];
+  if (pending > 0)  parts.push('<span style="color:#854F0B;font-weight:600">' + pending + ' pending</span>');
+  if (needsAck > 0) parts.push('<span style="color:#854F0B;font-weight:600">' + needsAck + ' awaiting ack</span>');
+  if (active > 0)   parts.push('<span style="color:#1B6E3A;font-weight:600">' + active + ' active</span>');
+  if (rejected > 0) parts.push('<span style="color:#A32D2D;font-weight:600">' + rejected + ' rejected</span>');
+
+  if (parts.length === 0) sub.textContent = 'No permits today';
+  else sub.innerHTML = parts.join(' · ');
 }
 
 
@@ -10205,20 +10207,25 @@ function hwUpdateChip() {
     else other++;
   });
 
+  // Build a multi-part label so the chip shows ALL outcomes at once
+  // (e.g. "1 pending · 1 approved · 1 rejected" rather than a single priority state)
+  const parts = [];
+  if (tfbFlagged > 0) parts.push('\uD83D\uDD25 ' + tfbFlagged + ' TFB');
+  if (needsAck > 0)   parts.push(needsAck + ' to ack');
+  if (pending > 0)    parts.push(pending + ' pending');
+  if (active > 0)     parts.push(active + ' active');
+  if (rejected > 0)   parts.push(rejected + ' rejected');
+
   let label, state;
-  // TFB-flagged takes priority — fail/red state matches the permit list badge
-  if (tfbFlagged > 0) {
-    label = '\uD83D\uDD25 ' + tfbFlagged + ' TFB pending'; state = 'fail';
-  } else if (needsAck > 0) {
-    label = 'Permits (' + needsAck + ' to acknowledge)'; state = 'warn';
-  } else if (pending > 0) {
-    label = 'Permits (' + pending + ' pending)'; state = 'warn';
-  } else if (rejected > 0 && active === 0) {
-    label = 'Permits (' + rejected + ' rejected)'; state = 'fail';
-  } else if (active > 0) {
-    label = 'Permits (' + active + ' active)'; state = 'done';
+  if (parts.length === 0) {
+    label = 'Permits (' + all.length + ' today)';
+    state = 'done';
   } else {
-    label = 'Permits (' + all.length + ' today)'; state = 'done';
+    label = 'Permits: ' + parts.join(' · ');
+    // Pick chip colour based on most urgent state still present
+    if (tfbFlagged > 0 || rejected > 0) state = 'fail';
+    else if (needsAck > 0 || pending > 0) state = 'warn';
+    else state = 'done';
   }
 
   if (!chip) {
@@ -12297,20 +12304,10 @@ function wahRenderList() {
 }
 
 function wahStatusBadge(status, p) {
-  // If permit was approved with conditions but worker hasn't acknowledged → show amber Action needed
-  if (p && p.approval_conditions && !p.conditions_acknowledged && (status === 'approved' || status === 'active')) {
-    return '<span style="display:inline-block;background:#FAEEDA;color:#854F0B;padding:3px 8px;border-radius:6px;font-size:11.5px;font-weight:600">Action needed</span>';
-  }
-  const map = {
-    submitted: { bg:'#FAEEDA', fg:'#633806', text:'Pending approval' },
-    approved:  { bg:'#E0F2E9', fg:'#1B6E3A', text:'Approved' },
-    active:    { bg:'#E0F2E9', fg:'#1B6E3A', text:'Active' },
-    rejected:  { bg:'#FCEBEB', fg:'#A32D2D', text:'Rejected' },
-    closed:    { bg:'#EAECEE', fg:'#4F5965', text:'Closed' },
-    expired:   { bg:'#EAECEE', fg:'#4F5965', text:'Expired' }
-  };
-  const s = map[status] || map.submitted;
-  return '<span style="display:inline-block;background:' + s.bg + ';color:' + s.fg + ';padding:3px 8px;border-radius:6px;font-size:11.5px;font-weight:600">' + s.text + '</span>';
+  // Use the same CSS classes Hot Works uses so colours and styling match across the app
+  const cls = wahStatusBadgeClass(status, p);
+  const text = wahStatusLabel(status, p);
+  return '<span class="hw-badge ' + cls + '" style="font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px">' + text + '</span>';
 }
 
 function wahViewPermit(permitId) {
@@ -12497,15 +12494,15 @@ function wahStatusLabel(s, p) {
   return s;
 }
 
-// Badge class helper (reuses Hot Works classes)
+// Badge class helper (uses the same CSS classes Hot Works uses)
 function wahStatusBadgeClass(s, p) {
   if (p && p.approval_conditions && !p.conditions_acknowledged && (s === 'approved' || s === 'active')) {
-    return 'b-needs-ack';
+    return 'hw-pending';
   }
-  if (s === 'submitted' || s === 'pending') return 'b-pending';
-  if (s === 'approved' || s === 'active')   return 'b-approved';
-  if (s === 'rejected') return 'b-rejected';
-  return 'b-closed';
+  if (s === 'active' || s === 'approved')  return 'hw-active';
+  if (s === 'rejected' || s === 'revoked') return 'hw-reject';
+  if (s === 'expired' || s === 'closed')   return 'hw-expired';
+  return 'hw-pending';
 }
 
 // Approve directly (no conditions)
@@ -12603,10 +12600,11 @@ function wahSupReject() {
 }
 
 function _wahSupBackToQueue() {
-  // Refresh all supervisor queues + return to PTW unified screen
+  // Refresh all supervisor queues + worker chip + return to PTW unified screen
   try { if (typeof ptwRenderUnified === 'function') ptwRenderUnified(); } catch(e) {}
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
+  try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   try { if (typeof goToPermitsToWork === 'function') goToPermitsToWork(); else goTo('screen-ptw-unified'); } catch(e) { goTo('screen-dash'); }
 }
 
