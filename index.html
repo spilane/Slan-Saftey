@@ -3053,7 +3053,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <!-- Action buttons (pending state) -->
   <div id="sup-hw-review-actions" style="padding:0 18px 24px;display:none">
-    <button id="sup-hw-tfb-override-btn" onclick="alert('1: tap registered'); try { window.tfbShowOverrideModal((window._hwSupCurrentPermit||{}).permit_id); alert('2: function call returned'); } catch(e) { alert('CAUGHT ERROR: ' + (e && e.message ? e.message : e)); }" style="display:none;width:100%;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:9px">
+    <button id="sup-hw-tfb-override-btn" onclick="tfbShowOverrideModal((window._hwSupCurrentPermit||{}).permit_id)" style="display:none;width:100%;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:9px">
       🔥 Override TFB &amp; Approve
     </button>
     <button class="submit-btn" id="sup-hw-approve-btn" onclick="hwSupApprove()" style="width:100%;background:#1B6E3A;margin-bottom:9px">
@@ -5123,15 +5123,12 @@ try {
   localStorage.setItem('slan_load_count', loadCount.toString());
   localStorage.setItem('slan_load_time', new Date().toISOString());
   window._slanLoadCount = loadCount;
-  // Show a quiet notification ONLY if this is a reload during an active session (count > 1 within 5 min)
+  // Track recent reload silently — used by form-state recovery (Step 13)
   const lastLoadStr = localStorage.getItem('slan_last_load_time');
   if (lastLoadStr) {
     const sinceLast = Date.now() - new Date(lastLoadStr).getTime();
     if (sinceLast < 5*60*1000 && loadCount > 1) {
-      // Recent reload — alert the user so they know
-      setTimeout(function() {
-        alert('PAGE RELOADED. This is reload #' + loadCount + '. The browser tab was killed and restarted (probably by your phone freeing memory while the camera was open).');
-      }, 500);
+      window._slanRecentReload = true;
     }
   }
   localStorage.setItem('slan_last_load_time', new Date().toISOString());
@@ -8433,17 +8430,14 @@ function hwPhotoHandle(ev) {
 
 function hwPhotoHandleNew(slotNum, ev) {
   try {
-    alert('PHOTO 1: hwPhotoHandleNew called for slot ' + slotNum);
     const file = ev.target.files && ev.target.files[0];
-    if (!file) { alert('PHOTO STOP: no file selected'); return; }
-    alert('PHOTO 2: file selected, size=' + Math.round(file.size/1024) + 'KB, type=' + file.type);
+    if (!file) return;
     const reader = new FileReader();
     reader.onerror = function(err) {
-      alert('PHOTO ERROR in FileReader: ' + (err && err.target && err.target.error ? err.target.error.message : 'unknown'));
+      console.error('FileReader error:', err);
     };
     reader.onload = function(e) {
       try {
-        alert('PHOTO 3: FileReader loaded, dataUrl length=' + (e.target.result ? e.target.result.length : 0));
         const now = new Date();
         const ts = now.toLocaleString('en-AU', { hour12: false });
         if (navigator.geolocation) {
@@ -8457,42 +8451,38 @@ function hwPhotoHandleNew(slotNum, ev) {
             }, { timeout: 3000, maximumAge: 60000 });
             return;
           } catch(err) {
-            alert('PHOTO geo error: ' + (err && err.message ? err.message : err));
+            console.warn('Geolocation error:', err);
           }
         }
         hwPhotoStore(slotNum, e.target.result, ts, '');
       } catch(err) {
-        alert('PHOTO ERROR in onload: ' + (err && err.message ? err.message : err));
+        console.error('Photo onload error:', err);
       }
     };
     reader.readAsDataURL(file);
   } catch(err) {
-    alert('PHOTO ERROR in handler: ' + (err && err.message ? err.message : err));
+    console.error('Photo handler error:', err);
   }
 }
 
 function hwPhotoStore(slot, dataUrl, ts, gps) {
   try {
-    alert('PHOTO 4: hwPhotoStore called for slot ' + slot);
     // Downscale large photos to keep localStorage from filling up
     hwShrinkImage(dataUrl, function(smallDataUrl) {
       try {
-        alert('PHOTO 6: shrunk, small length=' + (smallDataUrl ? smallDataUrl.length : 0));
         _hwPhotos[slot] = { data: smallDataUrl, ts: ts, gps: gps };
         hwPhotoStoreUI(slot, smallDataUrl, ts, gps);
-        alert('PHOTO 7: stored OK');
       } catch(err) {
-        alert('PHOTO ERROR in store callback: ' + (err && err.message ? err.message : err));
+        console.error('Photo store callback error:', err);
       }
     });
   } catch(err) {
-    alert('PHOTO ERROR in hwPhotoStore: ' + (err && err.message ? err.message : err));
+    console.error('Photo store error:', err);
   }
 }
 
 function hwShrinkImage(dataUrl, callback) {
   try {
-    alert('PHOTO 5: shrinking image');
     const img = new Image();
     img.onload = function() {
       try {
@@ -8509,17 +8499,17 @@ function hwShrinkImage(dataUrl, callback) {
         const small = canvas.toDataURL('image/jpeg', 0.7);
         callback(small);
       } catch(err) {
-        alert('PHOTO ERROR in shrink onload: ' + (err && err.message ? err.message : err));
+        console.error('Shrink onload error:', err);
         callback(dataUrl);
       }
     };
     img.onerror = function() {
-      alert('PHOTO ERROR: image failed to load for shrinking');
+      console.error('Image failed to load for shrinking');
       callback(dataUrl);
     };
     img.src = dataUrl;
   } catch(e) {
-    alert('PHOTO ERROR in hwShrinkImage: ' + (e && e.message ? e.message : e));
+    console.error('Shrink image error:', e);
     callback(dataUrl);
   }
 }
@@ -15219,7 +15209,6 @@ function tfbContactSupervisor() {
 // ──────────────────────────────────────────────────────────────────
 
 function tfbShowOverrideModal(permitId) {
-  alert('Function tfbShowOverrideModal RAN [BUILD step12cc]. permitId=' + permitId);
   // Validate permitId is set
   if (!permitId) {
     console.error('tfbShowOverrideModal called with no permitId');
@@ -15230,18 +15219,13 @@ function tfbShowOverrideModal(permitId) {
   window._tfbOverrideForPermitId = permitId;
   const m = document.getElementById('tfb-override-modal');
   if (!m) {
-    alert('MODAL DIAG A: tfb-override-modal element NOT FOUND in DOM');
+    console.error('tfb-override-modal not found in DOM');
+    alert('Error: override modal not found. Please refresh.');
     return;
   }
-  // Show the actual current style of the modal so we know what build is loaded
-  alert('MODAL DIAG B [step12cc]: modal style = ' + m.getAttribute('style').substring(0, 250));
   m.style.display = 'flex';
-  // Force a reflow
+  // Force a reflow on slow Android Chrome to ensure the modal paints
   m.offsetHeight;
-  alert('MODAL DIAG C: after setting flex, computed display=' + window.getComputedStyle(m).display + ', visibility=' + window.getComputedStyle(m).visibility + ', z-index=' + window.getComputedStyle(m).zIndex);
-  // Check if it's actually visible
-  const rect = m.getBoundingClientRect();
-  alert('MODAL DIAG D: position rect — top=' + Math.round(rect.top) + ', left=' + Math.round(rect.left) + ', width=' + Math.round(rect.width) + ', height=' + Math.round(rect.height));
   // Reset fields
   ['tfb-override-num','tfb-override-expiry','tfb-override-justification','tfb-override-watcher','tfb-override-triggers'].forEach(id => {
     const el = document.getElementById(id);
@@ -15407,10 +15391,12 @@ function tfbApplyOverrideAndApprove() {
   tfbCloseOverrideModal();
   alert('TFB override applied. Permit ' + permitId + ' approved with TFB conditions. Worker must acknowledge before starting work.');
 
-  // Refresh views
-  if (typeof hwSupRenderQueue === 'function') hwSupRenderQueue();
-  if (typeof ptwRenderUnified === 'function') ptwRenderUnified();
-  if (typeof goTo === 'function') goTo('screen-supervisor');
+  // Refresh ALL supervisor views — fixes stale-render bug where dash showed
+  // pre-override state until user switched roles
+  try { if (typeof hwSupRenderQueue === 'function') hwSupRenderQueue(); } catch(e) { console.warn('hwSupRenderQueue failed:', e); }
+  try { if (typeof ptwRenderUnified === 'function') ptwRenderUnified(); } catch(e) { console.warn('ptwRenderUnified failed:', e); }
+  try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) { console.warn('loadSuperDash failed:', e); }
+  try { if (typeof _doOpenSuperDash === 'function') _doOpenSuperDash(); else if (typeof goTo === 'function') goTo('screen-dash'); } catch(e) { console.warn('Nav failed:', e); }
   } catch(err) {
     console.error('TFB override error:', err);
     alert('Error applying override: ' + (err && err.message ? err.message : 'unknown') + '\n\nCheck console for details.');
