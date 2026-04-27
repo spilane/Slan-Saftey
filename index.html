@@ -850,8 +850,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="width:48px;height:48px;border-radius:12px;background:rgba(184,150,12,.18);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
       <svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
     </div>
-    <h2 style="font-size:18px;text-align:center;margin:0 auto">App permissions</h2>
-    <p style="font-size:13px;line-height:1.5;text-align:center;max-width:340px;margin:8px auto 0">A few permissions are needed to keep you and your team safe.</p>
+    <h2 style="font-size:18px">App permissions</h2>
+    <p style="font-size:13px;line-height:1.5">A few permissions are needed to keep you and your team safe.</p>
   </div>
   <div class="fbody">
     <div class="fcard" style="background:#F1EFE8;border:1px solid var(--border)">
@@ -8520,19 +8520,30 @@ function workerUpdatePermitsTileSub() {
   const p = getProfile && getProfile();
   if (!p) return;
   const today = new Date().toLocaleDateString('en-AU');
-  const all = (typeof hwLoadAll === 'function' ? hwLoadAll() : []).filter(x => x.worker_name === p.name && x.date === today);
+  // Combine Hot Works + Working at Heights so the worker tile reflects both
+  const hwAll = (typeof hwLoadAll === 'function' ? hwLoadAll() : []);
+  const wahAll = (typeof wahLoadAll === 'function' ? wahLoadAll() : []);
+  const all = hwAll.concat(wahAll).filter(x => x.worker_name === p.name && x.date === today);
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
   const needsAck = all.filter(x => x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')).length;
-  const active = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
-  if (needsAck > 0) {
-    sub.innerHTML = '<span style="color:#854F0B;font-weight:600">' + needsAck + ' to acknowledge</span>' + (pending > 0 ? ' · ' + pending + ' pending' : '');
-  } else if (pending > 0) {
-    sub.innerHTML = '<span style="color:#854F0B;font-weight:600">' + pending + ' pending</span>' + (active > 0 ? ' · ' + active + ' active' : '');
-  } else if (active > 0) {
-    sub.innerHTML = '<span style="color:#1B6E3A;font-weight:600">' + active + ' active</span>';
-  } else {
-    sub.textContent = 'Hot Works, WAH & more';
-  }
+  const awaitingHandover = all.filter(x => x.fire_watch_handover && x.fire_watch_handover.accept_status === 'pending').length;
+  const approved = all.filter(x =>
+    hwPermitBucket(x) === 'active' &&
+    !(x.approval_conditions && !x.conditions_acknowledged) &&
+    !(x.fire_watch_handover && x.fire_watch_handover.accept_status === 'pending')
+  ).length;
+  const rejected = all.filter(x => x.status === 'rejected').length;
+
+  // Build multi-part subtitle so all outcomes show at once (matches supervisor side)
+  const parts = [];
+  if (pending > 0)  parts.push('<span style="color:#854F0B;font-weight:600">' + pending + ' pending</span>');
+  if (needsAck > 0) parts.push('<span style="color:#854F0B;font-weight:600">' + needsAck + ' to acknowledge</span>');
+  if (awaitingHandover > 0) parts.push('<span style="color:#854F0B;font-weight:600">' + awaitingHandover + ' awaiting handover</span>');
+  if (approved > 0) parts.push('<span style="color:#1B6E3A;font-weight:600">' + approved + ' approved</span>');
+  if (rejected > 0) parts.push('<span style="color:#A32D2D;font-weight:600">' + rejected + ' rejected</span>');
+
+  if (parts.length === 0) sub.textContent = 'Hot Works, WAH & more';
+  else sub.innerHTML = parts.join(' · ');
 }
 
 function setPill(id, done) {
@@ -8825,7 +8836,7 @@ function updateSupActivityStrip() {
 function supUpdatePermitsChip() {
   const strip = document.querySelector('#d-status-strip > div:last-child');
   // Remove all existing supervisor permit chips first (we re-create below)
-  ['d-pill-permits','d-pill-permits-pending','d-pill-permits-ack','d-pill-permits-approved','d-pill-permits-rejected','d-pill-permits-fwatch'].forEach(id => {
+  ['d-pill-permits','d-pill-permits-pending','d-pill-permits-ack','d-pill-permits-approved','d-pill-permits-rejected','d-pill-permits-fwatch','d-pill-permits-handover-req'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
@@ -8837,12 +8848,18 @@ function supUpdatePermitsChip() {
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
   // Permits awaiting worker acknowledgement — supervisor should know about these
   const needsAck = all.filter(x => x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')).length;
-  // Truly approved = approved/active AND (no conditions OR conditions acknowledged)
-  const approved = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
+  // Truly approved = approved/active AND no unacked conditions AND no pending handover
+  const approved = all.filter(x =>
+    hwPermitBucket(x) === 'active' &&
+    !(x.approval_conditions && !x.conditions_acknowledged) &&
+    !(x.fire_watch_handover && x.fire_watch_handover.accept_status === 'pending')
+  ).length;
   const rejected = all.filter(x => x.status === 'rejected').length;
-  // Fire watch handed over to me (this supervisor) — needs my action
+  // Handover requests waiting for THIS supervisor to accept
   const myName = (getProfile() || {}).name || '';
-  const fwHandover = all.filter(x => x.fire_watch_handover && x.fire_watch_handover.handed_to === myName && (x.status === 'approved' || x.status === 'active')).length;
+  const handoverPending = all.filter(x => x.fire_watch_handover && x.fire_watch_handover.handed_to === myName && x.fire_watch_handover.accept_status === 'pending').length;
+  // Fire watches accepted by this supervisor (still need to close)
+  const fwHandover = all.filter(x => x.fire_watch_handover && x.fire_watch_handover.handed_to === myName && x.fire_watch_handover.accept_status === 'accepted' && (x.status === 'approved' || x.status === 'active')).length;
 
   // Helper to add a chip — separate chip per outcome so each gets its own colour.
   // Mirrors the worker-side chip pattern in hwUpdateChip().
@@ -8858,6 +8875,7 @@ function supUpdatePermitsChip() {
   }
 
   // Order: most urgent on left
+  addChip('d-pill-permits-handover-req', handoverPending, '🔥 to accept', 'fail');
   addChip('d-pill-permits-fwatch',   fwHandover, '🔥 fire watch', 'fail');
   addChip('d-pill-permits-rejected', rejected, 'rejected', 'fail');
   addChip('d-pill-permits-ack',      needsAck, 'awaiting ack', 'warn');
@@ -10329,13 +10347,21 @@ function ptwUpdateTileSubtitle() {
   const all = ptwLoadAllPermits().filter(x => x.date === today);
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
   const needsAck = all.filter(x => x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')).length;
-  const active = all.filter(x => hwPermitBucket(x) === 'active' && !(x.approval_conditions && !x.conditions_acknowledged)).length;
+  // Permits with handover request awaiting supervisor acceptance
+  const awaitingHandover = all.filter(x => x.fire_watch_handover && x.fire_watch_handover.accept_status === 'pending').length;
+  // True approved = approved/active AND no unacked conditions AND no pending handover
+  const active = all.filter(x =>
+    hwPermitBucket(x) === 'active' &&
+    !(x.approval_conditions && !x.conditions_acknowledged) &&
+    !(x.fire_watch_handover && x.fire_watch_handover.accept_status === 'pending')
+  ).length;
   const rejected = all.filter(x => x.status === 'rejected').length;
 
   // Build multi-part subtitle showing every outcome
   const parts = [];
   if (pending > 0)  parts.push('<span style="color:#854F0B;font-weight:600">' + pending + ' pending</span>');
   if (needsAck > 0) parts.push('<span style="color:#854F0B;font-weight:600">' + needsAck + ' awaiting ack</span>');
+  if (awaitingHandover > 0) parts.push('<span style="color:#854F0B;font-weight:600">' + awaitingHandover + ' awaiting handover</span>');
   if (active > 0)   parts.push('<span style="color:#1B6E3A;font-weight:600">' + active + ' approved</span>');
   if (rejected > 0) parts.push('<span style="color:#A32D2D;font-weight:600">' + rejected + ' rejected</span>');
 
@@ -10943,7 +10969,7 @@ function hwUpdateChip() {
   const strip = document.querySelector('#status-strip .status-pill')?.parentElement;
 
   // Remove all existing permit chips first (we re-create them below)
-  ['sp-permits','sp-permits-pending','sp-permits-ack','sp-permits-approved','sp-permits-rejected','sp-permits-tfb'].forEach(id => {
+  ['sp-permits','sp-permits-pending','sp-permits-ack','sp-permits-approved','sp-permits-rejected','sp-permits-tfb','sp-permits-handover'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
@@ -10957,11 +10983,14 @@ function hwUpdateChip() {
 
   if (all.length === 0) return;
 
-  let pending = 0, active = 0, rejected = 0, needsAck = 0, tfbFlagged = 0;
+  let pending = 0, active = 0, rejected = 0, needsAck = 0, tfbFlagged = 0, awaitingHandover = 0;
   all.forEach(x => {
     const b = hwPermitBucket(x);
     if (x.tfb_active_at_submit && !x.tfb_override && (x.status === 'submitted' || x.status === 'pending')) {
       tfbFlagged++;
+    } else if (x.fire_watch_handover && x.fire_watch_handover.accept_status === 'pending') {
+      // Handover requested but supervisor hasn't accepted yet
+      awaitingHandover++;
     } else if ((b === 'active' || b === 'pending') && x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')) {
       needsAck++;
     } else if (b === 'pending') pending++;
@@ -10983,11 +11012,12 @@ function hwUpdateChip() {
 
   // Add a chip for each non-zero category
   // Order: most urgent on left
-  addChip('sp-permits-tfb',      tfbFlagged, '🔥 TFB',       'fail');
-  addChip('sp-permits-rejected', rejected,   'rejected',    'fail');
-  addChip('sp-permits-ack',      needsAck,   'to ack',      'warn');
-  addChip('sp-permits-pending',  pending,    'pending',     'warn');
-  addChip('sp-permits-approved', active,     'approved',    'done');
+  addChip('sp-permits-tfb',       tfbFlagged,       '🔥 TFB',          'fail');
+  addChip('sp-permits-rejected',  rejected,         'rejected',       'fail');
+  addChip('sp-permits-ack',       needsAck,         'to ack',         'warn');
+  addChip('sp-permits-handover',  awaitingHandover, 'awaiting handover', 'warn');
+  addChip('sp-permits-pending',   pending,          'pending',        'warn');
+  addChip('sp-permits-approved',  active,           'approved',       'done');
 }
 
 function sosCall() {
