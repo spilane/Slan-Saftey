@@ -11232,10 +11232,11 @@ function hwUpdateChip() {
   if (!p || !strip) return;
 
   const today = new Date().toLocaleDateString('en-AU');
-  // Combine Hot Works + Working at Heights so the chip reflects ALL permit types
+  // Combine Hot Works + Working at Heights + Confined Space so the chip reflects ALL permit types
   const hwList = (typeof hwLoadAll === 'function' ? hwLoadAll() : []);
   const wahList = (typeof wahLoadAll === 'function' ? wahLoadAll() : []);
-  const all = hwList.concat(wahList).filter(x => x.worker_name === p.name && x.date === today);
+  const csList = (typeof csLoadAll === 'function' ? csLoadAll() : []);
+  const all = hwList.concat(wahList).concat(csList).filter(x => x.worker_name === p.name && x.date === today);
 
   if (all.length === 0) return;
 
@@ -14357,11 +14358,10 @@ function csValidate() {
   
   const valid = typeSelected && descFilled && locFilled && startFilled && endFilled && 
                 numWorkersFilled && attendantFilled && o2Filled && lelFilled && h2sFilled && 
-                coFilled && testTimeFilled && allChecks && confirmChecked && hasSig;
+                coFilled && testTimeFilled && allChecks && confirmChecked;
   
-  // TEMP: Always enable button to test submit flow
-  submitBtn.disabled = false;
-  submitBtn.style.opacity = '1';
+  submitBtn.disabled = !valid;
+  submitBtn.style.opacity = valid ? '1' : '.5';
 }
 
 function csShowDebug() {
@@ -14975,10 +14975,11 @@ function hwPermitBucket(p) {
 function hwRenderList() {
   const p = getProfile();
   if (!p) return;
-  // Combine Hot Works + Working at Heights permits — list is now unified "My Permits"
+  // Combine Hot Works + Working at Heights + Confined Space permits — list is now unified "My Permits"
   const hwPermits = hwLoadAll().map(x => Object.assign({}, x, { _permitType: 'hotworks' }));
   const wahPermits = (typeof wahLoadAll === 'function' ? wahLoadAll() : []).map(x => Object.assign({}, x, { _permitType: 'wah' }));
-  const all = hwPermits.concat(wahPermits).filter(x => x.worker_name === p.name);
+  const csPermits = (typeof csLoadAll === 'function' ? csLoadAll() : []).map(x => Object.assign({}, x, { _permitType: 'confinedspace' }));
+  const all = hwPermits.concat(wahPermits).concat(csPermits).filter(x => x.worker_name === p.name);
   // Sort each bucket by submitted_at descending so newest first
   const active  = all.filter(x => hwPermitBucket(x) === 'active').sort((a,b) => (b.submitted_at||'').localeCompare(a.submitted_at||''));
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').sort((a,b) => (b.submitted_at||'').localeCompare(a.submitted_at||''));
