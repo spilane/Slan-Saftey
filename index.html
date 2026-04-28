@@ -3223,6 +3223,90 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ═══════════════════ CONFINED SPACE — SUPERVISOR REVIEW ═══ -->
+<div id="screen-cs-sup-review" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goToPermitsToWork()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Review Confined Space</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div id="sup-cs-review-body" style="padding:18px;padding-bottom:20px"></div>
+
+  <!-- Action buttons (pending state) -->
+  <div id="sup-cs-review-actions" style="padding:0 18px 24px;display:none">
+    <button class="submit-btn" id="sup-cs-approve-btn" onclick="csSupApprove()" style="width:100%;background:#1B6E3A;margin-bottom:9px">
+      ✓ Approve Permit
+    </button>
+    <button id="sup-cs-conditions-btn" onclick="csSupShowConditions()" style="width:100%;padding:13px;border-radius:var(--r);background:#F5C48A;border:1px solid #BA7517;color:#633806;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:9px">
+      ⚠ Approve with Conditions
+    </button>
+    <button onclick="csSupShowReject()" style="width:100%;padding:13px;border-radius:var(--r);background:#FCEBEB;border:1px solid rgba(184,50,50,.3);color:#A32D2D;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+      ✕ Reject Permit
+    </button>
+  </div>
+
+  <!-- Conditions input -->
+  <div id="sup-cs-conditions-wrap" style="display:none;padding:0 18px 24px">
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Conditions for approval</div>
+    <div style="background:#F1EFE8;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11.5px;color:var(--muted);line-height:1.55">
+      <strong>Conditions are extra rules to follow during entry.</strong> If atmospheric levels are bad or the rescue plan isn't in place, REJECT instead — entry shouldn't go ahead until fixed.
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">Quick-pick conditions:</div>
+    <div id="sup-cs-cond-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+      <div class="cond-chip" onclick="csSupToggleCondChip(this)" data-cond="Continuous atmospheric monitoring required">Continuous monitoring</div>
+      <div class="cond-chip" onclick="csSupToggleCondChip(this)" data-cond="Re-test atmosphere every 30 minutes">Re-test every 30 min</div>
+      <div class="cond-chip" onclick="csSupToggleCondChip(this)" data-cond="SCBA / supplied air required for entry">SCBA required</div>
+      <div class="cond-chip" onclick="csSupToggleCondChip(this)" data-cond="Maximum 2 entrants at any time">Max 2 entrants</div>
+      <div class="cond-chip" onclick="csSupToggleCondChip(this)" data-cond="Hourly check-in with supervisor">Hourly check-in</div>
+      <div class="cond-chip" onclick="csSupToggleCondChip(this)" data-cond="Rescue team on standby for duration">Rescue on standby</div>
+      <div class="cond-chip" onclick="csSupToggleCondChip(this)" data-cond="Stop work and evacuate if alarm triggers">Evacuate on alarm</div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">Custom condition (optional):</div>
+    <textarea id="sup-cs-conditions-text" rows="3" placeholder="Add any additional conditions..." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="csSupCancelConditions()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="csSupApproveWithConditions()" style="flex:1;padding:13px;border-radius:var(--r);background:#BA7517;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Approve with Conditions</button>
+    </div>
+  </div>
+
+  <!-- Reject reason input -->
+  <div id="sup-cs-reject-wrap" style="display:none;padding:0 18px 24px">
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Reason for rejection <span style="color:#A32D2D">*</span></div>
+    <textarea id="sup-cs-reject-text" rows="4" placeholder="Explain why this permit is being rejected. Worker will need to submit a new permit." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="csSupCancelReject()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="csSupReject()" style="flex:1;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ CONFINED SPACE — ACKNOWLEDGE CONDITIONS ═══ -->
+<div id="screen-cs-ack-conditions" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="csAckBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#fff">Acknowledge Conditions</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:120px">
+    <div style="background:#FAEEDA;border:1.5px solid #BA7517;padding:13px 14px;border-radius:10px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:5px">⚠ Approval with conditions</div>
+      <div style="font-size:12px;color:#633806;line-height:1.5" id="cs-ack-permit-info">Your supervisor approved your confined space permit with conditions. You must acknowledge each condition before entry can commence.</div>
+    </div>
+    <div id="cs-ack-conditions-list" style="margin-bottom:14px"></div>
+    <div class="check-row" id="cs-ack-final" onclick="csAckToggleFinal()" style="margin-top:14px">
+      <div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="check-text">I have read and accept all conditions above. I will follow them for the duration of this permit.</div>
+    </div>
+    <button class="submit-btn" id="cs-ack-submit-btn" onclick="csSubmitAck()" disabled style="opacity:0.5;margin-top:18px">
+      Acknowledge &amp; Activate Permit
+    </button>
+  </div>
+</div>
+
 <!-- ═══════════════════ WORKING AT HEIGHTS — CLOSEOUT DECLARATION ═══ -->
 <div id="screen-wah-closeout" class="screen">
   <div class="tbar" style="background:var(--deep)">
@@ -10534,6 +10618,7 @@ function ptwGetType(pm) {
   if (pm.permit_type) return pm.permit_type;
   if (pm.permit_id && pm.permit_id.startsWith('HW-')) return 'hotworks';
   if (pm.permit_id && pm.permit_id.startsWith('WAH-')) return 'wah';
+  if (pm.permit_id && pm.permit_id.startsWith('CS-')) return 'confined';
   // Default to hotworks for now since that's what we build
   return 'hotworks';
 }
@@ -10554,18 +10639,18 @@ function ptwGetTypeClass(t) {
   return 't-hotworks';
 }
 
-// Load all permits from all types (currently just hot works)
+// Load all permits from all types (Hot Works + WAH + Confined Space)
 function ptwLoadAllPermits() {
   const all = [];
-  // Hot Works permits
   if (typeof hwLoadAll === 'function') {
     hwLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'hotworks' })); });
   }
-  // Working at Heights permits
   if (typeof wahLoadAll === 'function') {
     wahLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'wah' })); });
   }
-  // Future: Confined Space permits, etc.
+  if (typeof csLoadAll === 'function') {
+    csLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'confined' })); });
+  }
   return all;
 }
 
@@ -10579,8 +10664,9 @@ function ptwOpenPermit(permitId) {
     hwSupOpenReview(permitId);
   } else if (type === 'wah') {
     wahSupOpenReview(permitId);
+  } else if (type === 'confined') {
+    csSupOpenReview(permitId);
   } else {
-    // Future: Confined Space review, etc.
     alert('Review flow for ' + ptwGetTypeLabel(type) + ' permits not yet built.');
   }
 }
@@ -14692,6 +14778,314 @@ function goToCSList() {
   csRenderList();
   goTo('screen-cs-list');
 }
+
+// ═══════════════════════════════════════════════════════
+// CONFINED SPACE — SUPERVISOR-SIDE LOGIC
+// ═══════════════════════════════════════════════════════
+let _csSupCurrentPermit = null;
+
+function csSupOpenReview(permitId) {
+  const p = csLoadAll().find(x => x.permit_id === permitId);
+  if (!p) { alert('Permit not found'); return; }
+  _csSupCurrentPermit = p;
+
+  // Reset action panels
+  document.getElementById('sup-cs-review-actions').style.display = 'none';
+  document.getElementById('sup-cs-conditions-wrap').style.display = 'none';
+  document.getElementById('sup-cs-reject-wrap').style.display = 'none';
+
+  const d = document.getElementById('sup-cs-review-body');
+
+  function row(label, val) {
+    if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) return '';
+    const v = Array.isArray(val) ? val.join(', ') : String(val);
+    return '<div class="hw-view-row"><div class="hw-view-label">' + label + '</div><div class="hw-view-val">' + v + '</div></div>';
+  }
+
+  const badgeText = csStatusLabel(p.status, p);
+  const badgeClass = csStatusBadgeClass(p.status, p);
+
+  let checksHtml = '';
+  if (p.checks) {
+    const chkLabels = [
+      'Atmospheric test within limits',
+      'Gas detector calibrated/bump-tested today',
+      'Ventilation in place and operating',
+      'All energy sources isolated, locked out and tagged',
+      'Attendant on station',
+      'Communication tested',
+      'Rescue plan briefed and equipment in place',
+      'Emergency contacts confirmed',
+      'PPE confirmed',
+      'Permit displayed at entry point'
+    ];
+    checksHtml = '<div class="hw-view-row"><div class="hw-view-label">Pre-start safety checks</div><div class="hw-view-val">';
+    for (let i = 1; i <= 10; i++) {
+      if (p.checks['chk' + i]) checksHtml += '<div style="font-size:12.5px;margin-bottom:3px">✓ ' + chkLabels[i-1] + '</div>';
+    }
+    checksHtml += '</div></div>';
+  }
+
+  let conditionsRow = '';
+  if (p.approval_conditions) {
+    conditionsRow = '<div class="hw-view-row" style="border-left:3px solid #BA7517;background:#FAEEDA"><div class="hw-view-label" style="color:#854F0B">Conditions of approval</div><div class="hw-view-val" style="color:#633806">' + p.approval_conditions + '</div></div>';
+  }
+  let rejectRow = '';
+  if (p.reject_reason) {
+    rejectRow = '<div class="hw-view-row" style="border-left:3px solid #A32D2D;background:#FCEBEB"><div class="hw-view-label" style="color:#A32D2D">Reason for rejection</div><div class="hw-view-val" style="color:#A32D2D">' + p.reject_reason + '</div></div>';
+  }
+
+  let photoHtml = '';
+  if (p.photos && p.photos.length) {
+    photoHtml = '<div class="hw-view-row"><div class="hw-view-label" style="margin-bottom:8px">Photo evidence</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+      p.photos.map(ph => '<div><img src="' + ph.data + '" style="width:100%;border-radius:6px"><div style="font-size:10px;color:var(--muted);margin-top:2px">' + (ph.ts || '') + (ph.gps ? ' · ' + ph.gps : '') + '</div></div>').join('') +
+      '</div></div>';
+  }
+
+  const a = p.atmospheric || {};
+  const atmo = 'O₂ ' + (a.o2 || '—') + '% · LEL ' + (a.lel || '—') + '% · H₂S ' + (a.h2s || '—') + ' ppm · CO ' + (a.co || '—') + ' ppm';
+
+  // Atmospheric warning if values look bad
+  let atmoWarning = '';
+  const o2 = parseFloat(a.o2);
+  const lel = parseFloat(a.lel);
+  const h2s = parseFloat(a.h2s);
+  const co = parseFloat(a.co);
+  const issues = [];
+  if (!isNaN(o2) && (o2 < 19.5 || o2 > 23.5)) issues.push('O₂ outside 19.5–23.5%');
+  if (!isNaN(lel) && lel >= 5) issues.push('LEL ≥ 5%');
+  if (!isNaN(h2s) && h2s >= 10) issues.push('H₂S ≥ 10 ppm');
+  if (!isNaN(co) && co >= 30) issues.push('CO ≥ 30 ppm');
+  if (issues.length > 0) {
+    atmoWarning = '<div class="hw-view-row" style="border-left:3px solid #A32D2D;background:#FCEBEB"><div class="hw-view-label" style="color:#A32D2D">⚠ Atmospheric warning</div><div class="hw-view-val" style="color:#A32D2D">Readings outside acceptable range: ' + issues.join('; ') + '. Consider rejecting and requiring re-test.</div></div>';
+  }
+
+  d.innerHTML =
+    '<div style="background:white;border:1px solid var(--border);border-radius:12px;padding:18px">' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">' +
+    '<div style="font-size:17px;font-weight:700">' + p.permit_id + '</div>' +
+    '<span class="hw-badge ' + badgeClass + '" style="font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px">' + badgeText + '</span>' +
+    '</div>' +
+    rejectRow +
+    conditionsRow +
+    atmoWarning +
+    row('Worker', p.worker_name) +
+    row('Company', p.worker_company) +
+    row('Type', p.subtype) +
+    (p.subtype_other ? row('Specify', p.subtype_other) : '') +
+    row('Description', p.description) +
+    row('Location', p.location) +
+    row('Entry access', p.entry_access) +
+    row('Atmospheric test', atmo) +
+    row('Gas detector', p.gas_detector) +
+    row('Calibration', p.gas_detector_cal_date) +
+    row('Ventilation', p.ventilation) +
+    row('Communication', p.communication) +
+    row('Attendant', p.attendant) +
+    row('Rescue plan', p.rescue_plan) +
+    row('Rescue equipment', p.rescue_equipment) +
+    row('Times', (p.start || '') + ' → ' + (p.end || '')) +
+    row('Entrants', p.num_workers) +
+    checksHtml +
+    photoHtml +
+    '</div>';
+
+  // Show appropriate action panel
+  if (p.status === 'submitted' || p.status === 'pending') {
+    document.getElementById('sup-cs-review-actions').style.display = 'block';
+  }
+
+  goTo('screen-cs-sup-review');
+}
+
+function csSupApprove() {
+  if (!_csSupCurrentPermit) return;
+  if (!confirm('Approve permit ' + _csSupCurrentPermit.permit_id + '?\n\nThe worker will be notified and can begin entry.')) return;
+  const supName = (getProfile() || {}).name || 'Supervisor';
+  const all = csLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _csSupCurrentPermit.permit_id);
+  if (idx < 0) { alert('Permit not found in storage'); return; }
+  all[idx].status = 'approved';
+  all[idx].approved_by = supName;
+  all[idx].approved_at = new Date().toISOString();
+  csSaveAll(all);
+  alert('Permit ' + all[idx].permit_id + ' approved.');
+  _csSupBackToQueue();
+}
+
+function csSupShowConditions() {
+  csSupResetCondChips();
+  document.getElementById('sup-cs-review-actions').style.display = 'none';
+  document.getElementById('sup-cs-conditions-wrap').style.display = 'block';
+  setTimeout(function() {
+    const t = document.getElementById('sup-cs-conditions-text');
+    if (t) t.focus();
+  }, 60);
+}
+function csSupCancelConditions() {
+  document.getElementById('sup-cs-conditions-wrap').style.display = 'none';
+  document.getElementById('sup-cs-review-actions').style.display = 'block';
+}
+function csSupToggleCondChip(el) { el.classList.toggle('selected'); }
+function csSupResetCondChips() {
+  document.querySelectorAll('#sup-cs-cond-chips .cond-chip.selected').forEach(c => c.classList.remove('selected'));
+  const t = document.getElementById('sup-cs-conditions-text');
+  if (t) t.value = '';
+}
+function csSupGatherConditions() {
+  const chips = document.querySelectorAll('#sup-cs-cond-chips .cond-chip.selected');
+  const selected = Array.from(chips).map(c => c.getAttribute('data-cond'));
+  const custom = (document.getElementById('sup-cs-conditions-text').value || '').trim();
+  if (custom) selected.push(custom);
+  return selected;
+}
+
+function csSupApproveWithConditions() {
+  if (!_csSupCurrentPermit) return;
+  const conditions = csSupGatherConditions();
+  if (conditions.length === 0) {
+    alert('Please select at least one condition or write a custom one before approving.');
+    return;
+  }
+  const supName = (getProfile() || {}).name || 'Supervisor';
+  const all = csLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _csSupCurrentPermit.permit_id);
+  if (idx < 0) { alert('Permit not found in storage'); return; }
+  all[idx].status = 'approved';
+  all[idx].approved_by = supName;
+  all[idx].approved_at = new Date().toISOString();
+  all[idx].approval_conditions = conditions.join('\n');
+  all[idx].approval_conditions_list = conditions;
+  all[idx].conditions_acknowledged = false;
+  csSaveAll(all);
+  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.\n\nWorker must acknowledge before entry.');
+  _csSupBackToQueue();
+}
+
+function csSupShowReject() {
+  document.getElementById('sup-cs-review-actions').style.display = 'none';
+  document.getElementById('sup-cs-reject-wrap').style.display = 'block';
+  const t = document.getElementById('sup-cs-reject-text');
+  if (t) { t.value = ''; setTimeout(() => t.focus(), 60); }
+}
+function csSupCancelReject() {
+  document.getElementById('sup-cs-reject-wrap').style.display = 'none';
+  document.getElementById('sup-cs-review-actions').style.display = 'block';
+}
+function csSupReject() {
+  if (!_csSupCurrentPermit) return;
+  const reason = (document.getElementById('sup-cs-reject-text').value || '').trim();
+  if (!reason) { alert('Please provide a reason for rejection.'); return; }
+  const supName = (getProfile() || {}).name || 'Supervisor';
+  const all = csLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _csSupCurrentPermit.permit_id);
+  if (idx < 0) { alert('Permit not found in storage'); return; }
+  all[idx].status = 'rejected';
+  all[idx].rejected_by = supName;
+  all[idx].rejected_at = new Date().toISOString();
+  all[idx].reject_reason = reason;
+  csSaveAll(all);
+  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  _csSupBackToQueue();
+}
+
+function _csSupBackToQueue() {
+  try { if (typeof ptwRenderUnified === 'function') ptwRenderUnified(); } catch(e) {}
+  try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
+  try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
+  try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
+  try { if (typeof goToPermitsToWork === 'function') goToPermitsToWork(); else goTo('screen-ptw-unified'); } catch(e) { goTo('screen-dash'); }
+}
+
+// ═══════════════════════════════════════════════════════
+// CS — WORKER-SIDE: ACKNOWLEDGE CONDITIONS
+// ═══════════════════════════════════════════════════════
+
+let _csAckPermit = null;
+let _csAckedSet = null;
+
+function csOpenAckConditions(permitId) {
+  const p = csLoadAll().find(x => x.permit_id === permitId);
+  if (!p) { alert('Permit not found'); return; }
+  if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) {
+    alert('No conditions to acknowledge for this permit.');
+    return;
+  }
+  _csAckPermit = p;
+  _csAckedSet = new Set();
+
+  document.getElementById('cs-ack-permit-info').innerHTML =
+    'Your supervisor approved permit <strong>' + p.permit_id + '</strong> with conditions. You must acknowledge each condition before entry can commence.';
+
+  const list = document.getElementById('cs-ack-conditions-list');
+  list.innerHTML = p.approval_conditions_list.map((cond, idx) => {
+    return '<div class="check-row" id="cs-ack-cond-' + idx + '" onclick="csAckToggleCondition(' + idx + ')" style="margin-bottom:8px">' +
+      '<div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+      '<div class="check-text">' + cond + '</div>' +
+      '</div>';
+  }).join('');
+
+  const final = document.getElementById('cs-ack-final');
+  if (final) final.classList.remove('checked');
+  csAckUpdateBtn();
+  goTo('screen-cs-ack-conditions');
+}
+
+function csAckToggleCondition(idx) {
+  const el = document.getElementById('cs-ack-cond-' + idx);
+  if (!el) return;
+  el.classList.toggle('checked');
+  if (el.classList.contains('checked')) _csAckedSet.add(idx);
+  else _csAckedSet.delete(idx);
+  csAckUpdateBtn();
+}
+
+function csAckToggleFinal() {
+  const el = document.getElementById('cs-ack-final');
+  if (el) el.classList.toggle('checked');
+  csAckUpdateBtn();
+}
+
+function csAckUpdateBtn() {
+  const btn = document.getElementById('cs-ack-submit-btn');
+  if (!btn || !_csAckPermit) return;
+  const allAcked = _csAckedSet.size === _csAckPermit.approval_conditions_list.length;
+  const finalAcked = document.getElementById('cs-ack-final').classList.contains('checked');
+  const ok = allAcked && finalAcked;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.5';
+}
+
+function csSubmitAck() {
+  if (!_csAckPermit) return;
+  const all = csLoadAll();
+  const idx = all.findIndex(x => x.permit_id === _csAckPermit.permit_id);
+  if (idx < 0) { alert('Permit not found'); return; }
+  all[idx].conditions_acknowledged = true;
+  all[idx].conditions_acknowledged_at = new Date().toISOString();
+  all[idx].status = 'active';
+  csSaveAll(all);
+  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
+  csRenderList();
+  goTo('screen-cs-list');
+}
+
+function csAckBack() {
+  goTo('screen-cs-list');
+}
+
+// Override worker-side viewPermit to route to ack screen if conditions need ack
+const _csOriginalViewPermit = csViewPermit;
+csViewPermit = function(permitId) {
+  const p = csLoadAll().find(x => x.permit_id === permitId);
+  if (p && p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
+    csOpenAckConditions(permitId);
+    return;
+  }
+  _csOriginalViewPermit(permitId);
+};
 
 function hwSelectType(btnEl) {
   // Clear all selected pills for type
