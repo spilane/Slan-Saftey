@@ -14193,8 +14193,8 @@ function csShowSigPreview() {
   const p = getProfile();
   const prev = document.getElementById('cs-sig-preview');
   if (!prev) return;
-  if (p && p.signature) {
-    prev.innerHTML = `<img src="${p.signature}" style="max-width:100%;height:auto;border:1px solid #E0E0E0;border-radius:6px">`;
+  if (p && p.sig) {
+    prev.innerHTML = `<img src="${p.sig}" style="max-width:100%;height:auto;border:1px solid #E0E0E0;border-radius:6px">`;
   } else {
     prev.innerHTML = '<span class="no-sig">No saved signature — go to Profile to add one</span>';
   }
@@ -14323,7 +14323,7 @@ function csValidate() {
   
   const confirmChecked = document.getElementById('cs-confirm')?.classList.contains('pass') || false;
   const p = getProfile();
-  const hasSig = p && p.signature;
+  const hasSig = p && p.sig;
   
   const valid = typeSelected && descFilled && locFilled && startFilled && endFilled && 
                 numWorkersFilled && attendantFilled && o2Filled && lelFilled && h2sFilled && 
@@ -14342,7 +14342,7 @@ function submitConfinedSpace() {
     worker_name: document.getElementById('cs-worker-name').value,
     worker_company: document.getElementById('cs-company').value,
     worker_role: document.getElementById('cs-role').value,
-    worker_signature: (p && p.signature) ? p.signature : '',
+    worker_signature: (p && p.sig) ? p.sig : '',
     type: csSelectedType,
     type_other: document.getElementById('cs-type-other')?.value || '',
     description: document.getElementById('cs-description').value,
