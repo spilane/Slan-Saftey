@@ -14348,15 +14348,16 @@ function csValidate() {
   const testTimeFilled = document.getElementById('cs-test-time')?.value.trim().length > 0;
   
   const allChecks = csChecksState.every(x => x);
+  // Photos OPTIONAL for now (matching HW approach)
   const allPhotos = csPhotos.every(x => x !== null);
   
-  const confirmChecked = document.getElementById('cs-confirm')?.classList.contains('pass') || false;
+  const confirmChecked = document.getElementById('cs-confirm')?.classList.contains('checked') || false;
   const p = getProfile();
   const hasSig = p && p.sig;
   
   const valid = typeSelected && descFilled && locFilled && startFilled && endFilled && 
                 numWorkersFilled && attendantFilled && o2Filled && lelFilled && h2sFilled && 
-                coFilled && testTimeFilled && allChecks && allPhotos && confirmChecked && hasSig;
+                coFilled && testTimeFilled && allChecks && confirmChecked && hasSig;
   
   submitBtn.disabled = !valid;
   submitBtn.style.opacity = valid ? '1' : '.5';
