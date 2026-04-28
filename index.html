@@ -14198,6 +14198,22 @@ function csInitForm() {
     }
   });
   
+  // Check-row clicks trigger validation
+  document.querySelectorAll('#screen-cs-form .check-row').forEach(r => {
+    if (!r._cshooked) {
+      r.addEventListener('click', () => setTimeout(csValidate, 20));
+      r._cshooked = true;
+    }
+  });
+  
+  // Pill-button clicks (type selection) trigger validation
+  document.querySelectorAll('#screen-cs-form [data-cstype]').forEach(b => {
+    if (!b._cshooked) {
+      b.addEventListener('click', () => setTimeout(csValidate, 30));
+      b._cshooked = true;
+    }
+  });
+  
   // Initial validation check
   csValidate();
 }
