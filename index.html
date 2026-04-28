@@ -5795,7 +5795,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
-  <button class="submit-btn" id="cs-submit-btn" onclick="if(this.disabled) csShowDebug(); else submitConfinedSpace();" disabled style="opacity:0.5;cursor:pointer">
+  <button class="submit-btn" id="cs-submit-btn" onclick="csHandleSubmit()" style="opacity:1;cursor:pointer">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
     Submit Confined Space Permit
   </button>
@@ -14374,6 +14374,15 @@ function csShowDebug() {
     alert('All validation passed but button still disabled - this is a bug!');
   } else {
     alert('VALIDATION FAILURES:\n\n' + fails.join('\n'));
+  }
+}
+
+function csHandleSubmit() {
+  const submitBtn = document.getElementById('cs-submit-btn');
+  if (submitBtn && submitBtn.style.opacity !== '1') {
+    csShowDebug();
+  } else {
+    submitConfinedSpace();
   }
 }
 
