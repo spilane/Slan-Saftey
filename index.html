@@ -14188,6 +14188,16 @@ function csInitForm() {
     startEl._csclamped = true;
   }
   
+  // Add input listeners for live validation
+  ['cs-description','cs-location','cs-num-workers','cs-attendant','cs-start','cs-end','cs-o2','cs-lel','cs-h2s','cs-co','cs-test-time'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el._cshooked) {
+      el.addEventListener('input', csValidate);
+      el.addEventListener('change', csValidate);
+      el._cshooked = true;
+    }
+  });
+  
   // Initial validation check
   csValidate();
 }
