@@ -2986,6 +2986,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <div style="padding:18px;padding-bottom:60px">
 
+    <button onclick="ptwDiag()" style="display:block;width:100%;padding:8px;margin-bottom:14px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">🔧 Show diagnostic info</button>
+    <div id="ptw-diag-out" style="display:none;font-size:11px;font-family:monospace;background:#F8FAF8;border:1px solid var(--border);padding:10px;border-radius:6px;margin-bottom:14px;white-space:pre-wrap;word-break:break-all;line-height:1.5"></div>
+
     <!-- PENDING section (always shows ALL types, no filter) -->
     <div id="ptw-pending-wrap" style="display:none">
       <div class="hw-list-section-hdr" style="display:flex;align-items:center;gap:7px">
@@ -9307,6 +9310,51 @@ function goToHotWorksSup() {
 function goToPermitsToWork() {
   ptwRenderUnified();
   goTo('screen-ptw-unified');
+}
+
+// Diagnostic for PTW queue — shows what's actually in storage and what the
+// filter is matching, so we can debug "no permits showing" without console.
+function ptwDiag() {
+  const out = document.getElementById('ptw-diag-out');
+  if (!out) return;
+  const today = new Date().toLocaleDateString('en-AU');
+  let report = '';
+  report += 'TODAY: "' + today + '"\n\n';
+
+  // HW
+  const hwAll = (typeof hwLoadAll === 'function') ? hwLoadAll() : [];
+  report += 'HW permits: ' + hwAll.length + '\n';
+  hwAll.slice(-3).forEach(p => {
+    report += '  - ' + p.permit_id + ' status=' + p.status + ' date="' + p.date + '" matchesToday=' + (p.date === today) + '\n';
+  });
+
+  // WAH
+  const wahAll = (typeof wahLoadAll === 'function') ? wahLoadAll() : [];
+  report += '\nWAH permits: ' + wahAll.length + '\n';
+  wahAll.slice(-3).forEach(p => {
+    report += '  - ' + p.permit_id + ' status=' + p.status + ' date="' + p.date + '" matchesToday=' + (p.date === today) + '\n';
+  });
+
+  // CS
+  const csAll = (typeof csLoadAll === 'function') ? csLoadAll() : [];
+  report += '\nCS permits: ' + csAll.length + '\n';
+  csAll.slice(-3).forEach(p => {
+    report += '  - ' + p.permit_id + ' status=' + p.status + ' date="' + p.date + '" matchesToday=' + (p.date === today) + '\n';
+  });
+
+  // What ptwLoadAllPermits returns
+  if (typeof ptwLoadAllPermits === 'function') {
+    const all = ptwLoadAllPermits();
+    report += '\nptwLoadAllPermits: ' + all.length + ' total\n';
+    const todayOnly = all.filter(x => x.date === today);
+    report += 'After date filter: ' + todayOnly.length + '\n';
+    todayOnly.slice(0, 5).forEach(p => {
+      report += '  - ' + p.permit_id + ' bucket=' + (typeof hwPermitBucket === 'function' ? hwPermitBucket(p) : '?') + '\n';
+    });
+  }
+
+  out.textContent = report;
+  out.style.display = 'block';
 }
 
 // ────────────────────────────────────────────
