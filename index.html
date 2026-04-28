@@ -11599,6 +11599,19 @@ function handlePhotoUpload(e) {
 function goTo(id){
   // Restore DEMO_MODE on every navigation so it never drops out
   if (localStorage.getItem('slan_demo') === 'true') DEMO_MODE = true;
+  // ROLE-AWARE HOME ROUTING: when a supervisor or director taps any back
+  // button that hard-codes 'screen-home' (the worker home), redirect them
+  // to their proper dashboard. This fixes the long-standing bug where
+  // the supervisor portal "turns into the worker portal" after navigating
+  // away from any sub-screen.
+  if (id === 'screen-home') {
+    try {
+      const _profile = (typeof getProfile === 'function') ? getProfile() : null;
+      if (_profile && (_profile.role === 'supervisor' || _profile.role === 'director')) {
+        id = 'screen-dash';
+      }
+    } catch(e) {}
+  }
   // Deactivate Hot Works draft autosave when leaving the form
   // (draft itself is preserved in localStorage; just stops autosave noise)
   if (typeof _hwDraftActive !== 'undefined' && id !== 'screen-hw-form') {
