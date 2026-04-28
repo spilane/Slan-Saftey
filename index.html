@@ -2975,6 +2975,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <!-- ═══════════════════ PERMITS TO WORK — UNIFIED SUPERVISOR SCREEN ═══ -->
 <div id="screen-ptw-unified" class="screen">
+  <div style="background:#FF00FF;color:#fff;padding:10px;text-align:center;font-weight:700;font-size:16px">SUPERVISOR PTW SCREEN ✓</div>
   <div class="tbar" style="background:var(--deep)">
     <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
     <div style="display:flex;align-items:center;gap:8px">
@@ -3839,6 +3840,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <!-- ═══════════════════ HOT WORKS PERMITS — LIST ═══ -->
 <div id="screen-hw-list" class="screen">
+  <div style="background:#FFAA00;color:#000;padding:10px;text-align:center;font-weight:700;font-size:16px">WORKER HW LIST SCREEN</div>
   <div class="tbar" style="background:var(--deep)">
     <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
     <div style="display:flex;align-items:center;gap:8px">
@@ -10806,7 +10808,9 @@ function ptwUpdateTileSubtitle() {
   const sub = document.getElementById('ptw-tile-sub');
   if (!sub) return;
   const today = new Date().toLocaleDateString('en-AU');
-  const all = ptwLoadAllPermits().filter(x => x.date === today);
+  const allRaw = ptwLoadAllPermits();
+  // Pending always shown regardless of date so supervisor never misses one
+  const all = allRaw.filter(x => x.date === today || hwPermitBucket(x) === 'pending');
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
   const needsAck = all.filter(x => x.approval_conditions && !x.conditions_acknowledged && (x.status === 'approved' || x.status === 'active')).length;
   // Permits with handover request awaiting supervisor acceptance
