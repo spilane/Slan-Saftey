@@ -5795,7 +5795,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
-  <button class="submit-btn" id="cs-submit-btn" onclick="submitConfinedSpace()" disabled style="opacity:0.5">
+  <button class="submit-btn" id="cs-submit-btn" onclick="if(this.disabled) csShowDebug(); else submitConfinedSpace();" disabled style="opacity:0.5;cursor:pointer">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
     Submit Confined Space Permit
   </button>
@@ -14331,6 +14331,50 @@ function csValidate() {
   
   submitBtn.disabled = !valid;
   submitBtn.style.opacity = valid ? '1' : '.5';
+}
+
+function csShowDebug() {
+  const typeSelected = csSelectedType !== '';
+  const descFilled = document.getElementById('cs-description')?.value.trim().length > 0;
+  const locFilled = document.getElementById('cs-location')?.value.trim().length > 0;
+  const startFilled = document.getElementById('cs-start')?.value.trim().length > 0;
+  const endFilled = document.getElementById('cs-end')?.value.trim().length > 0;
+  const numWorkersFilled = document.getElementById('cs-num-workers')?.value.trim().length > 0;
+  const attendantFilled = document.getElementById('cs-attendant')?.value.trim().length > 0;
+  const o2Filled = document.getElementById('cs-o2')?.value.trim().length > 0;
+  const lelFilled = document.getElementById('cs-lel')?.value.trim().length > 0;
+  const h2sFilled = document.getElementById('cs-h2s')?.value.trim().length > 0;
+  const coFilled = document.getElementById('cs-co')?.value.trim().length > 0;
+  const testTimeFilled = document.getElementById('cs-test-time')?.value.trim().length > 0;
+  const allChecks = csChecksState.every(x => x);
+  const allPhotos = csPhotos.every(x => x !== null);
+  const confirmChecked = document.getElementById('cs-confirm')?.classList.contains('pass') || false;
+  const p = getProfile();
+  const hasSig = p && p.sig;
+  
+  const fails = [];
+  if (!typeSelected) fails.push('Type not selected');
+  if (!descFilled) fails.push('Description empty');
+  if (!locFilled) fails.push('Location empty');
+  if (!startFilled) fails.push('Start time empty');
+  if (!endFilled) fails.push('End time empty');
+  if (!numWorkersFilled) fails.push('Number of workers empty');
+  if (!attendantFilled) fails.push('Attendant name empty');
+  if (!o2Filled) fails.push('O2 level empty');
+  if (!lelFilled) fails.push('LEL level empty');
+  if (!h2sFilled) fails.push('H2S level empty');
+  if (!coFilled) fails.push('CO level empty');
+  if (!testTimeFilled) fails.push('Test time empty');
+  if (!allChecks) fails.push('Not all 10 checks ticked ('+csChecksState.filter(x=>x).length+'/10)');
+  if (!allPhotos) fails.push('Not all 4 photos taken ('+csPhotos.filter(x=>x!==null).length+'/4)');
+  if (!confirmChecked) fails.push('Confirmation checkbox not ticked');
+  if (!hasSig) fails.push('No signature in profile');
+  
+  if (fails.length === 0) {
+    alert('All validation passed but button still disabled - this is a bug!');
+  } else {
+    alert('VALIDATION FAILURES:\n\n' + fails.join('\n'));
+  }
 }
 
 function submitConfinedSpace() {
