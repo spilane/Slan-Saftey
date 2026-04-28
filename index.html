@@ -14331,37 +14331,81 @@ function csPhotoHandleNew(slotNum, ev) {
 }
 
 function csValidate() {
-  const submitBtn = document.getElementById('cs-submit-btn');
-  if (!submitBtn) return;
+  // Required fields
+  const type = csSelectedType;
+  const typeOther = document.getElementById('cs-type-other').value.trim();
+  const desc = document.getElementById('cs-description').value.trim();
+  const loc = document.getElementById('cs-location').value.trim();
+  const numW = document.getElementById('cs-num-workers').value.trim();
+  const attendant = document.getElementById('cs-attendant').value.trim();
+  const start = document.getElementById('cs-start').value;
+  const end = document.getElementById('cs-end').value;
   
-  const typeSelected = csSelectedType !== '';
-  const descFilled = document.getElementById('cs-description')?.value.trim().length > 0;
-  const locFilled = document.getElementById('cs-location')?.value.trim().length > 0;
-  const startFilled = document.getElementById('cs-start')?.value.trim().length > 0;
-  const endFilled = document.getElementById('cs-end')?.value.trim().length > 0;
-  const numWorkersFilled = document.getElementById('cs-num-workers')?.value.trim().length > 0;
-  const attendantFilled = document.getElementById('cs-attendant')?.value.trim().length > 0;
-  
-  const o2Filled = document.getElementById('cs-o2')?.value.trim().length > 0;
-  const lelFilled = document.getElementById('cs-lel')?.value.trim().length > 0;
-  const h2sFilled = document.getElementById('cs-h2s')?.value.trim().length > 0;
-  const coFilled = document.getElementById('cs-co')?.value.trim().length > 0;
-  const testTimeFilled = document.getElementById('cs-test-time')?.value.trim().length > 0;
-  
-  const allChecks = csChecksState.every(x => x);
-  // Photos OPTIONAL for now (matching HW approach)
-  const allPhotos = csPhotos.every(x => x !== null);
-  
-  const confirmChecked = document.getElementById('cs-confirm')?.classList.contains('checked') || false;
-  const p = getProfile();
-  const hasSig = p && p.sig;
-  
-  const valid = typeSelected && descFilled && locFilled && startFilled && endFilled && 
-                numWorkersFilled && attendantFilled && o2Filled && lelFilled && h2sFilled && 
-                coFilled && testTimeFilled && allChecks && confirmChecked;
-  
-  submitBtn.disabled = !valid;
-  submitBtn.style.opacity = valid ? '1' : '.5';
+  // Atmospheric testing fields
+  const o2 = document.getElementById('cs-o2').value.trim();
+  const lel = document.getElementById('cs-lel').value.trim();
+  const h2s = document.getElementById('cs-h2s').value.trim();
+  const co = document.getElementById('cs-co').value.trim();
+  const testTime = document.getElementById('cs-test-time').value.trim();
+
+  let ok = true;
+  if (!type) ok = false;
+  if (type === 'Other' && !typeOther) ok = false;
+  if (!desc || !loc || !numW || !attendant || !start || !end) ok = false;
+  if (!o2 || !lel || !h2s || !co || !testTime) ok = false;
+
+  // Duration check: confined space permits cannot exceed 12 hours per AS 2865
+  const CS_MAX_DURATION_HOURS = 12;
+  let durationOk = true;
+  if (start && end) {
+    const startMs = new Date(start).getTime();
+    const endMs = new Date(end).getTime();
+    if (!isNaN(startMs) && !isNaN(endMs)) {
+      const hours = (endMs - startMs) / (1000 * 60 * 60);
+      if (hours <= 0) durationOk = false; // end before start
+      if (hours > CS_MAX_DURATION_HOURS) durationOk = false;
+    }
+    // Show / hide inline warning right below the End time field
+    let warn = document.getElementById('cs-duration-warn');
+    if (!warn) {
+      warn = document.createElement('div');
+      warn.id = 'cs-duration-warn';
+      warn.style.cssText = 'background:#FCEBEB;border:1.5px solid#A32D2D;color:#6B1818;padding:10px 12px;border-radius:8px;margin-top:8px;font-size:12px;font-weight:600;line-height:1.45;display:none';
+      const endEl = document.getElementById('cs-end');
+      if (endEl && endEl.parentNode) endEl.parentNode.appendChild(warn);
+    }
+    if (!durationOk && !isNaN(startMs) && !isNaN(endMs)) {
+      const hrs = ((endMs - startMs) / (1000 * 60 * 60));
+      if (hrs <= 0) {
+        warn.textContent = 'End time must be after start time.';
+      } else {
+        warn.innerHTML = 'Permits cannot exceed ' + CS_MAX_DURATION_HOURS + ' hours (AS 2865 / one-shift maximum). Your permit is currently <strong>' + hrs.toFixed(1) + ' hours</strong>. Please shorten the work window or split into separate permits.';
+      }
+      warn.style.display = 'block';
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+  if (!durationOk) ok = false;
+
+  // All 10 safety checks ticked - CS uses csChecksState array
+  if (!csChecksState.every(x => x)) ok = false;
+
+  // Final confirmation ticked
+  const cf = document.getElementById('cs-confirm');
+  if (!cf || !cf.classList.contains('checked')) ok = false;
+
+  // Photos OPTIONAL (matching HW approach)
+  if (false && typeof csPhotos !== 'undefined') {
+    if (!csPhotos[0] || !csPhotos[1] || !csPhotos[2] || !csPhotos[3]) ok = false;
+  }
+
+  const btn = document.getElementById('cs-submit-btn');
+  if (btn) {
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '1' : '0.5';
+  }
+  return ok;
 }
 
 function csShowDebug() {
