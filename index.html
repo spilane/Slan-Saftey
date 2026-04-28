@@ -9252,7 +9252,10 @@ function supUpdatePermitsChip() {
   });
   if (!strip) return;
   const today = new Date().toLocaleDateString('en-AU');
-  const all = (typeof ptwLoadAllPermits === 'function' ? ptwLoadAllPermits() : []).filter(x => x.date === today);
+  const allRaw = (typeof ptwLoadAllPermits === 'function' ? ptwLoadAllPermits() : []);
+  // Pending always shown regardless of date so supervisor never misses one.
+  // Other states filtered to today only.
+  const all = allRaw.filter(x => x.date === today || hwPermitBucket(x) === 'pending');
   if (all.length === 0) return;
 
   const pending = all.filter(x => hwPermitBucket(x) === 'pending').length;
@@ -10723,9 +10726,11 @@ function ptwOpenPermit(permitId) {
 function ptwRenderUnified() {
   const today = new Date().toLocaleDateString('en-AU');
   const typeFilter = (document.getElementById('ptw-type-filter') || {}).value || 'all';
-  const all = ptwLoadAllPermits().filter(x => x.date === today);
-
-  const pending = all.filter(x => hwPermitBucket(x) === 'pending');
+  const allRaw = ptwLoadAllPermits();
+  // Pending permits always show regardless of date (so supervisor never misses them).
+  // Active and history filtered by today.
+  const pending = allRaw.filter(x => hwPermitBucket(x) === 'pending');
+  const all = allRaw.filter(x => x.date === today);
   let activeAndHistory = all.filter(x => hwPermitBucket(x) !== 'pending');
   if (typeFilter !== 'all') {
     activeAndHistory = activeAndHistory.filter(x => ptwGetType(x) === typeFilter);
