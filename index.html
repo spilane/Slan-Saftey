@@ -567,6 +567,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .ptw-type-tag.t-mobileplant { background:rgba(50,120,90,.15); color:#1F5A3F }
 .ptw-type-tag.t-traffic     { background:rgba(190,100,40,.15); color:#7A4019 }
 
+/* ─── Helper notes — tap "?" to see why a rule exists */
+.slan-help { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:rgba(35,74,122,.1); color:#234A7A; font-size:10px; font-weight:700; margin-left:6px; cursor:pointer; user-select:none; vertical-align:1px; transition:background .15s }
+.slan-help:hover, .slan-help:active { background:rgba(35,74,122,.2) }
+.slan-help-tip { display:none; margin-top:6px; padding:8px 11px; background:#F1EFE8; border:1px solid var(--border); border-left:3px solid #234A7A; border-radius:6px; font-size:11.5px; color:var(--muted); line-height:1.45 }
+.slan-help-tip.show { display:block }
+
 
 /* ─── HOT WORKS CLOSEOUT + SIGN-OUT GATE + PHOTOS ─────────── */
 .hw-gate-wrap{padding:24px 20px;text-align:left;max-width:460px;margin:0 auto}
@@ -3421,12 +3427,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="cs-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="cs-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="cs-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="cs-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -3505,7 +3511,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;line-height:1.4">Test before entry. Acceptable: O₂ 19.5–23.5%, LEL &lt;5%, H₂S &lt;10 ppm, CO &lt;30 ppm.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
-          <label class="flabel">Oxygen (O₂) %</label>
+          <label class="flabel">Oxygen (O₂) %<span class="slan-help" onclick="slanHelpToggle('cs-help-atmo')">?</span></label><div id="cs-help-atmo" class="slan-help-tip">Acceptable: O₂ 19.5–23.5%, LEL below 5%, H₂S below 10 ppm, CO below 30 ppm. Outside any of these — STOP and evacuate.</div>
           <input type="text" inputmode="decimal" id="cs-o2" placeholder="20.9" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
           <div id="cs-o2-warn" style="display:none;font-size:11px;color:#A32D2D;font-weight:600;margin-top:4px;line-height:1.3"></div>
         </div>
@@ -3531,7 +3537,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Detector calibration date</label>
-        <input type="date" id="cs-detector-cal" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="date" id="cs-detector-cal" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
     </div>
   </div>
@@ -3594,11 +3600,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="cs-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="cs-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="cs-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="cs-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per AS 2865 (one-shift max). End time will be capped automatically.</div>
       </div>
       <div class="fgroup">
@@ -3779,12 +3785,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="exc-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="exc-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="exc-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="exc-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -3843,7 +3849,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
         <div class="fgroup">
-          <label class="flabel">Max depth (m)</label>
+          <label class="flabel">Max depth (m)<span class="slan-help" onclick="slanHelpToggle('exc-help-depth')">?</span></label><div id="exc-help-depth" class="slan-help-tip">Shoring or battering is required when depth reaches 1.5 m or more. Always required at any depth in unstable, sandy, or wet ground.</div>
           <input type="text" inputmode="decimal" id="exc-depth" placeholder="e.g. 2.5" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
         </div>
         <div class="fgroup">
@@ -3944,11 +3950,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="exc-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="exc-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="exc-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="exc-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per shift. End time will be capped automatically.</div>
       </div>
       <div class="fgroup">
@@ -4204,12 +4210,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="demo-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="demo-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="demo-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="demo-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -4342,11 +4348,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="demo-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="demo-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="demo-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="demo-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per shift. End time will be capped automatically.</div>
       </div>
       <div class="fgroup">
@@ -4600,12 +4606,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="lift-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="lift-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="lift-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="lift-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -4676,7 +4682,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
-          <label class="flabel">Load weight (tonnes)</label>
+          <label class="flabel">Load weight (tonnes)<span class="slan-help" onclick="slanHelpToggle('lift-help-load')">?</span></label><div id="lift-help-load" class="slan-help-tip">Routine lifts are below 75% of crane SWL. 75–90% is complex (extra controls). Above 90% is critical and may need an engineered lift study.</div>
           <input type="text" inputmode="decimal" id="lift-weight" placeholder="e.g. 4.5" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
         </div>
         <div class="fgroup">
@@ -4767,11 +4773,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="lift-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="lift-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="lift-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="lift-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per shift. End time will be capped automatically.</div>
       </div>
       <div class="fgroup">
@@ -5025,12 +5031,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="conc-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="conc-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="conc-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="conc-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -5191,11 +5197,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="conc-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="conc-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="conc-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="conc-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per shift. End time will be capped automatically.</div>
       </div>
       <div class="fgroup">
@@ -5449,12 +5455,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="pen-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="pen-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="pen-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="pen-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -5618,11 +5624,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="pen-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="pen-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="pen-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="pen-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per shift. End time will be capped automatically.</div>
       </div>
       <div class="fgroup">
@@ -5875,12 +5881,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="elec-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="elec-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="elec-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="elec-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -5976,7 +5982,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Test instrument calibration date</label>
-        <input type="date" id="elec-tester-cal" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="date" id="elec-tester-cal" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup" id="elec-live-justify-wrap" style="display:none">
         <label class="flabel">Justification for live work <span class="req">*</span></label>
@@ -6016,11 +6022,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="elec-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="elec-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="elec-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="elec-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per shift.</div>
       </div>
       <div class="fgroup">
@@ -6273,12 +6279,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="asb-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="asb-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="asb-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="asb-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -6349,7 +6355,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button type="button" class="ps-btn" data-asbmethod="Decontamination unit + wet" onclick="asbSelectPill(this, 'asbmethod')">Decontamination unit + wet</button>
           <button type="button" class="ps-btn" data-asbmethod="Bag &amp; remove" onclick="asbSelectPill(this, 'asbmethod')">Bag &amp; remove</button>
         </div></div>
-      <div class="fgroup"><label class="flabel">Licence class held</label><input type="text" id="asb-licence-class" placeholder="e.g. Class A (friable) or Class B (non-friable)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none"></div>
+      <div class="fgroup"><label class="flabel">Licence class held<span class="slan-help" onclick="slanHelpToggle('asb-help-lic')">?</span></label><div id="asb-help-lic" class="slan-help-tip">Class A: required for friable asbestos and any quantity of asbestos-containing material. Class B: only for bonded (non-friable) asbestos under 10 m². When unsure — Class A.</div><input type="text" id="asb-licence-class" placeholder="e.g. Class A (friable) or Class B (non-friable)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none"></div>
     </div>
   </div>
   <div class="fcard">
@@ -6388,11 +6394,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="asb-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="asb-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="asb-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="asb-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per shift.</div>
       </div>
       <div class="fgroup">
@@ -6628,12 +6634,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="mp-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="mp-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="mp-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="mp-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -6740,11 +6746,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="mp-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="mp-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="mp-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="mp-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per shift.</div>
       </div>
       <div class="fgroup">
@@ -6980,12 +6986,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="trf-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="trf-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="trf-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="trf-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -7041,7 +7047,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Authority &amp; TGS <span class="req">*</span></div>
     <div class="fcard-body">
-      <div class="fgroup"><label class="flabel">Road authority approval reference</label><input type="text" id="trf-authority-ref" placeholder="e.g. RMS-2026-0042" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none"></div>
+      <div class="fgroup"><label class="flabel">Road authority approval reference<span class="slan-help" onclick="slanHelpToggle('trf-help-auth')">?</span></label><div id="trf-help-auth" class="slan-help-tip">Working in or beside a public road requires written approval from the road authority (council, state roads, or national highway operator) before any TGS is deployed.</div><input type="text" id="trf-authority-ref" placeholder="e.g. RMS-2026-0042" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none"></div>
       <div class="fgroup"><label class="flabel">TGS (Traffic Guidance Scheme) reference</label><input type="text" id="trf-tgs-ref" placeholder="Required" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none"></div>
       <div class="fgroup"><label class="flabel">Road authority</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
           <button type="button" class="ps-btn" data-trfauthority="Local council" onclick="trfSelectPill(this, 'trfauthority')">Local council</button>
@@ -7092,11 +7098,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="trf-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="trf-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="trf-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="trf-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per shift.</div>
       </div>
       <div class="fgroup">
@@ -7665,12 +7671,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="hw-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="hw-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="hw-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="hw-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -7777,11 +7783,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start <span class="req">*</span></label>
-        <input type="datetime-local" id="hw-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="hw-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End <span class="req">*</span></label>
-        <input type="datetime-local" id="hw-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="hw-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per AS 1674.1 (one-shift max). End time will be capped automatically.</div>
     </div>
@@ -7833,7 +7839,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="check-text">Fire watch required for this task</div>
       </div>
       <div class="fgroup">
-        <label class="flabel">Fire watch duration (post-work)</label>
+        <label class="flabel">Fire watch duration (post-work)<span class="slan-help" onclick="slanHelpToggle('hw-help-fw')">?</span></label>
+        <div id="hw-help-fw" class="slan-help-tip">Required by AS 1674.1. Minimum 30 minutes after work in standard environments. Use 60+ minutes near timber, dust, oils, or other high-risk surroundings.</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
           <button class="ps-btn" data-fwdur="30 min" onclick="hwSelectFWDur(this)">30 min</button>
           <button class="ps-btn" data-fwdur="60 min" onclick="hwSelectFWDur(this)">60 min</button>
@@ -7987,12 +7994,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Permit number</label>
-        <input type="text" id="wah-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text);font-weight:600">
+        <input type="text" id="wah-permit-id" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Date</label>
-          <input type="text" id="wah-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
+          <input type="text" id="wah-date" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)">
         </div>
         <div class="fgroup">
           <label class="flabel">Site</label>
@@ -8100,11 +8107,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Start</label>
-        <input type="datetime-local" id="wah-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="wah-start" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
       </div>
       <div class="fgroup">
         <label class="flabel">End</label>
-        <input type="datetime-local" id="wah-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;box-sizing:border-box">
+        <input type="datetime-local" id="wah-end" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;box-sizing:border-box">
         <div style="font-size:11.5px;color:var(--muted);margin-top:-2px">Maximum 12 hours per one-shift safe-work practice. End time will be capped automatically.</div>
       </div>
       <div class="fgroup">
@@ -12478,7 +12485,42 @@ document.addEventListener('DOMContentLoaded',()=>{
 function getProfile(){try{return JSON.parse(localStorage.getItem('slan_profile'));}catch{return null;}}
 
 // ═══════════════════════════════════════════════════════
-// SLAN AUTOFILL — remembers the worker's most recent values
+// SLAN TOAST — styled in-app notification, replaces ugly browser alert()
+// for success messages. Slides up from bottom, auto-dismisses after 3.5s.
+// Usage: slanToast('Permit approved', 'success');
+// Variants: 'success' (green), 'info' (blue), 'warning' (amber), 'error' (red)
+// ═══════════════════════════════════════════════════════
+function slanToast(message, variant) {
+  variant = variant || 'success';
+  const palette = {
+    success: { bg: '#1B6E3A', border: '#155A2F', icon: 'M9 11l3 3L22 4' },
+    info:    { bg: '#234A7A', border: '#1A3A60', icon: 'M12 16v-4 M12 8h.01' },
+    warning: { bg: '#BA7517', border: '#9A610F', icon: 'M12 9v4 M12 17h.01' },
+    error:   { bg: '#A32D2D', border: '#7A2222', icon: 'M18 6L6 18 M6 6l12 12' }
+  };
+  const p = palette[variant] || palette.success;
+  // Remove any prior toast
+  const prior = document.getElementById('slan-toast');
+  if (prior) prior.remove();
+  const t = document.createElement('div');
+  t.id = 'slan-toast';
+  t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:' + p.bg + ';border:1.5px solid ' + p.border + ';color:#fff;padding:14px 18px;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.18);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:600;line-height:1.4;z-index:99999;max-width:340px;display:flex;align-items:center;gap:10px;opacity:0;transition:transform 0.32s cubic-bezier(.2,.7,.3,1.2),opacity 0.22s';
+  t.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="' + p.icon + '"/></svg><span>' + message + '</span>';
+  document.body.appendChild(t);
+  // Animate in
+  requestAnimationFrame(() => {
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+  });
+  // Animate out
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(80px)';
+    setTimeout(() => t.remove(), 350);
+  }, 3500);
+}
+
+
 // per field across permit submissions, pre-fills new permits
 // to save time. Stored in slan_autofill_v1.
 // ═══════════════════════════════════════════════════════
@@ -12523,6 +12565,85 @@ function slanAutofillCapture(pairs) {
   pairs.forEach(([elId, key]) => {
     const el = document.getElementById(elId);
     if (el && el.value) slanAutofillRemember(key, el.value.trim());
+  });
+}
+
+// Toggle visibility of a helper tip below a "?" icon
+function slanHelpToggle(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show');
+}
+
+// ═══════════════════════════════════════════════════════
+// SLAN WEATHER — fetch current weather from Open-Meteo (free, no API key)
+// based on worker's GPS location. Auto-fills wind/temp on permits with weather fields.
+// Caches for 10 mins per session to avoid hammering API.
+// ═══════════════════════════════════════════════════════
+let _slanWeatherCache = null;
+let _slanWeatherCacheTime = 0;
+
+function slanFetchWeather(callback) {
+  const now = Date.now();
+  if (_slanWeatherCache && (now - _slanWeatherCacheTime < 10 * 60 * 1000)) {
+    callback(_slanWeatherCache);
+    return;
+  }
+  if (!navigator.geolocation) { callback(null); return; }
+  try {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      const lat = pos.coords.latitude.toFixed(4);
+      const lon = pos.coords.longitude.toFixed(4);
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,wind_speed_10m,weather_code&wind_speed_unit=kmh';
+      fetch(url, { mode: 'cors' }).then(r => r.json()).then(data => {
+        if (!data || !data.current) { callback(null); return; }
+        const c = data.current;
+        const wxCodes = {
+          0: 'Clear', 1: 'Mostly clear', 2: 'Partly cloudy', 3: 'Overcast',
+          45: 'Fog', 48: 'Fog',
+          51: 'Light drizzle', 53: 'Drizzle', 55: 'Heavy drizzle',
+          61: 'Light rain', 63: 'Rain', 65: 'Heavy rain',
+          71: 'Light snow', 73: 'Snow', 75: 'Heavy snow',
+          80: 'Light showers', 81: 'Showers', 82: 'Heavy showers',
+          95: 'Thunderstorm', 96: 'Storm w/ hail', 99: 'Severe storm'
+        };
+        const result = {
+          temperature: Math.round(c.temperature_2m),
+          wind_kmh: Math.round(c.wind_speed_10m),
+          condition: wxCodes[c.weather_code] || 'Clear'
+        };
+        _slanWeatherCache = result;
+        _slanWeatherCacheTime = now;
+        callback(result);
+      }).catch(() => callback(null));
+    }, function() { callback(null); }, { timeout: 4000, maximumAge: 5 * 60 * 1000 });
+  } catch(e) { callback(null); }
+}
+
+// Auto-fill weather/temp/wind fields on a permit form
+function slanWeatherAutoFill(opts) {
+  slanFetchWeather(function(w) {
+    if (!w) return;
+    if (opts.tempEl) {
+      const el = document.getElementById(opts.tempEl);
+      if (el && !el.value) el.value = w.temperature;
+    }
+    if (opts.windEl) {
+      const el = document.getElementById(opts.windEl);
+      if (el && !el.value) el.value = w.wind_kmh;
+    }
+    if (opts.conditionPillSelector) {
+      const pills = document.querySelectorAll(opts.conditionPillSelector);
+      const lc = w.condition.toLowerCase();
+      pills.forEach(pill => {
+        const dataAttr = Array.from(pill.attributes).find(a => a.name.startsWith('data-'));
+        const v = (dataAttr ? dataAttr.value : pill.textContent || '').toLowerCase();
+        const matches = (v === lc) || (lc.indexOf('clear') !== -1 && v.indexOf('clear') !== -1) || (lc.indexOf('rain') !== -1 && v.indexOf('rain') !== -1) || (lc.indexOf('cloud') !== -1 && v.indexOf('overcast') !== -1) || (lc.indexOf('overcast') !== -1 && v.indexOf('overcast') !== -1) || (lc.indexOf('storm') !== -1 && v.indexOf('rain') !== -1);
+        if (matches) {
+          pills.forEach(p => p.classList.remove('pass'));
+          pill.classList.add('pass');
+        }
+      });
+    }
   });
 }
 
@@ -14429,7 +14550,7 @@ function hwSubmitAckConditions() {
   all[idx].conditions_acknowledged_by = p ? p.name : 'Worker';
   all[idx].conditions_acknowledged_signature = p && p.sig ? p.sig : null;
   hwSaveAll(all);
-  alert('Conditions acknowledged. You may begin work safely.');
+  slanToast('Conditions acknowledged — you may begin work', 'success');
   hwViewPermit(_hwAckPermit.permit_id);
   _hwAckPermit = null;
   _hwAckTicks = {};
@@ -17810,7 +17931,7 @@ function wahSupApprove() {
   all[idx].approved_by = supName;
   all[idx].approved_at = new Date().toISOString();
   wahSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _wahSupBackToQueue();
 }
 
@@ -17860,7 +17981,7 @@ function wahSupApproveWithConditions() {
   all[idx].approval_conditions_list = conditions; // store as list for ack screen
   all[idx].conditions_acknowledged = false;
   wahSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.\n\nWorker must acknowledge before commencing work.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + ' — worker must acknowledge before commencing', 'info');
   _wahSupBackToQueue();
 }
 
@@ -17888,7 +18009,7 @@ function wahSupReject() {
   all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   wahSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _wahSupBackToQueue();
 }
 
@@ -17970,7 +18091,7 @@ function wahSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   wahSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   wahRenderList();
   goTo('screen-wah-list');
@@ -19124,7 +19245,7 @@ function excSupApprove() {
   all[idx].approved_by = supName;
   all[idx].approved_at = new Date().toISOString();
   excSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _excSupBackToQueue();
 }
 
@@ -19173,7 +19294,7 @@ function excSupApproveWithConditions() {
   all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
   excSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's'), 'info');
   _excSupBackToQueue();
 }
 
@@ -19200,7 +19321,7 @@ function excSupReject() {
   all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   excSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _excSupBackToQueue();
 }
 
@@ -19277,7 +19398,7 @@ function excSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   excSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   excRenderList();
   goTo('screen-exc-list');
@@ -20077,7 +20198,7 @@ function demoSupApprove() {
   if (idx < 0) { alert('Permit not found'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   demoSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _demoSupBackToQueue();
 }
 
@@ -20115,7 +20236,7 @@ function demoSupApproveWithConditions() {
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
   demoSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's'), 'info');
   _demoSupBackToQueue();
 }
 function demoSupShowReject() {
@@ -20139,7 +20260,7 @@ function demoSupReject() {
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   demoSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _demoSupBackToQueue();
 }
 function _demoSupBackToQueue() {
@@ -20197,7 +20318,7 @@ function demoSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   demoSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   demoRenderList();
   goTo('screen-demo-list');
@@ -20442,6 +20563,7 @@ function liftInitForm() {
   }
 
   // SLAN AUTOFILL — pre-fill from worker's last permit values
+  try { slanWeatherAutoFill({ windEl: 'lift-wind', conditionPillSelector: '#screen-lift-form [data-liftwx]' }); } catch(e) {}
   try { slanAutofillApply([['lift-location', 'last_location'], ['lift-num-workers', 'last_num_workers'], ['lift-equipment', 'last_lift_equipment'], ['lift-operator', 'last_lift_operator'], ['lift-dogger', 'last_lift_dogger']]); } catch(e) {}
   liftValidate();
 
@@ -20845,7 +20967,7 @@ function liftSupApprove() {
   if (idx < 0) { alert('Permit not found'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   liftSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _liftSupBackToQueue();
 }
 
@@ -20883,7 +21005,7 @@ function liftSupApproveWithConditions() {
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
   liftSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's'), 'info');
   _liftSupBackToQueue();
 }
 function liftSupShowReject() {
@@ -20907,7 +21029,7 @@ function liftSupReject() {
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   liftSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _liftSupBackToQueue();
 }
 function _liftSupBackToQueue() {
@@ -20965,7 +21087,7 @@ function liftSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   liftSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   liftRenderList();
   goTo('screen-lift-list');
@@ -21210,6 +21332,7 @@ function concInitForm() {
   }
 
   // SLAN AUTOFILL — pre-fill from worker's last permit values
+  try { slanWeatherAutoFill({ tempEl: 'conc-temp', windEl: 'conc-wind', conditionPillSelector: '#screen-conc-form [data-concwx]' }); } catch(e) {}
   try { slanAutofillApply([['conc-location', 'last_location'], ['conc-num-workers', 'last_num_workers'], ['conc-supplier', 'last_conc_supplier'], ['conc-engineer', 'last_conc_engineer']]); } catch(e) {}
   concValidate();
 
@@ -21600,7 +21723,7 @@ function concSupApprove() {
   if (idx < 0) { alert('Permit not found'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   concSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _concSupBackToQueue();
 }
 
@@ -21638,7 +21761,7 @@ function concSupApproveWithConditions() {
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
   concSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's'), 'info');
   _concSupBackToQueue();
 }
 function concSupShowReject() {
@@ -21662,7 +21785,7 @@ function concSupReject() {
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   concSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _concSupBackToQueue();
 }
 function _concSupBackToQueue() {
@@ -21720,7 +21843,7 @@ function concSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   concSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   concRenderList();
   goTo('screen-conc-list');
@@ -22357,7 +22480,7 @@ function penSupApprove() {
   if (idx < 0) { alert('Permit not found'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   penSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _penSupBackToQueue();
 }
 
@@ -22395,7 +22518,7 @@ function penSupApproveWithConditions() {
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
   penSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's'), 'info');
   _penSupBackToQueue();
 }
 function penSupShowReject() {
@@ -22419,7 +22542,7 @@ function penSupReject() {
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   penSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _penSupBackToQueue();
 }
 function _penSupBackToQueue() {
@@ -22477,7 +22600,7 @@ function penSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   penSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   penRenderList();
   goTo('screen-pen-list');
@@ -23218,7 +23341,7 @@ function elecSupApprove() {
   all[idx].approved_by = supName;
   all[idx].approved_at = new Date().toISOString();
   elecSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _elecSupBackToQueue();
 }
 
@@ -23266,7 +23389,7 @@ function elecSupApproveWithConditions() {
   all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
   elecSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's'), 'info');
   _elecSupBackToQueue();
 }
 function elecSupShowReject() {
@@ -23292,7 +23415,7 @@ function elecSupReject() {
   all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   elecSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _elecSupBackToQueue();
 }
 function _elecSupBackToQueue() {
@@ -23362,7 +23485,7 @@ function elecSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   elecSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   elecRenderList();
   goTo('screen-elec-list');
@@ -24470,7 +24593,7 @@ function asbSupApprove() {
   if (idx < 0) return;
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   asbSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _asbSupBackToQueue();
 }
 
@@ -24508,7 +24631,7 @@ function asbSupApproveWithConditions() {
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
   asbSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's'), 'info');
   _asbSupBackToQueue();
 }
 function asbSupShowReject() {
@@ -24532,7 +24655,7 @@ function asbSupReject() {
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   asbSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _asbSupBackToQueue();
 }
 function _asbSupBackToQueue() {
@@ -24588,7 +24711,7 @@ function asbSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   asbSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   asbRenderList();
   goTo('screen-asb-list');
@@ -25259,7 +25382,7 @@ function mpSupApprove() {
   if (idx < 0) return;
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   mpSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _mpSupBackToQueue();
 }
 
@@ -25297,7 +25420,7 @@ function mpSupApproveWithConditions() {
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
   mpSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's'), 'info');
   _mpSupBackToQueue();
 }
 function mpSupShowReject() {
@@ -25321,7 +25444,7 @@ function mpSupReject() {
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   mpSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _mpSupBackToQueue();
 }
 function _mpSupBackToQueue() {
@@ -25377,7 +25500,7 @@ function mpSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   mpSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   mpRenderList();
   goTo('screen-mp-list');
@@ -26046,7 +26169,7 @@ function trfSupApprove() {
   if (idx < 0) return;
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   trfSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _trfSupBackToQueue();
 }
 
@@ -26084,7 +26207,7 @@ function trfSupApproveWithConditions() {
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
   trfSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's') + '.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved with ' + conditions.length + ' condition' + (conditions.length === 1 ? '' : 's'), 'info');
   _trfSupBackToQueue();
 }
 function trfSupShowReject() {
@@ -26108,7 +26231,7 @@ function trfSupReject() {
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   trfSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _trfSupBackToQueue();
 }
 function _trfSupBackToQueue() {
@@ -26164,7 +26287,7 @@ function trfSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   trfSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   trfRenderList();
   goTo('screen-trf-list');
@@ -26991,7 +27114,7 @@ function csSupApprove() {
   all[idx].approved_by = supName;
   all[idx].approved_at = new Date().toISOString();
   csSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' approved.');
+  slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
   _csSupBackToQueue();
 }
 
@@ -27067,7 +27190,7 @@ function csSupReject() {
   all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   csSaveAll(all);
-  alert('Permit ' + all[idx].permit_id + ' rejected.');
+  slanToast('Permit ' + all[idx].permit_id + ' rejected', 'error');
   _csSupBackToQueue();
 }
 
@@ -27147,7 +27270,7 @@ function csSubmitAck() {
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
   csSaveAll(all);
-  alert('Conditions acknowledged. Permit ' + all[idx].permit_id + ' is now active.');
+  slanToast('Permit ' + all[idx].permit_id + ' active — conditions acknowledged', 'success');
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   csRenderList();
   goTo('screen-cs-list');
@@ -27959,6 +28082,7 @@ function hwViewPermit(permitId) {
     ${row('Fire watch duration', p.fire_watch_duration)}
     ${row('Nearest muster point', p.muster_point)}
     ${row('Submitted at', p.submitted_at ? new Date(p.submitted_at).toLocaleString('en-AU') : '')}
+    ${(p.photos && p.photos.length) ? '<div class="hw-view-row"><div class="hw-view-label" style="margin-bottom:8px">Photo evidence</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' + p.photos.map(ph => '<div><img src="' + ph.data + '" style="width:100%;border-radius:6px"><div style="font-size:10px;color:var(--muted);margin-top:2px">' + (ph.ts || '') + (ph.gps ? ' · ' + ph.gps : '') + '</div></div>').join('') + '</div></div>' : ''}
   `;
   // Add Close Permit button if this permit is active and belongs to current worker
   // profile declared earlier
