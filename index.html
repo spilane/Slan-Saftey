@@ -3597,6 +3597,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <label class="flabel">Attendant name (must remain at entry the entire time)</label>
         <input type="text" id="cs-attendant" placeholder="Full name of standby person" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
       </div>
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS 2865 — Confined spaces · WHS Act s.38 (VIC: OHS Act 2004 s.37) — notifiable incidents
+        </div>
+      </div>
       <div class="fgroup">
         <label class="flabel">Rescue plan summary</label>
         <textarea id="cs-rescue" placeholder="How casualty will be retrieved; who to call; equipment available." rows="2" style="font-size:14px"></textarea>
@@ -3873,8 +3882,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
         <div class="fgroup">
-          <label class="flabel">Max depth (m)<span class="slan-help" onclick="slanHelpToggle('exc-help-depth')">?</span></label><div id="exc-help-depth" class="slan-help-tip">Shoring or battering is required when depth reaches 1.5 m or more. Always required at any depth in unstable, sandy, or wet ground.</div>
-          <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="exc-depth" placeholder="e.g. 2.5" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="m"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div>
+          <label class="flabel">Max depth (m)<span class="slan-help" onclick="slanHelpToggle('exc-help-depth')">?</span></label><div id="exc-help-depth" class="slan-help-tip">Excavations 1.5m or deeper are classified as High Risk Construction Work under WHS Regulations. SWMS, shoring/benching/battering, and competent-person inspection are mandatory.</div>
+          <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="exc-depth" placeholder="e.g. 2.5" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="m" oninput="excDepthCheck()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div>
+          <div id="exc-depth-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div>
         </div>
         <div class="fgroup">
           <label class="flabel">Max width (m)</label>
@@ -3917,8 +3927,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
       <div class="fgroup">
-        <label class="flabel">Spoil heap distance from edge (m)</label>
-        <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="exc-spoil-distance" placeholder="Min 1.0m required" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="m"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div>
+        <label class="flabel">Spoil heap distance from edge (m)<span class="slan-help" onclick="slanHelpToggle('exc-help-spoil')">?</span></label>
+        <div id="exc-help-spoil" class="slan-help-tip">Australian minimum: 0.9–1.0m back from edge. For deeper excavations the spoil should be set back at least 0.6m for every 1m of depth (engineering rule for surcharge load). Loose spoil near the edge can hide tension cracks and add weight that triggers collapse.</div>
+        <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="exc-spoil-distance" placeholder="Min 1.0m required" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="m" oninput="excSpoilCheck()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div>
+        <div id="exc-spoil-warn" style="display:none;margin-top:6px;font-size:11.5px;color:#A32D2D;font-weight:600;line-height:1.4"></div>
+        <div id="exc-spoil-min" style="margin-top:5px;font-size:11px;color:var(--muted);line-height:1.4">Minimum: 1.0 m. Required minimum updates with depth.</div>
       </div>
     </div>
   </div>
@@ -3927,10 +3940,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Underground Services <span class="req">*</span></div>
     <div class="fcard-body">
-      <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;line-height:1.4">Strike on a live service can kill. Confirm DBYD search done and services located on site before digging.</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.4">Strike on a live service can kill. Confirm BYDA search is current and services located on site before digging.</div>
+      <div style="background:#F4EFE3;border:1px solid #D4B65F;border-radius:8px;padding:10px 12px;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;color:#5E3D1A;margin-bottom:4px">📞 Before You Dig Australia (BYDA)</div>
+        <div style="font-size:11.5px;color:#5E3D1A;line-height:1.5">
+          Free national service for utility location plans (formerly Dial Before You Dig).<br>
+          <strong>Phone:</strong> 1100 &nbsp;·&nbsp; <strong>Online:</strong> byda.com.au<br>
+          Lodge enquiry at least 2 business days before excavation. Plans expire 30 days after issue — re-lodge if work delayed.
+        </div>
+      </div>
       <div class="fgroup">
-        <label class="flabel">DBYD reference number</label>
-        <input type="text" id="exc-dbyd" placeholder="e.g. DBYD-12345678" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
+        <label class="flabel">BYDA reference number</label>
+        <input type="text" id="exc-dbyd" placeholder="e.g. 12345678" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
       </div>
       <div class="fgroup">
         <label class="flabel">Services identified in dig zone</label>
@@ -3947,6 +3968,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
+  <!-- Atmospheric risk (independent of depth — confined-space cross-reference) -->
+  <div class="fcard">
+    <div class="fcard-hdr">Atmospheric Risk Assessment</div>
+    <div class="fcard-body">
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.4">Excavations are not automatically confined spaces — but if a hazardous atmosphere is reasonably foreseeable, the excavation must be treated as a confined space under WHS Regulation 5. Tick any that apply:</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="check-row" id="exc-atm-1" onclick="toggleCheck('exc-atm-1'); excAtmCheck()"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Near sewer, drain, septic, or other confined infrastructure</div></div>
+        <div class="check-row" id="exc-atm-2" onclick="toggleCheck('exc-atm-2'); excAtmCheck()"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Near gas main / fuel line / hydrocarbon-contaminated ground</div></div>
+        <div class="check-row" id="exc-atm-3" onclick="toggleCheck('exc-atm-3'); excAtmCheck()"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Decomposing organic matter / landfill / known contaminated soil</div></div>
+        <div class="check-row" id="exc-atm-4" onclick="toggleCheck('exc-atm-4'); excAtmCheck()"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Plant / generator exhaust operating near excavation edge</div></div>
+        <div class="check-row" id="exc-atm-5" onclick="toggleCheck('exc-atm-5'); excAtmCheck()"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Deep narrow trench with limited natural ventilation</div></div>
+      </div>
+      <div id="exc-atm-warn" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#FCE9E9;border:1px solid #A32D2D;color:#5E1A1A;font-size:12px;line-height:1.45;font-weight:600">⚠ Atmospheric risk identified — this excavation must be treated as a Confined Space. A separate Confined Space Permit is required, with continuous gas monitoring (O₂, LEL, H₂S, CO) before and during entry.</div>
+    </div>
+  </div>
+
   <!-- Access & rescue -->
   <div class="fcard">
     <div class="fcard-hdr">Access &amp; Emergency <span class="req">*</span></div>
@@ -3958,6 +3995,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button type="button" class="ps-btn" data-excaccess="Ladder" onclick="excSelectAccess(this)">Ladder</button>
           <button type="button" class="ps-btn" data-excaccess="Stairs / ramp" onclick="excSelectAccess(this)">Stairs/ramp</button>
           <button type="button" class="ps-btn" data-excaccess="Hoist / cage" onclick="excSelectAccess(this)">Hoist/cage</button>
+        </div>
+      </div>
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000<br><strong>Before You Dig Australia (BYDA):</strong> 1100 · byda.com.au
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          WHS Reg s.305 — Excavation work · WHS Act s.38 (VIC: OHS Act 2004 s.37) — notifiable incidents
         </div>
       </div>
       <div class="fgroup">
@@ -4363,6 +4409,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Emergency &amp; Rescue Plan <span class="req">*</span></div>
     <div class="fcard-body">
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000<br><strong>Poisons Information:</strong> 13 11 26
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS 2601 — Demolition of structures · WHS Act s.38 (VIC: OHS Act 2004 s.37) — notifiable incidents
+        </div>
+      </div>
       <div class="fgroup">
         <label class="flabel">Emergency response plan</label>
         <textarea id="demo-rescue" placeholder="How a worker will be rescued if trapped/injured. Who calls 000. Nearest first aid." rows="2" style="font-size:14px"></textarea>
@@ -4792,6 +4847,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Emergency &amp; Rescue Plan <span class="req">*</span></div>
     <div class="fcard-body">
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS 2550 — Cranes, hoists & winches · AS 1418 — Cranes general requirements · WHS Act s.38 (VIC: OHS Act 2004 s.37) — notifiable incidents
+        </div>
+      </div>
       <div class="fgroup">
         <label class="flabel">Emergency response / rescue plan</label>
         <textarea id="lift-rescue" placeholder="What happens if load drops or crane fails. Who clears casualty. First aid plan." rows="2" style="font-size:14px"></textarea>
@@ -5220,6 +5284,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Emergency &amp; Rescue Plan <span class="req">*</span></div>
     <div class="fcard-body">
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000<br><strong>Poisons Information:</strong> 13 11 26
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS 3610 — Formwork for concrete · AS 3600 — Concrete structures
+        </div>
+      </div>
       <div class="fgroup">
         <label class="flabel">Emergency / rescue plan</label>
         <textarea id="conc-rescue" placeholder="Pump line burst, formwork failure, casualty extraction. Who calls 000." rows="2" style="font-size:14px"></textarea>
@@ -5651,6 +5724,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Emergency &amp; Rescue Plan <span class="req">*</span></div>
     <div class="fcard-body">
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000<br><strong>Before You Dig Australia (BYDA):</strong> 1100 · byda.com.au
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS/NZS 3000 — Wiring rules (concealed services)
+        </div>
+      </div>
       <div class="fgroup">
         <label class="flabel">Emergency response plan</label>
         <textarea id="pen-rescue" placeholder="If service struck or core falls through. Who calls 000. Below-ceiling spotter location." rows="2" style="font-size:14px"></textarea>
@@ -6053,6 +6135,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <label class="flabel">Safety observer name (required for live work)</label>
         <input type="text" id="elec-observer" placeholder="Full name of observer" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
       </div>
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000<br><strong>Network operator (DNSP):</strong> Ausgrid · Endeavour · Essential · Energex · Ergon · Powercor · CitiPower · United · Jemena · AusNet · SA Power Networks · Western Power · TasNetworks · PWC · Evoenergy
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS/NZS 3000 — Wiring rules · AS/NZS 4836 — Live work
+        </div>
+      </div>
       <div class="fgroup">
         <label class="flabel">Emergency / rescue plan</label>
         <textarea id="elec-rescue" placeholder="How a casualty will be rescued, who calls 000, where the rescue hook / first aid is located." rows="2" style="font-size:14px"></textarea>
@@ -6430,6 +6521,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Emergency &amp; Rescue Plan <span class="req">*</span></div>
     <div class="fcard-body">
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000<br><strong>Poisons Information:</strong> 13 11 26
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          WHS Reg Ch 8 — Asbestos · Code of Practice: How to manage and control asbestos in the workplace · WHS Act s.38 (VIC: OHS Act 2004 s.37) — notifiable incidents
+        </div>
+      </div>
       <div class="fgroup">
         <label class="flabel">Emergency response / rescue plan</label>
         <textarea id="asb-rescue" placeholder="How casualties are retrieved/treated; who calls 000; first aid location." rows="2" style="font-size:14px"></textarea>
@@ -6787,6 +6887,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Emergency &amp; Rescue Plan <span class="req">*</span></div>
     <div class="fcard-body">
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS 2294 — Earth-moving machinery · WHS Reg s.213–217 — Plant · WHS Act s.38 (VIC: OHS Act 2004 s.37) — notifiable incidents
+        </div>
+      </div>
       <div class="fgroup">
         <label class="flabel">Emergency response / rescue plan</label>
         <textarea id="mp-rescue" placeholder="How casualties are retrieved/treated; who calls 000; first aid location." rows="2" style="font-size:14px"></textarea>
@@ -7144,6 +7253,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Emergency &amp; Rescue Plan <span class="req">*</span></div>
     <div class="fcard-body">
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000<br><strong>Police (non-emergency):</strong> 131 444<br><strong>Road authority:</strong> TfNSW · VicRoads · TMR · DIT · MRWA · DSG · TasRoads · NT Transport
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS 1742.3 — Manual of uniform traffic control devices: Traffic control for works on roads
+        </div>
+      </div>
       <div class="fgroup">
         <label class="flabel">Emergency response / rescue plan</label>
         <textarea id="trf-rescue" placeholder="How casualties are retrieved/treated; who calls 000; first aid location." rows="2" style="font-size:14px"></textarea>
@@ -7874,6 +7992,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
+    <!-- Emergency contacts -->
+  <div class="fcard">
+    <div class="fcard-hdr">Emergency Contacts</div>
+    <div class="fcard-body">
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000<br><strong>Poisons Information:</strong> 13 11 26
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS 1674.1 — Hot work on equipment containing flammables
+        </div>
+      </div>
+      </div>
+  </div>
+
   <!-- Pre-start safety checks -->
   <div class="fcard">
     <div class="fcard-hdr">Pre-Start Safety Checks</div>
@@ -8205,6 +8339,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fgroup">
         <label class="flabel">Exclusion zone below (m radius)</label>
         <input type="text" inputmode="numeric" pattern="[0-9]*" id="wah-exclusion" placeholder="e.g. 5" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
+      </div>
+      <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
+        <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
+          <strong>Emergency:</strong> 000
+        </div>
+        <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
+          AS/NZS 1891 — Industrial fall-arrest systems · WHS Act s.38 (VIC: OHS Act 2004 s.37) — notifiable incidents
+        </div>
       </div>
       <div class="fgroup">
         <label class="flabel">Rescue plan / emergency contact</label>
@@ -14778,9 +14921,6 @@ function ptwLoadAllPermits() {
   if (typeof excLoadAll === 'function') {
     excLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'excavation' })); });
   }
-  if (typeof excLoadAll === 'function') {
-    excLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'excavation' })); });
-  }
   if (typeof elecLoadAll === 'function') {
     elecLoadAll().forEach(p => { all.push(Object.assign({}, p, { permit_type: 'electrical' })); });
   }
@@ -18391,18 +18531,19 @@ function wahViewRescueTemplate() {
     doc.text('2. Roles and Responsibilities', ML, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     const roles = [
-      ['Site Supervisor:', 'Authorises the permit, ensures rescue plan is in place before work commences, coordinates emergency response.'],
-      ['Spotter / Standby:', 'Maintains continuous visual contact with the person at heights, raises the alarm, initiates rescue.'],
-      ['First Aider:', 'Provides immediate first aid on rescue, monitors for suspension trauma symptoms, hands over to paramedics.'],
-      ['Worker at heights:', 'Confirms harness is rigged correctly, knows the rescue procedure, carries trauma relief straps if rated.']
+      ['Site Supervisor', 'Authorises the permit, ensures rescue plan is in place before work commences, coordinates emergency response.'],
+      ['Spotter / Standby', 'Maintains continuous visual contact with the person at heights, raises the alarm, initiates rescue.'],
+      ['First Aider', 'Provides immediate first aid on rescue, monitors for suspension trauma symptoms, hands over to paramedics.'],
+      ['Worker at heights', 'Confirms harness is rigged correctly, knows the rescue procedure, carries trauma relief straps if rated.']
     ];
     roles.forEach(([role, desc]) => {
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
       doc.text(role, ML, y);
-      doc.setFont('helvetica', 'normal');
-      const descLines = doc.splitTextToSize(desc, CW - 38);
-      doc.text(descLines, ML + 38, y);
-      y += Math.max(5, descLines.length * 5) + 2;
+      y += 4.5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      const descLines = doc.splitTextToSize(desc, CW);
+      doc.text(descLines, ML, y);
+      y += descLines.length * 4.8 + 3;
     });
     y += 4;
 
@@ -18563,19 +18704,20 @@ function csViewRescueTemplate() {
     doc.text('2. Roles and Responsibilities', ML, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     const roles = [
-      ['Site Supervisor:', 'Authorises the entry permit, ensures rescue plan is in place before entry, coordinates emergency response.'],
-      ['Attendant / Standby:', 'Remains at the entry point at all times. Maintains continuous communication with entrant. Raises alarm. Never enters the space themselves.'],
-      ['Entrant:', 'Confirms gas readings, wears retrieval line if used, communicates regularly with attendant, exits immediately on alarm.'],
-      ['Rescue Team:', 'Trained, equipped, and on-site or within agreed response time. Performs retrieval — entry only as a last resort with SCBA.'],
-      ['First Aider:', 'Provides immediate first aid on retrieval, monitors casualty, hands over to paramedics.']
+      ['Site Supervisor', 'Authorises the entry permit, ensures rescue plan is in place before entry, coordinates emergency response.'],
+      ['Attendant / Standby', 'Remains at the entry point at all times. Maintains continuous communication with entrant. Raises alarm. Never enters the space themselves.'],
+      ['Entrant', 'Confirms gas readings, wears retrieval line if used, communicates regularly with attendant, exits immediately on alarm.'],
+      ['Rescue Team', 'Trained, equipped, and on-site or within agreed response time. Performs retrieval — entry only as a last resort with SCBA.'],
+      ['First Aider', 'Provides immediate first aid on retrieval, monitors casualty, hands over to paramedics.']
     ];
     roles.forEach(([role, desc]) => {
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
       doc.text(role, ML, y);
-      doc.setFont('helvetica', 'normal');
-      const descLines = doc.splitTextToSize(desc, CW - 38);
-      doc.text(descLines, ML + 38, y);
-      y += Math.max(5, descLines.length * 5) + 2;
+      y += 4.5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      const descLines = doc.splitTextToSize(desc, CW);
+      doc.text(descLines, ML, y);
+      y += descLines.length * 4.8 + 3;
     });
     y += 4;
 
@@ -18892,6 +19034,20 @@ function excInitForm() {
   const cf = document.getElementById('exc-confirm');
   if (cf) cf.classList.remove('checked');
 
+  // Reset atmospheric-risk ticks + warnings
+  ['exc-atm-1','exc-atm-2','exc-atm-3','exc-atm-4','exc-atm-5'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('checked');
+  });
+  const atmWarn = document.getElementById('exc-atm-warn');
+  if (atmWarn) atmWarn.style.display = 'none';
+  const depthWarn = document.getElementById('exc-depth-warn');
+  if (depthWarn) depthWarn.style.display = 'none';
+  const spoilWarn = document.getElementById('exc-spoil-warn');
+  if (spoilWarn) spoilWarn.style.display = 'none';
+  const spoilMin = document.getElementById('exc-spoil-min');
+  if (spoilMin) spoilMin.textContent = 'Minimum: 1.0 m. Required minimum increases with depth.';
+
   const sigWrap = document.getElementById('exc-sig-preview');
   if (sigWrap) {
     if (p.sig) {
@@ -18990,6 +19146,85 @@ function excValidate() {
   return ok;
 }
 
+// Live depth warning — only Australian regulatory threshold is 1.5m
+function excDepthCheck() {
+  const el = document.getElementById('exc-depth');
+  const warn = document.getElementById('exc-depth-warn');
+  if (!el || !warn) return;
+  const depth = parseFloat(el.value);
+  if (isNaN(depth) || depth <= 0) {
+    warn.style.display = 'none';
+    excSpoilCheck();
+    return;
+  }
+  if (depth >= 1.5) {
+    warn.style.display = 'block';
+    warn.style.background = '#FCE9E9';
+    warn.style.border = '1px solid #A32D2D';
+    warn.style.color = '#5E1A1A';
+    warn.innerHTML = '<strong>⚠ HIGH RISK CONSTRUCTION WORK</strong><br>'
+      + 'At ' + depth + ' m this excavation is HRCW under WHS Regulations. The following are mandatory:<br>'
+      + '• Safe Work Method Statement (SWMS) on site<br>'
+      + '• Shoring, benching, battering, or shielding (or geotech-assessed stable rock)<br>'
+      + '• Daily inspection by a competent person<br>'
+      + '• Spoil set back min 0.6 m per 1 m of depth (' + (depth * 0.6).toFixed(1) + ' m at this depth)<br>'
+      + '• Exclusion zone barricaded';
+  } else if (depth >= 1.2) {
+    warn.style.display = 'block';
+    warn.style.background = '#FFF4E0';
+    warn.style.border = '1px solid #BA7517';
+    warn.style.color = '#633806';
+    warn.innerHTML = '<strong>⚠ Approaching HRCW threshold</strong> — at 1.5 m or deeper this becomes High Risk Construction Work. Ensure soil is assessed and shoring options are available.';
+  } else {
+    warn.style.display = 'none';
+  }
+  excSpoilCheck();
+}
+
+// Live spoil distance check — minimum is max of 1.0m or depth × 0.6
+function excSpoilCheck() {
+  const depthEl = document.getElementById('exc-depth');
+  const spoilEl = document.getElementById('exc-spoil-distance');
+  const warn = document.getElementById('exc-spoil-warn');
+  const minHint = document.getElementById('exc-spoil-min');
+  if (!spoilEl || !warn || !minHint) return;
+  const depth = parseFloat(depthEl ? depthEl.value : '');
+  const spoil = parseFloat(spoilEl.value);
+  // Required minimum: max of 1.0m or depth × 0.6m (engineering rule for surcharge)
+  let req = 1.0;
+  if (!isNaN(depth) && depth > 0) {
+    const calc = depth * 0.6;
+    req = Math.max(1.0, calc);
+  }
+  // Update minimum-hint text
+  if (!isNaN(depth) && depth > 0) {
+    minHint.textContent = 'Required minimum at ' + depth + ' m depth: ' + req.toFixed(1) + ' m (engineering rule: 0.6 m setback per 1 m depth, with absolute minimum of 1.0 m).';
+  } else {
+    minHint.textContent = 'Minimum: 1.0 m. Required minimum increases with depth.';
+  }
+  // Update placeholder dynamically
+  spoilEl.setAttribute('placeholder', 'Min ' + req.toFixed(1) + ' m');
+  // Live warning if entered value too small
+  if (!isNaN(spoil) && spoil > 0 && spoil < req) {
+    warn.style.display = 'block';
+    warn.textContent = '⚠ Spoil too close. At ' + (isNaN(depth) || depth <= 0 ? 'this depth' : depth + ' m depth') + ', the minimum is ' + req.toFixed(1) + ' m. Move the heap back, use a retaining device, or remove spoil from site.';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+// Atmospheric risk → triggers confined-space cross-reference warning
+function excAtmCheck() {
+  const ids = ['exc-atm-1','exc-atm-2','exc-atm-3','exc-atm-4','exc-atm-5'];
+  const warn = document.getElementById('exc-atm-warn');
+  if (!warn) return;
+  const anyTicked = ids.some(id => {
+    const el = document.getElementById(id);
+    return el && el.classList.contains('checked');
+  });
+  warn.style.display = anyTicked ? 'block' : 'none';
+}
+
 async function submitExc() {
   if (window._excSubmitting) return;
   window._excSubmitting = true;
@@ -19039,6 +19274,13 @@ async function submitExc() {
       services_in_zone: servicesSel,
       access_method: excSelectedAccess,
       rescue_plan: (document.getElementById('exc-rescue').value || '').trim(),
+      atmospheric_risk: {
+        sewer_drain: !!(document.getElementById('exc-atm-1') && document.getElementById('exc-atm-1').classList.contains('checked')),
+        gas_fuel: !!(document.getElementById('exc-atm-2') && document.getElementById('exc-atm-2').classList.contains('checked')),
+        organic_contam: !!(document.getElementById('exc-atm-3') && document.getElementById('exc-atm-3').classList.contains('checked')),
+        plant_exhaust: !!(document.getElementById('exc-atm-4') && document.getElementById('exc-atm-4').classList.contains('checked')),
+        deep_narrow: !!(document.getElementById('exc-atm-5') && document.getElementById('exc-atm-5').classList.contains('checked'))
+      },
       start: document.getElementById('exc-start').value,
       end: document.getElementById('exc-end').value,
       num_workers: parseInt(document.getElementById('exc-num-workers').value, 10) || 1,
@@ -19668,19 +19910,20 @@ function excViewRescueTemplate() {
     doc.text('2. Roles and Responsibilities', ML, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     const roles = [
-      ['Site Supervisor:', 'Authorises permit, verifies shoring/services, coordinates emergency response.'],
-      ['Spotter:', 'Watches workers in/near excavation, monitors plant operations, raises alarm.'],
-      ['Plant Operator:', 'Maintains exclusion from edge, follows spotter signals only.'],
-      ['Excavator (worker in trench):', 'Wears PPE, exits via approved access, exits immediately on alarm.'],
-      ['First Aider:', 'Provides first aid post-rescue, monitors for crush injury.']
+      ['Site Supervisor', 'Authorises permit, verifies shoring/services, coordinates emergency response.'],
+      ['Spotter', 'Watches workers in/near excavation, monitors plant operations, raises alarm.'],
+      ['Plant Operator', 'Maintains exclusion from edge, follows spotter signals only.'],
+      ['Excavator (worker in trench)', 'Wears PPE, exits via approved access, exits immediately on alarm.'],
+      ['First Aider', 'Provides first aid post-rescue, monitors for crush injury.']
     ];
     roles.forEach(([role, desc]) => {
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
       doc.text(role, ML, y);
-      doc.setFont('helvetica', 'normal');
-      const descLines = doc.splitTextToSize(desc, CW - 38);
-      doc.text(descLines, ML + 38, y);
-      y += Math.max(5, descLines.length * 5) + 2;
+      y += 4.5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      const descLines = doc.splitTextToSize(desc, CW);
+      doc.text(descLines, ML, y);
+      y += descLines.length * 4.8 + 3;
     });
     y += 4;
 
@@ -23748,18 +23991,19 @@ function elecViewRescueTemplate() {
     doc.text('2. Roles and Responsibilities', ML, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     const roles = [
-      ['Site Supervisor:', 'Authorises the permit, verifies isolation, coordinates emergency response.'],
-      ['Safety Observer:', 'Required for all live work. Maintains visual line of sight. Carries rescue hook. First to call 000.'],
-      ['Worker (electrician):', 'Holds current licence. Works to SWMS. Self-checks PPE. Stops immediately if condition changes.'],
-      ['First Aider:', 'Provides post-rescue first aid including CPR with AED if available.']
+      ['Site Supervisor', 'Authorises the permit, verifies isolation, coordinates emergency response.'],
+      ['Safety Observer', 'Required for all live work. Maintains visual line of sight. Carries rescue hook. First to call 000.'],
+      ['Worker (electrician)', 'Holds current licence. Works to SWMS. Self-checks PPE. Stops immediately if condition changes.'],
+      ['First Aider', 'Provides post-rescue first aid including CPR with AED if available.']
     ];
     roles.forEach(([role, desc]) => {
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
       doc.text(role, ML, y);
-      doc.setFont('helvetica', 'normal');
-      const descLines = doc.splitTextToSize(desc, CW - 38);
-      doc.text(descLines, ML + 38, y);
-      y += Math.max(5, descLines.length * 5) + 2;
+      y += 4.5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      const descLines = doc.splitTextToSize(desc, CW);
+      doc.text(descLines, ML, y);
+      y += descLines.length * 4.8 + 3;
     });
     y += 4;
 
@@ -23951,11 +24195,14 @@ function _renderRescuePDF(opts) {
     doc.text('2. Roles and Responsibilities', ML, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     opts.roles.forEach(function(r) {
-      doc.setFont('helvetica', 'bold'); doc.text(r[0], ML, y);
-      doc.setFont('helvetica', 'normal');
-      const lines = doc.splitTextToSize(r[1], CW - 38);
-      doc.text(lines, ML + 38, y);
-      y += Math.max(5, lines.length * 5) + 2;
+      const role = (r[0] || '').replace(/:$/, '');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.text(role, ML, y);
+      y += 4.5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      const lines = doc.splitTextToSize(r[1], CW);
+      doc.text(lines, ML, y);
+      y += lines.length * 4.8 + 3;
     });
     y += 4;
 
