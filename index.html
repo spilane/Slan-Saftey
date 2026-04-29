@@ -3946,7 +3946,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div style="font-size:11.5px;color:#5E3D1A;line-height:1.5">
           Free national service for utility location plans (formerly Dial Before You Dig).<br>
           <strong>Phone:</strong> 1100 &nbsp;·&nbsp; <strong>Online:</strong> byda.com.au<br>
-          Lodge enquiry at least 2 business days before excavation. Plans expire 30 days after issue — re-lodge if work delayed.
+          Lodge enquiry at least 1 business day before excavation (the earlier the better). Plans expire 30 days after issue — re-lodge if work delayed.
         </div>
       </div>
       <div class="fgroup">
@@ -4412,7 +4412,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
         <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
-          <strong>Emergency:</strong> 000<br><strong>Poisons Information:</strong> 13 11 26
+          <strong>Emergency:</strong> 000
         </div>
         <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
           AS 2601 — Demolition of structures · WHS Act s.38 (VIC: OHS Act 2004 s.37) — notifiable incidents
@@ -4834,13 +4834,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Wind speed at lift height (km/h)</label>
-        <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="lift-wind" placeholder="Cease at  autocomplete="off" data-unit="km/h"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div>36 km/h normal lift / >20 km/h personnel lift" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
+        <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="lift-wind" oninput="liftWindCheck()" placeholder="Cease at  autocomplete="off" data-unit="km/h"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div>36 km/h normal lift / >20 km/h personnel lift" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none">
       </div>
       <div class="fgroup">
         <label class="flabel">Ground / outrigger pad assessment</label>
         <textarea id="lift-ground" placeholder="Bearing capacity confirmed? Pads or mats used? Recent rain?" rows="2" style="font-size:14px"></textarea>
       </div>
-    </div>
+    <div id="lift-wind-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div>
+        </div>
   </div>
 
   <!-- Emergency & rescue -->
@@ -5270,7 +5271,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Temperature (°C)</label>
-          <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="conc-temp" placeholder="Cease pour outside 5-32°C" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="°C"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">°C</span></div>
+          <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="conc-temp" oninput="concTempCheck()" placeholder="Cease pour outside 5-32°C" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="°C"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">°C</span></div>
+        <div id="conc-temp-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div>
         </div>
         <div class="fgroup">
           <label class="flabel">Wind (km/h)</label>
@@ -5287,7 +5289,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
         <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
-          <strong>Emergency:</strong> 000<br><strong>Poisons Information:</strong> 13 11 26
+          <strong>Emergency:</strong> 000
         </div>
         <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
           AS 3610 — Formwork for concrete · AS 3600 — Concrete structures
@@ -6138,7 +6140,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
         <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
-          <strong>Emergency:</strong> 000<br><strong>Network operator (DNSP):</strong> Ausgrid · Endeavour · Essential · Energex · Ergon · Powercor · CitiPower · United · Jemena · AusNet · SA Power Networks · Western Power · TasNetworks · PWC · Evoenergy
+          <strong>Emergency:</strong> 000
         </div>
         <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
           AS/NZS 3000 — Wiring rules · AS/NZS 4836 — Live work
@@ -6874,7 +6876,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button type="button" class="ps-btn" data-mpspotter="Yes — near services" onclick="mpSelectPill(this, 'mpspotter')">Yes — near services</button>
           <button type="button" class="ps-btn" data-mpspotter="Yes — public area" onclick="mpSelectPill(this, 'mpspotter')">Yes — public area</button>
         </div></div>
-      <div class="fgroup"><label class="flabel">Exclusion zone radius (m)</label><div style="position:relative;display:block"><input type="text" id="mp-exclusion-radius" placeholder="e.g. 5" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="m"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div></div>
+      <div class="fgroup"><label class="flabel">Exclusion zone radius (m)</label><div style="position:relative;display:block"><input type="text" id="mp-exclusion-radius" placeholder="e.g. 5" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="m" oninput="mpExclCheck()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div><div id="mp-excl-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div></div>
       <div class="fgroup"><label class="flabel">Hazards present</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
           <button type="button" class="ps-btn" data-mphazards="Overhead powerlines" onclick="mpSelectPill(this, 'mphazards')">Overhead powerlines</button>
           <button type="button" class="ps-btn" data-mphazards="Underground services" onclick="mpSelectPill(this, 'mphazards')">Underground services</button>
@@ -7227,7 +7229,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Speed &amp; Zone <span class="req">*</span></div>
     <div class="fcard-body">
-      <div class="fgroup"><label class="flabel">Posted speed limit (km/h)</label><div style="position:relative;display:block"><input type="text" id="trf-posted-speed" placeholder="e.g. 60" style="padding:11px 54px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="km/h"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div></div>
+      <div class="fgroup"><label class="flabel">Posted speed limit (km/h)</label><div style="position:relative;display:block"><input type="text" id="trf-posted-speed" placeholder="e.g. 60" style="padding:11px 54px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="km/h" oninput="trfSpeedCheck()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div><div id="trf-posted-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div></div>
       <div class="fgroup"><label class="flabel">Work zone speed limit (km/h)</label><div style="position:relative;display:block"><input type="text" id="trf-work-speed" placeholder="e.g. 40" style="padding:11px 54px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="km/h"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div></div>
       <div class="fgroup"><label class="flabel">Work zone length (m)</label><div style="position:relative;display:block"><input type="text" id="trf-zone-length" placeholder="e.g. 200" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="m"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div></div>
       <div class="fgroup"><label class="flabel">Number of TCs required</label><input type="text" id="trf-tc-count" placeholder="e.g. 4" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*"></div>
@@ -7256,7 +7258,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
         <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
-          <strong>Emergency:</strong> 000<br><strong>Police (non-emergency):</strong> 131 444<br><strong>Road authority:</strong> TfNSW · VicRoads · TMR · DIT · MRWA · DSG · TasRoads · NT Transport
+          <strong>Emergency:</strong> 000<br><strong>Police (non-emergency):</strong> 131 444
         </div>
         <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
           AS 1742.3 — Manual of uniform traffic control devices: Traffic control for works on roads
@@ -7999,7 +8001,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
         <div style="font-size:11.5px;color:#5E1A1A;line-height:1.5">
-          <strong>Emergency:</strong> 000<br><strong>Poisons Information:</strong> 13 11 26
+          <strong>Emergency:</strong> 000
         </div>
         <div style="font-size:10.5px;color:#7A2C2C;line-height:1.45;margin-top:8px;padding-top:6px;border-top:1px solid #E8C4C4;font-style:italic">
           AS 1674.1 — Hot work on equipment containing flammables
@@ -8256,9 +8258,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Working height (m above ground/lower level)</label>
-        <div style="position:relative;display:block"><input type="text" inputmode="numeric" pattern="[0-9]*" id="wah-height" placeholder="e.g. 6" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="m"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div>
+        <div style="position:relative;display:block"><input type="text" inputmode="numeric" pattern="[0-9]*" id="wah-height" placeholder="e.g. 6" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="m" oninput="wahHeightCheck()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4">A permit is required for any work over 2m where a fall could occur.</div>
-      </div>
+      <div id="wah-height-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div></div>
     </div>
   </div>
 
@@ -19224,6 +19226,21 @@ function excAtmCheck() {
   });
   warn.style.display = anyTicked ? 'block' : 'none';
 }
+
+// ── ROUND B (DEFERRED): live numeric warnings ─────────────────────
+// These functions are intentionally stubbed. The oninput hooks remain wired
+// but no warning is shown. Round B is paused until we can cite primary
+// sources for each threshold (AS 1418.4 / AS 1742.3 / AS 3600 / AS 5100.5
+// / WHS Reg s.215 etc). Re-enable once standards are reviewed.
+function _slanHideById(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+function wahHeightCheck() { _slanHideById('wah-height-warn'); }
+function liftWindCheck()  { _slanHideById('lift-wind-warn'); }
+function concTempCheck()  { _slanHideById('conc-temp-warn'); }
+function trfSpeedCheck()  { _slanHideById('trf-posted-warn'); }
+function mpExclCheck()    { _slanHideById('mp-excl-warn'); }
 
 async function submitExc() {
   if (window._excSubmitting) return;
