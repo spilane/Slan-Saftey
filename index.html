@@ -8496,6 +8496,41 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-body" id="talk-supervisor-list" style="padding:6px 0"></div>
     </div>
 
+    <!-- Supervisor: download combined roster PDF (single PDF with all signers + wrap-up) -->
+    <div id="talk-roster-wrap" style="display:none;margin-top:8px">
+      <button onclick="tbtDownloadRosterPDF()" style="display:block;width:100%;padding:11px 14px;background:#1B3A2D;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+        📄 Download combined roster PDF
+      </button>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4">Includes talk content, all signatures captured so far, and the supervisor debrief below. Re-download whenever new workers sign — the latest version replaces the old one.</div>
+    </div>
+
+    <!-- Supervisor: post-talk debrief / wrap-up -->
+    <div class="fcard" id="talk-wrapup-card" style="display:none;margin-top:8px">
+      <div class="fcard-hdr">Supervisor debrief <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">— optional</span></div>
+      <div class="fcard-body">
+        <div class="fgroup">
+          <label class="flabel">Attendance count <span style="font-weight:400;color:var(--muted);font-size:11px" id="wu-auto-count">(auto: 0 signed)</span></label>
+          <input type="text" id="wu-attendance" inputmode="numeric" placeholder="Override if different" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Site-specific hazards discussed</label>
+          <textarea id="wu-hazards" placeholder="Brief summary of any site-specific risks raised during the talk." rows="3" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical"></textarea>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Questions or concerns raised</label>
+          <textarea id="wu-questions" placeholder="What did workers ask, or push back on?" rows="3" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical"></textarea>
+        </div>
+        <div class="fgroup" style="margin-bottom:0">
+          <label class="flabel">Action items / follow-ups</label>
+          <textarea id="wu-actions" placeholder="Who is doing what by when?" rows="3" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical"></textarea>
+        </div>
+        <button onclick="tbtSaveWrapup()" style="display:block;width:100%;padding:11px;margin-top:12px;background:#1B6E3A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+          Save debrief
+        </button>
+        <div id="wu-saved-msg" style="display:none;text-align:center;font-size:11px;color:#1B6E3A;margin-top:6px">✓ Debrief saved.</div>
+      </div>
+    </div>
+
     <!-- Confirmations -->
     <div id="talk-sign-section">
       <div class="fcard">
@@ -16208,6 +16243,11 @@ function goTo(id){
 }
 
 function startFlow(m){
+  // TOOLBOX TALK GATE: block both sign-in and sign-out until the current
+  // toolbox talk has been signed. This catches workers signing in mid-month
+  // who missed the original delivery, and end-of-day stragglers who haven't
+  // signed it yet.
+  if (typeof tbtBlocksSignInOut === 'function' && tbtBlocksSignInOut()) return;
   // SIGN-OUT GATE: block sign-out if worker has active Hot Works permits
   if (m === 'out' && typeof hwCheckActivePermitsForSignOut === 'function' && !window._hwGateBypass) {
     if (hwCheckActivePermitsForSignOut()) return; // gate handled, user redirected
@@ -16668,6 +16708,39 @@ function goToTalk() {
       supList.innerHTML = html;
     } else {
       supCard.style.display = 'none';
+    }
+  }
+
+  // Show roster download + wrap-up cards for supervisor only
+  const rosterWrap = document.getElementById('talk-roster-wrap');
+  const wrapupCard = document.getElementById('talk-wrapup-card');
+  if (rosterWrap && wrapupCard) {
+    if (isSupervisor) {
+      rosterWrap.style.display = 'block';
+      wrapupCard.style.display = 'block';
+      // Populate auto-count and load saved wrap-up
+      try {
+        const todayDateStr = new Date().toLocaleDateString('en-AU');
+        const todaysRecs = (typeof tbtLoadAll === 'function' ? tbtLoadAll() : [])
+          .filter(r => r.date === todayDateStr && r.talk_id === (TODAYS_TALK ? TODAYS_TALK.version : ''));
+        const autoCount = todaysRecs.length;
+        const autoEl = document.getElementById('wu-auto-count');
+        if (autoEl) autoEl.textContent = '(auto: ' + autoCount + ' signed)';
+        const saved = tbtLoadWrapup(TODAYS_TALK ? TODAYS_TALK.version : '', todayDateStr);
+        const att = document.getElementById('wu-attendance');
+        const haz = document.getElementById('wu-hazards');
+        const qns = document.getElementById('wu-questions');
+        const acn = document.getElementById('wu-actions');
+        if (att) att.value = saved && saved.attendance != null ? saved.attendance : '';
+        if (haz) haz.value = saved && saved.hazards ? saved.hazards : '';
+        if (qns) qns.value = saved && saved.questions ? saved.questions : '';
+        if (acn) acn.value = saved && saved.actions ? saved.actions : '';
+        const savedMsg = document.getElementById('wu-saved-msg');
+        if (savedMsg) savedMsg.style.display = 'none';
+      } catch(e) { /* ignore */ }
+    } else {
+      rosterWrap.style.display = 'none';
+      wrapupCard.style.display = 'none';
     }
   }
 
@@ -30338,6 +30411,325 @@ function tbtHasSignedToday(workerName) {
     return (r.worker_name || '').toLowerCase() === workerName.toLowerCase()
       && r.date === todayStr;
   }) || null;
+}
+
+// Has this person signed the CURRENT active toolbox talk (regardless of date)?
+// Used by the sign-in / sign-out gate to enforce up-to-date acknowledgement
+// even when the toolbox is monthly and the worker is signing days after delivery.
+function tbtHasSignedCurrent(workerName) {
+  if (!workerName) return null;
+  var currentTalkId = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? TODAYS_TALK.version : '';
+  if (!currentTalkId) return null;
+  return tbtLoadAll().find(function(r){
+    return (r.worker_name || '').toLowerCase() === workerName.toLowerCase()
+      && r.talk_id === currentTalkId;
+  }) || null;
+}
+
+// Save the supervisor's post-talk wrap-up. Keyed by talk_id + date so a fresh
+// debrief is captured each time the talk is delivered (e.g. monthly).
+function tbtSaveWrapup() {
+  try {
+    var p = (typeof getProfile === 'function') ? getProfile() : null;
+    if (!p || p.role !== 'Site Supervisor') { alert('Only supervisors can save the debrief.'); return; }
+    var talkId = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? TODAYS_TALK.version : '';
+    var todayDate = new Date().toLocaleDateString('en-AU');
+    var key = 'slan_tbt_wrapups_v1';
+    var all = {};
+    try { all = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) { all = {}; }
+    var attRaw = (document.getElementById('wu-attendance') || {}).value || '';
+    var att = attRaw === '' ? null : Number(attRaw);
+    if (att != null && (isNaN(att) || att < 0)) { alert('Attendance count must be a positive number.'); return; }
+    var entry = {
+      talk_id: talkId,
+      date: todayDate,
+      attendance: att,
+      hazards: (document.getElementById('wu-hazards') || {}).value || '',
+      questions: (document.getElementById('wu-questions') || {}).value || '',
+      actions: (document.getElementById('wu-actions') || {}).value || '',
+      supervisor_name: p.name || '',
+      saved_at: new Date().toISOString()
+    };
+    all[talkId + '|' + todayDate] = entry;
+    localStorage.setItem(key, JSON.stringify(all));
+    var msg = document.getElementById('wu-saved-msg');
+    if (msg) { msg.style.display = 'block'; setTimeout(function(){ msg.style.display = 'none'; }, 2500); }
+  } catch(e) { alert('Could not save debrief: ' + (e.message || e)); }
+}
+
+function tbtLoadWrapup(talkId, dateStr) {
+  if (!talkId || !dateStr) return null;
+  try {
+    var all = JSON.parse(localStorage.getItem('slan_tbt_wrapups_v1') || '{}');
+    return all[talkId + '|' + dateStr] || null;
+  } catch(e) { return null; }
+}
+
+// Build a single combined PDF: talk content + supervisor debrief + signature
+// roster + workers who haven't signed yet. Re-downloadable any time so it
+// stays up-to-date as late signers come in.
+function tbtDownloadRosterPDF() {
+  try {
+    if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF generator not available.'); return; }
+    if (typeof TODAYS_TALK === 'undefined' || !TODAYS_TALK) { alert('No active talk.'); return; }
+
+    var todayDate = new Date().toLocaleDateString('en-AU');
+    var allRecs = tbtLoadAll();
+    var talkRecs = allRecs.filter(function(r){
+      return r.talk_id === TODAYS_TALK.version;
+    }).sort(function(a, b){
+      // Original signers (date matches today) first, then late signers (other dates)
+      if (a.date === b.date) return (a.signed_at || '').localeCompare(b.signed_at || '');
+      if (a.date === todayDate) return -1;
+      if (b.date === todayDate) return 1;
+      return (a.signed_at || '').localeCompare(b.signed_at || '');
+    });
+
+    var wrapup = tbtLoadWrapup(TODAYS_TALK.version, todayDate);
+
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    var PAGE_W = 210, PAGE_H = 297;
+    var ML = 22, MR = 22, MT = 18, MB = 16;
+    var CW = PAGE_W - ML - MR;
+    var TITLE = 'TOOLBOX TALK ROSTER';
+    var FOOTER_CODE = 'SLS-TBT-ROSTER \u00b7 v1.0';
+    var C = (typeof PDF_COLOURS !== 'undefined') ? PDF_COLOURS : {
+      darkGreen:'#1B3A2D', darkText:'#1A2A1F', subLabel:'#5C6B62',
+      greyLabel:'#888888', greyLight:'#dddddd', white:'#FFFFFF',
+      paleGreen:'#F0F7E8', greenBorder:'#d4e3c2', greenDark:'#1B6E3A',
+      amberBg:'#FDF8EC', amberDark:'#BA7517'
+    };
+    function hex(h) { h = h.replace('#',''); return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)]; }
+    function setFill(c) { var rgb = hex(c); doc.setFillColor(rgb[0],rgb[1],rgb[2]); }
+    function setStroke(c) { var rgb = hex(c); doc.setDrawColor(rgb[0],rgb[1],rgb[2]); }
+    function setText(c) { var rgb = hex(c); doc.setTextColor(rgb[0],rgb[1],rgb[2]); }
+
+    function drawHeader() {
+      var logoW = 30, logoH = 13;
+      var logoX = PAGE_W - MR - logoW;
+      var logoY = MT;
+      if (window.SLAN_LOGO_B64) {
+        try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', logoX, logoY, logoW, logoH); } catch(e) {}
+      } else {
+        setFill(C.darkGreen);
+        doc.rect(logoX, logoY, logoW, logoH, 'F');
+      }
+      setText(C.darkText);
+      doc.setFont('helvetica','bold'); doc.setFontSize(16);
+      doc.text(TITLE, PAGE_W/2, logoY + logoH/2 + 1.5, {align:'center'});
+      setStroke(C.darkGreen); doc.setLineWidth(0.5);
+      doc.line(ML, logoY + logoH + 1, PAGE_W - MR, logoY + logoH + 1);
+      return logoY + logoH + 5;
+    }
+    function drawFooter(pn, tp) {
+      var fY = PAGE_H - MB;
+      setStroke(C.greyLight); doc.setLineWidth(0.2);
+      doc.line(ML, fY - 4, PAGE_W - MR, fY - 4);
+      setText(C.greyLabel || '#888888');
+      doc.setFont('courier','normal'); doc.setFontSize(7);
+      doc.text(FOOTER_CODE + '  \u00b7  ' + (TODAYS_TALK.version || ''), ML, fY);
+      doc.setFont('helvetica','normal');
+      doc.text('Page ' + pn + ' of ' + tp, PAGE_W - MR, fY, {align:'right'});
+    }
+    function drawMajorBanner(yPos, label) {
+      var h = 6;
+      setFill(C.darkGreen);
+      doc.rect(ML, yPos, CW, h, 'F');
+      setText(C.white);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9);
+      doc.text(label, ML + 4, yPos + h/2 + 1.5);
+      return yPos + h + 4;
+    }
+    function drawField(x, yPos, label, value) {
+      setText(C.greyLabel || '#888888');
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+      doc.text(label + ':', x, yPos);
+      var lblW = doc.getTextWidth(label + ':');
+      setText(C.darkText);
+      doc.text(String(value || '\u2014'), x + lblW + 1.5, yPos);
+    }
+    function newPageIfNeeded(yPos, neededSpace) {
+      if (yPos + neededSpace > PAGE_H - MB - 6) { doc.addPage(); return drawHeader(); }
+      return yPos;
+    }
+
+    var y = drawHeader();
+
+    // ── HEADER DETAILS ──
+    y = drawMajorBanner(y, 'TALK DETAILS');
+    setText(C.darkText);
+    doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.text(TODAYS_TALK.title || 'Toolbox Talk', ML, y); y += 6;
+    setText(C.subLabel || '#5C6B62');
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.text((TODAYS_TALK.version || '') + '  \u00b7  Generated ' + todayDate, ML, y); y += 5;
+    drawField(ML, y, 'Site', (typeof SITE !== 'undefined') ? SITE : '\u2014');
+    drawField(ML + CW/2, y, 'Presenter', TODAYS_TALK.presenter || '\u2014');
+    y += 6;
+    drawField(ML, y, 'Total signed', String(talkRecs.length));
+    drawField(ML + CW/2, y, 'Roster generated', new Date().toLocaleString('en-AU'));
+    y += 7;
+
+    // ── TALK CONTENT ──
+    y = newPageIfNeeded(y, 14);
+    y = drawMajorBanner(y, 'TALK CONTENT');
+    var sections = TODAYS_TALK.sections || [];
+    sections.forEach(function(sec){
+      y = newPageIfNeeded(y, 14);
+      setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
+      doc.rect(ML, y - 4.5, CW, 6, 'FD');
+      setText(C.darkText);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+      doc.text(sec.heading || '', ML + 3, y - 0.5);
+      y += 4;
+      doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+      (sec.points || []).forEach(function(pt){
+        var lines = doc.splitTextToSize(pt, CW - 6);
+        var blockH = lines.length * 4.2 + 2;
+        y = newPageIfNeeded(y, blockH);
+        setFill(C.darkGreen);
+        doc.circle(ML + 2, y - 1.2, 0.7, 'F');
+        setText(C.darkText);
+        doc.text(lines, ML + 6, y);
+        y += blockH;
+      });
+      y += 2;
+    });
+
+    // ── SUPERVISOR DEBRIEF ──
+    if (wrapup && (wrapup.attendance != null || wrapup.hazards || wrapup.questions || wrapup.actions)) {
+      y = newPageIfNeeded(y, 30);
+      y += 2;
+      y = drawMajorBanner(y, 'SUPERVISOR DEBRIEF');
+      if (wrapup.attendance != null) {
+        drawField(ML, y, 'Attendance count', String(wrapup.attendance));
+        y += 6;
+      }
+      function debriefBlock(label, text) {
+        if (!text) return;
+        y = newPageIfNeeded(y, 14);
+        setText(C.subLabel || '#5C6B62');
+        doc.setFont('helvetica','bold'); doc.setFontSize(8);
+        doc.text(label.toUpperCase(), ML, y); y += 4;
+        setText(C.darkText);
+        doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+        var lines = doc.splitTextToSize(text, CW);
+        var blockH = lines.length * 4.2 + 2;
+        y = newPageIfNeeded(y, blockH);
+        doc.text(lines, ML, y);
+        y += blockH + 2;
+      }
+      debriefBlock('Site-specific hazards discussed', wrapup.hazards);
+      debriefBlock('Questions or concerns raised', wrapup.questions);
+      debriefBlock('Action items / follow-ups', wrapup.actions);
+      y += 3;
+    }
+
+    // ── SIGNATURE ROSTER ──
+    y = newPageIfNeeded(y, 30);
+    y += 2;
+    y = drawMajorBanner(y, 'SIGNATURE ROSTER');
+    if (talkRecs.length === 0) {
+      setText(C.subLabel || '#5C6B62');
+      doc.setFont('helvetica','italic'); doc.setFontSize(10);
+      doc.text('No signatures captured yet.', ML, y);
+      y += 6;
+    } else {
+      // Render a table-style row per signer
+      var ROW_H = 28;
+      talkRecs.forEach(function(rec, idx){
+        y = newPageIfNeeded(y, ROW_H + 2);
+        // Light background for alternating rows
+        if (idx % 2 === 0) {
+          setFill('#FAFCF9'); setStroke(C.greenBorder); doc.setLineWidth(0.15);
+          doc.rect(ML, y - 2, CW, ROW_H, 'FD');
+        } else {
+          setStroke(C.greyLight); doc.setLineWidth(0.15);
+          doc.rect(ML, y - 2, CW, ROW_H);
+        }
+        // Left column: name + role + company + signed-at
+        setText(C.darkText);
+        doc.setFont('helvetica','bold'); doc.setFontSize(10);
+        doc.text(rec.worker_name || '\u2014', ML + 3, y + 3);
+        setText(C.subLabel || '#5C6B62');
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+        doc.text((rec.role || '') + (rec.company ? ' \u00b7 ' + rec.company : ''), ML + 3, y + 7.5);
+        doc.text('Signed ' + (rec.date || '') + (rec.time ? ' at ' + rec.time : ''), ML + 3, y + 12);
+        // Late-signer flag
+        if (rec.date !== todayDate) {
+          setFill(C.amberBg); setStroke(C.amberDark); doc.setLineWidth(0.2);
+          doc.roundedRect(ML + 3, y + 14, 26, 4.5, 1, 1, 'FD');
+          setText(C.amberDark);
+          doc.setFont('helvetica','bold'); doc.setFontSize(7);
+          doc.text('LATE SIGNER', ML + 16, y + 17.2, {align:'center'});
+        }
+        // Right column: signature image
+        var sigX = ML + CW - 70, sigY = y + 1, sigW = 65, sigH = 22;
+        if (rec.signature) {
+          try { doc.addImage(rec.signature, 'PNG', sigX, sigY, sigW, sigH); } catch(e) {}
+        }
+        setStroke(C.greyLight); doc.setLineWidth(0.2);
+        doc.line(sigX, sigY + sigH, sigX + sigW, sigY + sigH);
+        setText(C.greyLabel || '#888888');
+        doc.setFont('helvetica','normal'); doc.setFontSize(7);
+        doc.text('Signature', sigX + sigW/2, sigY + sigH + 2.5, {align:'center'});
+        y += ROW_H + 2;
+      });
+    }
+
+    // ── WORKERS WHO HAVEN'T SIGNED YET ──
+    if (typeof DEMO_WORKERS !== 'undefined' && DEMO_WORKERS) {
+      var signedNamesSet = new Set(talkRecs.map(function(r){ return (r.worker_name||'').toLowerCase(); }));
+      var unsigned = DEMO_WORKERS
+        .filter(function(w){ return w.onsite; })
+        .filter(function(w){ return !signedNamesSet.has((w.name||'').toLowerCase()); });
+      if (unsigned.length) {
+        y = newPageIfNeeded(y, 18);
+        y += 2;
+        y = drawMajorBanner(y, 'NOT YET SIGNED \u2014 BLOCKED FROM SIGN-IN/OUT');
+        setText(C.subLabel || '#5C6B62');
+        doc.setFont('helvetica','italic'); doc.setFontSize(8.5);
+        doc.text('These workers cannot sign in or out until they sign the current toolbox talk.', ML, y);
+        y += 5;
+        unsigned.forEach(function(w){
+          y = newPageIfNeeded(y, 6);
+          setText(C.darkText);
+          doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+          doc.text('\u2022  ' + (w.name || '') + (w.role ? '  \u2014  ' + w.role : '') + (w.company ? '  \u00b7  ' + w.company : ''), ML, y);
+          y += 4.5;
+        });
+      }
+    }
+
+    // ── FOOTER ──
+    var pages = doc.internal.getNumberOfPages();
+    for (var i = 1; i <= pages; i++) { doc.setPage(i); drawFooter(i, pages); }
+    var fname = 'Toolbox-Roster-' + (TODAYS_TALK.version || 'TBT') + '-' + todayDate.replace(/\//g,'-') + '.pdf';
+    doc.save(fname);
+  } catch(e) {
+    alert('Could not generate roster PDF: ' + (e.message || e));
+  }
+}
+
+// ─── SIGN-IN / SIGN-OUT GATE ─────────────────────────────────
+// Workers (and supervisors) cannot sign IN or OUT until they have signed the
+// current active toolbox talk. Returns true if blocked (caller should abort).
+function tbtBlocksSignInOut() {
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!p || !p.name) return false; // no profile = onboarding flow, don't block
+  if (typeof TODAYS_TALK === 'undefined' || !TODAYS_TALK) return false;
+  var signed = tbtHasSignedCurrent(p.name);
+  if (signed) return false;
+  // Show a hard block dialog with one path: go sign the talk
+  var goNow = confirm('Toolbox Talk required\n\nYou must sign the current toolbox talk ("' +
+    (TODAYS_TALK.title || 'Toolbox Talk') +
+    '") before signing in or out.\n\nThis is a WHS requirement — every worker on site must acknowledge current safety information.\n\nTap OK to sign it now.');
+  if (goNow) {
+    if (typeof goToTalk === 'function') goToTalk();
+    else if (typeof goTo === 'function') goTo('screen-talk');
+  }
+  return true;
 }
 
 // Role-aware back from the talk screen
