@@ -355,6 +355,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .sp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .sp-pending{background:#CCCCCC}
 .sp-done{background:#1B6E3A}
+.sp-warn{background:#BA7517}
+.sp-fail{background:#A32D2D}
 @keyframes spPulse {
   0%,100% { box-shadow: 0 0 0 0 rgba(186,117,23,0); }
   50%     { box-shadow: 0 0 0 6px rgba(186,117,23,0.5); }
@@ -1413,13 +1415,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <small>Reference number</small>
       <strong id="si-ref">—</strong>
     </div>
-    <div class="si-detail">
-      <div style="font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Record</div>
-      <div class="si-dr"><span>Worker</span><strong id="sd-name">—</strong></div>
-      <div class="si-dr"><span>Time</span><strong id="sd-time">—</strong></div>
-      <div class="si-dr"><span>Location</span><strong id="sd-loc">—</strong></div>
-      <div class="si-dr"><span>Address</span><strong id="sd-addr">—</strong></div>
-      <div class="si-dr"><span>Status</span><strong id="sd-status">—</strong></div>
+    <div class="si-detail" id="si-detail-block">
+      <div style="font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px" id="si-detail-hdr">Record</div>
+      <div id="si-detail-rows">
+        <div class="si-dr"><span>Worker</span><strong id="sd-name">—</strong></div>
+        <div class="si-dr"><span>Time</span><strong id="sd-time">—</strong></div>
+        <div class="si-dr"><span>Location</span><strong id="sd-loc">—</strong></div>
+        <div class="si-dr"><span>Address</span><strong id="sd-addr">—</strong></div>
+        <div class="si-dr"><span>Status</span><strong id="sd-status">—</strong></div>
+      </div>
     </div>
     <button class="home-btn" onclick="goTo('screen-home')">Back to home</button>
   </div>
@@ -13015,10 +13019,10 @@ async function updateStatusStrip() {
   const swmsNewAvail  = !!localStorage.getItem('swms_new_available');
   setPillState('sp-swms', (swmsSignedAny && !swmsNewAvail) ? 'done' : 'warn');
 
-  // Toolbox - persist green until new available
-  const talkSignedAny = !!localStorage.getItem('talk_signed_latest') || !!localStorage.getItem('talk_signed_' + today);
-  const talkNewAvail  = !!localStorage.getItem('talk_new_available');
-  setPillState('sp-talk', (talkSignedAny && !talkNewAvail) ? 'done' : 'warn');
+  // Toolbox - green only if THIS worker has signed today
+  const _meWk = (typeof getProfile === 'function') ? getProfile() : null;
+  const wkSignedToday = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(_meWk && _meWk.name) : null;
+  setPillState('sp-talk', wkSignedToday ? 'done' : 'warn');
 
   // Legacy banner for supervisor pre-start
   try {
@@ -13098,7 +13102,13 @@ function setPillState(id, state) {
   else if (state === 'neutral') el.classList.add('neutral');
   const dot = el.querySelector('.sp-dot');
   if (dot) {
-    dot.className = 'sp-dot' + (state === 'done' ? ' sp-done' : state === 'neutral' ? '' : state === 'pending' ? ' sp-pending' : '');
+    dot.className = 'sp-dot'
+      + (state === 'done'    ? ' sp-done'
+      : state === 'warn'    ? ' sp-warn'
+      : state === 'fail'    ? ' sp-fail'
+      : state === 'neutral' ? ''
+      : state === 'pending' ? ' sp-pending'
+      : '');
   }
 }
 
@@ -13348,10 +13358,10 @@ function updateSupActivityStrip() {
   const swmsNewAvail  = !!localStorage.getItem('swms_new_available');
   setPillState('d-pill-swms', (swmsSignedAny && !swmsNewAvail) ? 'done' : 'warn');
 
-  // Toolbox talk — same as worker (persist green until new one added)
-  const talkSignedAny = !!localStorage.getItem('talk_signed_latest') || !!localStorage.getItem('talk_signed_' + today);
-  const talkNewAvail  = !!localStorage.getItem('talk_new_available');
-  setPillState('d-pill-talk', (talkSignedAny && !talkNewAvail) ? 'done' : 'warn');
+  // Toolbox talk — chip shows green only if THIS supervisor has signed today
+  const _meSup = (typeof getProfile === 'function') ? getProfile() : null;
+  const supSignedToday = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(_meSup && _meSup.name) : null;
+  setPillState('d-pill-talk', supSignedToday ? 'done' : 'warn');
 
   // Hazards — count open hazards
   const hazards = JSON.parse(localStorage.getItem('slan_hazards') || '[]');
@@ -16314,12 +16324,59 @@ function showSuccess(m,p,now,ref){
     ?'Your sign-in has been recorded. Have a safe day.'
     :'Your sign-out has been recorded. Have a safe trip home.';
   document.getElementById('si-ref').textContent=ref;
+  // Restore default sign-in/out detail rows (in case showSharedSuccess overwrote them)
+  const rows = document.getElementById('si-detail-rows');
+  if (rows) {
+    rows.innerHTML =
+      '<div class="si-dr"><span>Worker</span><strong id="sd-name">\u2014</strong></div>' +
+      '<div class="si-dr"><span>Time</span><strong id="sd-time">\u2014</strong></div>' +
+      '<div class="si-dr"><span>Location</span><strong id="sd-loc">\u2014</strong></div>' +
+      '<div class="si-dr"><span>Address</span><strong id="sd-addr">\u2014</strong></div>' +
+      '<div class="si-dr"><span>Status</span><strong id="sd-status">\u2014</strong></div>';
+  }
+  const hdr = document.getElementById('si-detail-hdr');
+  if (hdr) hdr.textContent = 'Record';
   document.getElementById('sd-name').textContent=p.name;
   document.getElementById('sd-time').textContent=now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
   document.getElementById('sd-loc').textContent=locData.lat?locData.lat+', '+locData.lng:'Not captured';
   document.getElementById('sd-addr').textContent=locData.address||'—';
   document.getElementById('sd-status').textContent=
     (isOnline&&PA_URL!=='YOUR_POWER_AUTOMATE_URL_HERE')?'Sent to register ✓':'Saved on device — will sync';
+}
+
+// Generic success screen — used by toolbox talk submit, permit submits, incident submit, etc.
+// Reuses screen-success and rewrites the detail rows to match the passed details array.
+function showSharedSuccess(opts) {
+  opts = opts || {};
+  goTo('screen-success');
+  // Icon
+  const icon = document.getElementById('si-icon');
+  if (icon) {
+    icon.className = 'si-icon ' + (opts.icon || 'in');
+    const svg = icon.querySelector('svg');
+    if (svg) svg.setAttribute('stroke', opts.iconStroke || 'var(--mid)');
+  }
+  // Title + sub
+  const titleEl = document.getElementById('si-title');
+  if (titleEl) titleEl.textContent = opts.title || 'Submitted';
+  const subEl = document.getElementById('si-sub');
+  if (subEl) subEl.textContent = opts.sub || 'Your submission has been recorded.';
+  // Reference
+  const refEl = document.getElementById('si-ref');
+  if (refEl) refEl.textContent = opts.ref || '\u2014';
+  // Header label for the detail block
+  const hdr = document.getElementById('si-detail-hdr');
+  if (hdr) hdr.textContent = opts.detailHeader || 'Record';
+  // Detail rows
+  const rows = document.getElementById('si-detail-rows');
+  if (rows) {
+    const list = Array.isArray(opts.details) ? opts.details : [];
+    rows.innerHTML = list.map(function(d){
+      const lbl = (d && d.l != null) ? String(d.l) : '';
+      const val = (d && d.v != null) ? String(d.v) : '\u2014';
+      return '<div class="si-dr"><span>' + lbl + '</span><strong>' + val + '</strong></div>';
+    }).join('');
+  }
 }
 
 function queueSub(payload){
@@ -30147,14 +30204,24 @@ function updateAllTileSubs(p) {
   if (swmsSub) swmsSub.textContent = 'Read & sign SWMS';
   // Toolbox talk tile (uses records)
   var talkSub = document.getElementById('talk-tile-sub');
+  var talkNotif = document.getElementById('talk-notif');
+  var signedRec = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(p && p.name) : null;
   if (talkSub) {
-    var signedRec = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(p && p.name) : null;
     if (signedRec) {
       talkSub.textContent = 'Signed today \u2713';
     } else if (DEMO_MODE || localStorage.getItem('slan_demo')) {
       talkSub.textContent = TODAYS_TALK ? TODAYS_TALK.title : 'Working at Heights — April 2026';
     } else {
       talkSub.textContent = 'Monthly safety topic';
+    }
+  }
+  // Notification dot — amber when unsigned, hidden when signed
+  if (talkNotif) {
+    if (signedRec) {
+      talkNotif.style.display = 'none';
+    } else {
+      talkNotif.style.display = 'block';
+      talkNotif.style.background = '#BA7517'; // amber
     }
   }
 }
