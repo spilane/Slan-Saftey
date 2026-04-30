@@ -13411,6 +13411,15 @@ function goToHotWorksSup() {
 
 // Unified Permits to Work screen (supervisor)
 function goToPermitsToWork() {
+  // Set the rendering scope: workers see only their own permits, supervisors see all
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  const isSup = !!(p && p.role === 'Site Supervisor');
+  window._ptwScope = isSup ? 'supervisor' : 'worker';
+  // Update the back button on the unified screen to return to the right home
+  const backBtn = document.querySelector('#screen-ptw-unified .tbar .back-btn');
+  if (backBtn) {
+    backBtn.setAttribute('onclick', isSup ? "goTo('screen-dash')" : "goTo('screen-home')");
+  }
   ptwRenderUnified();
   goTo('screen-ptw-unified');
 }
@@ -14959,6 +14968,26 @@ function ptwOpenPermit(permitId) {
   const p = all.find(x => x.permit_id === permitId);
   if (!p) return;
   const type = ptwGetType(p);
+  // Workers see the worker view (read-only details). Supervisors see the review screen.
+  const me = (typeof getProfile === 'function') ? getProfile() : null;
+  const isSup = !!(me && me.role === 'Site Supervisor') || window._ptwScope === 'supervisor';
+  if (!isSup) {
+    // Worker view
+    if (type === 'hotworks')         { hwViewPermit(permitId);  goTo('screen-hw-view');  }
+    else if (type === 'wah')         { wahViewPermit(permitId); goTo('screen-wah-view'); }
+    else if (type === 'confined')    { csViewPermit(permitId);  goTo('screen-cs-view');  }
+    else if (type === 'excavation')  { excViewPermit(permitId); goTo('screen-exc-view'); }
+    else if (type === 'electrical')  { elecViewPermit(permitId);goTo('screen-elec-view');}
+    else if (type === 'demolition')  { demoViewPermit(permitId);goTo('screen-demo-view');}
+    else if (type === 'lifting')     { liftViewPermit(permitId);goTo('screen-lift-view');}
+    else if (type === 'concrete')    { concViewPermit(permitId);goTo('screen-conc-view');}
+    else if (type === 'penetration') { penViewPermit(permitId); goTo('screen-pen-view'); }
+    else if (type === 'asbestos')    { asbViewPermit(permitId); goTo('screen-asb-view'); }
+    else if (type === 'mobileplant') { mpViewPermit(permitId);  goTo('screen-mp-view');  }
+    else if (type === 'traffic')     { trfViewPermit(permitId); goTo('screen-trf-view'); }
+    return;
+  }
+  // Supervisor review path
   if (type === 'hotworks') {
     hwSupOpenReview(permitId);
   } else if (type === 'wah') {
@@ -14992,7 +15021,16 @@ function ptwOpenPermit(permitId) {
 function ptwRenderUnified() {
   const today = new Date().toLocaleDateString('en-AU');
   const typeFilter = (document.getElementById('ptw-type-filter') || {}).value || 'all';
-  const allRaw = ptwLoadAllPermits();
+  let allRaw = ptwLoadAllPermits();
+  // Worker view: filter to only this worker's own permits (case-insensitive name match).
+  // Supervisor view: see everything.
+  if (window._ptwScope === 'worker') {
+    const me = (typeof getProfile === 'function') ? getProfile() : null;
+    const myName = (me && me.name) ? me.name.trim().toLowerCase() : '';
+    if (myName) {
+      allRaw = allRaw.filter(x => (x.worker_name || '').trim().toLowerCase() === myName);
+    }
+  }
   // Pending permits always show regardless of date (so supervisor never misses them).
   // Active and history filtered by today.
   const pending = allRaw.filter(x => hwPermitBucket(x) === 'pending');
