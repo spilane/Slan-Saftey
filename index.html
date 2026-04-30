@@ -3019,28 +3019,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       New Permit
     </button>
 
-    <!-- Search box -->
-    <div style="position:relative;margin-bottom:14px">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#7F7F7F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;pointer-events:none"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="ptw-search" placeholder="Search by ID, worker, location" oninput="ptwRenderUnified()" autocomplete="off" style="width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;box-sizing:border-box">
-    </div>
-
     <button onclick="ptwDiag()" style="display:block;width:100%;padding:8px;margin-bottom:8px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">🔧 Show diagnostic info</button>
     <button onclick="ptwSeedDemoPermits()" style="display:block;width:100%;padding:8px;margin-bottom:14px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">⚡ Load demo permits (24 sample permits across all 12 types)</button>
     <div id="ptw-diag-out" style="display:none;font-size:11px;font-family:monospace;background:#F8FAF8;border:1px solid var(--border);padding:10px;border-radius:6px;margin-bottom:14px;white-space:pre-wrap;word-break:break-all;line-height:1.5"></div>
 
-    <!-- PENDING section (always shows ALL types, no filter) -->
+    <!-- TODAY section (all of today's permits regardless of status) -->
     <div id="ptw-pending-wrap" style="display:none">
       <div class="hw-list-section-hdr" style="display:flex;align-items:center;gap:7px">
-        Pending approval
-        <span id="ptw-pending-count" style="background:#F5C48A;color:#633806;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;letter-spacing:0">0</span>
+        Today
+        <span id="ptw-pending-count" style="background:#E5F4EA;color:#0F4D26;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;letter-spacing:0">0</span>
       </div>
       <div id="ptw-pending-list"></div>
     </div>
 
     <!-- ACTIVE & HISTORY section with dropdown filter -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 2px 7px">
-      <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase">Active &amp; history</div>
+      <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase">Previous permits</div>
       <select id="ptw-type-filter" onchange="ptwRenderUnified()" style="background:var(--card);border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:600;color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer">
         <option value="all">All types</option>
         <option value="hotworks">Hot Works</option>
@@ -15187,8 +15181,6 @@ function ptwOpenPermit(permitId) {
 function ptwRenderUnified() {
   const today = new Date().toLocaleDateString('en-AU');
   const typeFilter = (document.getElementById('ptw-type-filter') || {}).value || 'all';
-  const searchEl = document.getElementById('ptw-search');
-  const search = searchEl ? (searchEl.value || '').trim().toLowerCase() : '';
   let allRaw = ptwLoadAllPermits();
   // Worker view: filter to only this worker's own permits (case-insensitive name match).
   // Supervisor view: see everything.
@@ -15199,28 +15191,32 @@ function ptwRenderUnified() {
       allRaw = allRaw.filter(x => (x.worker_name || '').trim().toLowerCase() === myName);
     }
   }
-  // Search filter — applies across pending/active/history. Matches permit ID, worker name, location.
-  if (search) {
-    allRaw = allRaw.filter(x =>
-      (x.permit_id || '').toLowerCase().includes(search) ||
-      (x.worker_name || '').toLowerCase().includes(search) ||
-      (x.location || '').toLowerCase().includes(search) ||
-      (x.subtype || '').toLowerCase().includes(search) ||
-      (x.type || '').toLowerCase().includes(search)
-    );
-  }
-  // Pending permits always show regardless of date (so supervisor never misses them).
-  // Active and history filtered by today.
-  const pending = allRaw.filter(x => hwPermitBucket(x) === 'pending');
-  const all = allRaw.filter(x => x.date === today);
-  let activeAndHistory = all.filter(x => hwPermitBucket(x) !== 'pending');
+  // Two simple buckets: TODAY (anything dated today regardless of status) + PREVIOUS (everything else).
+  // Pending permits from earlier dates also show in "today" so the supervisor doesn't miss old pendings.
+  const pendingOlder = allRaw.filter(x => x.date !== today && hwPermitBucket(x) === 'pending');
+  let todays = allRaw.filter(x => x.date === today).concat(pendingOlder);
+  let previous = allRaw.filter(x => x.date !== today && hwPermitBucket(x) !== 'pending');
+
   if (typeFilter !== 'all') {
-    activeAndHistory = activeAndHistory.filter(x => ptwGetType(x) === typeFilter);
+    todays = todays.filter(x => ptwGetType(x) === typeFilter);
+    previous = previous.filter(x => ptwGetType(x) === typeFilter);
   }
-  // Sort: active first, then history (recent first)
-  activeAndHistory.sort((a, b) => {
-    const aBuck = hwPermitBucket(a), bBuck = hwPermitBucket(b);
-    if (aBuck !== bBuck) return aBuck === 'active' ? -1 : 1;
+  // Sort today's by status priority: pending → active → closed/rejected/revoked, then by submitted time
+  function statusOrder(pm) {
+    const b = hwPermitBucket(pm);
+    if (b === 'pending') return 0;
+    if (b === 'active') return 1;
+    return 2;
+  }
+  todays.sort((a, b) => {
+    const so = statusOrder(a) - statusOrder(b);
+    if (so !== 0) return so;
+    return (b.submitted_at || '').localeCompare(a.submitted_at || '');
+  });
+  // Sort previous by date desc then time desc
+  previous.sort((a, b) => {
+    const dCmp = (b.date || '').localeCompare(a.date || '');
+    if (dCmp !== 0) return dCmp;
     return (b.submitted_at || '').localeCompare(a.submitted_at || '');
   });
 
@@ -15266,21 +15262,23 @@ function ptwRenderUnified() {
   const historyList  = document.getElementById('ptw-history-list');
   const empty        = document.getElementById('ptw-empty');
 
-  if (pending.length) {
+  // "Today" section — all of today's permits in one list
+  if (todays.length) {
     pendingWrap.style.display = 'block';
-    pendingList.innerHTML = pending.map(cardHtml).join('');
-    if (pendingCount) pendingCount.textContent = pending.length;
+    pendingList.innerHTML = todays.map(cardHtml).join('');
+    if (pendingCount) pendingCount.textContent = todays.length;
   } else {
     pendingWrap.style.display = 'none';
   }
 
-  if (activeAndHistory.length) {
-    historyList.innerHTML = activeAndHistory.map(cardHtml).join('');
+  // "Previous permits" section
+  if (previous.length) {
+    historyList.innerHTML = previous.map(cardHtml).join('');
   } else {
-    historyList.innerHTML = '<div style="padding:14px 2px;font-size:12.5px;color:var(--muted);font-style:italic">No permits in this category</div>';
+    historyList.innerHTML = '<div style="padding:14px 2px;font-size:12.5px;color:var(--muted);font-style:italic">No previous permits</div>';
   }
 
-  if (empty) empty.style.display = (all.length === 0) ? 'block' : 'none';
+  if (empty) empty.style.display = (todays.length === 0 && previous.length === 0) ? 'block' : 'none';
 }
 
 // Update the tile subtitle on supervisor home with live permit status
