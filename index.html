@@ -8488,7 +8488,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <!-- Demo seed (always visible while testing) -->
-    <button onclick="tbtSeedDemoHistory()" style="display:block;width:100%;padding:8px;margin-top:6px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">⚡ Load 3 demo previous toolbox talks</button>
+    <button id="talk-history-seed-btn" onclick="tbtSeedDemoHistory()" style="display:block;width:100%;padding:8px;margin-top:6px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">⚡ Load 3 demo previous toolbox talks</button>
+
+    <!-- Supervisor: previous monthly rosters (combined PDF re-download per month) -->
+    <div class="fcard" id="talk-sup-rosters-card" style="display:none;margin-top:8px">
+      <div class="fcard-hdr">Previous monthly rosters</div>
+      <div class="fcard-body" id="talk-sup-rosters-list" style="padding:6px 0"></div>
+    </div>
 
     <!-- Supervisor: who signed today -->
     <div class="fcard" id="talk-supervisor-card" style="display:none">
@@ -8510,7 +8516,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-body">
         <div class="fgroup">
           <label class="flabel">Attendance count <span style="font-weight:400;color:var(--muted);font-size:11px" id="wu-auto-count">(auto: 0 signed)</span></label>
-          <input type="text" id="wu-attendance" inputmode="numeric" placeholder="Override if different" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
+          <input type="text" id="wu-attendance" inputmode="numeric" placeholder="Enter attendance count" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
         </div>
         <div class="fgroup">
           <label class="flabel">Site-specific hazards discussed</label>
@@ -8538,11 +8544,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fcard-body">
           <div class="check-row" id="chk1" onclick="toggleCheck('chk1')">
             <div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
-            <div class="check-text">I confirm I have read and understood today's toolbox talk topic and the safety information presented.</div>
+            <div class="check-text">I confirm I have read and understood today's toolbox talk content, the safety information presented, and have had the opportunity to ask questions or raise concerns.</div>
           </div>
           <div class="check-row" id="chk2" onclick="toggleCheck('chk2')">
             <div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
-            <div class="check-text">I commit to applying this knowledge and working safely in accordance with the above for the remainder of today's work.</div>
+            <div class="check-text">I commit to applying this knowledge, working safely in accordance with the controls discussed, and reporting any unsafe conditions or near misses to my supervisor immediately.</div>
           </div>
 
           <div style="margin-top:2px">
@@ -16630,7 +16636,12 @@ function goToTalk() {
   // Populate worker's previous toolbox talks
   const histList = document.getElementById('talk-history-list');
   const histCard = document.getElementById('talk-history-card');
-  if (histList && histCard && p && p.name) {
+  // Workers see their personal signed-talk history with PDF downloads.
+  // Supervisors don't — they get the COMBINED roster PDF instead, which is
+  // the proper audit deliverable. Showing individual records to supervisors
+  // implies they sign as a participant only, which isn't the workflow.
+  const _isSupForHist = p && p.role === 'Site Supervisor';
+  if (histList && histCard && p && p.name && !_isSupForHist) {
     const records = (typeof tbtLoadForWorker === 'function') ? tbtLoadForWorker(p.name) : [];
     if (records.length === 0) {
       histCard.style.display = 'none';
@@ -16646,7 +16657,12 @@ function goToTalk() {
         </div>
       `).join('');
     }
+  } else if (histCard) {
+    histCard.style.display = 'none';
   }
+  // Demo seed button is worker-only too
+  const _seedBtn = document.getElementById('talk-history-seed-btn');
+  if (_seedBtn) _seedBtn.style.display = _isSupForHist ? 'none' : 'block';
 
   // Populate supervisor "who signed today" view (only for supervisors)
   const supCard = document.getElementById('talk-supervisor-card');
@@ -16714,6 +16730,8 @@ function goToTalk() {
   // Show roster download + wrap-up cards for supervisor only
   const rosterWrap = document.getElementById('talk-roster-wrap');
   const wrapupCard = document.getElementById('talk-wrapup-card');
+  const supRostersCard = document.getElementById('talk-sup-rosters-card');
+  const supRostersList = document.getElementById('talk-sup-rosters-list');
   if (rosterWrap && wrapupCard) {
     if (isSupervisor) {
       rosterWrap.style.display = 'block';
@@ -16738,9 +16756,54 @@ function goToTalk() {
         const savedMsg = document.getElementById('wu-saved-msg');
         if (savedMsg) savedMsg.style.display = 'none';
       } catch(e) { /* ignore */ }
+
+      // Populate previous monthly rosters
+      if (supRostersCard && supRostersList) {
+        try {
+          var allRecs = (typeof tbtLoadAll === 'function') ? tbtLoadAll() : [];
+          var currentTalkId = TODAYS_TALK ? TODAYS_TALK.version : '';
+          // Group by talk_id (excluding the current one), keep most recent date per group
+          var groups = {};
+          allRecs.forEach(function(r){
+            if (!r.talk_id || r.talk_id === currentTalkId) return;
+            if (!groups[r.talk_id]) {
+              groups[r.talk_id] = {
+                talk_id: r.talk_id,
+                talk_title: r.talk_title || 'Toolbox Talk',
+                count: 0,
+                latest_date: r.date || '',
+                latest_signed_at: r.signed_at || ''
+              };
+            }
+            groups[r.talk_id].count++;
+            if ((r.signed_at || '') > groups[r.talk_id].latest_signed_at) {
+              groups[r.talk_id].latest_signed_at = r.signed_at;
+              groups[r.talk_id].latest_date = r.date || '';
+            }
+          });
+          var rosterList = Object.values(groups).sort(function(a, b){
+            return (b.latest_signed_at || '').localeCompare(a.latest_signed_at || '');
+          });
+          if (rosterList.length === 0) {
+            supRostersCard.style.display = 'none';
+          } else {
+            supRostersCard.style.display = 'block';
+            supRostersList.innerHTML = rosterList.map(function(g){
+              return '<div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px">' +
+                '<div style="flex:1;min-width:0">' +
+                  '<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (g.talk_title || 'Toolbox Talk').replace(/</g,'&lt;') + '</div>' +
+                  '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + g.latest_date + ' \u00b7 ' + g.count + ' signed</div>' +
+                '</div>' +
+                '<button onclick="tbtDownloadRosterByTalkId(\'' + g.talk_id + '\')" style="padding:6px 12px;background:#1B3A2D;color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:\'DM Sans\',sans-serif">Roster PDF</button>' +
+              '</div>';
+            }).join('');
+          }
+        } catch(e) { if (supRostersCard) supRostersCard.style.display = 'none'; }
+      }
     } else {
       rosterWrap.style.display = 'none';
       wrapupCard.style.display = 'none';
+      if (supRostersCard) supRostersCard.style.display = 'none';
     }
   }
 
@@ -30071,16 +30134,16 @@ function startDemoAs(role) {
   localStorage.setItem('slan_onboarded', 'true');
   // Workers start SIGNED OUT for demo so the toolbox gate can fire when they
   // first try to sign in. Supervisors and directors start signed in so they
-  // land on their dashboard fully populated.
+  // land on their dashboard fully populated. Nobody starts with the toolbox
+  // pre-signed — that way the chip is amber until they actually sign through
+  // the proper flow (creates a real record + signature).
   if (role === 'worker') {
     localStorage.removeItem('slan_signed_in_today');
     localStorage.removeItem('slan_signed_out_today');
-    // Don't pre-sign the toolbox either — let them experience the full flow.
-    localStorage.removeItem('talk_signed_' + today);
   } else {
     localStorage.setItem('slan_signed_in_today', 'true');
-    localStorage.setItem('talk_signed_' + today, '07:30');
   }
+  localStorage.removeItem('talk_signed_' + today);
   localStorage.setItem('slan_site_ps_done_' + today, 'true');
 
   var sheet = document.getElementById('demo-role-sheet');
@@ -30331,6 +30394,47 @@ function submitTalk() {
   if (!chk2 || !chk2.classList.contains('checked')) { alert('Please confirm you commit to working safely.'); return; }
 
   var p = getProfile();
+
+  // SUPERVISOR DEBRIEF GATE — supervisors must complete the post-talk debrief
+  // (attendance count + 3 textareas) before they can sign their own attendance.
+  // This guarantees every roster PDF includes the supervisor's wrap-up.
+  if (p && p.role === 'Site Supervisor') {
+    var attEl = document.getElementById('wu-attendance');
+    var hazEl = document.getElementById('wu-hazards');
+    var qnsEl = document.getElementById('wu-questions');
+    var actEl = document.getElementById('wu-actions');
+    var att = (attEl && attEl.value || '').trim();
+    var haz = (hazEl && hazEl.value || '').trim();
+    var qns = (qnsEl && qnsEl.value || '').trim();
+    var act = (actEl && actEl.value || '').trim();
+    var missing = [];
+    if (!att) missing.push('Attendance count');
+    if (!haz) missing.push('Site-specific hazards discussed');
+    if (!qns) missing.push('Questions or concerns raised');
+    if (!act) missing.push('Action items / follow-ups');
+    if (missing.length) {
+      alert('Supervisor debrief required.\n\nPlease fill in the following before signing your attendance:\n\n\u2022 ' + missing.join('\n\u2022 ') + '\n\nYour debrief becomes part of the audit roster and must be completed.');
+      // Scroll to the debrief card so they see what's required
+      var card = document.getElementById('talk-wrapup-card');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Highlight any empty fields briefly
+      [['wu-attendance', !att], ['wu-hazards', !haz], ['wu-questions', !qns], ['wu-actions', !act]].forEach(function(pair) {
+        var el = document.getElementById(pair[0]);
+        if (el && pair[1]) {
+          el.style.borderColor = '#A32D2D';
+          el.style.background = '#FCEBEB';
+          setTimeout(function() {
+            el.style.borderColor = '';
+            el.style.background = '';
+          }, 4000);
+        }
+      });
+      return;
+    }
+    // All filled — auto-save debrief as part of the signing action
+    try { tbtSaveWrapup(); } catch(e) {}
+  }
+
   var now = new Date();
   var today = now.toLocaleDateString('en-AU').replace(/\//g,'-');
   var timeStr = now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true});
@@ -30478,24 +30582,66 @@ function tbtLoadWrapup(talkId, dateStr) {
 // Build a single combined PDF: talk content + supervisor debrief + signature
 // roster + workers who haven't signed yet. Re-downloadable any time so it
 // stays up-to-date as late signers come in.
-function tbtDownloadRosterPDF() {
+function tbtDownloadRosterByTalkId(talkId) {
+  return tbtDownloadRosterPDF(talkId);
+}
+
+function tbtDownloadRosterPDF(targetTalkId) {
   try {
     if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF generator not available.'); return; }
-    if (typeof TODAYS_TALK === 'undefined' || !TODAYS_TALK) { alert('No active talk.'); return; }
 
     var todayDate = new Date().toLocaleDateString('en-AU');
     var allRecs = tbtLoadAll();
+    // If a specific talk_id was passed (e.g. re-downloading last month's roster),
+    // use that. Otherwise use the current active talk.
+    var useTalkId = targetTalkId || (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK ? TODAYS_TALK.version : '');
+    if (!useTalkId) { alert('No active talk.'); return; }
+
     var talkRecs = allRecs.filter(function(r){
-      return r.talk_id === TODAYS_TALK.version;
+      return r.talk_id === useTalkId;
     }).sort(function(a, b){
-      // Original signers (date matches today) first, then late signers (other dates)
       if (a.date === b.date) return (a.signed_at || '').localeCompare(b.signed_at || '');
       if (a.date === todayDate) return -1;
       if (b.date === todayDate) return 1;
       return (a.signed_at || '').localeCompare(b.signed_at || '');
     });
 
-    var wrapup = tbtLoadWrapup(TODAYS_TALK.version, todayDate);
+    // Build talk meta — prefer current TODAYS_TALK if it's the same talk, otherwise
+    // reconstruct from the first record's snapshot (for past-month rosters).
+    var talkMeta;
+    if (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK && TODAYS_TALK.version === useTalkId) {
+      talkMeta = {
+        version: TODAYS_TALK.version,
+        title: TODAYS_TALK.title,
+        presenter: TODAYS_TALK.presenter,
+        sections: TODAYS_TALK.sections || []
+      };
+    } else if (talkRecs.length) {
+      var first = talkRecs[0];
+      talkMeta = {
+        version: first.talk_id,
+        title: first.talk_title || 'Toolbox Talk',
+        presenter: first.presenter || '',
+        sections: first.sections_snapshot || []
+      };
+    } else {
+      alert('No records found for that talk.'); return;
+    }
+
+    // Wrap-up: prefer today's wrapup if generating for current talk, otherwise
+    // try the latest wrapup recorded for this talk_id (if any).
+    var wrapup = tbtLoadWrapup(useTalkId, todayDate);
+    if (!wrapup) {
+      try {
+        var allWrapups = JSON.parse(localStorage.getItem('slan_tbt_wrapups_v1') || '{}');
+        var match = Object.keys(allWrapups).filter(function(k){ return k.indexOf(useTalkId + '|') === 0; });
+        if (match.length) {
+          // Newest wrap-up date wins
+          match.sort(function(a, b){ return (allWrapups[b].saved_at || '').localeCompare(allWrapups[a].saved_at || ''); });
+          wrapup = allWrapups[match[0]];
+        }
+      } catch(e) { wrapup = null; }
+    }
 
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -30538,7 +30684,7 @@ function tbtDownloadRosterPDF() {
       doc.line(ML, fY - 4, PAGE_W - MR, fY - 4);
       setText(C.greyLabel || '#888888');
       doc.setFont('courier','normal'); doc.setFontSize(7);
-      doc.text(FOOTER_CODE + '  \u00b7  ' + (TODAYS_TALK.version || ''), ML, fY);
+      doc.text(FOOTER_CODE + '  \u00b7  ' + (talkMeta.version || ''), ML, fY);
       doc.setFont('helvetica','normal');
       doc.text('Page ' + pn + ' of ' + tp, PAGE_W - MR, fY, {align:'right'});
     }
@@ -30572,12 +30718,12 @@ function tbtDownloadRosterPDF() {
     y += 3;
     setText(C.darkText);
     doc.setFont('helvetica','bold'); doc.setFontSize(14);
-    doc.text(TODAYS_TALK.title || 'Toolbox Talk', ML, y); y += 6;
+    doc.text(talkMeta.title || 'Toolbox Talk', ML, y); y += 6;
     setText(C.subLabel || '#5C6B62');
     doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    doc.text((TODAYS_TALK.version || '') + '  \u00b7  Generated ' + todayDate, ML, y); y += 7;
+    doc.text((talkMeta.version || '') + '  \u00b7  Generated ' + todayDate, ML, y); y += 7;
     drawField(ML, y, 'Site', (typeof SITE !== 'undefined') ? SITE : '\u2014');
-    drawField(ML + CW/2, y, 'Presenter', TODAYS_TALK.presenter || '\u2014');
+    drawField(ML + CW/2, y, 'Presenter', talkMeta.presenter || '\u2014');
     y += 6;
     drawField(ML, y, 'Total signed', String(talkRecs.length));
     drawField(ML + CW/2, y, 'Roster generated', new Date().toLocaleString('en-AU'));
@@ -30587,7 +30733,7 @@ function tbtDownloadRosterPDF() {
     y = newPageIfNeeded(y, 18);
     y = drawMajorBanner(y, 'TALK CONTENT');
     y += 5;
-    var sections = TODAYS_TALK.sections || [];
+    var sections = talkMeta.sections || [];
     sections.forEach(function(sec, secIdx){
       y = newPageIfNeeded(y, 18);
       // Section heading — green left bar + heading text on a pale background row
@@ -30618,30 +30764,46 @@ function tbtDownloadRosterPDF() {
     // ── SUPERVISOR DEBRIEF ──
     if (wrapup && (wrapup.attendance != null || wrapup.hazards || wrapup.questions || wrapup.actions)) {
       y = newPageIfNeeded(y, 30);
-      y += 2;
+      y += 4;
       y = drawMajorBanner(y, 'SUPERVISOR DEBRIEF');
+      y += 4;
       if (wrapup.attendance != null) {
-        drawField(ML, y, 'Attendance count', String(wrapup.attendance));
-        y += 6;
+        // Render attendance the same way as talk content sections — pale-green band
+        var attH = 8;
+        setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
+        doc.rect(ML, y, CW, attH, 'FD');
+        setFill(C.greenDark);
+        doc.rect(ML, y, 1.5, attH, 'F');
+        setText(C.darkText);
+        doc.setFont('helvetica','bold'); doc.setFontSize(10);
+        doc.text('Attendance count: ' + String(wrapup.attendance), ML + 5, y + attH/2 + 1.5);
+        y += attH + 5;
       }
       function debriefBlock(label, text) {
         if (!text) return;
-        y = newPageIfNeeded(y, 14);
-        setText(C.subLabel || '#5C6B62');
-        doc.setFont('helvetica','bold'); doc.setFontSize(8);
-        doc.text(label.toUpperCase(), ML, y); y += 4;
+        y = newPageIfNeeded(y, 18);
+        // Section heading — same as talk content
+        var headerH = 8;
+        setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
+        doc.rect(ML, y, CW, headerH, 'FD');
+        setFill(C.greenDark);
+        doc.rect(ML, y, 1.5, headerH, 'F');
         setText(C.darkText);
-        doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
-        var lines = doc.splitTextToSize(text, CW);
-        var blockH = lines.length * 4.2 + 2;
+        doc.setFont('helvetica','bold'); doc.setFontSize(10);
+        doc.text(label, ML + 5, y + headerH/2 + 1.5);
+        y += headerH + 4;
+        // Body text — same size as talk content
+        setText(C.darkText);
+        doc.setFont('helvetica','normal'); doc.setFontSize(10);
+        var lines = doc.splitTextToSize(text, CW - 4);
+        var blockH = lines.length * 5 + 3;
         y = newPageIfNeeded(y, blockH);
-        doc.text(lines, ML, y);
-        y += blockH + 2;
+        doc.text(lines, ML + 2, y);
+        y += lines.length * 5 + 5;
       }
       debriefBlock('Site-specific hazards discussed', wrapup.hazards);
       debriefBlock('Questions or concerns raised', wrapup.questions);
       debriefBlock('Action items / follow-ups', wrapup.actions);
-      y += 3;
     }
 
     // ── SIGNATURE ROSTER ──
@@ -30737,7 +30899,7 @@ function tbtDownloadRosterPDF() {
     // ── FOOTER ──
     var pages = doc.internal.getNumberOfPages();
     for (var i = 1; i <= pages; i++) { doc.setPage(i); drawFooter(i, pages); }
-    var fname = 'Toolbox-Roster-' + (TODAYS_TALK.version || 'TBT') + '-' + todayDate.replace(/\//g,'-') + '.pdf';
+    var fname = 'Toolbox-Roster-' + (talkMeta.version || 'TBT') + '-' + todayDate.replace(/\//g,'-') + '.pdf';
     doc.save(fname);
   } catch(e) {
     alert('Could not generate roster PDF: ' + (e.message || e));
@@ -31113,8 +31275,8 @@ function tbtDownloadPDF(recordId) {
 
     // Two ticked statements inside a soft card
     var statements = [
-      'I confirm I have read and understood this toolbox talk topic and the safety information presented.',
-      'I commit to applying this knowledge and working safely in accordance with the above.'
+      'I confirm I have read and understood this toolbox talk content, the safety information presented, and have had the opportunity to ask questions or raise concerns.',
+      'I commit to applying this knowledge, working safely in accordance with the controls discussed, and reporting any unsafe conditions or near misses to my supervisor immediately.'
     ];
     setText(C.darkText);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
