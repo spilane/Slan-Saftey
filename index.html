@@ -8477,6 +8477,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
+    <!-- Previous toolbox talks (worker's own history) -->
+    <div class="fcard" id="talk-history-card" style="display:none">
+      <div class="fcard-hdr">Previous toolbox talks</div>
+      <div class="fcard-body" id="talk-history-list" style="padding:6px 0"></div>
+    </div>
+
+    <!-- Supervisor: who signed today -->
+    <div class="fcard" id="talk-supervisor-card" style="display:none">
+      <div class="fcard-hdr">Who has signed today</div>
+      <div class="fcard-body" id="talk-supervisor-list" style="padding:6px 0"></div>
+    </div>
+
     <!-- Confirmations -->
     <div id="talk-sign-section">
       <div class="fcard">
@@ -16496,6 +16508,68 @@ function goToTalk() {
 
   // Reset scroll progress
   document.getElementById('tk-progress').style.width = '0%';
+
+  // Populate worker's previous toolbox talks
+  const histList = document.getElementById('talk-history-list');
+  const histCard = document.getElementById('talk-history-card');
+  if (histList && histCard && p && p.name) {
+    const records = (typeof tbtLoadForWorker === 'function') ? tbtLoadForWorker(p.name) : [];
+    if (records.length === 0) {
+      histCard.style.display = 'none';
+    } else {
+      histCard.style.display = 'block';
+      histList.innerHTML = records.map(r => `
+        <div style="padding:11px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.talk_title || 'Toolbox Talk'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${r.date || ''} \u00b7 ${r.time || ''}</div>
+          </div>
+          <button onclick="tbtDownloadPDF('${r.record_id}')" style="padding:6px 12px;background:#1F495C;color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif">PDF</button>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Populate supervisor "who signed today" view (only for supervisors)
+  const supCard = document.getElementById('talk-supervisor-card');
+  const supList = document.getElementById('talk-supervisor-list');
+  const isSupervisor = p && p.role === 'Site Supervisor';
+  if (supCard && supList) {
+    if (isSupervisor && typeof DEMO_WORKERS !== 'undefined') {
+      supCard.style.display = 'block';
+      const todayDate = new Date().toLocaleDateString('en-AU');
+      const todaysRecords = (typeof tbtLoadAll === 'function' ? tbtLoadAll() : [])
+        .filter(r => r.date === todayDate);
+      const signedNames = new Set(todaysRecords.map(r => (r.worker_name || '').toLowerCase()));
+      const onsite = DEMO_WORKERS.filter(w => w.onsite);
+      const signedCount = onsite.filter(w => signedNames.has((w.name || '').toLowerCase())).length;
+      const totalCount = onsite.length;
+      // Sort: not signed first (so supervisor sees who's outstanding), then signed
+      onsite.sort((a, b) => {
+        const aSigned = signedNames.has((a.name || '').toLowerCase());
+        const bSigned = signedNames.has((b.name || '').toLowerCase());
+        if (aSigned === bSigned) return (a.name || '').localeCompare(b.name || '');
+        return aSigned ? 1 : -1;
+      });
+      const summary = `<div style="padding:10px 14px;background:#F8FAF8;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">${signedCount} of ${totalCount} on-site workers signed</div>`;
+      supList.innerHTML = summary + onsite.map(w => {
+        const signed = signedNames.has((w.name || '').toLowerCase());
+        const dot = signed
+          ? '<span style="display:inline-block;width:18px;height:18px;border-radius:9px;background:#E5F4EA;color:#0F4D26;font-size:11px;font-weight:700;text-align:center;line-height:18px;flex-shrink:0">\u2713</span>'
+          : '<span style="display:inline-block;width:18px;height:18px;border-radius:9px;background:#FFF4E0;color:#854F0B;font-size:12px;font-weight:700;text-align:center;line-height:18px;flex-shrink:0">!</span>';
+        return `<div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+          ${dot}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${w.name || ''}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px">${w.company || ''} \u00b7 ${w.role || ''}</div>
+          </div>
+          <div style="font-size:11px;color:${signed ? '#0F4D26' : '#854F0B'};font-weight:600;flex-shrink:0">${signed ? 'Signed' : 'Not yet'}</div>
+        </div>`;
+      }).join('');
+    } else {
+      supCard.style.display = 'none';
+    }
+  }
 
   // Auto-translate if worker's language is not English
   if (_currentLang && _currentLang !== 'en') {
@@ -30069,8 +30143,37 @@ function submitTalk() {
   var today = now.toLocaleDateString('en-AU').replace(/\//g,'-');
   var timeStr = now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true});
 
-  // Save signed record locally
+  // Save signed flag (legacy — used by tile sub + chip)
   localStorage.setItem('talk_signed_' + today, timeStr);
+
+  // Save FULL record for history + PDF + audit export
+  try {
+    var record = {
+      record_id: 'TBT-' + today.replace(/-/g,'') + '-' + (p && p.name ? p.name.replace(/\s+/g,'').slice(0,8) : 'WKR'),
+      worker_name: p ? p.name : 'Unknown',
+      company: p ? p.company : '',
+      role: p ? p.role : '',
+      site: typeof SITE !== 'undefined' ? SITE : '',
+      talk_id: TODAYS_TALK ? TODAYS_TALK.version : '',
+      talk_title: TODAYS_TALK ? TODAYS_TALK.title : 'Toolbox Talk',
+      presenter: TODAYS_TALK ? TODAYS_TALK.presenter : '',
+      sections_snapshot: TODAYS_TALK ? JSON.parse(JSON.stringify(TODAYS_TALK.sections)) : [],
+      date: now.toLocaleDateString('en-AU'),
+      time: timeStr,
+      signed_at: now.toISOString(),
+      signature: p && p.sig ? p.sig : null
+    };
+    var key = 'slan_tbt_records_v1';
+    var existing = JSON.parse(localStorage.getItem(key) || '[]');
+    // Don't duplicate if already signed today by this worker
+    var dup = existing.some(function(r){
+      return r.worker_name === record.worker_name && r.date === record.date;
+    });
+    if (!dup) {
+      existing.push(record);
+      localStorage.setItem(key, JSON.stringify(existing));
+    }
+  } catch(e) { /* storage full — fall back to flag-only */ }
 
   // Save to Firebase
   if (typeof fbInsert === 'function') {
@@ -30111,6 +30214,118 @@ function submitTalk() {
     });
   }, 600);
 }
+
+// ─── TOOLBOX TALK — RECORD ACCESS HELPERS ─────────────────────────────
+function tbtLoadAll() {
+  try { return JSON.parse(localStorage.getItem('slan_tbt_records_v1') || '[]'); }
+  catch(e) { return []; }
+}
+
+function tbtLoadForWorker(workerName) {
+  if (!workerName) return [];
+  var all = tbtLoadAll();
+  return all
+    .filter(function(r){ return (r.worker_name || '').toLowerCase() === workerName.toLowerCase(); })
+    .sort(function(a,b){ return (b.signed_at || '').localeCompare(a.signed_at || ''); });
+}
+
+// Build a downloadable PDF of one signed toolbox talk record
+function tbtDownloadPDF(recordId) {
+  try {
+    var all = tbtLoadAll();
+    var r = all.find(function(x){ return x.record_id === recordId; });
+    if (!r) { alert('Record not found.'); return; }
+    if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF generator not available.'); return; }
+    var doc = new window.jspdf.jsPDF({ unit:'mm', format:'a4' });
+    var ML = 18, MR = 18, MT = 22;
+    var PAGE_W = 210, PAGE_H = 297, CW = PAGE_W - ML - MR;
+    var y = MT;
+
+    // Header
+    doc.setFillColor(31, 73, 92);
+    doc.rect(0, 0, PAGE_W, 14, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.text('Slán Safety \u2014 Toolbox Talk Record', ML, 9.5);
+
+    doc.setTextColor(20, 30, 40);
+    y = 24;
+    doc.setFont('helvetica','bold'); doc.setFontSize(15);
+    doc.text(r.talk_title || 'Toolbox Talk', ML, y); y += 7;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    doc.setTextColor(80, 90, 100);
+    doc.text((r.talk_id ? r.talk_id + ' \u00b7 ' : '') + (r.date || '') + ' \u00b7 ' + (r.time || ''), ML, y);
+    y += 9;
+
+    // Worker block
+    doc.setDrawColor(220, 224, 228);
+    doc.setLineWidth(0.3);
+    doc.line(ML, y, PAGE_W - MR, y); y += 6;
+    doc.setTextColor(20, 30, 40);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text('Signed by', ML, y); y += 5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    doc.text((r.worker_name || '') + ' \u00b7 ' + (r.role || '\u2014'), ML, y); y += 4.5;
+    if (r.company) { doc.text(r.company, ML, y); y += 4.5; }
+    if (r.site) { doc.text('Site: ' + r.site, ML, y); y += 4.5; }
+    if (r.presenter) { doc.text('Presented by: ' + r.presenter, ML, y); y += 4.5; }
+    y += 4;
+
+    // Sections
+    doc.line(ML, y, PAGE_W - MR, y); y += 6;
+    doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text('Talk content (snapshot at time of signing)', ML, y); y += 6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    var sections = r.sections_snapshot || [];
+    sections.forEach(function(sec){
+      if (y > PAGE_H - 30) { doc.addPage(); y = MT; }
+      doc.setFont('helvetica','bold'); doc.setFontSize(10.5);
+      doc.text(sec.heading || '', ML, y); y += 5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(10);
+      (sec.points || []).forEach(function(pt){
+        var lines = doc.splitTextToSize('\u2022  ' + pt, CW);
+        if (y + lines.length * 4.5 > PAGE_H - 25) { doc.addPage(); y = MT; }
+        doc.text(lines, ML, y);
+        y += lines.length * 4.5 + 1.5;
+      });
+      y += 3;
+    });
+
+    // Acknowledgement block
+    if (y > PAGE_H - 50) { doc.addPage(); y = MT; }
+    y += 4;
+    doc.line(ML, y, PAGE_W - MR, y); y += 6;
+    doc.setFont('helvetica','bold'); doc.setFontSize(10.5);
+    doc.text('Acknowledgement', ML, y); y += 5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+    var ack = 'I confirm I have read and understood this toolbox talk topic and the safety information presented, and I commit to applying this knowledge and working safely for the remainder of today\u2019s work.';
+    var ackLines = doc.splitTextToSize(ack, CW);
+    doc.text(ackLines, ML, y); y += ackLines.length * 4.5 + 6;
+
+    // Signature
+    if (r.signature) {
+      try { doc.addImage(r.signature, 'PNG', ML, y, 50, 18); } catch(e) {}
+    }
+    doc.setLineWidth(0.4);
+    doc.line(ML, y + 19, ML + 60, y + 19);
+    doc.setFontSize(8.5); doc.setTextColor(80, 90, 100);
+    doc.text((r.worker_name || '') + ' \u00b7 ' + (r.date || '') + ' ' + (r.time || ''), ML, y + 23);
+
+    // Footer
+    var pages = doc.internal.getNumberOfPages();
+    for (var i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8); doc.setTextColor(120, 130, 140);
+      doc.text('Sl\u00e1n Safety \u00b7 Toolbox Talk Record \u00b7 ' + (r.record_id || ''), ML, PAGE_H - 10);
+      doc.text('Page ' + i + ' of ' + pages, PAGE_W - MR, PAGE_H - 10, { align:'right' });
+    }
+    doc.save((r.record_id || 'TBT') + '.pdf');
+  } catch(e) {
+    alert('Could not generate PDF: ' + (e.message || e));
+  }
+}
+
+
 
 // ─── Missing function aliases ─────────────────────────────
 function requestLocationPermission() {
