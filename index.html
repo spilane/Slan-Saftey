@@ -16129,8 +16129,13 @@ function goTo(id){
   if (id === 'screen-home') {
     try {
       const _profile = (typeof getProfile === 'function') ? getProfile() : null;
-      if (_profile && (_profile.role === 'supervisor' || _profile.role === 'director')) {
-        id = 'screen-dash';
+      if (_profile && _profile.role) {
+        const _r = String(_profile.role).toLowerCase();
+        // Match both real role labels ('Site Supervisor', 'Company Director')
+        // and any lowercase variants — robust against case drift.
+        if (_r.indexOf('supervisor') !== -1 || _r.indexOf('director') !== -1) {
+          id = 'screen-dash';
+        }
       }
     } catch(e) {}
   }
@@ -30444,96 +30449,223 @@ function tbtLoadForWorker(workerName) {
     .sort(function(a,b){ return (b.signed_at || '').localeCompare(a.signed_at || ''); });
 }
 
-// Build a downloadable PDF of one signed toolbox talk record
+// Build a downloadable PDF of one signed toolbox talk record.
+// Styled to match the permit PDFs (generatePermitPDF) — same colour palette,
+// header layout, footer code, major section banners, and signature block.
 function tbtDownloadPDF(recordId) {
   try {
     var all = tbtLoadAll();
     var r = all.find(function(x){ return x.record_id === recordId; });
     if (!r) { alert('Record not found.'); return; }
     if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF generator not available.'); return; }
-    var doc = new window.jspdf.jsPDF({ unit:'mm', format:'a4' });
-    var ML = 18, MR = 18, MT = 22;
-    var PAGE_W = 210, PAGE_H = 297, CW = PAGE_W - ML - MR;
-    var y = MT;
 
-    // Header
-    doc.setFillColor(31, 73, 92);
-    doc.rect(0, 0, PAGE_W, 14, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica','bold'); doc.setFontSize(13);
-    doc.text('Slán Safety \u2014 Toolbox Talk Record', ML, 9.5);
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    var PAGE_W = 210, PAGE_H = 297;
+    var ML = 22, MR = 22, MT = 18, MB = 16;
+    var CW = PAGE_W - ML - MR;
 
-    doc.setTextColor(20, 30, 40);
-    y = 24;
-    doc.setFont('helvetica','bold'); doc.setFontSize(15);
-    doc.text(r.talk_title || 'Toolbox Talk', ML, y); y += 7;
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.setTextColor(80, 90, 100);
-    doc.text((r.talk_id ? r.talk_id + ' \u00b7 ' : '') + (r.date || '') + ' \u00b7 ' + (r.time || ''), ML, y);
-    y += 9;
+    var TITLE = 'TOOLBOX TALK RECORD';
+    var FOOTER_CODE = 'SLS-TBT \u00b7 v1.0';
 
-    // Worker block
-    doc.setDrawColor(220, 224, 228);
-    doc.setLineWidth(0.3);
-    doc.line(ML, y, PAGE_W - MR, y); y += 6;
-    doc.setTextColor(20, 30, 40);
-    doc.setFont('helvetica','bold'); doc.setFontSize(11);
-    doc.text('Signed by', ML, y); y += 5;
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text((r.worker_name || '') + ' \u00b7 ' + (r.role || '\u2014'), ML, y); y += 4.5;
-    if (r.company) { doc.text(r.company, ML, y); y += 4.5; }
-    if (r.site) { doc.text('Site: ' + r.site, ML, y); y += 4.5; }
-    if (r.presenter) { doc.text('Presented by: ' + r.presenter, ML, y); y += 4.5; }
-    y += 4;
+    // Colour helpers (mirror generatePermitPDF) — fall back if PDF_COLOURS not in scope
+    var C = (typeof PDF_COLOURS !== 'undefined') ? PDF_COLOURS : {
+      darkGreen: '#1B3A2D', darkText: '#1A2A1F', subLabel: '#5C6B62',
+      greyLabel: '#888888', greyLight: '#dddddd', white: '#FFFFFF',
+      paleGreen: '#F0F7E8', greenBorder: '#d4e3c2', greenDark: '#1B6E3A'
+    };
+    function hex(h) {
+      h = h.replace('#','');
+      return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+    }
+    function setFill(c) { var rgb = hex(c); doc.setFillColor(rgb[0], rgb[1], rgb[2]); }
+    function setStroke(c) { var rgb = hex(c); doc.setDrawColor(rgb[0], rgb[1], rgb[2]); }
+    function setText(c) { var rgb = hex(c); doc.setTextColor(rgb[0], rgb[1], rgb[2]); }
+
+    function drawTick(x, y, color, size) {
+      size = size || 2.5;
+      setStroke(color || C.greenDark);
+      doc.setLineWidth(0.5);
+      doc.line(x, y - 0.6, x + size * 0.4, y - size * 0.05);
+      doc.line(x + size * 0.4, y - size * 0.05, x + size, y - size);
+      doc.setLineWidth(0.2);
+    }
+
+    function drawHeader() {
+      var logoW = 30, logoH = 13;
+      var logoX = PAGE_W - MR - logoW;
+      var logoY = MT;
+      if (window.SLAN_LOGO_B64) {
+        try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', logoX, logoY, logoW, logoH); } catch(e) {}
+      } else {
+        setFill(C.darkGreen);
+        doc.rect(logoX, logoY, logoW, logoH, 'F');
+      }
+      setText(C.darkText);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+      doc.text(TITLE, PAGE_W/2, logoY + logoH/2 + 1.5, { align:'center' });
+      setStroke(C.darkGreen); doc.setLineWidth(0.5);
+      doc.line(ML, logoY + logoH + 1, PAGE_W - MR, logoY + logoH + 1);
+      return logoY + logoH + 5;
+    }
+
+    function drawFooter(pageNum, totalPages) {
+      var footY = PAGE_H - MB;
+      setStroke(C.greyLight); doc.setLineWidth(0.2);
+      doc.line(ML, footY - 4, PAGE_W - MR, footY - 4);
+      setText(C.greyLabel || '#888888');
+      doc.setFont('courier', 'normal'); doc.setFontSize(7);
+      doc.text(FOOTER_CODE + '  \u00b7  ' + (r.record_id || ''), ML, footY);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Page ' + pageNum + ' of ' + totalPages, PAGE_W - MR, footY, { align:'right' });
+    }
+
+    function drawMajorBanner(yPos, label) {
+      var h = 6;
+      setFill(C.darkGreen);
+      doc.rect(ML, yPos, CW, h, 'F');
+      setText(C.white);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+      doc.text(label, ML + 4, yPos + h/2 + 1.5);
+      return yPos + h + 4;
+    }
+
+    function drawField(x, yPos, label, value) {
+      setText(C.greyLabel || '#888888');
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+      doc.text(label + ':', x, yPos);
+      var lblW = doc.getTextWidth(label + ':');
+      setText(C.darkText);
+      doc.text(String(value || '\u2014'), x + lblW + 1.5, yPos);
+    }
+
+    function newPageIfNeeded(yPos, neededSpace) {
+      if (yPos + neededSpace > PAGE_H - MB - 6) {
+        doc.addPage();
+        return drawHeader();
+      }
+      return yPos;
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // PAGE 1
+    // ═════════════════════════════════════════════════════════════
+    var y = drawHeader();
+
+    // RECORD DETAILS banner
+    y = drawMajorBanner(y, 'RECORD DETAILS');
+    var col1 = ML, col2 = ML + CW/2 + 4;
+    drawField(col1, y, 'Record ID', r.record_id || '\u2014');
+    drawField(col2, y, 'Date', r.date || '\u2014');
+    y += 5;
+    drawField(col1, y, 'Time signed', r.time || '\u2014');
+    drawField(col2, y, 'Site', r.site || '\u2014');
+    y += 8;
+
+    // TALK CONTENT banner
+    y = drawMajorBanner(y, 'TALK CONTENT');
+    setText(C.darkText);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+    doc.text(r.talk_title || 'Toolbox Talk', ML, y); y += 6;
+    if (r.talk_id || r.presenter) {
+      setText(C.subLabel || '#5C6B62');
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+      var meta = [];
+      if (r.talk_id) meta.push(r.talk_id);
+      if (r.presenter) meta.push('Delivered by ' + r.presenter);
+      doc.text(meta.join('  \u00b7  '), ML, y);
+      y += 5;
+    }
+    y += 3;
 
     // Sections
-    doc.line(ML, y, PAGE_W - MR, y); y += 6;
-    doc.setFont('helvetica','bold'); doc.setFontSize(11);
-    doc.text('Talk content (snapshot at time of signing)', ML, y); y += 6;
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    setText(C.darkText);
     var sections = r.sections_snapshot || [];
     sections.forEach(function(sec){
-      if (y > PAGE_H - 30) { doc.addPage(); y = MT; }
-      doc.setFont('helvetica','bold'); doc.setFontSize(10.5);
-      doc.text(sec.heading || '', ML, y); y += 5;
-      doc.setFont('helvetica','normal'); doc.setFontSize(10);
+      y = newPageIfNeeded(y, 14);
+      // Section heading band — pale green like permit cards
+      setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
+      doc.rect(ML, y - 4.5, CW, 6, 'FD');
+      setText(C.darkText);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
+      doc.text(sec.heading || '', ML + 3, y - 0.5);
+      y += 4;
+
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+      setText(C.darkText);
       (sec.points || []).forEach(function(pt){
-        var lines = doc.splitTextToSize('\u2022  ' + pt, CW);
-        if (y + lines.length * 4.5 > PAGE_H - 25) { doc.addPage(); y = MT; }
-        doc.text(lines, ML, y);
-        y += lines.length * 4.5 + 1.5;
+        var lines = doc.splitTextToSize(pt, CW - 6);
+        var blockH = lines.length * 4.2 + 2;
+        y = newPageIfNeeded(y, blockH);
+        // Bullet
+        setFill(C.darkGreen);
+        doc.circle(ML + 2, y - 1.2, 0.7, 'F');
+        setText(C.darkText);
+        doc.text(lines, ML + 6, y);
+        y += blockH;
       });
-      y += 3;
+      y += 2;
     });
 
-    // Acknowledgement block
-    if (y > PAGE_H - 50) { doc.addPage(); y = MT; }
+    // ═════════════════════════════════════════════════════════════
+    // ACKNOWLEDGEMENT & SIGNATURE
+    // ═════════════════════════════════════════════════════════════
+    y = newPageIfNeeded(y, 70);
+    y += 2;
+    y = drawMajorBanner(y, 'ACKNOWLEDGEMENT & SIGNATURE');
+
+    // Two ticked statements (mirroring the in-app checkbox flow)
+    setText(C.darkText);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+    var statements = [
+      'I confirm I have read and understood this toolbox talk topic and the safety information presented.',
+      'I commit to applying this knowledge and working safely in accordance with the above.'
+    ];
+    statements.forEach(function(s){
+      var lines = doc.splitTextToSize(s, CW - 8);
+      var blockH = lines.length * 4.2 + 2;
+      y = newPageIfNeeded(y, blockH);
+      drawTick(ML, y - 1.2, C.greenDark, 3);
+      setText(C.darkText);
+      doc.text(lines, ML + 6, y);
+      y += blockH;
+    });
     y += 4;
-    doc.line(ML, y, PAGE_W - MR, y); y += 6;
-    doc.setFont('helvetica','bold'); doc.setFontSize(10.5);
-    doc.text('Acknowledgement', ML, y); y += 5;
-    doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
-    var ack = 'I confirm I have read and understood this toolbox talk topic and the safety information presented, and I commit to applying this knowledge and working safely for the remainder of today\u2019s work.';
-    var ackLines = doc.splitTextToSize(ack, CW);
-    doc.text(ackLines, ML, y); y += ackLines.length * 4.5 + 6;
 
-    // Signature
+    // Signed-by block — name, role, company, then signature image
+    y = newPageIfNeeded(y, 50);
+    setText(C.subLabel || '#5C6B62');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); 
+    doc.text('SIGNED BY', ML, y); y += 4.5;
+    setText(C.darkText);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    doc.text(r.worker_name || '\u2014', ML, y); y += 5;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+    setText(C.subLabel || '#5C6B62');
+    var sub = [];
+    if (r.role) sub.push(r.role);
+    if (r.company) sub.push(r.company);
+    if (sub.length) { doc.text(sub.join('  \u00b7  '), ML, y); y += 5; }
+    y += 2;
+
+    // Signature image — larger and more prominent than before (60mm × 25mm)
+    var sigW = 60, sigH = 25;
     if (r.signature) {
-      try { doc.addImage(r.signature, 'PNG', ML, y, 50, 18); } catch(e) {}
+      try { doc.addImage(r.signature, 'PNG', ML, y, sigW, sigH); } catch(e) {}
     }
-    doc.setLineWidth(0.4);
-    doc.line(ML, y + 19, ML + 60, y + 19);
-    doc.setFontSize(8.5); doc.setTextColor(80, 90, 100);
-    doc.text((r.worker_name || '') + ' \u00b7 ' + (r.date || '') + ' ' + (r.time || ''), ML, y + 23);
+    setStroke(C.greyLight); doc.setLineWidth(0.3);
+    doc.line(ML, y + sigH + 1, ML + sigW + 10, y + sigH + 1);
+    setText(C.subLabel || '#5C6B62');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.text('Signed ' + (r.date || '') + (r.time ? ' at ' + r.time : ''), ML, y + sigH + 5);
 
-    // Footer
+    // Footer on every page
     var pages = doc.internal.getNumberOfPages();
     for (var i = 1; i <= pages; i++) {
       doc.setPage(i);
-      doc.setFontSize(8); doc.setTextColor(120, 130, 140);
-      doc.text('Sl\u00e1n Safety \u00b7 Toolbox Talk Record \u00b7 ' + (r.record_id || ''), ML, PAGE_H - 10);
-      doc.text('Page ' + i + ' of ' + pages, PAGE_W - MR, PAGE_H - 10, { align:'right' });
+      drawFooter(i, pages);
     }
+
     doc.save((r.record_id || 'TBT') + '.pdf');
   } catch(e) {
     alert('Could not generate PDF: ' + (e.message || e));
