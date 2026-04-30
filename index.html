@@ -2801,7 +2801,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div class="fgroup">
             <label class="flabel">Hour meter / Odometer</label>
-            <input type="text" id="ps-hours" placeholder="e.g. 2847 hrs" autocomplete="off" inputmode="decimal" pattern="[0-9.]*">
+            <input type="text" id="ps-hours" placeholder="e.g. 2847 hrs" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" style="font-family:'DM Mono',monospace">
           </div>
           <div class="fgroup">
             <label class="flabel">Licence / ticket</label>
@@ -3049,7 +3049,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="ptw-empty" class="hw-empty">
       <div class="hw-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
       <div class="hw-empty-title">No pending permits</div>
-      <div class="hw-empty-sub">When workers submit permits, they'll appear here for your review and approval.</div>
+      <div class="hw-empty-sub" id="ptw-empty-sub">No permits to show.</div>
       <div style="margin-top:8px;font-size:10px;color:#888">v=step16f</div>
     </div>
 
@@ -5280,7 +5280,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fgroup">
           <label class="flabel">Temperature (°C)</label>
-          <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="conc-temp" oninput="concTempCheck()" placeholder="Per project specification / SWMS" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="°C"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">°C</span></div>
+          <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="conc-temp" oninput="concTempCheck()" placeholder="Project spec" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off" data-unit="°C"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">°C</span></div>
         <div id="conc-temp-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div>
         </div>
         <div class="fgroup">
@@ -6448,6 +6448,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fgroup">
         <label class="flabel">Worker name</label>
         <input type="text" id="asb-worker-name" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)" autocomplete="off">
+        <input type="hidden" id="asb-licence">
+        <div id="asb-licence-status" style="display:none;margin-top:8px;padding:8px 10px;border-radius:6px;font-size:11.5px;line-height:1.4"></div>
       </div>
       <div class="fgroup">
         <label class="flabel">Company</label>
@@ -6887,7 +6889,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button type="button" class="ps-btn" data-mpspotter="Yes — near services" onclick="mpSelectPill(this, 'mpspotter')">Yes — near services</button>
           <button type="button" class="ps-btn" data-mpspotter="Yes — public area" onclick="mpSelectPill(this, 'mpspotter')">Yes — public area</button>
         </div></div>
-      <div class="fgroup"><label class="flabel">Exclusion zone radius (m)</label><div style="position:relative;display:block"><input type="text" id="mp-exclusion-radius" placeholder="e.g. 5" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="m" oninput="mpExclCheck()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div><div id="mp-excl-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div></div>
+      <div class="fgroup"><label class="flabel">Exclusion zone radius (m)</label><div style="position:relative;display:block"><input type="text" id="mp-exclusion-radius" placeholder="e.g. 5" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;font-family:'DM Mono',monospace" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="m" oninput="mpExclCheck()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div><div id="mp-excl-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div></div>
       <div class="fgroup"><label class="flabel">Hazards present</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
           <button type="button" class="ps-btn" data-mphazards="Overhead powerlines" onclick="mpSelectPill(this, 'mphazards')">Overhead powerlines</button>
           <button type="button" class="ps-btn" data-mphazards="Underground services" onclick="mpSelectPill(this, 'mphazards')">Underground services</button>
@@ -7187,6 +7189,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fgroup">
         <label class="flabel">Worker name</label>
         <input type="text" id="trf-worker-name" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)" autocomplete="off">
+        <input type="hidden" id="trf-licence">
+        <div id="trf-licence-status" style="display:none;margin-top:8px;padding:8px 10px;border-radius:6px;font-size:11.5px;line-height:1.4"></div>
       </div>
       <div class="fgroup">
         <label class="flabel">Company</label>
@@ -7240,10 +7244,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Speed &amp; Zone <span class="req">*</span></div>
     <div class="fcard-body">
-      <div class="fgroup"><label class="flabel">Posted speed limit (km/h)</label><div style="position:relative;display:block"><input type="text" id="trf-posted-speed" placeholder="e.g. 60" style="padding:11px 54px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="km/h" oninput="trfSpeedCheck()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div><div id="trf-posted-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div></div>
-      <div class="fgroup"><label class="flabel">Work zone speed limit (km/h)</label><div style="position:relative;display:block"><input type="text" id="trf-work-speed" placeholder="e.g. 40" style="padding:11px 54px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="km/h"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div></div>
-      <div class="fgroup"><label class="flabel">Work zone length (m)</label><div style="position:relative;display:block"><input type="text" id="trf-zone-length" placeholder="e.g. 200" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="m"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div></div>
-      <div class="fgroup"><label class="flabel">Number of TCs required</label><input type="text" id="trf-tc-count" placeholder="e.g. 4" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off" inputmode="decimal" pattern="[0-9.]*"></div>
+      <div class="fgroup"><label class="flabel">Posted speed limit (km/h)</label><div style="position:relative;display:block"><input type="text" id="trf-posted-speed" placeholder="e.g. 60" style="padding:11px 54px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;font-family:'DM Mono',monospace" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="km/h" oninput="trfSpeedCheck()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div><div id="trf-posted-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div></div>
+      <div class="fgroup"><label class="flabel">Work zone speed limit (km/h)</label><div style="position:relative;display:block"><input type="text" id="trf-work-speed" placeholder="e.g. 40" style="padding:11px 54px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;font-family:'DM Mono',monospace" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="km/h"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div></div>
+      <div class="fgroup"><label class="flabel">Work zone length (m)</label><div style="position:relative;display:block"><input type="text" id="trf-zone-length" placeholder="e.g. 200" style="padding:11px 38px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;font-family:'DM Mono',monospace" autocomplete="off" inputmode="decimal" pattern="[0-9.]*" data-unit="m"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">m</span></div></div>
+      <div class="fgroup"><label class="flabel">Number of TCs required</label><input type="text" id="trf-tc-count" placeholder="e.g. 4" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;font-family:'DM Mono',monospace" autocomplete="off" inputmode="decimal" pattern="[0-9.]*"></div>
     </div>
   </div>
   <div class="fcard">
@@ -8224,6 +8228,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fgroup">
         <label class="flabel">Worker name</label>
         <input type="text" id="wah-worker-name" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)" autocomplete="off">
+        <input type="hidden" id="wah-licence">
+        <div id="wah-licence-status" style="display:none;margin-top:8px;padding:8px 10px;border-radius:6px;font-size:11.5px;line-height:1.4"></div>
       </div>
       <div class="fgroup">
         <label class="flabel">Company</label>
@@ -15141,7 +15147,11 @@ function ptwUpdateTileSubtitle() {
   if (active > 0)   parts.push('<span style="color:#1B6E3A;font-weight:600">' + active + ' approved</span>');
   if (rejected > 0) parts.push('<span style="color:#A32D2D;font-weight:600">' + rejected + ' rejected</span>');
 
-  if (parts.length === 0) sub.textContent = 'No permits today';
+  if (parts.length === 0) {
+    sub.textContent = (window._ptwScope === 'supervisor')
+      ? 'No permits today.'
+      : 'You have no permits today. Tap “New Permit” above to create one.';
+  }
   else sub.innerHTML = parts.join(' · ');
 }
 
@@ -17733,6 +17743,8 @@ function wahInitForm() {
   document.getElementById('wah-date').value = now.toLocaleDateString('en-AU');
   document.getElementById('wah-site').value = (typeof SITE !== 'undefined' && SITE) ? SITE : 'Site';
   document.getElementById('wah-worker-name').value = p.name || '';
+  // Auto-check this worker's Working at Heights ticket from the personnel register
+  autoCheckCurrentWorkerLicence('wah', 'Working at Heights ticket', function(l){ return l.hrwl && /[Ww]orking at [Hh]eight|EWP|YL/.test(l.hrwl.type||'') ? l.hrwl : (l.whitecard ? null : null); });
   document.getElementById('wah-company').value = p.company || '';
   document.getElementById('wah-role').value = p.role || '';
 
@@ -20993,6 +21005,56 @@ function liftClampEndTime() {
 }
 
 // Live HRWL licence lookup against the personnel register. Shows status under the name input.
+// Auto-check the CURRENT WORKER's licence/ticket on form load (used by ELEC, WAH, ASB, TRF).
+// Looks them up in the personnel register and fills the status div + a hidden value field.
+//   permitPrefix    = e.g. 'elec', 'wah', 'asb', 'trf'
+//   licenceLabel    = human label for the kind of ticket: 'Electrical licence', 'Working at Heights ticket', etc.
+//   licenceFinder   = function(licences) -> {ok, type, expiry} | null. Decides which licence on the
+//                     worker's record counts as the relevant one for this permit.
+function autoCheckCurrentWorkerLicence(permitPrefix, licenceLabel, licenceFinder) {
+  try {
+    const status = document.getElementById(permitPrefix + '-licence-status');
+    const valueField = document.getElementById(permitPrefix + '-licence');
+    if (!status) return null; // permit doesn't use this pattern
+    const me = (typeof getProfile === 'function') ? getProfile() : null;
+    const myName = (me && me.name) ? me.name : '';
+    const workers = (typeof DEMO_WORKERS !== 'undefined' && DEMO_WORKERS) ? DEMO_WORKERS : [];
+    const w = workers.find(p => (p.name || '').toLowerCase() === myName.toLowerCase());
+    status.style.display = 'block';
+    if (!w || !w.licences) {
+      status.style.background = '#FFF4E0';
+      status.style.border = '1px solid #BA7517';
+      status.style.color = '#633806';
+      status.innerHTML = '\u26a0 Worker not in personnel register \u2014 verify ' + licenceLabel + ' manually.';
+      if (valueField) valueField.value = '';
+      return null;
+    }
+    const lic = licenceFinder(w.licences);
+    if (!lic) {
+      status.style.background = '#FCE9E9';
+      status.style.border = '1px solid #A32D2D';
+      status.style.color = '#5E1A1A';
+      status.innerHTML = '\u2717 No ' + licenceLabel + ' on file in training matrix for ' + w.name + '.';
+      if (valueField) valueField.value = '';
+      return null;
+    }
+    if (!lic.ok) {
+      status.style.background = '#FCE9E9';
+      status.style.border = '1px solid #A32D2D';
+      status.style.color = '#5E1A1A';
+      status.innerHTML = '\u2717 ' + licenceLabel + ' EXPIRED' + (lic.expiry ? ' (exp ' + lic.expiry + ')' : '') + '.';
+      if (valueField) valueField.value = '';
+      return lic;
+    }
+    status.style.background = '#E5F4EA';
+    status.style.border = '1px solid #1B6E3A';
+    status.style.color = '#0F4D26';
+    status.innerHTML = '\u2713 ' + licenceLabel + ' valid' + (lic.type ? ' (' + lic.type + ')' : '') + (lic.expiry ? ', exp ' + lic.expiry : '') + '.';
+    if (valueField) valueField.value = lic.type || 'On file';
+    return lic;
+  } catch(e) { return null; }
+}
+
 // Generic personnel-register licence lookup. Works for any permit field.
 //   inputId      = the name input element id
 //   statusId     = the status div id below it
@@ -23322,43 +23384,12 @@ function elecInitForm() {
   document.getElementById('elec-worker-name').value = p.name || '';
   document.getElementById('elec-company').value = p.company || '';
   document.getElementById('elec-role').value = p.role || '';
-  // Hidden licence input — populate it with worker's electrical licence (if any) for submission
-  const ll = document.getElementById('elec-licence');
-  if (ll) ll.value = '';
-  // Auto-check the worker's electrical licence from the personnel register
-  try {
-    if (typeof DEMO_WORKERS !== 'undefined' && p.name) {
-      const w = DEMO_WORKERS.find(x => (x.name || '').toLowerCase() === (p.name || '').toLowerCase());
-      const status = document.getElementById('elec-licence-status');
-      if (status && w && w.licences) {
-        const lic = w.licences.electrical || (w.licences.hrwl && (w.licences.hrwl.type || '').toLowerCase().includes('electrical') ? w.licences.hrwl : null);
-        status.style.display = 'block';
-        if (!lic) {
-          status.style.background = '#FCE9E9';
-          status.style.border = '1px solid #A32D2D';
-          status.style.color = '#5E1A1A';
-          status.innerHTML = '\u2717 No electrical licence on file in training matrix for ' + w.name + '.';
-        } else if (!lic.ok) {
-          status.style.background = '#FCE9E9';
-          status.style.border = '1px solid #A32D2D';
-          status.style.color = '#5E1A1A';
-          status.innerHTML = '\u2717 Electrical licence EXPIRED' + (lic.expiry ? ' (exp ' + lic.expiry + ')' : '') + '.';
-        } else {
-          status.style.background = '#E5F4EA';
-          status.style.border = '1px solid #1B6E3A';
-          status.style.color = '#0F4D26';
-          status.innerHTML = '\u2713 Electrical licence valid' + (lic.type ? ' (' + lic.type + ')' : '') + (lic.expiry ? ', exp ' + lic.expiry : '') + '.';
-          if (ll) ll.value = lic.type || 'On file';
-        }
-      } else if (status) {
-        status.style.display = 'block';
-        status.style.background = '#FFF4E0';
-        status.style.border = '1px solid #BA7517';
-        status.style.color = '#633806';
-        status.innerHTML = '\u26a0 Worker not in personnel register \u2014 verify electrical licence manually.';
-      }
-    }
-  } catch(e) {}
+  // Auto-check this worker's electrical licence from the personnel register
+  autoCheckCurrentWorkerLicence('elec', 'Electrical licence', function(licences){
+    if (licences.electrical) return licences.electrical;
+    if (licences.hrwl && (licences.hrwl.type || '').toLowerCase().includes('electrical')) return licences.hrwl;
+    return null;
+  });
 
   elecSelectedType = null;
   elecSelectedVoltage = null;
@@ -24688,6 +24719,8 @@ function asbInitForm() {
   document.getElementById('asb-date').value = now.toLocaleDateString('en-AU');
   document.getElementById('asb-site').value = (typeof SITE !== 'undefined' && SITE) ? SITE : 'Site';
   document.getElementById('asb-worker-name').value = p.name || '';
+  // Auto-check this worker's Asbestos removal licence from the personnel register
+  autoCheckCurrentWorkerLicence('asb', 'Asbestos removal licence', function(l){ return l.hrwl && /asbestos|class [aAbB]/i.test(l.hrwl.type||'') ? l.hrwl : null; });
   document.getElementById('asb-company').value = p.company || '';
   document.getElementById('asb-role').value = p.role || '';
 
@@ -26253,6 +26286,8 @@ function trfInitForm() {
   document.getElementById('trf-date').value = now.toLocaleDateString('en-AU');
   document.getElementById('trf-site').value = (typeof SITE !== 'undefined' && SITE) ? SITE : 'Site';
   document.getElementById('trf-worker-name').value = p.name || '';
+  // Auto-check this worker's Traffic Control ticket from the personnel register
+  autoCheckCurrentWorkerLicence('trf', 'Traffic Control ticket', function(l){ return l.hrwl && /traffic/i.test(l.hrwl.type||'') ? l.hrwl : null; });
   document.getElementById('trf-company').value = p.company || '';
   document.getElementById('trf-role').value = p.role || '';
 
