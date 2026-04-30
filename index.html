@@ -18586,14 +18586,14 @@ function wahViewRescueTemplate() {
     doc.text(equipLines, ML, y); y += equipLines.length * 5 + 4;
 
     const items = [
-      '[  ]  EWP / boom lift (if applicable to the work area)',
-      '[  ]  Mechanical advantage rescue kit (3:1 or 4:1)',
-      '[  ]  Trauma relief straps fitted to harness',
-      '[  ]  First aid kit including burn dressings and oxygen (where rated)',
-      '[  ]  Two-way radio or mobile phone with confirmed signal',
-      '[  ]  Stretcher / spinal board for casualty transport'
+      '•  EWP / boom lift (if applicable to the work area)',
+      '•  Mechanical advantage rescue kit (3:1 or 4:1)',
+      '•  Trauma relief straps fitted to harness',
+      '•  First aid kit including burn dressings and oxygen (where rated)',
+      '•  Two-way radio or mobile phone with confirmed signal',
+      '•  Stretcher / spinal board for casualty transport'
     ];
-    items.forEach(it => { doc.text(it, ML, y); y += 6; });
+    items.forEach(it => { doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text(it, ML, y); y += 6; });
     y += 4;
 
     // Section 5
@@ -18760,16 +18760,16 @@ function csViewRescueTemplate() {
     doc.text(equipLines, ML, y); y += equipLines.length * 5 + 4;
 
     const items = [
-      '[  ]  Tripod / davit / A-frame with rated winch',
-      '[  ]  Retrieval line attached to entrant harness (where applicable)',
-      '[  ]  SCBA / supplied air system (for entry rescue only)',
-      '[  ]  Resuscitation kit including BVM and oxygen',
-      '[  ]  Stretcher / extraction harness',
-      '[  ]  Calibrated 4-gas detector (continuous monitoring)',
-      '[  ]  Two-way radio or hardwire intercom with confirmed signal',
-      '[  ]  First aid kit with burn dressings'
+      '•  Tripod / davit / A-frame with rated winch',
+      '•  Retrieval line attached to entrant harness (where applicable)',
+      '•  SCBA / supplied air system (for entry rescue only)',
+      '•  Resuscitation kit including BVM and oxygen',
+      '•  Stretcher / extraction harness',
+      '•  Calibrated 4-gas detector (continuous monitoring)',
+      '•  Two-way radio or hardwire intercom with confirmed signal',
+      '•  First aid kit with burn dressings'
     ];
-    items.forEach(it => { doc.text(it, ML, y); y += 6; });
+    items.forEach(it => { doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text(it, ML, y); y += 6; });
     y += 4;
 
     // Section 5
@@ -19987,15 +19987,15 @@ function excViewRescueTemplate() {
     doc.text('4. Rescue Equipment On Site', ML, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     const items = [
-      '[  ]  Vacuum truck or hand tools for soil removal',
-      '[  ]  Trench rescue jacks / additional shoring panels',
-      '[  ]  Atmospheric monitor (4-gas) — methane, CO, O₂, H₂S',
-      '[  ]  Stretcher / spinal board',
-      '[  ]  First aid kit with crush injury protocol',
-      '[  ]  Two-way radio or mobile phone',
-      '[  ]  Edge protection / fencing (to secure scene post-rescue)'
+      '•  Vacuum truck or hand tools for soil removal',
+      '•  Trench rescue jacks / additional shoring panels',
+      '•  Atmospheric monitor (4-gas) — methane, CO, O₂, H₂S',
+      '•  Stretcher / spinal board',
+      '•  First aid kit with crush injury protocol',
+      '•  Two-way radio or mobile phone',
+      '•  Edge protection / fencing (to secure scene post-rescue)'
     ];
-    items.forEach(it => { doc.text(it, ML, y); y += 6; });
+    items.forEach(it => { doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text(it, ML, y); y += 6; });
     y += 4;
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
@@ -24066,14 +24066,14 @@ function elecViewRescueTemplate() {
     doc.text('4. Rescue Equipment On Site', ML, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     const items = [
-      '[  ]  Rescue hook (timber or fibreglass, dry, 1.5m+ reach)',
-      '[  ]  AED (automated external defibrillator)',
-      '[  ]  First aid kit including burn dressings',
-      '[  ]  Calibrated voltage tester (proven before use)',
-      '[  ]  Insulated rescue gloves',
-      '[  ]  Two-way radio or mobile phone with confirmed signal'
+      '•  Rescue hook (timber or fibreglass, dry, 1.5m+ reach)',
+      '•  AED (automated external defibrillator)',
+      '•  First aid kit including burn dressings',
+      '•  Calibrated voltage tester (proven before use)',
+      '•  Insulated rescue gloves',
+      '•  Two-way radio or mobile phone with confirmed signal'
     ];
-    items.forEach(it => { doc.text(it, ML, y); y += 6; });
+    items.forEach(it => { doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text(it, ML, y); y += 6; });
     y += 4;
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
@@ -24254,7 +24254,7 @@ function _renderRescuePDF(opts) {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
     doc.text('4. Rescue Equipment On Site', ML, y); y += 6;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-    opts.equipment.forEach(function(it) { doc.text('[  ]  ' + it, ML, y); y += 6; });
+    opts.equipment.forEach(function(it) { doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text('•  ' + it, ML, y); y += 6; });
     y += 4;
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
