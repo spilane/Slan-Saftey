@@ -11434,10 +11434,12 @@ function goToSuperDash() {
       av.innerHTML = `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
     }
 
-    // Talk status on tile
-    const signedKey = 'talk_signed_' + now.toLocaleDateString('en-AU').replace(/\//g,'-');
+    // Talk status on tile (uses records, not legacy flag)
     const talkEl = document.getElementById('d-talk-status');
-    if (talkEl) talkEl.textContent = localStorage.getItem(signedKey) ? 'Signed today ✓' : "Sign today's talk";
+    if (talkEl) {
+      const signedRec = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(p && p.name) : null;
+      talkEl.textContent = signedRec ? 'Signed today ✓' : "Sign today's talk";
+    }
 
     _doOpenSuperDash();
   });
@@ -11456,9 +11458,11 @@ function _doOpenSuperDash() {
   if (dateEl)  dateEl.textContent  = now.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
   const av = document.getElementById('d-avatar');
   if (av && p && p.photo) av.innerHTML = `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-  const signedKey = 'talk_signed_' + now.toLocaleDateString('en-AU').replace(/\//g,'-');
   const talkEl = document.getElementById('d-talk-status');
-  if (talkEl) talkEl.textContent = localStorage.getItem(signedKey) ? 'Signed today ✓' : "Sign today's talk";
+  if (talkEl) {
+    const signedRec = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(p && p.name) : null;
+    talkEl.textContent = signedRec ? 'Signed today ✓' : "Sign today's talk";
+  }
   goTo('screen-dash');
   loadSuperDash();
 }
@@ -16488,14 +16492,19 @@ function goToTalk() {
   // Update tile sub with talk title
   document.getElementById('talk-tile-sub').textContent = TODAYS_TALK.title;
 
-  // Check if already signed today
-  const signedKey = 'talk_signed_' + new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
-  const alreadySigned = localStorage.getItem(signedKey);
+  // Check if this user has signed today's talk via the records system
+  // (Records are the source of truth — legacy flag retained for tile/chip back-compat only.)
+  const todayDateStr = new Date().toLocaleDateString('en-AU');
+  const allRecords = (typeof tbtLoadAll === 'function') ? tbtLoadAll() : [];
+  const myRecord = allRecords.find(function(r){
+    return (r.worker_name || '').toLowerCase() === (p.name || '').toLowerCase()
+      && r.date === todayDateStr;
+  });
   const alreadyDiv = document.getElementById('talk-already-signed');
   const signSection = document.getElementById('talk-sign-section');
-  if (alreadySigned) {
+  if (myRecord) {
     alreadyDiv.style.display = 'block';
-    document.getElementById('talk-signed-at').textContent = 'Signed at ' + alreadySigned;
+    document.getElementById('talk-signed-at').textContent = 'Signed at ' + myRecord.time;
     signSection.style.display = 'none';
   } else {
     alreadyDiv.style.display = 'none';
@@ -16504,7 +16513,7 @@ function goToTalk() {
 
   // Show notification dot on tile if unsigned
   const notif = document.getElementById('talk-notif');
-  if (notif) notif.style.display = alreadySigned ? 'none' : 'block';
+  if (notif) notif.style.display = myRecord ? 'none' : 'block';
 
   // Reset scroll progress
   document.getElementById('tk-progress').style.width = '0%';
@@ -16541,18 +16550,16 @@ function goToTalk() {
       const todaysRecords = (typeof tbtLoadAll === 'function' ? tbtLoadAll() : [])
         .filter(r => r.date === todayDate);
       const signedNames = new Set(todaysRecords.map(r => (r.worker_name || '').toLowerCase()));
+      // The current supervisor (Eoin) isn't in DEMO_WORKERS — include them in the supervisors bucket explicitly
       const onsite = DEMO_WORKERS.filter(w => w.onsite);
-      const signedCount = onsite.filter(w => signedNames.has((w.name || '').toLowerCase())).length;
-      const totalCount = onsite.length;
-      // Sort: not signed first (so supervisor sees who's outstanding), then signed
-      onsite.sort((a, b) => {
-        const aSigned = signedNames.has((a.name || '').toLowerCase());
-        const bSigned = signedNames.has((b.name || '').toLowerCase());
-        if (aSigned === bSigned) return (a.name || '').localeCompare(b.name || '');
-        return aSigned ? 1 : -1;
-      });
-      const summary = `<div style="padding:10px 14px;background:#F8FAF8;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)">${signedCount} of ${totalCount} on-site workers signed</div>`;
-      supList.innerHTML = summary + onsite.map(w => {
+      const supervisors = onsite.filter(w => (w.role || '').toLowerCase().includes('supervisor'));
+      const nonSupervisors = onsite.filter(w => !(w.role || '').toLowerCase().includes('supervisor'));
+      // Add the current logged-in supervisor if not already in the list
+      const currentSupAlreadyListed = supervisors.some(s => (s.name || '').toLowerCase() === (p.name || '').toLowerCase());
+      if (!currentSupAlreadyListed) {
+        supervisors.push({ name: p.name, company: p.company || '', role: p.role || 'Site Supervisor' });
+      }
+      function rowHtml(w) {
         const signed = signedNames.has((w.name || '').toLowerCase());
         const dot = signed
           ? '<span style="display:inline-block;width:18px;height:18px;border-radius:9px;background:#E5F4EA;color:#0F4D26;font-size:11px;font-weight:700;text-align:center;line-height:18px;flex-shrink:0">\u2713</span>'
@@ -16565,7 +16572,31 @@ function goToTalk() {
           </div>
           <div style="font-size:11px;color:${signed ? '#0F4D26' : '#854F0B'};font-weight:600;flex-shrink:0">${signed ? 'Signed' : 'Not yet'}</div>
         </div>`;
-      }).join('');
+      }
+      // Sort each bucket: not signed first, then alphabetical
+      function sortBySigned(a, b) {
+        const aSigned = signedNames.has((a.name || '').toLowerCase());
+        const bSigned = signedNames.has((b.name || '').toLowerCase());
+        if (aSigned === bSigned) return (a.name || '').localeCompare(b.name || '');
+        return aSigned ? 1 : -1;
+      }
+      nonSupervisors.sort(sortBySigned);
+      supervisors.sort(sortBySigned);
+      const workerCount = nonSupervisors.filter(w => signedNames.has((w.name || '').toLowerCase())).length;
+      const supSignedCount = supervisors.filter(w => signedNames.has((w.name || '').toLowerCase())).length;
+
+      let html = '';
+      // Workers group
+      html += `<div style="padding:9px 14px;background:#F8FAF8;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Workers \u2014 ${workerCount} of ${nonSupervisors.length} signed</div>`;
+      html += nonSupervisors.length
+        ? nonSupervisors.map(rowHtml).join('')
+        : '<div style="padding:14px;color:var(--muted);font-size:12px;font-style:italic">No on-site workers</div>';
+      // Supervisors group (only show if any exist)
+      if (supervisors.length) {
+        html += `<div style="padding:9px 14px;background:#F8FAF8;border-bottom:1px solid var(--border);border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:6px">Supervisors \u2014 ${supSignedCount} of ${supervisors.length} signed</div>`;
+        html += supervisors.map(rowHtml).join('');
+      }
+      supList.innerHTML = html;
     } else {
       supCard.style.display = 'none';
     }
@@ -30114,13 +30145,12 @@ function updateAllTileSubs(p) {
   // SWMS tile
   var swmsSub = document.getElementById('swms-tile-sub2');
   if (swmsSub) swmsSub.textContent = 'Read & sign SWMS';
-  // Toolbox talk tile
-  var today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
-  var signedKey = 'talk_signed_' + today;
+  // Toolbox talk tile (uses records)
   var talkSub = document.getElementById('talk-tile-sub');
   if (talkSub) {
-    if (localStorage.getItem(signedKey)) {
-      talkSub.textContent = 'Signed today ✓';
+    var signedRec = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(p && p.name) : null;
+    if (signedRec) {
+      talkSub.textContent = 'Signed today \u2713';
     } else if (DEMO_MODE || localStorage.getItem('slan_demo')) {
       talkSub.textContent = TODAYS_TALK ? TODAYS_TALK.title : 'Working at Heights — April 2026';
     } else {
@@ -30219,6 +30249,16 @@ function submitTalk() {
 function tbtLoadAll() {
   try { return JSON.parse(localStorage.getItem('slan_tbt_records_v1') || '[]'); }
   catch(e) { return []; }
+}
+
+// Has this person signed today's toolbox talk? Returns the record or null.
+function tbtHasSignedToday(workerName) {
+  if (!workerName) return null;
+  var todayStr = new Date().toLocaleDateString('en-AU');
+  return tbtLoadAll().find(function(r){
+    return (r.worker_name || '').toLowerCase() === workerName.toLowerCase()
+      && r.date === todayStr;
+  }) || null;
 }
 
 function tbtLoadForWorker(workerName) {
