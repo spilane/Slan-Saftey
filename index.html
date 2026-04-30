@@ -1245,7 +1245,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon ic-red"><svg viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
         <div class="tile-name">Report Incident</div><div class="tile-sub">Injury or near miss</div>
       </div>
-      <div class="tile" onclick="goToHotWorks()">
+      <div class="tile" onclick="goToPermitsToWork()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
         <div class="tile-name">Permits to Work</div><div class="tile-sub" id="worker-ptw-tile-sub">Hot Works, WAH &amp; more</div>
       </div>
@@ -3595,7 +3595,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-body">
       <div class="fgroup">
         <label class="flabel">Attendant name (must remain at entry the entire time)</label>
-        <input type="text" id="cs-attendant" placeholder="Full name of standby person" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
+        <input type="text" id="cs-attendant" oninput="checkPersonnelLicence('cs-attendant', 'cs-attendant-status', 'whitecard', null)" placeholder="Full name of standby person" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
+        <div id="cs-attendant-status" style="display:none;margin-top:6px;font-size:11.5px;line-height:1.4"></div>
       </div>
       <div style="background:#FCE9E9;border:1px solid #A32D2D;border-radius:8px;padding:10px 12px;margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:#5E1A1A;margin-bottom:4px">📞 Emergency Contacts</div>
@@ -4337,6 +4338,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <textarea id="demo-description" placeholder="What's being done? Materials, scope, purpose." rows="3" style="font-size:14px"></textarea>
       </div>
       <div class="fgroup">
+        <label class="flabel">Method of demolition</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
+          <button type="button" class="ps-btn" data-demomethod="Hand tools" onclick="demoSelectMethod(this)">Hand tools</button>
+          <button type="button" class="ps-btn" data-demomethod="Mechanical (excavator)" onclick="demoSelectMethod(this)">Mechanical</button>
+          <button type="button" class="ps-btn" data-demomethod="Wrecking ball" onclick="demoSelectMethod(this)">Wrecking ball</button>
+          <button type="button" class="ps-btn" data-demomethod="Explosive" onclick="demoSelectMethod(this)">Explosive</button>
+          <button type="button" class="ps-btn" data-demomethod="Saw cutting" onclick="demoSelectMethod(this)">Saw cutting</button>
+          <button type="button" class="ps-btn" data-demomethod="Bursting" onclick="demoSelectMethod(this)">Bursting</button>
+        </div>
+      </div>
+      <div class="fgroup">
         <label class="flabel">Location</label>
         <input type="text" id="demo-location" placeholder="Specific location on site" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
       </div>
@@ -4361,20 +4373,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button type="button" class="ps-btn" data-demohaz="PCB / contaminated" onclick="demoToggleHaz(this)">PCB / contam.</button>
         </div>
       </div>
-      <div class="fgroup">
-        <label class="flabel">Asbestos register reference</label>
-        <input type="text" id="demo-asbestos-ref" placeholder="e.g. AR-2026-0012 (or 'N/A')" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
-      </div>
-      <div class="fgroup">
-        <label class="flabel">Method of demolition</label>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
-          <button type="button" class="ps-btn" data-demomethod="Hand tools" onclick="demoSelectMethod(this)">Hand tools</button>
-          <button type="button" class="ps-btn" data-demomethod="Mechanical (excavator)" onclick="demoSelectMethod(this)">Mechanical</button>
-          <button type="button" class="ps-btn" data-demomethod="Wrecking ball" onclick="demoSelectMethod(this)">Wrecking ball</button>
-          <button type="button" class="ps-btn" data-demomethod="Explosive" onclick="demoSelectMethod(this)">Explosive</button>
-          <button type="button" class="ps-btn" data-demomethod="Saw cutting" onclick="demoSelectMethod(this)">Saw cutting</button>
-          <button type="button" class="ps-btn" data-demomethod="Bursting" onclick="demoSelectMethod(this)">Bursting</button>
-        </div>
+      <div class="fgroup" id="demo-asbestos-ref-wrap" style="display:none">
+        <label class="flabel">Asbestos register reference <span class="req">*</span></label>
+        <input type="text" id="demo-asbestos-ref" placeholder="e.g. AR-2026-0012" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
       </div>
     </div>
   </div>
@@ -4798,12 +4799,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-hdr">Crew &amp; Rigging <span class="req">*</span></div>
     <div class="fcard-body">
       <div class="fgroup">
-        <label class="flabel">Crane operator name &amp; HRW licence</label>
-        <input type="text" id="lift-operator" placeholder="Name + licence number" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
+        <label class="flabel">Crane operator name</label>
+        <input type="text" id="lift-operator" placeholder="e.g. Brendan Kelly" oninput="liftCheckLicence('lift-operator', 'lift-operator-status', ['Slewing Crane SC','Tower Crane CT','Non-slewing Crane CN'])" autocomplete="off" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+        <div id="lift-operator-status" style="display:none;margin-top:6px;font-size:11.5px;line-height:1.4"></div>
       </div>
       <div class="fgroup">
-        <label class="flabel">Dogger / rigger name &amp; licence</label>
-        <input type="text" id="lift-dogger" placeholder="Name + DG/RB licence number" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
+        <label class="flabel">Dogger / rigger name</label>
+        <input type="text" id="lift-dogger" placeholder="e.g. Lee O'Brien" oninput="liftCheckLicence('lift-dogger', 'lift-dogger-status', ['Dogging DG','Rigging RB','Rigging RI','Rigging RA'])" autocomplete="off" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+        <div id="lift-dogger-status" style="display:none;margin-top:6px;font-size:11.5px;line-height:1.4"></div>
       </div>
       <div class="fgroup">
         <label class="flabel">Rigging gear used</label>
@@ -4835,7 +4838,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Wind speed at lift height (km/h)</label>
-        <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="lift-wind" oninput="liftWindCheck()" placeholder="Per crane load chart / SWMS" autocomplete="off" data-unit="km/h" style="padding:11px 54px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div>
+        <div style="position:relative;display:block"><input type="text" inputmode="decimal" id="lift-wind" oninput="liftWindCheck()" placeholder="Per crane load chart" autocomplete="off" data-unit="km/h" style="padding:11px 54px 11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);font-weight:600;pointer-events:none;font-family:'DM Sans',sans-serif">km/h</span></div>
         <div id="lift-wind-warn" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.45"></div>
       </div>
       <div class="fgroup">
@@ -6040,10 +6043,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <label class="flabel">Role</label>
         <input type="text" id="elec-role" readonly style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;background:#F8FAF8;color:var(--text)" autocomplete="off">
       </div>
-      <div class="fgroup">
-        <label class="flabel">Electrical licence number</label>
-        <input type="text" id="elec-licence" placeholder="e.g. EW145623" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
-      </div>
+      <input type="hidden" id="elec-licence">
+      <div id="elec-licence-status" style="display:none;margin-top:-6px;margin-bottom:14px;padding:8px 10px;border-radius:6px;font-size:11.5px;line-height:1.4"></div>
     </div>
   </div>
 
@@ -6863,9 +6864,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Operator <span class="req">*</span></div>
     <div class="fcard-body">
-      <div class="fgroup"><label class="flabel">Operator name</label><input type="text" id="mp-operator-name" placeholder="" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
-      <div class="fgroup"><label class="flabel">HRW licence class</label><input type="text" id="mp-licence-class" placeholder="e.g. EX (excavator)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
-      <div class="fgroup"><label class="flabel">Licence number</label><input type="text" id="mp-licence-no" placeholder="" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
+      <div class="fgroup">
+        <label class="flabel">Operator name</label>
+        <input type="text" id="mp-operator-name" placeholder="e.g. Mick Doyle" oninput="checkPersonnelLicence('mp-operator-name', 'mp-operator-status', 'hrwl', null)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
+        <div id="mp-operator-status" style="display:none;margin-top:6px;font-size:11.5px;line-height:1.4"></div>
+      </div>
+      <input type="hidden" id="mp-licence-class">
+      <input type="hidden" id="mp-licence-no">
     </div>
   </div>
   <div class="fcard">
@@ -20134,6 +20139,9 @@ function demoInitForm() {
 
   demoSelectedType = null;
   document.querySelectorAll('#screen-demo-form [data-demotype], #screen-demo-form [data-demohaz], #screen-demo-form [data-demomethod], #screen-demo-form [data-demosvc]').forEach(b => b.classList.remove('pass'));
+  // Hide asbestos ref field by default — only shown when asbestos is ticked
+  const asbWrap = document.getElementById('demo-asbestos-ref-wrap');
+  if (asbWrap) asbWrap.style.display = 'none';
   
   ['demo-description','demo-location','demo-num-workers','demo-start','demo-end','demo-asbestos-ref','demo-exclusion','demo-adjacent','demo-rescue'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -20216,7 +20224,10 @@ function demoValidate() {
   let ok = true;
   if (!type) ok = false;
   if (!desc || !loc || !numW || !start || !end) ok = false;
-  if (!asbestos || !exclusion || !adjacent || !rescue) ok = false;
+  // Asbestos ref only required if asbestos is ticked as a hazard
+  const asbTicked = !!document.querySelector('#screen-demo-form [data-demohaz="Asbestos (friable)"].pass, #screen-demo-form [data-demohaz="Asbestos (bonded)"].pass');
+  if (asbTicked && !asbestos) ok = false;
+  if (!exclusion || !adjacent || !rescue) ok = false;
   if (!hazSelected || !methodSelected || !svcSelected) ok = false;
 
   if (start && end) {
@@ -20933,6 +20944,85 @@ function liftClampEndTime() {
   if (end > maxEnd) endEl.value = hwToLocalInputValue(maxEnd);
   if (end <= start) endEl.value = hwToLocalInputValue(new Date(start.getTime() + 60 * 60 * 1000));
   liftValidate();
+}
+
+// Live HRWL licence lookup against the personnel register. Shows status under the name input.
+// Generic personnel-register licence lookup. Works for any permit field.
+//   inputId      = the name input element id
+//   statusId     = the status div id below it
+//   licenceKey   = which licence to check ('hrwl', 'whitecard', 'electrical', 'firstaid', 'driver')
+//                  If 'electrical' is requested but only 'hrwl' is present with type containing
+//                  'Electrical', that counts as a match.
+//   requiredType = optional substring to match within licence.type (e.g. 'Electrical', 'EX', 'Slewing')
+//                  Pass null to accept any type for that licence key.
+function checkPersonnelLicence(inputId, statusId, licenceKey, requiredType) {
+  const inp = document.getElementById(inputId);
+  const status = document.getElementById(statusId);
+  if (!inp || !status) return;
+  const val = (inp.value || '').trim();
+  if (val.length < 3) { status.style.display = 'none'; return; }
+  const workers = (typeof DEMO_WORKERS !== 'undefined' && DEMO_WORKERS) ? DEMO_WORKERS : [];
+  const w = workers.find(p => (p.name || '').toLowerCase().startsWith(val.toLowerCase()));
+  status.style.display = 'block';
+  if (!w) {
+    status.innerHTML = '<span style="color:#854F0B">⚠ Not found in personnel register — verify ticket manually.</span>';
+    return;
+  }
+  // Special-case "electrical": fall back to hrwl entry whose type mentions electrical
+  let lic = w.licences && w.licences[licenceKey];
+  if (!lic && licenceKey === 'electrical' && w.licences && w.licences.hrwl
+      && (w.licences.hrwl.type || '').toLowerCase().includes('electrical')) {
+    lic = w.licences.hrwl;
+  }
+  if (!lic) {
+    const labelMap = { whitecard:'White Card', hrwl:'HRWL', electrical:'electrical licence', firstaid:'First Aid', driver:'driver\u2019s licence' };
+    status.innerHTML = '<span style="color:#A32D2D">\u2717 ' + w.name + ' \u2014 no ' + (labelMap[licenceKey] || licenceKey) + ' on file in training matrix.</span>';
+    return;
+  }
+  if (!lic.ok) {
+    status.innerHTML = '<span style="color:#A32D2D">\u2717 ' + w.name + ' \u2014 ticket EXPIRED' + (lic.type ? ' (' + lic.type + ')' : '') + (lic.expiry ? ', exp ' + lic.expiry : '') + '.</span>';
+    return;
+  }
+  if (requiredType && lic.type && !lic.type.toLowerCase().includes(requiredType.toLowerCase())) {
+    status.innerHTML = '<span style="color:#854F0B">\u26a0 ' + w.name + ' holds ' + lic.type + ' \u2014 not the required class. Verify before work.</span>';
+    return;
+  }
+  status.innerHTML = '<span style="color:#1B6E3A">\u2713 ' + w.name + ' \u2014 ' + (lic.type || 'ticket valid') + (lic.expiry ? ' (exp ' + lic.expiry + ')' : '') + '.</span>';
+}
+
+function liftCheckLicence(inputId, statusId, requiredTypes) {
+  const inp = document.getElementById(inputId);
+  const status = document.getElementById(statusId);
+  if (!inp || !status) return;
+  const val = (inp.value || '').trim();
+  if (val.length < 3) { status.style.display = 'none'; return; }
+  // Look up worker in DEMO_WORKERS by name (case-insensitive starts-with match)
+  const workers = (typeof DEMO_WORKERS !== 'undefined' && DEMO_WORKERS) ? DEMO_WORKERS : [];
+  const w = workers.find(p => (p.name || '').toLowerCase().startsWith(val.toLowerCase()));
+  status.style.display = 'block';
+  if (!w) {
+    // Worker name not found in personnel register
+    status.innerHTML = '<span style="color:#854F0B">⚠ Not found in personnel register — verify HRWL manually before lift.</span>';
+    return;
+  }
+  // Auto-fill the full name if partial match
+  if (w.name.toLowerCase() !== val.toLowerCase() && w.name.toLowerCase().startsWith(val.toLowerCase())) {
+    // Don't auto-replace mid-typing; just show match
+  }
+  const lic = w.licences && w.licences.hrwl;
+  if (!lic) {
+    status.innerHTML = '<span style="color:#A32D2D">✗ ' + w.name + ' — no HRWL on file in training matrix.</span>';
+    return;
+  }
+  // Check if licence type matches one of the required types
+  const typeMatch = requiredTypes.some(t => (lic.type || '').toLowerCase().includes(t.toLowerCase().split(' ')[0]));
+  if (!lic.ok) {
+    status.innerHTML = '<span style="color:#A32D2D">✗ ' + w.name + ' — HRWL EXPIRED (' + (lic.type || 'class unknown') + ', exp ' + (lic.expiry || '—') + ').</span>';
+  } else if (!typeMatch) {
+    status.innerHTML = '<span style="color:#854F0B">⚠ ' + w.name + ' holds ' + (lic.type || '?') + ' — not the licence class for this role. Verify before lift.</span>';
+  } else {
+    status.innerHTML = '<span style="color:#1B6E3A">✓ ' + w.name + ' — ' + (lic.type || 'HRWL') + ' valid (exp ' + (lic.expiry || '—') + ').</span>';
+  }
 }
 
 function liftValidate() {
@@ -23186,6 +23276,43 @@ function elecInitForm() {
   document.getElementById('elec-worker-name').value = p.name || '';
   document.getElementById('elec-company').value = p.company || '';
   document.getElementById('elec-role').value = p.role || '';
+  // Hidden licence input — populate it with worker's electrical licence (if any) for submission
+  const ll = document.getElementById('elec-licence');
+  if (ll) ll.value = '';
+  // Auto-check the worker's electrical licence from the personnel register
+  try {
+    if (typeof DEMO_WORKERS !== 'undefined' && p.name) {
+      const w = DEMO_WORKERS.find(x => (x.name || '').toLowerCase() === (p.name || '').toLowerCase());
+      const status = document.getElementById('elec-licence-status');
+      if (status && w && w.licences) {
+        const lic = w.licences.electrical || (w.licences.hrwl && (w.licences.hrwl.type || '').toLowerCase().includes('electrical') ? w.licences.hrwl : null);
+        status.style.display = 'block';
+        if (!lic) {
+          status.style.background = '#FCE9E9';
+          status.style.border = '1px solid #A32D2D';
+          status.style.color = '#5E1A1A';
+          status.innerHTML = '\u2717 No electrical licence on file in training matrix for ' + w.name + '.';
+        } else if (!lic.ok) {
+          status.style.background = '#FCE9E9';
+          status.style.border = '1px solid #A32D2D';
+          status.style.color = '#5E1A1A';
+          status.innerHTML = '\u2717 Electrical licence EXPIRED' + (lic.expiry ? ' (exp ' + lic.expiry + ')' : '') + '.';
+        } else {
+          status.style.background = '#E5F4EA';
+          status.style.border = '1px solid #1B6E3A';
+          status.style.color = '#0F4D26';
+          status.innerHTML = '\u2713 Electrical licence valid' + (lic.type ? ' (' + lic.type + ')' : '') + (lic.expiry ? ', exp ' + lic.expiry : '') + '.';
+          if (ll) ll.value = lic.type || 'On file';
+        }
+      } else if (status) {
+        status.style.display = 'block';
+        status.style.background = '#FFF4E0';
+        status.style.border = '1px solid #BA7517';
+        status.style.color = '#633806';
+        status.innerHTML = '\u26a0 Worker not in personnel register \u2014 verify electrical licence manually.';
+      }
+    }
+  } catch(e) {}
 
   elecSelectedType = null;
   elecSelectedVoltage = null;
@@ -24075,7 +24202,37 @@ function elecViewRescueTemplate() {
 // ═══════════════════════════════════════════════════════
 
 // Demolition extra selectors
-function demoToggleHaz(btn) { btn.classList.toggle('pass'); demoValidate(); }
+function demoToggleHaz(btn) {
+  const val = btn.getAttribute('data-demohaz');
+  const allBtns = document.querySelectorAll('#screen-demo-form [data-demohaz]');
+  const noneBtn = document.querySelector('#screen-demo-form [data-demohaz="None identified"]');
+
+  if (val === 'None identified') {
+    // Toggle None on, untick all the others
+    if (!btn.classList.contains('pass')) {
+      allBtns.forEach(b => b.classList.remove('pass'));
+      btn.classList.add('pass');
+    } else {
+      btn.classList.remove('pass');
+    }
+  } else {
+    // Toggle this hazard, and untick None if it was on
+    btn.classList.toggle('pass');
+    if (noneBtn) noneBtn.classList.remove('pass');
+  }
+
+  // Show asbestos ref field only if either Asbestos option is ticked
+  const asbTicked = !!document.querySelector('#screen-demo-form [data-demohaz="Asbestos (friable)"].pass, #screen-demo-form [data-demohaz="Asbestos (bonded)"].pass');
+  const wrap = document.getElementById('demo-asbestos-ref-wrap');
+  if (wrap) wrap.style.display = asbTicked ? '' : 'none';
+  // Clear the field if hidden
+  if (!asbTicked) {
+    const ref = document.getElementById('demo-asbestos-ref');
+    if (ref) ref.value = '';
+  }
+
+  demoValidate();
+}
 function demoSelectMethod(btn) {
   document.querySelectorAll('#screen-demo-form [data-demomethod]').forEach(b => b.classList.remove('pass'));
   btn.classList.add('pass'); demoValidate();
