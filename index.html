@@ -8496,10 +8496,37 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-body" id="talk-sup-rosters-list" style="padding:6px 0"></div>
     </div>
 
+    <!-- Supervisor demo seed (always visible while testing) -->
+    <button id="talk-sup-seed-btn" onclick="tbtSeedDemoSupervisorRosters()" style="display:none;width:100%;padding:8px;margin-top:6px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">⚡ Load 3 demo previous monthly rosters (with worker signatures + debriefs)</button>
+
+    <!-- Supervisor: set this month's talk (topic library + custom builder) -->
+    <div class="fcard" id="talk-set-topic-card" style="display:none;margin-top:8px">
+      <div class="fcard-hdr">This month's toolbox topic</div>
+      <div class="fcard-body" style="padding:14px">
+        <div id="set-topic-current" style="background:#F8FAF8;border:1px solid #E5E9E6;border-radius:8px;padding:12px 14px;margin-bottom:12px">
+          <div style="font-size:11px;color:#5C6B62;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Current topic</div>
+          <div id="set-topic-current-title" style="font-size:14px;font-weight:600;color:#1A2A1F;line-height:1.35">—</div>
+          <div id="set-topic-current-meta" style="font-size:11px;color:#5C6B62;margin-top:3px">—</div>
+        </div>
+        <button onclick="openTopicPicker()" style="display:block;width:100%;padding:11px;background:#1B6E3A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">Choose from library</button>
+        <button onclick="openCustomTalkBuilder()" style="display:block;width:100%;padding:11px;background:transparent;color:#1B3A2D;border:1.5px solid #1B3A2D;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Write a custom talk</button>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">Setting a new topic resets signatures so workers re-sign for the new content. Previous rosters remain intact in your records.</div>
+      </div>
+    </div>
+
     <!-- Supervisor: who signed today -->
     <div class="fcard" id="talk-supervisor-card" style="display:none">
       <div class="fcard-hdr">Who has signed today</div>
       <div class="fcard-body" id="talk-supervisor-list" style="padding:6px 0"></div>
+
+      <!-- All-signed confirmation chip — appears when 100% of on-site workers have signed -->
+      <div id="talk-all-signed-chip" style="display:none;margin:0 14px 14px;padding:10px 12px;background:#E5F4EA;border:1px solid #B8DCC4;border-radius:8px;align-items:center;gap:9px">
+        <div style="width:22px;height:22px;border-radius:11px;background:#1B6E3A;color:#fff;font-size:13px;font-weight:700;text-align:center;line-height:22px;flex-shrink:0">✓</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12.5px;font-weight:600;color:#0F4D26">All on-site workers have signed</div>
+          <div id="talk-all-signed-meta" style="font-size:11px;color:#3F6F4F;margin-top:1px">—</div>
+        </div>
+      </div>
     </div>
 
     <!-- Supervisor: download combined roster PDF (single PDF with all signers + wrap-up) -->
@@ -13515,8 +13542,8 @@ function goToPermitsToWork() {
 
 // Seed a chunk of demo permits across all 12 types so the app looks populated for demos.
 // Uses real worker names from DEMO_WORKERS so the supervisor view feels lived-in.
-function ptwSeedDemoPermits() {
-  if (!confirm('This will add 24 demo permits to your local storage across all 12 types (mix of pending, approved, rejected, revoked, closed). OK to proceed?')) return;
+function ptwSeedDemoPermits(silent) {
+  if (!silent && !confirm('This will add 24 demo permits to your local storage across all 12 types (mix of pending, approved, rejected, revoked, closed). OK to proceed?')) return;
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-AU');
@@ -13650,12 +13677,15 @@ function ptwSeedDemoPermits() {
     } catch(e) { /* skip */ }
   });
 
-  if (typeof slanToast === 'function') {
-    slanToast('Loaded ' + added + ' demo permits.');
-  } else {
-    alert('Loaded ' + added + ' demo permits.');
+  if (!silent) {
+    if (typeof slanToast === 'function') {
+      slanToast('Loaded ' + added + ' demo permits.');
+    } else {
+      alert('Loaded ' + added + ' demo permits.');
+    }
+    ptwRenderUnified();
   }
-  ptwRenderUnified();
+  return added;
 }
 
 // Diagnostic for PTW queue — shows what's actually in storage and what the
@@ -16513,49 +16543,307 @@ function getSigDataUrl(){return hasSig&&sigCanvas?sigCanvas.toDataURL('image/png
 
 // Provider updates this object each day/week with the talk content.
 // In a live system this would be fetched from a backend endpoint.
-const TODAYS_TALK = {
-  title: 'Working at Heights',
-  presenter: 'Site Supervisor — Job 042',
-  version: 'TBT-042-001',
-  cutoff_time: '09:00', // supervisor notified if unsigned by this time
-  sections: [
-    {
-      heading: 'Why this matters',
-      points: [
-        'Falls from height are the leading cause of fatalities in Australian construction — accounting for over 30% of workplace deaths.',
+// ─── TOOLBOX TALK LIBRARY ─────────────────────────────────────
+// 12 pre-written toolbox talks the supervisor can pick from. Each has a unique
+// `version` ID so the gate / records system tracks signatures correctly.
+// Sections follow the same structure: 3-4 sections, 2-5 bullet points each.
+const TBT_LIBRARY = [
+  {
+    title: 'Working at Heights',
+    version: 'TBT-WAH-2026',
+    presenter: 'Site Supervisor',
+    cutoff_time: '09:00',
+    sections: [
+      { heading: 'Why this matters', points: [
+        'Falls from height are the leading cause of fatalities in Australian construction \u2014 over 30% of workplace deaths.',
         'Any work at 2 metres or above is classified as high risk construction work and requires a current SWMS.',
-        'Our obligation is zero falls — not fewer falls.'
-      ]
-    },
-    {
-      heading: 'Before you start — checks required',
-      points: [
+        'Our obligation is zero falls \u2014 not fewer falls.'
+      ]},
+      { heading: 'Before you start \u2014 checks required', points: [
         'Inspect all edge protection, scaffolding, and handrails before starting work. Do not proceed if anything is damaged or missing.',
-        'Confirm your SWMS covers the specific working at heights task you are doing today. If scope has changed — stop and notify the supervisor.',
+        'Confirm your SWMS covers the specific working at heights task you are doing today. If scope has changed \u2014 stop and notify the supervisor.',
         'Check your harness, lanyard and anchor point if working on a roof or EWP. A harness that is not clipped on provides zero protection.',
         'Never use a ladder as a working platform. Ladders are for access only.'
-      ]
-    },
-    {
-      heading: 'Hierarchy of controls — in order',
-      points: [
-        'Elimination — can the task be done from ground level? Always consider this first.',
-        'Passive protection — edge protection, scaffolding, safety nets. Preferred over PPE.',
-        'Fall arrest — harness and lanyard. Last resort, not first choice.',
-        'If in doubt — stop work and ask. No task is urgent enough to skip a safety check.'
-      ]
-    },
-    {
-      heading: 'Today\'s site-specific requirements',
-      points: [
-        'Level 4 slab edge protection is complete on the north and east faces. West face barricading is in place — do not remove.',
-        'EWP operations require a pre-start check completed before each shift.',
-        'Any worker within 2m of an unprotected edge must be wearing a harness clipped to an anchor point — no exceptions.',
-        'Report any damaged edge protection immediately to the site supervisor — do not continue working until it is rectified.'
-      ]
+      ]},
+      { heading: 'Hierarchy of controls \u2014 in order', points: [
+        'Elimination \u2014 can the task be done from ground level? Always consider this first.',
+        'Passive protection \u2014 edge protection, scaffolding, safety nets. Preferred over PPE.',
+        'Fall arrest \u2014 harness and lanyard. Last resort, not first choice.',
+        'If in doubt \u2014 stop work and ask. No task is urgent enough to skip a safety check.'
+      ]}
+    ]
+  },
+  {
+    title: 'Manual Handling',
+    version: 'TBT-MH-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'Why this matters', points: [
+        'Sprains and strains are the single largest category of construction injuries.',
+        'Most manual handling injuries are preventable with proper technique and planning.',
+        'Back injuries can end careers \u2014 and they rarely heal completely.'
+      ]},
+      { heading: 'Plan the lift', points: [
+        'Check the weight and shape of the load before lifting. If unsure, test by tipping a corner.',
+        'Plan the route \u2014 know where you\u2019re putting it down before you pick it up.',
+        'Clear obstacles, check footing, identify pinch points.'
+      ]},
+      { heading: 'Safe lifting technique', points: [
+        'Bend at the knees, keep the back straight, hold the load close to the body.',
+        'Lift smoothly \u2014 no jerking. Move your feet, never twist your spine under load.',
+        'If a load is over 23 kg or awkward, use a mechanical aid or get help.'
+      ]}
+    ]
+  },
+  {
+    title: 'Hand and Power Tools',
+    version: 'TBT-HPT-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'Why this matters', points: [
+        'Power-tool injuries are common on construction sites and often preventable.',
+        'Most incidents come from skipped pre-use checks or wrong tool for the job.'
+      ]},
+      { heading: 'Before you start', points: [
+        'Inspect the tool \u2014 cords, guards, switches, casings.',
+        'Confirm the tool is correctly tagged and within its test date.',
+        'Wear the right PPE \u2014 eye protection, hearing, gloves where appropriate.',
+        'Check that guards are in place. Never remove a guard to work faster.'
+      ]},
+      { heading: 'During use', points: [
+        'Right tool for the job \u2014 don\u2019t use a grinder as a cutting tool unless rated.',
+        'Keep both hands on the tool. Don\u2019t reach across the work piece.',
+        'If a tool is not working correctly \u2014 stop, tag it out, report it.'
+      ]}
+    ]
+  },
+  {
+    title: 'Electrical Safety',
+    version: 'TBT-ES-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'Why this matters', points: [
+        'Electrical incidents on construction sites are typically severe \u2014 burns, cardiac arrest, falls.',
+        'Underground and overhead services cause many of these incidents.'
+      ]},
+      { heading: 'Key controls', points: [
+        'Test before you touch \u2014 always treat circuits as live until proven dead.',
+        'Lock out and tag out before any work on isolated equipment.',
+        'Maintain safe approach distances to overhead lines per the regulator\u2019s code.',
+        'Check leads and tools daily for damage. Damaged = removed from service.'
+      ]},
+      { heading: 'Underground services', points: [
+        'Always Dial Before You Dig before any excavation work.',
+        'Hand dig within 500mm of marked services.',
+        'If you hit something unexpected \u2014 stop, isolate, report.'
+      ]}
+    ]
+  },
+  {
+    title: 'Hot Works',
+    version: 'TBT-HW-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'What counts as hot work', points: [
+        'Welding, grinding, cutting, brazing, soldering \u2014 anything producing sparks, flames or heat.',
+        'A hot works permit is required before commencing any of these activities on site.'
+      ]},
+      { heading: 'Before starting', points: [
+        'Permit must be approved and on display in the work area.',
+        'Combustibles cleared or covered within a 10-metre radius.',
+        'Fire extinguisher within reach \u2014 correct type for the work.',
+        'Fire watch identified and briefed where required.'
+      ]},
+      { heading: 'After finishing', points: [
+        'Fire watch continues for the time specified on the permit \u2014 typically 60 minutes minimum.',
+        'Final inspection of the area before closing the permit \u2014 no smouldering, no hot materials.',
+        'Permit is not closed until everyone signs off.'
+      ]}
+    ]
+  },
+  {
+    title: 'Confined Space Entry',
+    version: 'TBT-CS-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'What is a confined space', points: [
+        'Any enclosed or partially enclosed space not designed for human occupancy that has limited entry/exit.',
+        'Pits, tanks, vessels, sewers, vaults, ducts \u2014 all confined spaces.',
+        'A confined space entry permit is required for every entry.'
+      ]},
+      { heading: 'Atmospheric testing', points: [
+        'Test for oxygen, flammable gas, toxic gas \u2014 in that order \u2014 before entry.',
+        'Continuous monitoring required while anyone is inside.',
+        'If readings change \u2014 evacuate immediately.'
+      ]},
+      { heading: 'Entry team', points: [
+        'Trained entrant, trained standby person, communication established at all times.',
+        'Standby never leaves their post until the last entrant is out.',
+        'Rescue plan in place before entry \u2014 don\u2019t plan rescue during rescue.'
+      ]}
+    ]
+  },
+  {
+    title: 'Plant and Equipment',
+    version: 'TBT-PE-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'Why this matters', points: [
+        'Plant and people don\u2019t mix \u2014 separation is the primary control.',
+        'Most plant incidents involve a person being struck or crushed by moving equipment.'
+      ]},
+      { heading: 'Before operating', points: [
+        'Hold the right ticket \u2014 high-risk work licence, VOC, or specific machine training.',
+        'Pre-start inspection \u2014 fluids, controls, alarms, mirrors, structural condition.',
+        'Walk-around before starting \u2014 check no one is in the work zone.'
+      ]},
+      { heading: 'Working around plant', points: [
+        'Make eye contact with the operator before approaching.',
+        'Stay out of the swing radius of cranes and excavators.',
+        'Spotter required when reversing or where vision is restricted.'
+      ]}
+    ]
+  },
+  {
+    title: 'Asbestos Awareness',
+    version: 'TBT-ASB-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'What is asbestos', points: [
+        'A naturally occurring fibrous mineral used in construction materials before 2003 in Australia.',
+        'Found in fibre cement sheeting, vinyl tiles, lagging, gaskets, electrical components.',
+        'There is no safe level of asbestos exposure.'
+      ]},
+      { heading: 'If you find suspected asbestos', points: [
+        'Stop work immediately \u2014 do not disturb further.',
+        'Notify the supervisor.',
+        'Don\u2019t cut, drill, sand, water-blast or remove any suspect material.',
+        'A licensed assessor will sample and identify before any work continues.'
+      ]},
+      { heading: 'Removal work', points: [
+        'Only licensed removalists may remove asbestos.',
+        'A clearance certificate is required before site reoccupation.',
+        'All workers in the vicinity require Class 2 awareness training.'
+      ]}
+    ]
+  },
+  {
+    title: 'Slips, Trips and Falls',
+    version: 'TBT-STF-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'Why this matters', points: [
+        'Slips, trips and falls on the same level are one of the most common causes of injury.',
+        'Most are preventable through housekeeping and awareness.'
+      ]},
+      { heading: 'Common causes', points: [
+        'Cables, hoses and welding leads across walkways.',
+        'Spills \u2014 oil, water, mud \u2014 not cleaned up promptly.',
+        'Off-cuts, tools and rubbish left lying around.',
+        'Uneven surfaces, holes, lifted lips on access matting.'
+      ]},
+      { heading: 'Your responsibilities', points: [
+        'Clean as you go. Don\u2019t leave the mess for the next shift.',
+        'Use cable ramps where leads must cross walkways.',
+        'Report damaged walkways or surfaces \u2014 don\u2019t walk past a hazard.'
+      ]}
+    ]
+  },
+  {
+    title: 'Mental Health and Fatigue',
+    version: 'TBT-MHF-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'Why this matters', points: [
+        'Construction workers have one of the highest suicide rates of any industry in Australia.',
+        'Fatigue is a leading factor in serious incidents \u2014 it slows reaction time and impairs judgement.',
+        'Looking after each other is part of the job.'
+      ]},
+      { heading: 'Recognising the signs', points: [
+        'Withdrawing from workmates, increased irritability, missed shifts.',
+        'Visible exhaustion, reduced quality of work, near-misses.',
+        'Comments that hint at hopelessness or feeling overwhelmed.'
+      ]},
+      { heading: 'What to do', points: [
+        'Ask the question \u2014 R U OK? Listen without judgement.',
+        'Encourage them to speak with the foreman or use the EAP \u2014 free, confidential.',
+        'In a crisis: Lifeline 13 11 14, Beyond Blue 1300 22 4636, MATES in Construction 1300 642 111.'
+      ]}
+    ]
+  },
+  {
+    title: 'Heat Stress',
+    version: 'TBT-HEAT-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'Why this matters', points: [
+        'Heat stress can progress to heat stroke quickly \u2014 a medical emergency that can be fatal.',
+        'Australian construction sites regularly exceed safe working temperatures in summer.'
+      ]},
+      { heading: 'Recognising the signs', points: [
+        'Early: heavy sweating, headache, dizziness, fatigue, muscle cramps.',
+        'Severe: confusion, slurred speech, no sweating, hot dry skin \u2014 call 000 immediately.'
+      ]},
+      { heading: 'Controls', points: [
+        'Drink water regularly \u2014 don\u2019t wait until thirsty. One cup every 20 minutes in heat.',
+        'Take rest breaks in shade. Use the buddy system \u2014 watch for signs in others.',
+        'Stop-work temperature triggers apply \u2014 know what they are for this site.',
+        'Acclimatise gradually if you\u2019re new to working in heat.'
+      ]}
+    ]
+  },
+  {
+    title: 'Drug and Alcohol Awareness',
+    version: 'TBT-DA-2026',
+    presenter: 'Site Supervisor',
+    sections: [
+      { heading: 'Why this matters', points: [
+        'Drugs and alcohol affect reaction time, coordination, judgement \u2014 all critical on a construction site.',
+        'Site policy is zero tolerance. Random and post-incident testing applies.'
+      ]},
+      { heading: 'Beyond the obvious', points: [
+        'Prescription medications can also cause impairment \u2014 declare them.',
+        'Yesterday\u2019s big night may still be in your system this morning. If unsure, don\u2019t drive plant.',
+        'The legal limit on the road is not the limit on site \u2014 it\u2019s zero.'
+      ]},
+      { heading: 'If you have a problem', points: [
+        'The EAP is free, confidential, and won\u2019t cost you your job.',
+        'Speak to your supervisor \u2014 we\u2019d rather support you than lose you.',
+        'Looking after a mate? Same advice \u2014 EAP, supervisor, MATES in Construction 1300 642 111.'
+      ]}
+    ]
+  }
+];
+
+// Default talk if no active talk has been set yet
+const DEFAULT_ACTIVE_TALK_VERSION = 'TBT-WAH-2026';
+
+// ─── ACTIVE TALK STATE ────────────────────────────────────────
+// The supervisor's chosen current talk persists in localStorage. If nothing
+// is set we fall back to the default (Working at Heights). Custom talks are
+// also stored here under a generated version ID.
+function getActiveTalk() {
+  try {
+    var raw = localStorage.getItem('slan_tbt_active_talk_v1');
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.version && parsed.title && parsed.sections) return parsed;
     }
-  ]
-};
+  } catch(e) {}
+  // Fall back to library default
+  var def = TBT_LIBRARY.find(function(t){ return t.version === DEFAULT_ACTIVE_TALK_VERSION; });
+  return def || TBT_LIBRARY[0];
+}
+
+function setActiveTalk(talk) {
+  if (!talk || !talk.version) return;
+  try { localStorage.setItem('slan_tbt_active_talk_v1', JSON.stringify(talk)); } catch(e) {}
+  // Update the legacy TODAYS_TALK reference for any code that still uses it directly
+  try { TODAYS_TALK = talk; } catch(e) {}
+}
+
+// `let` (not const) so setActiveTalk can reassign it
+let TODAYS_TALK = getActiveTalk();
 
 let talkChecks = { chk1: false, chk2: false };
 
@@ -16722,8 +17010,39 @@ function goToTalk() {
         html += supervisors.map(rowHtml).join('');
       }
       supList.innerHTML = html;
+
+      // All-signed confirmation chip — shown only when every on-site worker (excluding supervisors)
+      // has signed the current talk. Gives the supervisor a clear "we're done" indicator.
+      var allSignedChip = document.getElementById('talk-all-signed-chip');
+      var allSignedMeta = document.getElementById('talk-all-signed-meta');
+      if (allSignedChip) {
+        if (nonSupervisors.length > 0 && workerCount === nonSupervisors.length) {
+          allSignedChip.style.display = 'flex';
+          if (allSignedMeta) allSignedMeta.textContent = workerCount + ' of ' + nonSupervisors.length + ' workers \u00b7 signed for "' + (TODAYS_TALK ? TODAYS_TALK.title : 'Toolbox Talk') + '"';
+        } else {
+          allSignedChip.style.display = 'none';
+        }
+      }
     } else {
       supCard.style.display = 'none';
+    }
+  }
+
+  // Topic picker card — supervisor only. Shows current talk + buttons.
+  var setTopicCard = document.getElementById('talk-set-topic-card');
+  if (setTopicCard) {
+    if (isSupervisor) {
+      setTopicCard.style.display = 'block';
+      var curTitle = document.getElementById('set-topic-current-title');
+      var curMeta = document.getElementById('set-topic-current-meta');
+      if (curTitle) curTitle.textContent = (TODAYS_TALK ? TODAYS_TALK.title : '\u2014');
+      if (curMeta) {
+        var isCustom = TODAYS_TALK && TODAYS_TALK.version && TODAYS_TALK.version.indexOf('TBT-CUSTOM-') === 0;
+        var versionLabel = TODAYS_TALK && TODAYS_TALK.version ? TODAYS_TALK.version : '';
+        curMeta.textContent = (isCustom ? 'Custom talk' : 'From library') + (versionLabel ? ' \u00b7 ' + versionLabel : '');
+      }
+    } else {
+      setTopicCard.style.display = 'none';
     }
   }
 
@@ -16800,10 +17119,15 @@ function goToTalk() {
           }
         } catch(e) { if (supRostersCard) supRostersCard.style.display = 'none'; }
       }
+      // Show supervisor demo-seed button
+      var supSeedBtn = document.getElementById('talk-sup-seed-btn');
+      if (supSeedBtn) supSeedBtn.style.display = 'block';
     } else {
       rosterWrap.style.display = 'none';
       wrapupCard.style.display = 'none';
       if (supRostersCard) supRostersCard.style.display = 'none';
+      var supSeedBtnHide = document.getElementById('talk-sup-seed-btn');
+      if (supSeedBtnHide) supSeedBtnHide.style.display = 'none';
     }
   }
 
@@ -30132,17 +30456,11 @@ function startDemoAs(role) {
   p.created = new Date().toISOString(); p.demo = true; p.sig = null; p.photo = null;
   localStorage.setItem('slan_profile', JSON.stringify(p));
   localStorage.setItem('slan_onboarded', 'true');
-  // Workers start SIGNED OUT for demo so the toolbox gate can fire when they
-  // first try to sign in. Supervisors and directors start signed in so they
-  // land on their dashboard fully populated. Nobody starts with the toolbox
-  // pre-signed — that way the chip is amber until they actually sign through
-  // the proper flow (creates a real record + signature).
-  if (role === 'worker') {
-    localStorage.removeItem('slan_signed_in_today');
-    localStorage.removeItem('slan_signed_out_today');
-  } else {
-    localStorage.setItem('slan_signed_in_today', 'true');
-  }
+  // Everyone starts SIGNED OUT for demo so the toolbox gate fires when they
+  // first try to sign in. Nobody starts with the toolbox pre-signed either —
+  // the chip stays amber until they sign through the proper flow.
+  localStorage.removeItem('slan_signed_in_today');
+  localStorage.removeItem('slan_signed_out_today');
   localStorage.removeItem('talk_signed_' + today);
   localStorage.setItem('slan_site_ps_done_' + today, 'true');
 
@@ -30170,7 +30488,7 @@ function showDemoBanner() {
   var banner = document.createElement('div');
   banner.id = 'demo-banner';
   banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1B3A2D;color:var(--gold);font-size:11px;font-weight:600;text-align:center;padding:8px;z-index:9000;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:12px';
-  banner.innerHTML = '<span>DEMO MODE — data is simulated</span><button onclick="showDemoRoleSheet()" style="background:rgba(184,150,12,.2);border:1px solid rgba(184,150,12,.4);border-radius:5px;color:var(--gold);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit;margin-right:4px">Switch role</button><button onclick="exitDemo()" style="background:rgba(184,150,12,.2);border:1px solid rgba(184,150,12,.4);border-radius:5px;color:var(--gold);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit">Exit</button>';
+  banner.innerHTML = '<span>DEMO MODE — data is simulated</span><button onclick="seedFullDemo()" style="background:rgba(184,150,12,.25);border:1px solid rgba(184,150,12,.5);border-radius:5px;color:var(--gold);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit">⚡ Load demo data</button><button onclick="showDemoRoleSheet()" style="background:rgba(184,150,12,.2);border:1px solid rgba(184,150,12,.4);border-radius:5px;color:var(--gold);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit;margin-right:4px">Switch role</button><button onclick="exitDemo()" style="background:rgba(184,150,12,.2);border:1px solid rgba(184,150,12,.4);border-radius:5px;color:var(--gold);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit">Exit</button>';
   document.body.appendChild(banner);
 }
 
@@ -30709,6 +31027,12 @@ function tbtDownloadRosterPDF(targetTalkId) {
       if (yPos + neededSpace > PAGE_H - MB - 6) { doc.addPage(); return drawHeader(); }
       return yPos;
     }
+    // Like newPageIfNeeded but adds `gapIfStaying` only when we DON'T break to a
+    // new page. Avoids the dead-space-at-top-of-page-2 problem.
+    function sectionBreak(yPos, neededSpace, gapIfStaying) {
+      if (yPos + neededSpace > PAGE_H - MB - 6) { doc.addPage(); return drawHeader(); }
+      return yPos + (gapIfStaying || 0);
+    }
 
     var y = drawHeader();
     y += 2;
@@ -30763,8 +31087,7 @@ function tbtDownloadRosterPDF(targetTalkId) {
 
     // ── SUPERVISOR DEBRIEF ──
     if (wrapup && (wrapup.attendance != null || wrapup.hazards || wrapup.questions || wrapup.actions)) {
-      y = newPageIfNeeded(y, 30);
-      y += 4;
+      y = sectionBreak(y, 30, 4);
       y = drawMajorBanner(y, 'SUPERVISOR DEBRIEF');
       y += 4;
       if (wrapup.attendance != null) {
@@ -30807,8 +31130,7 @@ function tbtDownloadRosterPDF(targetTalkId) {
     }
 
     // ── SIGNATURE ROSTER ──
-    y = newPageIfNeeded(y, 30);
-    y += 4;
+    y = sectionBreak(y, 30, 4);
     y = drawMajorBanner(y, 'SIGNATURE ROSTER');
     y += 4;
     if (talkRecs.length === 0) {
@@ -30986,6 +31308,275 @@ function tbtShowGateModal() {
   overlay.onclick = function(e) { if (e.target === overlay) close(); };
 }
 
+// ─── TOPIC LIBRARY PICKER ─────────────────────────────────────
+// Bottom-sheet modal listing all 12 library topics + the supervisor's saved
+// custom talks. Tap one → it becomes the active talk.
+function openTopicPicker() {
+  var existing = document.getElementById('tbt-picker-modal');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'tbt-picker-modal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,25,20,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center;animation:tbtGateFade 200ms ease-out;font-family:\'DM Sans\',sans-serif';
+  var currentVersion = (TODAYS_TALK && TODAYS_TALK.version) || '';
+
+  function topicRowHtml(t, idx, kind) {
+    var isCurrent = t.version === currentVersion;
+    var sectionCount = (t.sections || []).length;
+    var pointCount = (t.sections || []).reduce(function(a,s){ return a + (s.points || []).length; }, 0);
+    var bullet = '';
+    if (kind === 'lib') bullet = (idx + 1).toString();
+    else bullet = '\u270E'; // pencil for custom
+    var deleteBtn = (kind === 'custom') ? '<button onclick="event.stopPropagation();confirmDeleteCustomTalk(\'' + t.version + '\')" style="background:transparent;border:none;color:#A32D2D;font-size:11px;cursor:pointer;padding:4px 8px;font-family:inherit;flex-shrink:0">Delete</button>' : '';
+    return '<div onclick="' + (kind === 'lib' ? 'pickLibraryTopic' : 'pickCustomTopic') + '(' + idx + ')" style="padding:13px 16px;border-bottom:1px solid #E5E9E6;cursor:pointer;display:flex;align-items:center;gap:11px;' + (isCurrent ? 'background:#F0F7E8' : '') + '">' +
+      '<div style="width:30px;height:30px;border-radius:15px;background:' + (isCurrent ? '#1B6E3A' : (kind === 'custom' ? '#FDF8EC' : '#E5F4EA')) + ';color:' + (isCurrent ? '#fff' : (kind === 'custom' ? '#BA7517' : '#1B6E3A')) + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700">' + (isCurrent ? '\u2713' : bullet) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13.5px;font-weight:600;color:#1A2A1F">' + (t.title || '').replace(/</g,'&lt;') + (isCurrent ? ' <span style="font-size:10px;color:#1B6E3A;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-left:4px">Current</span>' : '') + '</div>' +
+        '<div style="font-size:11px;color:#5C6B62;margin-top:2px">' + sectionCount + ' section' + (sectionCount === 1 ? '' : 's') + ' \u00b7 ' + pointCount + ' point' + (pointCount === 1 ? '' : 's') + '</div>' +
+      '</div>' +
+      deleteBtn +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>' +
+    '</div>';
+  }
+
+  var customLib = loadCustomLibrary();
+  var customSection = '';
+  if (customLib.length > 0) {
+    customSection =
+      '<div style="padding:10px 16px 6px;background:#FAFCF9;font-size:10.5px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid #E5E9E6">My custom talks (' + customLib.length + ')</div>' +
+      customLib.map(function(t, i){ return topicRowHtml(t, i, 'custom'); }).join('');
+  }
+  var libSection =
+    '<div style="padding:10px 16px 6px;background:#FAFCF9;font-size:10.5px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid #E5E9E6;border-top:1px solid #E5E9E6">Library (' + TBT_LIBRARY.length + ')</div>' +
+    TBT_LIBRARY.map(function(t, i){ return topicRowHtml(t, i, 'lib'); }).join('');
+
+  overlay.innerHTML =
+    '<div style="background:#fff;width:100%;max-width:480px;max-height:80vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 32px rgba(0,0,0,.18);animation:tbtGateSlide 240ms cubic-bezier(.22,.61,.36,1)">' +
+      '<div style="padding:18px 20px 12px;border-bottom:1px solid #E5E9E6;flex-shrink:0">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+          '<div>' +
+            '<div style="font-size:16px;font-weight:700;color:#1A2A1F">Choose toolbox topic</div>' +
+            '<div style="font-size:12px;color:#5C6B62;margin-top:2px">' + (customLib.length + TBT_LIBRARY.length) + ' topics available</div>' +
+          '</div>' +
+          '<button onclick="closeTopicPicker()" style="background:transparent;border:none;color:#5C6B62;font-size:14px;cursor:pointer;padding:6px 10px;font-family:inherit">Cancel</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="flex:1;overflow-y:auto">' + customSection + libSection + '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  overlay.onclick = function(e) { if (e.target === overlay) closeTopicPicker(); };
+}
+
+function closeTopicPicker() {
+  var ex = document.getElementById('tbt-picker-modal');
+  if (ex) ex.remove();
+}
+
+function pickLibraryTopic(idx) {
+  var topic = TBT_LIBRARY[idx];
+  if (!topic) return;
+  closeTopicPicker();
+  applyNewTalk(topic);
+}
+
+function pickCustomTopic(idx) {
+  var lib = loadCustomLibrary();
+  var topic = lib[idx];
+  if (!topic) return;
+  closeTopicPicker();
+  applyNewTalk(topic);
+}
+
+function confirmDeleteCustomTalk(version) {
+  var lib = loadCustomLibrary();
+  var t = lib.find(function(x){ return x.version === version; });
+  if (!t) return;
+  if (!confirm('Delete custom talk "' + t.title + '"?\n\nAny existing signatures or roster PDFs from this talk are kept in your records — only the saved template is removed.')) return;
+  deleteCustomTalkFromLibrary(version);
+  closeTopicPicker();
+  // Re-open with the updated list
+  setTimeout(openTopicPicker, 50);
+}
+
+// ─── CUSTOM TALK BUILDER ──────────────────────────────────────
+// Full-screen overlay with a simple form: title, presenter, 2-4 sections each
+// with 2-6 bullet points. Save → becomes the active talk with a generated
+// custom version ID.
+function openCustomTalkBuilder() {
+  var existing = document.getElementById('tbt-custom-modal');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'tbt-custom-modal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,25,20,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center;animation:tbtGateFade 200ms ease-out;font-family:\'DM Sans\',sans-serif';
+  overlay.innerHTML =
+    '<div style="background:#fff;width:100%;max-width:520px;max-height:92vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 32px rgba(0,0,0,.18);animation:tbtGateSlide 240ms cubic-bezier(.22,.61,.36,1)">' +
+      '<div style="padding:18px 20px 12px;border-bottom:1px solid #E5E9E6;flex-shrink:0;display:flex;align-items:center;justify-content:space-between">' +
+        '<div>' +
+          '<div style="font-size:16px;font-weight:700;color:#1A2A1F">Write a custom talk</div>' +
+          '<div style="font-size:12px;color:#5C6B62;margin-top:2px">For site-specific or one-off topics</div>' +
+        '</div>' +
+        '<button onclick="closeCustomTalkBuilder()" style="background:transparent;border:none;color:#5C6B62;font-size:14px;cursor:pointer;padding:6px 10px;font-family:inherit">Cancel</button>' +
+      '</div>' +
+      '<div style="flex:1;overflow-y:auto;padding:16px 20px">' +
+        '<div style="margin-bottom:14px">' +
+          '<label style="display:block;font-size:12px;font-weight:600;color:#3A453E;margin-bottom:6px">Talk title</label>' +
+          '<input id="ct-title" type="text" placeholder="e.g. Site-specific working at heights briefing" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:14px;width:100%;outline:none" autocomplete="off" />' +
+        '</div>' +
+        '<div style="margin-bottom:18px">' +
+          '<label style="display:block;font-size:12px;font-weight:600;color:#3A453E;margin-bottom:6px">Presenter</label>' +
+          '<input id="ct-presenter" type="text" placeholder="e.g. Site Supervisor — Eoin Burke" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:14px;width:100%;outline:none" autocomplete="off" />' +
+        '</div>' +
+        '<div id="ct-sections-wrap"></div>' +
+        '<button onclick="ctAddSection()" id="ct-add-section-btn" style="display:block;width:100%;padding:10px;margin-top:8px;background:transparent;color:#1B6E3A;border:1.5px dashed #1B6E3A;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">+ Add section</button>' +
+      '</div>' +
+      '<div style="padding:14px 20px;border-top:1px solid #E5E9E6;flex-shrink:0">' +
+        '<button onclick="saveCustomTalk()" style="display:block;width:100%;padding:12px;background:#1B6E3A;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Save and set as current talk</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  overlay.onclick = function(e) { if (e.target === overlay) closeCustomTalkBuilder(); };
+  // Start with 2 empty sections by default
+  window._ctSections = [];
+  ctAddSection();
+  ctAddSection();
+}
+
+function closeCustomTalkBuilder() {
+  var ex = document.getElementById('tbt-custom-modal');
+  if (ex) ex.remove();
+  window._ctSections = [];
+}
+
+function ctAddSection() {
+  if (!window._ctSections) window._ctSections = [];
+  if (window._ctSections.length >= 4) {
+    alert('Maximum 4 sections per talk.');
+    return;
+  }
+  var idx = window._ctSections.length;
+  window._ctSections.push({ idx: idx });
+  var wrap = document.getElementById('ct-sections-wrap');
+  if (!wrap) return;
+  var sec = document.createElement('div');
+  sec.id = 'ct-sec-' + idx;
+  sec.style.cssText = 'margin-bottom:14px;padding:12px;background:#F8FAF8;border:1px solid #E5E9E6;border-radius:8px';
+  sec.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
+      '<div style="font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.06em">Section ' + (idx + 1) + '</div>' +
+      (idx > 0 ? '<button onclick="ctRemoveSection(' + idx + ')" style="background:transparent;border:none;color:#A32D2D;font-size:11px;cursor:pointer;padding:2px 6px;font-family:inherit">Remove</button>' : '') +
+    '</div>' +
+    '<input id="ct-sec-heading-' + idx + '" type="text" placeholder="Section heading (e.g. Why this matters)" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:6px;font-family:\'DM Sans\',sans-serif;font-size:13px;width:100%;outline:none;margin-bottom:8px" autocomplete="off" />' +
+    '<textarea id="ct-sec-points-' + idx + '" placeholder="One bullet point per line. Minimum 2, maximum 6 points." rows="4" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:6px;font-family:\'DM Sans\',sans-serif;font-size:13px;width:100%;outline:none;resize:vertical"></textarea>';
+  wrap.appendChild(sec);
+  // Hide the add button if we hit the cap
+  if (window._ctSections.length >= 4) {
+    var btn = document.getElementById('ct-add-section-btn');
+    if (btn) btn.style.display = 'none';
+  }
+}
+
+function ctRemoveSection(idx) {
+  var el = document.getElementById('ct-sec-' + idx);
+  if (el) el.remove();
+  // Mark removed in the registry — we don't reindex DOM ids, just skip on save
+  if (window._ctSections && window._ctSections[idx]) window._ctSections[idx]._removed = true;
+  // Re-show add button if under cap
+  var live = (window._ctSections || []).filter(function(s){ return !s._removed; }).length;
+  if (live < 4) {
+    var btn = document.getElementById('ct-add-section-btn');
+    if (btn) btn.style.display = 'block';
+  }
+}
+
+function saveCustomTalk() {
+  var title = (document.getElementById('ct-title') || {}).value || '';
+  var presenter = (document.getElementById('ct-presenter') || {}).value || '';
+  title = title.trim();
+  presenter = presenter.trim();
+  if (!title) { alert('Please enter a talk title.'); return; }
+  if (!presenter) presenter = 'Site Supervisor';
+
+  var sections = [];
+  (window._ctSections || []).forEach(function(s) {
+    if (s._removed) return;
+    var headingEl = document.getElementById('ct-sec-heading-' + s.idx);
+    var pointsEl = document.getElementById('ct-sec-points-' + s.idx);
+    if (!headingEl || !pointsEl) return;
+    var heading = (headingEl.value || '').trim();
+    var pointsRaw = (pointsEl.value || '').split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 0; });
+    if (!heading) return;
+    if (pointsRaw.length < 2) return;
+    if (pointsRaw.length > 6) pointsRaw = pointsRaw.slice(0, 6);
+    sections.push({ heading: heading, points: pointsRaw });
+  });
+
+  if (sections.length < 1) {
+    alert('Please complete at least one section with a heading and at least 2 bullet points.');
+    return;
+  }
+
+  // Generate a custom version ID — date-based so each save creates a fresh talk_id
+  var d = new Date();
+  var ymd = d.getFullYear().toString() + ('0'+(d.getMonth()+1)).slice(-2) + ('0'+d.getDate()).slice(-2);
+  var hms = ('0'+d.getHours()).slice(-2) + ('0'+d.getMinutes()).slice(-2);
+  var newTalk = {
+    title: title,
+    presenter: presenter,
+    version: 'TBT-CUSTOM-' + ymd + '-' + hms,
+    sections: sections,
+    created_at: d.toISOString(),
+    is_custom: true
+  };
+  // Persist to the user's saved custom library so they can re-use the talk later
+  saveCustomTalkToLibrary(newTalk);
+  closeCustomTalkBuilder();
+  applyNewTalk(newTalk);
+}
+
+// ─── CUSTOM TALKS LIBRARY ────────────────────────────────────
+// Supervisor's saved custom talks persist under slan_tbt_custom_library_v1.
+// Browseable in the topic picker alongside the built-in 12 library talks.
+function loadCustomLibrary() {
+  try {
+    var raw = localStorage.getItem('slan_tbt_custom_library_v1');
+    if (!raw) return [];
+    var arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch(e) { return []; }
+}
+
+function saveCustomTalkToLibrary(talk) {
+  if (!talk || !talk.version) return;
+  var lib = loadCustomLibrary();
+  // Don't duplicate by version — overwrite if same version exists
+  var idx = lib.findIndex(function(t){ return t.version === talk.version; });
+  if (idx >= 0) lib[idx] = talk;
+  else lib.push(talk);
+  try { localStorage.setItem('slan_tbt_custom_library_v1', JSON.stringify(lib)); } catch(e) {}
+}
+
+function deleteCustomTalkFromLibrary(version) {
+  var lib = loadCustomLibrary().filter(function(t){ return t.version !== version; });
+  try { localStorage.setItem('slan_tbt_custom_library_v1', JSON.stringify(lib)); } catch(e) {}
+}
+
+// Apply a freshly chosen / created talk: persist, reassign TODAYS_TALK,
+// re-render the talk screen so the new content shows immediately.
+function applyNewTalk(talk) {
+  if (!talk || !talk.version) return;
+  setActiveTalk(talk);
+  if (typeof slanToast === 'function') {
+    slanToast('Topic set: ' + talk.title, 'success');
+  }
+  // Re-render the talk screen if active
+  if (typeof goToTalk === 'function' && document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
+    goToTalk();
+  } else if (typeof goToTalk === 'function') {
+    goToTalk();
+  }
+  // Update tile sub on home/dash
+  try { if (typeof updateAllTileSubs === 'function') updateAllTileSubs((typeof getProfile === 'function') ? getProfile() : null); } catch(e) {}
+}
+
 // Role-aware back from the talk screen
 function goTalkBack() {
   var me = (typeof getProfile === 'function') ? getProfile() : null;
@@ -30995,9 +31586,9 @@ function goTalkBack() {
 
 // Seed demo "previous toolbox talks" for the current user so the history view has content.
 // Adds 3 historical records (1 month ago, 2 months ago, 3 months ago) with realistic content.
-function tbtSeedDemoHistory() {
+function tbtSeedDemoHistory(silent) {
   var p = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!p || !p.name) { alert('Sign in first.'); return; }
+  if (!p || !p.name) { if (!silent) alert('Sign in first.'); return 0; }
   var key = 'slan_tbt_records_v1';
   var existing = [];
   try { existing = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { existing = []; }
@@ -31079,12 +31670,15 @@ function tbtSeedDemoHistory() {
   });
 
   try { localStorage.setItem(key, JSON.stringify(existing)); } catch(e) {}
-  if (typeof slanToast === 'function') slanToast('Loaded ' + added + ' demo previous talks.');
-  else alert('Loaded ' + added + ' demo previous talks.');
-  // Re-render the talk screen if we're on it
-  if (typeof goToTalk === 'function' && document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
-    goToTalk();
+  if (!silent) {
+    if (typeof slanToast === 'function') slanToast('Loaded ' + added + ' demo previous talks.');
+    else alert('Loaded ' + added + ' demo previous talks.');
+    // Re-render the talk screen if we're on it
+    if (typeof goToTalk === 'function' && document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
+      goToTalk();
+    }
   }
+  return added;
 }
 
 function tbtLoadForWorker(workerName) {
@@ -31094,6 +31688,314 @@ function tbtLoadForWorker(workerName) {
     .filter(function(r){ return (r.worker_name || '').toLowerCase() === workerName.toLowerCase(); })
     .sort(function(a,b){ return (b.signed_at || '').localeCompare(a.signed_at || ''); });
 }
+
+// Seed demo PREVIOUS MONTHLY ROSTERS for supervisors. Creates 3 historical talks
+// (different talk_ids, different months), each with multiple worker signatures
+// AND a complete supervisor debrief. So the "Previous monthly rosters" card
+// populates with re-downloadable full roster PDFs the supervisor can demo.
+function tbtSeedDemoSupervisorRosters(silent) {
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!p || !p.name) { if (!silent) alert('Sign in first.'); return 0; }
+
+  // 6 distinct demo signature PNGs so each worker has a unique mark
+  var DEMO_SIGS = [
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADVUlEQVR4nO2bQW7kMAwE85Q8ZN+0/78l2EOQxWDcpsgWJdtVQA7JSJQsddHJIR9fAHDIx+oNAOwMggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBYDqff/6u3kIaBHkAowF1BvpfrZ+vK4IgN2c0oM5A/18LQWAa2XCNBtQZ6NdaCAJTyAYsE1BXoN+tjSANXPWQs1QCNhpQZ6BnCLLq7i8jyMpOtOpysgHLBNQV6Nf5buG6uYQgK1/VO6x7FUHezXUKhyAHrDokV0d1rB2tk+ngrl+J3ILs8HdMSZCuDV9VEOffD7sLcjRvxRk4SQsyY9NHtVYckjMwXeHIdPCMUJF1o+tHaiLISb2rCeKa++77kbmR+TsK4tiTiy0EUWFydpEVIe8KR+T8nOtl62fqPVqQszC5BMl24soFd4YjI0g1jJGxjnqPFSQSJocgo/OvJsioBNX1XHuLjkWQiYKMzn8dV7ngrnBkBKmGsXPcIwWJhqkiSKabX02Q7OezhHTuMbuekyWCvJt79rPqpcwWJPpM0bnRGtlAZ9esNirX/rtoF2Skc3ULkg15pRufjXOEdfQsEOSXWwriDPpsQVYImBWk485H5nfQKshoJ8kIkr0M97zI3MqYbMPoWG/m/rtpEyQTNFfnq8xdsWZk3JUFcTfXmbQIkrmUzCXNCusMeSKfH42rNCfXXYyAIIaxVUFWyDNzTTXWIcjo+EowHfVuK4izS2aDejYmE/Tq82cFqXbfXQSp1Oik/P8g2Q56NjYaSoeoo89Rea7R+a/jHYJk1qvgqHU7QVydTgWrGtRojR0FGaEqiAMEGfgsUi8S5hWCVMI9ume1/ijVfTuo1LqVIK5Op+pWgzayz90EyZK5j124jSCuLhcVpLLfiiCVZ+p4A9yNWwhSfYhRQbr2u4MgP7WeCoJ8xYLofkNF6rjeWk9+AzhYcYY2QVy/I0fqOAWM1kKQPeg+v2/VLbCP31mzoAAAAABJRU5ErkJggg==',
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADaUlEQVR4nO2cTY4cIQxG5yg5SM6U++8SRVGUCHV94B8MFO9Js5kC7Lb9qF71108AeORrdQIAO4MgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCAzz7fuP1SmUgyAwxG85/v7dxHJBbiv4ifwvx239WiqIp+i3NWgHEMRJpFieot/apJW0fbqt9m5BIgXzFP3mJq0EQZwgyBgn5dryqU8nfx4P5YJ4in5qk07Lt2UnQVbFRZBJnJbvJ3YRZGXsUkHaPSNn7NIkK6fl2+Lp1ew8EKSz56SBOy3fFgT5Q5kgn9a/VZDT8m3x9mp2LgjS2XPKwGULsnIo1f8q83i1IE9rEcR2VhUI8o/pgqh11mfRQlUUOPMr4Yrh8F5mnhiWXBBk4FmkUFVF9ggy8gZ9gyCWumReNBGmCmL9CtV75i1UZZGtjR2tQfXbz/N89GwEGVxjva08haoschvD8vnfKsjToF8vyOiHsrwprIWqLnKmICuGI1uQp/ytcRDEOVSZ52ZgidkTIEMQ700fWdOu81x0rxDkNxk3/QxBPLfWSJ4ja3YRJHLbZ63x9hBBHtZmNCkjJ2vMpzWW4c8UxLrP82boxfT2cMblFiFdkMjNNaO43rye8rPm1atRtiCefVFBMuO9WpCM2y5zEC3PR3OL5jVSM2tNvDn3cu+ty8hx9NkqSbYUxBJzNG7GoHnkqxTEsy/jfOvQXilIRrGit5hlnyevnQWpqEtGv1VMjziz2U6QWTEja7ME6ckQ+YweQTw9yxjUqwWJnjErZuRGjTSuQhBrzpY1T/siIEjgHGvM7BgVgqj9WfEteVXjEfoVgkTP8sTN3DPjZkOQsdi75hv+6dFViXvieQfdO4TtmpGzLcOTJe4KRj63Wl9Fym/zriqylR0F+bRmRJDIQK2Wo83BWsdKlv+6eyXZX0dGm+YRpLcfQWq4XpBIcyxNs7xlenGqcp6JVZB2TxUI4hy2zGZZBIkO086CjO6r5GpBIsO2uyAVeUfwClLNL2DtsI+jQiOdAAAAAElFTkSuQmCC',
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADYElEQVR4nO2cSW7jQAxFc5QcpM/U99+lYTQC24L8i1NN0ntAFpZYA1l85az89QMAH/mavQGAlUEQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECQEuT7z9+qfQCYGdl3YUEem/z9a8UBVGHtuyq6CjI6Gbg2r/20vSAzkoFrgyAvY+EJ9fgPghjmvRvU48llBDkmYk2Gf8veoR5Poj2VBUEWhno8ub0gvQqwa2PNaohVuYwgZ4nMEmTn5kKQd24tSFQqz5w70aMeO+OtR2WtLinI7s2FIO946lFdr+mCHGOyCV6hua6QQyXWevSoV6kgkWavFKRathlcIYdqbiuIZY7K/ewAgrxjrUevb1wEWYhVchhdr4r/MJYT5NOmrIdrSTSyj+xcM1lBkMwF1WM9a022FOQYk3lu2YPn3Qh2kzzaYBXf+hlBLH0YZYogVU0dKa5lzorYKtFXFyTTlK2x1pogSGPtTEw03prDLEEy3wIjBLGsZ6mJkqWCckFUzNnn1ry9Yz7lkon1Nk0rdkTTRgTJ3NoIchJz9rk1b+R9Jm53Qaoavacg1vVuJ0hFY1c2nicPT2xVrhV59BIkupZ1rLenLOMilApiick0TeYgrDlkBam8DDIxqwpi3eetBfHMq55599h6t6Mg2UbJ1sCzlmdsJGfvXiwgiOOgLbemJ9+sRBWNMlIQz7leQpAH3qaKzJlJ2lPInQRprRFd31OD6jyye/fux0LJb/NGb0BLfDbZqlvLsi/Pvj15RS6M1QSpvKhe4zxrRRj249WezVbJcZxLPVPPz97NEiRzW1tiIjfzLEG8a0VY8tfdq+Q4znX2WcV657E2sje3yIURFbSHIN45EcRAD0EqD3KkIJExuwpSce63EORBRYIVglhvuZ6C/I7zxEbX997q2Vw9Z2ThNoJU4Cl8RhDrTVh5eIqRgqj3CLI4nqJ7GsMiRKTRqqhq2OgY67hjHIJMwFMwT3O0DjbSaFXsLkiGyjr/A29cvGNCYjjnAAAAAElFTkSuQmCC',
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADDElEQVR4nO3cS27jMBRE0SwlC8masv+ZAw8CGIZdep+iSFP3AD1oWx+S4lUHPcjXDcBbX7MHAKyMQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQDb0/fM7ewjbaAXCg1jP/Zn8/0FfORAexHoenwnPxYNANkIgfgSyEQLx+5hAeODHCMTvIwLhoR97jmOHtVphDssHsttDH2W3QFaZB4FsYqdAVprHpQKZvdiP3GMZEcisDUoghXt077XKgo8Yy6t1crxMZqzZav8STg9Ene9arJUWvDqW7Dq5XiaOa826t8PUQI6u4VisUT96dM7NjqWyTq6XietaZ9/bZVogkUXoLtboHz2OjouMKXO/0YE8n+t8MVXOuWwgkUVwLNboHz0ix1WvET3etalfnedc9+z9LxtIdNN2N7d7waNjUcdk55Ndp+o8I+PNIJCb50GMCsT5NsyOZXYg2blmr5253qUDues+CALp/89UZ66ZuURUN7n7eTmdEkhkw6jPHW/E6oJnxnK0od2BdObqOkYdTyDNRXYHUrlX9npnBBKdfzUQx3pGju3sj0sEUv2+EohrU2TH9u47tVlmBtLd9JljCaT5IDKLMypGx9ieP181ENcaRI/rPJOtA+ks7Ki3ouvNOTqQ6Jo4rtFZh+o4nN+fwR5IdyOOeiu6jvvEQKobjUDMgWQnRCD1OUY3ZmeTjdzg3fjOYgukMpluII4gM99HxxF5cYycuyOO7H3c50aPGc0eSPX8V3+vHhu9X/S7o+Mcgbjn7tpcmWid52aOG6n9q0e7k3gVWfSt2A2yMocZgVTn79hYkbGPOn+LQO46E/i0QCJjWSUQB3cg3bjONv2XV3cC6dxLfeYYcyaiyBhWCaTzMsmev0IgfwzI8bQZ3NjVAAAAAElFTkSuQmCC',
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADmklEQVR4nO2dS24bMRAFfZQcJGfK/XcOtDBgCDOP/SPZHFUBWWiGn0eyi9LK+foGgFu+dgcA6AyCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIHAcf/7+WzYXgjyElUWzk9c6f/6tAEFuOKngVhfNLn6v85GCnHKAJxXcjqLZxaMF6XSIKsNJBfeetXveLI8VpNMhjnJ0yjriFEEqcu1a60cJYsnRJeuIq4LpmLcq25GCWEJ2OsRRjk5ZR5wgSGW24wSxBu1yiJYcXbKOeM/XNa9nL7vWEYI421TmyfR9kiDen72PEaTTz4BOgmTGv+q7e2+vsO5lpA2CFGPJsSprdvwOgljmQZCNgnjHmSFIdB2ZvbBkn411LgRxLMrSPjKv9yZTOTyHUFHgJwriuTwsa/W2ufo8m6MEiRRYtSBVBe7t7ymiWSCIg9WCeG54bw5P1ooC9/b37vUMPNkR5Nt/o2UWFt0kaw7r+FXfALsFyZ5BxcVo2Q/v8xm0FyQzVhdBMrdgZq2Zdnd9EMTICkEyG+TpG3l2oiCR7Ff9EMRAJHxVYVQKEmmXXUdl0VvbrpA7evkgiOGdp11GkPd3nyBINPvVuKsEqaijCtoJUtEmcpuqdXiKxJKjah8ic82UO5rhYwSpLFzv3NH3TxYkckaRMUfjjvb7kYK88BZO1aKz44zkuGvjESSTMVIA1oyz5EaQC6oEqbgtPWNFBYnO4c2YFaSiuFYK4snvWUMFZYJEi6bitrS+U7k9bSoOsOqy8Kwpm+3unWfOjESeNVSxVZCKYrA8t+QetfHMs/KysOStyJbJXS2IdR0VbBOkqhgsz0c5vG28BWRdQ/bQVwhy9X6WICNmy/GiXJDK9taxrj57cljnsLyLClJ1I0bE9Lx/bxNpbx2zA0sFee9TNbd3XK/UlvkzGbx9MyCIj+WC/PTLki2w7EFUCrKyKCLfiqodggh2LqiiwDKZKwV9giCZea/G7MJHC1I1/9VnT//d2e+eWfpX/XJ4pCAvOgmye35Phk8UxDNmF0r+Nu+OBT1NkJVUf/vNytWBY/8DnY6CZMZYSVdBfsbuxH8/EXA/LlIoNwAAAABJRU5ErkJggg==',
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADcklEQVR4nO2bQW7dMAwFc5QepGfq/Xct/iJA4DrPeiQl6kczQDa2LFIUR/qbfPwFgG/56E4AYGcQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIACCowX59ftPdwqwOccK8pLj8687D9iXIwX5Kkdng+6QA2gQpKk53Rx2l2j3/KIgSMPGXuM/5dAt8xO755fhOEHc5uzOoTvXJ3bPLwuCLN7Uu/gIMh5rNQgSLHrmu9EcumV+ojq/0YNiJUcJ4p7eI/NkvkOQ+7me4qwEQRJNfrIgVYfN3Vzu+5kgiFHwqm/Vs6pcZzPjNj5ekM4Ndk9v9T2CzLmNjxake5M7Bflu/E6CZGSfKUj3IbFEkB1OwcymVsoVeT67dtn1VNyoCNIoiPvzpurbp7E7COLuTbYe7hwIsji+ejby3ei3I2NnC+LmhyD/M12Q7gVecxh5nv0uM39FA0ZzXCGIU9O73kGQyTmMPM+8c8eN3BaZE3o0dmY9FfVAkKYFRho9erO4Y+7GVZ7QOwkSqenbC+IUFEGex2VvLbfe0bGr3u/QP2FBZmxYJH4mz+hpXSHQ3diMINf3zvjZa47OjyAFsSs3NXLqR96rtUSaLCL6KkGiNY3uTTXTBJm1wFmbGm1qN2Z0PW4DVq49U+sqQZy5KnkrQWaeepnGdmKO5FARz5F4liAVtUCQYLzqTXVzq9rAjCCOBOpddJ7onCNzIEgy1gxBZueUyaHygJgtSEVN777/MYJU2h8tVvTki+ZV1RSj41yh1POKhkSQC5FTx11g9GSLxHGpEmT0W7f5dhDEBUECmxu5IVYUsuLEvM7nxHPyiz7PCBLhCEGyjTta6J8miBszMtapWWRN1YJUzx9hK0GcZus+ZVbL8TXu6LjVgjj5PeWMIMa7qviVdAni4DR9x434lIN6v4pSQZwbYuS5Gz86V4Td5XjhNP07CHIds4J2QTJXeacgq2NFeDdBrnmoMatoFSSzEZWyZdhVjhdZQbrYqabp/wdxGr7ylNpFkJ1xar2TIDvxDyTDFGrQjRB2AAAAAElFTkSuQmCC',
+
+  ];
+
+  // 3 historical talks with full content
+  var topics = [
+    {
+      title: 'Manual Handling',
+      version: 'TBT-MH-2026-03',
+      sections: [
+        { heading: 'Why this matters', points: [
+          'Sprains and strains are the single largest category of construction injuries.',
+          'Most manual handling injuries are preventable with proper technique and planning.'
+        ]},
+        { heading: 'Safe lifting practice', points: [
+          'Plan the lift \u2014 check weight, route, destination before lifting.',
+          'Bend at the knees, keep the back straight, hold the load close.',
+          'If a load is over 23 kg or awkward, use a mechanical aid or get help.'
+        ]}
+      ],
+      debrief: {
+        attendance: 12,
+        hazards: 'Heavy precast panels (~40kg) being unloaded near the eastern boundary. Crew identified pinch points between panels and the boundary fence as a specific concern.',
+        questions: 'Conor asked about the correct technique for two-person lifts of awkward shapes. We demonstrated using the load chart on the wall as a quick reference. Pat raised a concern about back belts being mandated by his previous employer \u2014 confirmed they are not required and not effective.',
+        actions: 'Order another set of trolley jacks for the south compound by Friday \u2014 Eoin. Update the manual handling SWMS to call out the precast panel pinch points specifically \u2014 Pat by Wed. Toolbox photo taken and filed.'
+      }
+    },
+    {
+      title: 'Hand and Power Tools',
+      version: 'TBT-HPT-2026-02',
+      sections: [
+        { heading: 'Why this matters', points: [
+          'Power-tool injuries are common and often preventable.',
+          'Most incidents come from skipped pre-use checks or wrong tool for the job.'
+        ]},
+        { heading: 'Before you start', points: [
+          'Inspect the tool \u2014 cords, guards, switches, casings.',
+          'Confirm the tool is correctly tagged and within its test date.',
+          'Wear the right PPE \u2014 eye protection, hearing, gloves where appropriate.'
+        ]}
+      ],
+      debrief: {
+        attendance: 14,
+        hazards: 'Dust hazard from cutting fibre cement boards in the carpark area. Crew confirmed they will only cut in the designated bay with on-tool extraction running.',
+        questions: 'Mark asked when angle grinder guards can be removed \u2014 confirmed: never. Brendan flagged that one of the kango hammers had been making a strange noise; pulled it from service and tagged for repair.',
+        actions: 'Send the kango hammer for service \u2014 Eoin (lodged with supplier same day). Replace torn dust extraction hose \u2014 Pat by Tuesday. Inspect all 110V transformers for cable damage during next pre-start \u2014 Eoin.'
+      }
+    },
+    {
+      title: 'Electrical Safety',
+      version: 'TBT-ES-2026-01',
+      sections: [
+        { heading: 'Why this matters', points: [
+          'Electrical incidents on construction sites are typically severe \u2014 burns, cardiac arrest, falls.',
+          'Underground and overhead services cause many of these incidents.'
+        ]},
+        { heading: 'Key controls', points: [
+          'Test before you touch \u2014 always treat circuits as live until proven dead.',
+          'Lock out and tag out before any work on isolated equipment.',
+          'Maintain safe approach distances to overhead lines per the regulator\u2019s code.'
+        ]}
+      ],
+      debrief: {
+        attendance: 11,
+        hazards: 'Overhead 11kV line on the eastern boundary remains a permanent exclusion concern \u2014 6m exclusion zone re-marked. Temporary submains running across loading bay flagged for relocation.',
+        questions: 'Wayne asked about double-isolation on the new switchboard \u2014 confirmed required for any work, even a re-fuse. Tom raised that one of the temporary RCDs had been tripping intermittently; pulled from service and replaced.',
+        actions: 'Relocate temporary submains under the gantry by end of week \u2014 Wayne. Update the LOTO register with two new isolation points \u2014 Eoin. Order replacement RCDs (3 spares) \u2014 Pat.'
+      }
+    }
+  ];
+
+  // Worker roster — diverse mix of names/companies/roles for realistic demo
+  var workers = [
+    { name: 'Jake Ryan',       company: 'Murphy Civil Construction', role: 'Carpenter' },
+    { name: 'Mark Flynn',      company: 'Murphy Civil Construction', role: 'Labourer' },
+    { name: 'Brendan Kelly',   company: 'Crane Hire QLD',            role: 'Crane Operator' },
+    { name: 'Lee O\u2019Brien',     company: 'Murphy Civil Construction', role: 'Rigger' },
+    { name: 'Wayne Slattery',  company: 'Sparks Electrical',         role: 'Electrician' },
+    { name: 'Tom Burke',       company: 'Murphy Civil Construction', role: 'Apprentice' },
+    { name: 'Mick Doyle',      company: 'Doyle Earthworks',          role: 'Excavator Operator' },
+    { name: 'Sam Carroll',     company: 'Murphy Civil Construction', role: 'Concreter' }
+  ];
+
+  var key = 'slan_tbt_records_v1';
+  var wrapupKey = 'slan_tbt_wrapups_v1';
+  var existing = [];
+  var allWrapups = {};
+  try { existing = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  try { allWrapups = JSON.parse(localStorage.getItem(wrapupKey) || '{}'); } catch(e) {}
+
+  var addedRecs = 0;
+  var addedWrapups = 0;
+
+  topics.forEach(function(t, tIdx) {
+    // Date — 1, 2, 3 months ago
+    var d = new Date();
+    d.setMonth(d.getMonth() - (tIdx + 1));
+    var dateStr = d.toLocaleDateString('en-AU');
+    var baseTime = new Date(d);
+    baseTime.setHours(7, 30, 0, 0);
+
+    // 6 workers signed each talk (rotates through the workers list)
+    for (var i = 0; i < 6; i++) {
+      var w = workers[(i + tIdx) % workers.length];
+      // Stagger sign-times by 1-2 minutes
+      var signTime = new Date(baseTime.getTime() + i * 90 * 1000);
+      var timeStr = signTime.toLocaleTimeString('en-AU', { hour:'2-digit', minute:'2-digit', hour12:true });
+      var rid = 'TBT-' + dateStr.replace(/\//g,'') + '-' + w.name.replace(/\s+/g,'').replace(/\u2019/g,'').slice(0,8);
+      // Skip if already seeded
+      if (existing.some(function(r){ return r.record_id === rid; })) continue;
+      existing.push({
+        record_id: rid,
+        worker_name: w.name,
+        company: w.company,
+        role: w.role,
+        site: typeof SITE !== 'undefined' ? SITE : 'Demo Site',
+        talk_id: t.version,
+        talk_title: t.title,
+        presenter: 'Site Supervisor',
+        sections_snapshot: t.sections,
+        date: dateStr,
+        time: timeStr,
+        signed_at: signTime.toISOString(),
+        signature: DEMO_SIGS[i % DEMO_SIGS.length]
+      });
+      addedRecs++;
+    }
+
+    // Add the supervisor's own attendance record
+    var supTime = new Date(baseTime.getTime() + 9 * 60 * 1000);
+    var supTimeStr = supTime.toLocaleTimeString('en-AU', { hour:'2-digit', minute:'2-digit', hour12:true });
+    var supRid = 'TBT-' + dateStr.replace(/\//g,'') + '-' + (p.name || 'SUP').replace(/\s+/g,'').slice(0,8);
+    if (!existing.some(function(r){ return r.record_id === supRid; })) {
+      existing.push({
+        record_id: supRid,
+        worker_name: p.name,
+        company: p.company || '',
+        role: p.role || 'Site Supervisor',
+        site: typeof SITE !== 'undefined' ? SITE : 'Demo Site',
+        talk_id: t.version,
+        talk_title: t.title,
+        presenter: 'Site Supervisor',
+        sections_snapshot: t.sections,
+        date: dateStr,
+        time: supTimeStr,
+        signed_at: supTime.toISOString(),
+        signature: p.sig || DEMO_SIGS[0]
+      });
+      addedRecs++;
+    }
+
+    // Save the supervisor debrief for this talk
+    var wuKey = t.version + '|' + dateStr;
+    if (!allWrapups[wuKey]) {
+      allWrapups[wuKey] = {
+        talk_id: t.version,
+        date: dateStr,
+        attendance: t.debrief.attendance,
+        hazards: t.debrief.hazards,
+        questions: t.debrief.questions,
+        actions: t.debrief.actions,
+        supervisor_name: p.name || 'Site Supervisor',
+        saved_at: supTime.toISOString()
+      };
+      addedWrapups++;
+    }
+  });
+
+  try {
+    localStorage.setItem(key, JSON.stringify(existing));
+    localStorage.setItem(wrapupKey, JSON.stringify(allWrapups));
+  } catch(e) {
+    alert('Could not save demo data: ' + (e.message || e));
+    return;
+  }
+
+  if (!silent) {
+    if (typeof slanToast === 'function') {
+      slanToast('Loaded ' + addedRecs + ' demo signatures across ' + addedWrapups + ' previous rosters.');
+    } else {
+      alert('Loaded ' + addedRecs + ' demo signatures across ' + addedWrapups + ' previous rosters.');
+    }
+    // Re-render the talk screen if we're on it
+    if (typeof goToTalk === 'function' && document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
+      goToTalk();
+    }
+  }
+  return addedRecs;
+}
+
+
+// ─── HAZARD SEEDER ─────────────────────────────────────────────
+// Creates 4 demo hazards on site so the Hazards tile / chip / list look populated.
+function seedDemoHazards(silent) {
+  var key = 'slan_hazards';
+  var existing = [];
+  try { existing = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  var now = Date.now();
+  var demos = [
+    {
+      id: 'HAZ-DEMO-01',
+      title: 'Damaged edge protection on Level 4 north',
+      description: 'Top rail removed for material delivery, not yet reinstated. Approximately 6 m exposed.',
+      location: 'Level 4 north slab edge',
+      severity: 'High',
+      status: 'open',
+      reporter_name: 'Jake Ryan',
+      reporter_company: 'Murphy Civil Construction',
+      reported_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+      photos: []
+    },
+    {
+      id: 'HAZ-DEMO-02',
+      title: 'Slip hazard \u2014 oil leak from compactor',
+      description: 'Hydraulic oil pooled near the south compound gate. Absorbent has been put down but spread is approx. 1.5 m².',
+      location: 'South compound, near gate',
+      severity: 'Medium',
+      status: 'open',
+      reporter_name: 'Mark Flynn',
+      reporter_company: 'Murphy Civil Construction',
+      reported_at: new Date(now - 5 * 60 * 60 * 1000).toISOString(),
+      photos: []
+    },
+    {
+      id: 'HAZ-DEMO-03',
+      title: 'Frayed extension lead in plant room',
+      description: 'Live 240V lead with damaged outer sheath approximately 200mm from plug end. Tagged out.',
+      location: 'Plant room \u2014 ground floor',
+      severity: 'High',
+      status: 'resolved',
+      reporter_name: 'Wayne Slattery',
+      reporter_company: 'Sparks Electrical',
+      reported_at: new Date(now - 26 * 60 * 60 * 1000).toISOString(),
+      resolved_at: new Date(now - 22 * 60 * 60 * 1000).toISOString(),
+      resolution: 'Lead removed from service and replaced. New PAT-tested lead in place.',
+      photos: []
+    },
+    {
+      id: 'HAZ-DEMO-04',
+      title: 'Trip hazard \u2014 cable run across walkway',
+      description: 'Welding leads running across the main pedestrian route to the eastern compound. Need ramps.',
+      location: 'Pedestrian walkway \u2014 east boundary',
+      severity: 'Low',
+      status: 'open',
+      reporter_name: 'Tom Burke',
+      reporter_company: 'Murphy Civil Construction',
+      reported_at: new Date(now - 8 * 60 * 60 * 1000).toISOString(),
+      photos: []
+    }
+  ];
+  var added = 0;
+  demos.forEach(function(d) {
+    if (existing.some(function(x) { return x.id === d.id; })) return;
+    existing.push(d);
+    added++;
+  });
+  try { localStorage.setItem(key, JSON.stringify(existing)); } catch(e) {}
+  if (!silent) {
+    if (typeof slanToast === 'function') slanToast('Loaded ' + added + ' demo hazards.');
+    else alert('Loaded ' + added + ' demo hazards.');
+  }
+  return added;
+}
+
+// ─── MASTER DEMO LOADER ─────────────────────────────────────────
+// One-tap loader that fills the entire app with realistic demo data so the
+// supervisor (or worker) lands on a fully populated portal without manual setup.
+// Calls each module's seeder silently and reports a single summary toast.
+function seedFullDemo() {
+  if (!confirm('Load full demo data?\n\nThis will populate:\n\u2022 24 permits across 12 types\n\u2022 4 site hazards (mix of open and resolved)\n\u2022 3 previous monthly toolbox rosters with signatures + debriefs\n\u2022 3 previous talks for the current worker\n\nAdds to existing data \u2014 won\u2019t duplicate.')) return;
+
+  var totals = { permits: 0, hazards: 0, rosters: 0, talks: 0 };
+  try { totals.permits = ptwSeedDemoPermits(true) || 0; } catch(e) {}
+  try { totals.hazards = seedDemoHazards(true) || 0; } catch(e) {}
+  try { totals.rosters = tbtSeedDemoSupervisorRosters(true) || 0; } catch(e) {}
+  try { totals.talks   = tbtSeedDemoHistory(true) || 0; } catch(e) {}
+
+  // Refresh whatever screen is active
+  try { if (typeof ptwRenderUnified === 'function') ptwRenderUnified(); } catch(e) {}
+  try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
+  try { if (typeof updateAllTileSubs === 'function') updateAllTileSubs((typeof getProfile === 'function') ? getProfile() : null); } catch(e) {}
+  try {
+    if (document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
+      goToTalk();
+    }
+  } catch(e) {}
+
+  var msg = 'Demo loaded: ' + totals.permits + ' permits, ' + totals.hazards + ' hazards, ' + totals.rosters + ' roster signatures, ' + totals.talks + ' worker talks.';
+  if (typeof slanToast === 'function') slanToast(msg, 'success');
+  else alert(msg);
+}
+
 
 // Build a downloadable PDF of one signed toolbox talk record.
 // Styled to match the permit PDFs (generatePermitPDF) — same colour palette,
@@ -31266,14 +32168,25 @@ function tbtDownloadPDF(recordId) {
     });
 
     // ═════════════════════════════════════════════════════════════
-    // ACKNOWLEDGEMENT & SIGNATURE
+    // ACKNOWLEDGEMENT & SIGNATURE — keep together on one page
     // ═════════════════════════════════════════════════════════════
-    y = newPageIfNeeded(y, 80);
-    y += 8;
+    // Estimate combined block height: ACK banner (12) + 2 statements (~30 worst case)
+    // + gap (6) + SIG banner (12) + signed-by stack (~25) + signature box (28) + caption (4) = ~117mm
+    var combinedNeeded = 120;
+    // If the combined block doesn't fit on the current page, force a new page now
+    // so the ACK banner + everything else lands together.
+    var startedNewPageForAck = false;
+    if (y + combinedNeeded > PAGE_H - MB - 6) {
+      doc.addPage();
+      y = drawHeader();
+      startedNewPageForAck = true;
+    } else {
+      y += 8; // separation from talk content above
+    }
     y = drawMajorBanner(y, 'ACKNOWLEDGEMENT');
-    y += 3;
+    y += 4;
 
-    // Two ticked statements inside a soft card
+    // Two ticked statements
     var statements = [
       'I confirm I have read and understood this toolbox talk content, the safety information presented, and have had the opportunity to ask questions or raise concerns.',
       'I commit to applying this knowledge, working safely in accordance with the controls discussed, and reporting any unsafe conditions or near misses to my supervisor immediately.'
@@ -31282,55 +32195,62 @@ function tbtDownloadPDF(recordId) {
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     statements.forEach(function(s){
       var lines = doc.splitTextToSize(s, CW - 12);
-      var blockH = lines.length * 5 + 4;
-      y = newPageIfNeeded(y, blockH);
       drawTick(ML + 1, y - 1, C.greenDark, 3.5);
       setText(C.darkText);
       doc.text(lines, ML + 8, y);
-      y += lines.length * 5 + 3;
+      y += lines.length * 5 + 4;
     });
     y += 6;
 
-    // ── SIGNATURE BLOCK ──
-    y = newPageIfNeeded(y, 60);
-    y = drawMajorBanner(y, 'SIGNATURE');
-    y += 3;
+    // ── SIGNATURE BLOCK ── (tight, no banner needed — flows from ACK)
+    setStroke(C.greenBorder); doc.setLineWidth(0.3);
+    doc.line(ML, y, PAGE_W - MR, y);
+    y += 6;
 
-    // Left column: signer details
+    // SIGNED BY label
     setText(C.subLabel || '#5C6B62');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
     doc.text('SIGNED BY', ML, y); y += 5;
 
-    setText(C.darkText);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-    doc.text(r.worker_name || '\u2014', ML, y);
-
-    // Right column on same row: signature image (larger, properly spaced)
+    // Two-column layout: left = signer info, right = signature box
     var sigW = 70, sigH = 28;
-    var sigX = ML + CW - sigW;
-    var sigY = y - 5; // align top of sig box with name baseline
-    setStroke(C.greyLight); doc.setLineWidth(0.4);
-    doc.rect(sigX, sigY, sigW, sigH);
-    if (r.signature) {
-      try { doc.addImage(r.signature, 'PNG', sigX + 1, sigY + 1, sigW - 2, sigH - 2); } catch(e) {}
-    }
+    var sigX = PAGE_W - MR - sigW;
+    var sigBoxY = y - 1;
 
-    y += 5;
+    // Right side: signature box first (so we can know its bottom)
+    setStroke(C.greyLight); doc.setLineWidth(0.4);
+    doc.rect(sigX, sigBoxY, sigW, sigH);
+    if (r.signature) {
+      try { doc.addImage(r.signature, 'PNG', sigX + 1, sigBoxY + 1, sigW - 2, sigH - 2); } catch(e) {}
+    }
+    setText(C.greyLabel || '#888888');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+    doc.text('Worker signature', sigX + sigW/2, sigBoxY + sigH + 3.5, { align:'center' });
+
+    // Left side: signer details
+    var leftMaxW = sigX - ML - 6;
+    setText(C.darkText);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+    var nameLines = doc.splitTextToSize(r.worker_name || '\u2014', leftMaxW);
+    doc.text(nameLines, ML, y + 4);
+    var nameY = y + 4 + (nameLines.length - 1) * 5.5;
+
     setText(C.subLabel || '#5C6B62');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
     var sub = [];
     if (r.role) sub.push(r.role);
     if (r.company) sub.push(r.company);
-    if (sub.length) { doc.text(sub.join('  \u00b7  '), ML, y); y += 5; }
+    if (sub.length) {
+      var subLines = doc.splitTextToSize(sub.join('  \u00b7  '), leftMaxW);
+      doc.text(subLines, ML, nameY + 5.5);
+    }
 
     setText(C.greyLabel || '#888888');
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.text('Signed ' + (r.date || '') + (r.time ? ' at ' + r.time : ''), ML, y);
+    doc.text('Signed ' + (r.date || '') + (r.time ? ' at ' + r.time : ''), ML, nameY + 12);
 
-    // Caption under signature box
-    setText(C.greyLabel || '#888888');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-    doc.text('Worker signature', sigX + sigW/2, sigY + sigH + 3, { align:'center' });
+    // Advance y past the taller of the two columns
+    y = Math.max(nameY + 16, sigBoxY + sigH + 7);
 
     // Footer on every page
     var pages = doc.internal.getNumberOfPages();
