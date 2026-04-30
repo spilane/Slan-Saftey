@@ -30069,9 +30069,19 @@ function startDemoAs(role) {
   p.created = new Date().toISOString(); p.demo = true; p.sig = null; p.photo = null;
   localStorage.setItem('slan_profile', JSON.stringify(p));
   localStorage.setItem('slan_onboarded', 'true');
-  localStorage.setItem('slan_signed_in_today', 'true');
+  // Workers start SIGNED OUT for demo so the toolbox gate can fire when they
+  // first try to sign in. Supervisors and directors start signed in so they
+  // land on their dashboard fully populated.
+  if (role === 'worker') {
+    localStorage.removeItem('slan_signed_in_today');
+    localStorage.removeItem('slan_signed_out_today');
+    // Don't pre-sign the toolbox either — let them experience the full flow.
+    localStorage.removeItem('talk_signed_' + today);
+  } else {
+    localStorage.setItem('slan_signed_in_today', 'true');
+    localStorage.setItem('talk_signed_' + today, '07:30');
+  }
   localStorage.setItem('slan_site_ps_done_' + today, 'true');
-  localStorage.setItem('talk_signed_' + today, '07:30');
 
   var sheet = document.getElementById('demo-role-sheet');
   if (sheet) sheet.remove();
@@ -30555,46 +30565,54 @@ function tbtDownloadRosterPDF() {
     }
 
     var y = drawHeader();
+    y += 2;
 
     // ── HEADER DETAILS ──
     y = drawMajorBanner(y, 'TALK DETAILS');
+    y += 3;
     setText(C.darkText);
-    doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.setFont('helvetica','bold'); doc.setFontSize(14);
     doc.text(TODAYS_TALK.title || 'Toolbox Talk', ML, y); y += 6;
     setText(C.subLabel || '#5C6B62');
     doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    doc.text((TODAYS_TALK.version || '') + '  \u00b7  Generated ' + todayDate, ML, y); y += 5;
+    doc.text((TODAYS_TALK.version || '') + '  \u00b7  Generated ' + todayDate, ML, y); y += 7;
     drawField(ML, y, 'Site', (typeof SITE !== 'undefined') ? SITE : '\u2014');
     drawField(ML + CW/2, y, 'Presenter', TODAYS_TALK.presenter || '\u2014');
     y += 6;
     drawField(ML, y, 'Total signed', String(talkRecs.length));
     drawField(ML + CW/2, y, 'Roster generated', new Date().toLocaleString('en-AU'));
-    y += 7;
+    y += 10;
 
     // ── TALK CONTENT ──
-    y = newPageIfNeeded(y, 14);
+    y = newPageIfNeeded(y, 18);
     y = drawMajorBanner(y, 'TALK CONTENT');
+    y += 5;
     var sections = TODAYS_TALK.sections || [];
-    sections.forEach(function(sec){
-      y = newPageIfNeeded(y, 14);
+    sections.forEach(function(sec, secIdx){
+      y = newPageIfNeeded(y, 18);
+      // Section heading — green left bar + heading text on a pale background row
+      var headerH = 8;
       setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
-      doc.rect(ML, y - 4.5, CW, 6, 'FD');
+      doc.rect(ML, y, CW, headerH, 'FD');
+      setFill(C.greenDark);
+      doc.rect(ML, y, 1.5, headerH, 'F');
       setText(C.darkText);
-      doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
-      doc.text(sec.heading || '', ML + 3, y - 0.5);
-      y += 4;
-      doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+      doc.setFont('helvetica','bold'); doc.setFontSize(10);
+      doc.text(sec.heading || '', ML + 5, y + headerH/2 + 1.5);
+      y += headerH + 4;
+
+      doc.setFont('helvetica','normal'); doc.setFontSize(10);
       (sec.points || []).forEach(function(pt){
-        var lines = doc.splitTextToSize(pt, CW - 6);
-        var blockH = lines.length * 4.2 + 2;
+        var lines = doc.splitTextToSize(pt, CW - 8);
+        var blockH = lines.length * 5 + 3;
         y = newPageIfNeeded(y, blockH);
-        setFill(C.darkGreen);
-        doc.circle(ML + 2, y - 1.2, 0.7, 'F');
+        setFill(C.greenDark);
+        doc.circle(ML + 2.2, y - 1.5, 0.9, 'F');
         setText(C.darkText);
-        doc.text(lines, ML + 6, y);
-        y += blockH;
+        doc.text(lines, ML + 7, y);
+        y += lines.length * 5 + 2;
       });
-      y += 2;
+      if (secIdx < sections.length - 1) y += 5;
     });
 
     // ── SUPERVISOR DEBRIEF ──
@@ -30628,53 +30646,67 @@ function tbtDownloadRosterPDF() {
 
     // ── SIGNATURE ROSTER ──
     y = newPageIfNeeded(y, 30);
-    y += 2;
+    y += 4;
     y = drawMajorBanner(y, 'SIGNATURE ROSTER');
+    y += 4;
     if (talkRecs.length === 0) {
       setText(C.subLabel || '#5C6B62');
       doc.setFont('helvetica','italic'); doc.setFontSize(10);
       doc.text('No signatures captured yet.', ML, y);
-      y += 6;
+      y += 8;
     } else {
-      // Render a table-style row per signer
-      var ROW_H = 28;
+      // Render a table-style row per signer — taller, more breathing room
+      var ROW_H = 34;
+      var ROW_GAP = 3;
       talkRecs.forEach(function(rec, idx){
-        y = newPageIfNeeded(y, ROW_H + 2);
-        // Light background for alternating rows
+        y = newPageIfNeeded(y, ROW_H + ROW_GAP);
+        // Row background — subtle alternating tint
         if (idx % 2 === 0) {
-          setFill('#FAFCF9'); setStroke(C.greenBorder); doc.setLineWidth(0.15);
-          doc.rect(ML, y - 2, CW, ROW_H, 'FD');
+          setFill('#FAFCF9'); setStroke(C.greenBorder); doc.setLineWidth(0.2);
+          doc.rect(ML, y, CW, ROW_H, 'FD');
         } else {
-          setStroke(C.greyLight); doc.setLineWidth(0.15);
-          doc.rect(ML, y - 2, CW, ROW_H);
+          setFill('#FFFFFF'); setStroke(C.greyLight); doc.setLineWidth(0.2);
+          doc.rect(ML, y, CW, ROW_H, 'FD');
         }
+        var pad = 5;
         // Left column: name + role + company + signed-at
         setText(C.darkText);
-        doc.setFont('helvetica','bold'); doc.setFontSize(10);
-        doc.text(rec.worker_name || '\u2014', ML + 3, y + 3);
+        doc.setFont('helvetica','bold'); doc.setFontSize(11);
+        doc.text(rec.worker_name || '\u2014', ML + pad, y + 7);
+
         setText(C.subLabel || '#5C6B62');
+        doc.setFont('helvetica','normal'); doc.setFontSize(9);
+        var line2 = (rec.role || '') + (rec.company ? '  \u00b7  ' + rec.company : '');
+        if (line2) doc.text(line2, ML + pad, y + 13);
+
+        setText(C.greyLabel || '#888888');
         doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-        doc.text((rec.role || '') + (rec.company ? ' \u00b7 ' + rec.company : ''), ML + 3, y + 7.5);
-        doc.text('Signed ' + (rec.date || '') + (rec.time ? ' at ' + rec.time : ''), ML + 3, y + 12);
-        // Late-signer flag
+        doc.text('Signed ' + (rec.date || '') + (rec.time ? ' at ' + rec.time : ''), ML + pad, y + 19);
+
+        // Late-signer flag (badge style)
         if (rec.date !== todayDate) {
-          setFill(C.amberBg); setStroke(C.amberDark); doc.setLineWidth(0.2);
-          doc.roundedRect(ML + 3, y + 14, 26, 4.5, 1, 1, 'FD');
+          var badgeW = 30, badgeH = 5.5;
+          setFill(C.amberBg); setStroke(C.amberDark); doc.setLineWidth(0.3);
+          doc.roundedRect(ML + pad, y + 22, badgeW, badgeH, 1.2, 1.2, 'FD');
           setText(C.amberDark);
           doc.setFont('helvetica','bold'); doc.setFontSize(7);
-          doc.text('LATE SIGNER', ML + 16, y + 17.2, {align:'center'});
+          doc.text('LATE SIGNER', ML + pad + badgeW/2, y + 25.7, {align:'center'});
         }
-        // Right column: signature image
-        var sigX = ML + CW - 70, sigY = y + 1, sigW = 65, sigH = 22;
+
+        // Right column: signature image (clean box with caption)
+        var sigW = 70, sigH = 22;
+        var sigX = ML + CW - sigW - pad;
+        var sigY = y + 4;
+        setStroke(C.greyLight); doc.setLineWidth(0.3);
+        doc.rect(sigX, sigY, sigW, sigH);
         if (rec.signature) {
-          try { doc.addImage(rec.signature, 'PNG', sigX, sigY, sigW, sigH); } catch(e) {}
+          try { doc.addImage(rec.signature, 'PNG', sigX + 1, sigY + 1, sigW - 2, sigH - 2); } catch(e) {}
         }
-        setStroke(C.greyLight); doc.setLineWidth(0.2);
-        doc.line(sigX, sigY + sigH, sigX + sigW, sigY + sigH);
         setText(C.greyLabel || '#888888');
         doc.setFont('helvetica','normal'); doc.setFontSize(7);
-        doc.text('Signature', sigX + sigW/2, sigY + sigH + 2.5, {align:'center'});
-        y += ROW_H + 2;
+        doc.text('Signature', sigX + sigW/2, sigY + sigH + 3, {align:'center'});
+
+        y += ROW_H + ROW_GAP;
       });
     }
 
@@ -30721,15 +30753,75 @@ function tbtBlocksSignInOut() {
   if (typeof TODAYS_TALK === 'undefined' || !TODAYS_TALK) return false;
   var signed = tbtHasSignedCurrent(p.name);
   if (signed) return false;
-  // Show a hard block dialog with one path: go sign the talk
-  var goNow = confirm('Toolbox Talk required\n\nYou must sign the current toolbox talk ("' +
-    (TODAYS_TALK.title || 'Toolbox Talk') +
-    '") before signing in or out.\n\nThis is a WHS requirement — every worker on site must acknowledge current safety information.\n\nTap OK to sign it now.');
-  if (goNow) {
+  // Show the styled gate modal — matches the app's visual language.
+  tbtShowGateModal();
+  return true;
+}
+
+// Renders a styled modal overlay that asks the worker to sign the current
+// toolbox talk before they can sign in or out. One CTA — go sign it.
+function tbtShowGateModal() {
+  // Remove any prior instance
+  var existing = document.getElementById('tbt-gate-modal');
+  if (existing) existing.remove();
+  var talkTitle = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? (TODAYS_TALK.title || 'Toolbox Talk') : 'Toolbox Talk';
+  var overlay = document.createElement('div');
+  overlay.id = 'tbt-gate-modal';
+  overlay.style.cssText =
+    'position:fixed;inset:0;background:rgba(15,25,20,.55);z-index:9999;' +
+    'display:flex;align-items:flex-end;justify-content:center;' +
+    'animation:tbtGateFade 200ms ease-out;font-family:\'DM Sans\',sans-serif';
+  overlay.innerHTML =
+    '<style>' +
+      '@keyframes tbtGateFade{from{opacity:0}to{opacity:1}}' +
+      '@keyframes tbtGateSlide{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}' +
+    '</style>' +
+    '<div style="' +
+      'background:#fff;width:100%;max-width:440px;border-radius:18px 18px 0 0;' +
+      'padding:22px 22px 18px;box-shadow:0 -8px 32px rgba(0,0,0,.18);' +
+      'animation:tbtGateSlide 240ms cubic-bezier(.22,.61,.36,1)' +
+    '">' +
+      // Amber warning header
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">' +
+        '<div style="width:42px;height:42px;border-radius:21px;background:#FDF8EC;border:1.5px solid #E8D5A3;display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px">' +
+            '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>' +
+            '<line x1="12" y1="9" x2="12" y2="13"/>' +
+            '<line x1="12" y1="17" x2="12.01" y2="17"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div style="flex:1">' +
+          '<div style="font-size:16px;font-weight:700;color:#1A2A1F;line-height:1.3">Toolbox Talk required</div>' +
+          '<div style="font-size:12px;color:#5C6B62;margin-top:1px">WHS Regulation \u00b7 acknowledgement before site work</div>' +
+        '</div>' +
+      '</div>' +
+      // Talk title block
+      '<div style="background:#F8FAF8;border:1px solid #E5E9E6;border-radius:10px;padding:12px 14px;margin-bottom:14px">' +
+        '<div style="font-size:11px;color:#5C6B62;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Current toolbox</div>' +
+        '<div style="font-size:14px;font-weight:600;color:#1A2A1F;line-height:1.35">' + talkTitle.replace(/</g,'&lt;') + '</div>' +
+      '</div>' +
+      // Body text
+      '<div style="font-size:13.5px;color:#3A453E;line-height:1.55;margin-bottom:18px">' +
+        'You must sign the current toolbox talk before signing in or out. Every worker on site must acknowledge current safety information.' +
+      '</div>' +
+      // Buttons
+      '<div style="display:flex;flex-direction:column;gap:8px">' +
+        '<button id="tbt-gate-go" style="padding:13px;background:#1B6E3A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Sign Toolbox Talk now</button>' +
+        '<button id="tbt-gate-cancel" style="padding:11px;background:transparent;color:#5C6B62;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:\'DM Sans\',sans-serif">Cancel</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  var goBtn = overlay.querySelector('#tbt-gate-go');
+  var cancelBtn = overlay.querySelector('#tbt-gate-cancel');
+  function close() { overlay.remove(); }
+  goBtn.onclick = function() {
+    close();
     if (typeof goToTalk === 'function') goToTalk();
     else if (typeof goTo === 'function') goTo('screen-talk');
-  }
-  return true;
+  };
+  cancelBtn.onclick = close;
+  // Tap outside to dismiss
+  overlay.onclick = function(e) { if (e.target === overlay) close(); };
 }
 
 // Role-aware back from the talk screen
@@ -30943,21 +31035,26 @@ function tbtDownloadPDF(recordId) {
     // PAGE 1
     // ═════════════════════════════════════════════════════════════
     var y = drawHeader();
+    y += 2; // breathing room after header line
 
-    // RECORD DETAILS banner
+    // ── RECORD DETAILS ──
     y = drawMajorBanner(y, 'RECORD DETAILS');
+    y += 2;
     var col1 = ML, col2 = ML + CW/2 + 4;
     drawField(col1, y, 'Record ID', r.record_id || '\u2014');
     drawField(col2, y, 'Date', r.date || '\u2014');
-    y += 5;
+    y += 6;
     drawField(col1, y, 'Time signed', r.time || '\u2014');
     drawField(col2, y, 'Site', r.site || '\u2014');
-    y += 8;
+    y += 10;
 
-    // TALK CONTENT banner
+    // ── TALK CONTENT ──
     y = drawMajorBanner(y, 'TALK CONTENT');
+    y += 3;
+
+    // Talk title
     setText(C.darkText);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
     doc.text(r.talk_title || 'Toolbox Talk', ML, y); y += 6;
     if (r.talk_id || r.presenter) {
       setText(C.subLabel || '#5C6B62');
@@ -30968,88 +31065,110 @@ function tbtDownloadPDF(recordId) {
       doc.text(meta.join('  \u00b7  '), ML, y);
       y += 5;
     }
-    y += 3;
+    y += 5;
 
     // Sections
-    setText(C.darkText);
     var sections = r.sections_snapshot || [];
-    sections.forEach(function(sec){
-      y = newPageIfNeeded(y, 14);
-      // Section heading band — pale green like permit cards
-      setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
-      doc.rect(ML, y - 4.5, CW, 6, 'FD');
-      setText(C.darkText);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-      doc.text(sec.heading || '', ML + 3, y - 0.5);
-      y += 4;
+    sections.forEach(function(sec, secIdx){
+      y = newPageIfNeeded(y, 18);
 
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+      // Section heading — green left bar + heading text on a pale background row
+      var headerH = 8;
+      setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
+      doc.rect(ML, y, CW, headerH, 'FD');
+      // green accent stripe on the left
+      setFill(C.greenDark);
+      doc.rect(ML, y, 1.5, headerH, 'F');
+      setText(C.darkText);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.text(sec.heading || '', ML + 5, y + headerH/2 + 1.5);
+      y += headerH + 4;
+
+      // Bullet points
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
       setText(C.darkText);
       (sec.points || []).forEach(function(pt){
-        var lines = doc.splitTextToSize(pt, CW - 6);
-        var blockH = lines.length * 4.2 + 2;
+        var lines = doc.splitTextToSize(pt, CW - 8);
+        var blockH = lines.length * 5 + 3;
         y = newPageIfNeeded(y, blockH);
-        // Bullet
-        setFill(C.darkGreen);
-        doc.circle(ML + 2, y - 1.2, 0.7, 'F');
+        // Bullet — solid green circle
+        setFill(C.greenDark);
+        doc.circle(ML + 2.2, y - 1.5, 0.9, 'F');
         setText(C.darkText);
-        doc.text(lines, ML + 6, y);
-        y += blockH;
+        doc.text(lines, ML + 7, y);
+        y += lines.length * 5;
+        y += 2;
       });
-      y += 2;
+      // Gap between sections
+      if (secIdx < sections.length - 1) y += 5;
     });
 
     // ═════════════════════════════════════════════════════════════
     // ACKNOWLEDGEMENT & SIGNATURE
     // ═════════════════════════════════════════════════════════════
-    y = newPageIfNeeded(y, 70);
-    y += 2;
-    y = drawMajorBanner(y, 'ACKNOWLEDGEMENT & SIGNATURE');
+    y = newPageIfNeeded(y, 80);
+    y += 8;
+    y = drawMajorBanner(y, 'ACKNOWLEDGEMENT');
+    y += 3;
 
-    // Two ticked statements (mirroring the in-app checkbox flow)
-    setText(C.darkText);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+    // Two ticked statements inside a soft card
     var statements = [
       'I confirm I have read and understood this toolbox talk topic and the safety information presented.',
       'I commit to applying this knowledge and working safely in accordance with the above.'
     ];
-    statements.forEach(function(s){
-      var lines = doc.splitTextToSize(s, CW - 8);
-      var blockH = lines.length * 4.2 + 2;
-      y = newPageIfNeeded(y, blockH);
-      drawTick(ML, y - 1.2, C.greenDark, 3);
-      setText(C.darkText);
-      doc.text(lines, ML + 6, y);
-      y += blockH;
-    });
-    y += 4;
-
-    // Signed-by block — name, role, company, then signature image
-    y = newPageIfNeeded(y, 50);
-    setText(C.subLabel || '#5C6B62');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); 
-    doc.text('SIGNED BY', ML, y); y += 4.5;
     setText(C.darkText);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.text(r.worker_name || '\u2014', ML, y); y += 5;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+    statements.forEach(function(s){
+      var lines = doc.splitTextToSize(s, CW - 12);
+      var blockH = lines.length * 5 + 4;
+      y = newPageIfNeeded(y, blockH);
+      drawTick(ML + 1, y - 1, C.greenDark, 3.5);
+      setText(C.darkText);
+      doc.text(lines, ML + 8, y);
+      y += lines.length * 5 + 3;
+    });
+    y += 6;
+
+    // ── SIGNATURE BLOCK ──
+    y = newPageIfNeeded(y, 60);
+    y = drawMajorBanner(y, 'SIGNATURE');
+    y += 3;
+
+    // Left column: signer details
     setText(C.subLabel || '#5C6B62');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+    doc.text('SIGNED BY', ML, y); y += 5;
+
+    setText(C.darkText);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text(r.worker_name || '\u2014', ML, y);
+
+    // Right column on same row: signature image (larger, properly spaced)
+    var sigW = 70, sigH = 28;
+    var sigX = ML + CW - sigW;
+    var sigY = y - 5; // align top of sig box with name baseline
+    setStroke(C.greyLight); doc.setLineWidth(0.4);
+    doc.rect(sigX, sigY, sigW, sigH);
+    if (r.signature) {
+      try { doc.addImage(r.signature, 'PNG', sigX + 1, sigY + 1, sigW - 2, sigH - 2); } catch(e) {}
+    }
+
+    y += 5;
+    setText(C.subLabel || '#5C6B62');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
     var sub = [];
     if (r.role) sub.push(r.role);
     if (r.company) sub.push(r.company);
     if (sub.length) { doc.text(sub.join('  \u00b7  '), ML, y); y += 5; }
-    y += 2;
 
-    // Signature image — larger and more prominent than before (60mm × 25mm)
-    var sigW = 60, sigH = 25;
-    if (r.signature) {
-      try { doc.addImage(r.signature, 'PNG', ML, y, sigW, sigH); } catch(e) {}
-    }
-    setStroke(C.greyLight); doc.setLineWidth(0.3);
-    doc.line(ML, y + sigH + 1, ML + sigW + 10, y + sigH + 1);
-    setText(C.subLabel || '#5C6B62');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.text('Signed ' + (r.date || '') + (r.time ? ' at ' + r.time : ''), ML, y + sigH + 5);
+    setText(C.greyLabel || '#888888');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text('Signed ' + (r.date || '') + (r.time ? ' at ' + r.time : ''), ML, y);
+
+    // Caption under signature box
+    setText(C.greyLabel || '#888888');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+    doc.text('Worker signature', sigX + sigW/2, sigY + sigH + 3, { align:'center' });
 
     // Footer on every page
     var pages = doc.internal.getNumberOfPages();
