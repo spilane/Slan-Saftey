@@ -3019,7 +3019,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       New Permit
     </button>
 
-    <button onclick="ptwDiag()" style="display:block;width:100%;padding:8px;margin-bottom:14px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">🔧 Show diagnostic info</button>
+    <!-- Search box -->
+    <div style="position:relative;margin-bottom:14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7F7F7F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;pointer-events:none"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="ptw-search" placeholder="Search by ID, worker, location" oninput="ptwRenderUnified()" autocomplete="off" style="width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;box-sizing:border-box">
+    </div>
+
+    <button onclick="ptwDiag()" style="display:block;width:100%;padding:8px;margin-bottom:8px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">🔧 Show diagnostic info</button>
+    <button onclick="ptwSeedDemoPermits()" style="display:block;width:100%;padding:8px;margin-bottom:14px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">⚡ Load demo permits (24 sample permits across all 12 types)</button>
     <div id="ptw-diag-out" style="display:none;font-size:11px;font-family:monospace;background:#F8FAF8;border:1px solid var(--border);padding:10px;border-radius:6px;margin-bottom:14px;white-space:pre-wrap;word-break:break-all;line-height:1.5"></div>
 
     <!-- PENDING section (always shows ALL types, no filter) -->
@@ -6512,7 +6519,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard-hdr">Air Monitoring &amp; Contractor <span class="req">*</span></div>
     <div class="fcard-body">
       <div class="fgroup"><label class="flabel">Air monitoring contractor</label><input type="text" id="asb-monitor-contractor" placeholder="e.g. SGS Australia" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
-      <div class="fgroup"><label class="flabel">Air monitor reference / report ID</label><input type="text" id="asb-monitor-ref" placeholder="e.g. AM-2026-0042" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
+      <div class="fgroup"><label class="flabel">Air monitor reference / report ID</label><input type="text" id="asb-monitor-ref" placeholder="e.g. AM-2026-0042" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;font-family:'DM Mono',monospace" autocomplete="off"></div>
       <div class="fgroup"><label class="flabel">Exposure standard (fibres/mL)</label><input type="text" id="asb-exposure-limit" placeholder="TWA 0.1 f/mL — confirm" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
     </div>
   </div>
@@ -6862,7 +6869,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Plant Identification <span class="req">*</span></div>
     <div class="fcard-body">
-      <div class="fgroup"><label class="flabel">Plant ID / fleet number</label><input type="text" id="mp-plant-id" placeholder="e.g. EX-042" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
+      <div class="fgroup"><label class="flabel">Plant ID / fleet number</label><input type="text" id="mp-plant-id" placeholder="e.g. EX-042" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;font-family:'DM Mono',monospace" autocomplete="off"></div>
       <div class="fgroup"><label class="flabel">Make &amp; model</label><input type="text" id="mp-make-model" placeholder="e.g. CAT 320D" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
       <div class="fgroup"><label class="flabel">Last inspection date</label><input type="text" id="mp-last-inspection" placeholder="e.g. 12/03/2026" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
       <div class="fgroup"><label class="flabel">Registration / serial</label><input type="text" id="mp-rego" placeholder="e.g. PN-12345" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
@@ -7231,8 +7238,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fcard">
     <div class="fcard-hdr">Authority &amp; TGS <span class="req">*</span></div>
     <div class="fcard-body">
-      <div class="fgroup"><label class="flabel">Road authority approval reference<span class="slan-help" onclick="slanHelpToggle('trf-help-auth')">?</span></label><div id="trf-help-auth" class="slan-help-tip">Working in or beside a public road requires written approval from the road authority (council, state roads, or national highway operator) before any TGS is deployed.</div><input type="text" id="trf-authority-ref" placeholder="e.g. RMS-2026-0042" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
-      <div class="fgroup"><label class="flabel">TGS (Traffic Guidance Scheme) reference</label><input type="text" id="trf-tgs-ref" placeholder="Required" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off"></div>
+      <div class="fgroup"><label class="flabel">Road authority approval reference<span class="slan-help" onclick="slanHelpToggle('trf-help-auth')">?</span></label><div id="trf-help-auth" class="slan-help-tip">Working in or beside a public road requires written approval from the road authority (council, state roads, or national highway operator) before any TGS is deployed.</div><input type="text" id="trf-authority-ref" placeholder="e.g. RMS-2026-0042" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;font-family:'DM Mono',monospace" autocomplete="off"></div>
+      <div class="fgroup"><label class="flabel">TGS (Traffic Guidance Scheme) reference</label><input type="text" id="trf-tgs-ref" placeholder="Required" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none;font-family:'DM Mono',monospace" autocomplete="off"></div>
       <div class="fgroup"><label class="flabel">Road authority</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
           <button type="button" class="ps-btn" data-trfauthority="Local council" onclick="trfSelectPill(this, 'trfauthority')">Local council</button>
           <button type="button" class="ps-btn" data-trfauthority="State road authority" onclick="trfSelectPill(this, 'trfauthority')">State road authority</button>
@@ -13438,6 +13445,151 @@ function goToPermitsToWork() {
   goTo('screen-ptw-unified');
 }
 
+// Seed a chunk of demo permits across all 12 types so the app looks populated for demos.
+// Uses real worker names from DEMO_WORKERS so the supervisor view feels lived-in.
+function ptwSeedDemoPermits() {
+  if (!confirm('This will add 24 demo permits to your local storage across all 12 types (mix of pending, approved, rejected, revoked, closed). OK to proceed?')) return;
+
+  const today = new Date();
+  const todayStr = today.toLocaleDateString('en-AU');
+  const yest = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  const yestStr = yest.toLocaleDateString('en-AU');
+
+  function ts(hoursAgo) {
+    return new Date(today.getTime() - hoursAgo * 60 * 60 * 1000).toISOString();
+  }
+  function pid(prefix, n) {
+    return prefix + '-DEMO-' + String(n).padStart(3, '0');
+  }
+  function basePermit(prefix, n, worker, role, status, hoursAgoSubmitted, opts) {
+    opts = opts || {};
+    const p = {
+      permit_id: pid(prefix, n),
+      date: opts.yesterday ? yestStr : todayStr,
+      site: 'Demo Site',
+      worker_name: worker,
+      company: 'Murphy Civil Construction',
+      role: role || 'Worker',
+      location: opts.location || 'Level 2 north',
+      description: opts.description || 'Demo permit for testing',
+      num_workers: opts.numWorkers || '2',
+      start_time: opts.start || ts(hoursAgoSubmitted + 0.5),
+      end_time: ts(hoursAgoSubmitted - 4),
+      submitted_at: ts(hoursAgoSubmitted),
+      status: status,
+      checks: { all_passed: true, count: 10 },
+      photos: [],
+      worker_signature: 'demo'
+    };
+    if (status === 'approved' || status === 'closed' || status === 'revoked') {
+      p.approved_at = ts(hoursAgoSubmitted - 0.2);
+      p.supervisor_name = 'Eoin Burke';
+      p.supervisor_signature = 'demo';
+    }
+    if (status === 'rejected') {
+      p.rejected_at = ts(hoursAgoSubmitted - 0.2);
+      p.reject_reason = opts.rejectReason || 'Insufficient detail in rescue plan; resubmit.';
+      p.supervisor_name = 'Eoin Burke';
+    }
+    if (status === 'closed') {
+      p.closed_at = ts(hoursAgoSubmitted - 3);
+      p.closeout = { complete: true };
+    }
+    if (status === 'revoked') {
+      p.revoked_at = ts(hoursAgoSubmitted - 1);
+      p.revoke_reason = opts.revokeReason || 'Wind exceeded safe limits';
+      p.revoked_by = 'Eoin Burke';
+    }
+    Object.assign(p, opts.extra || {});
+    return p;
+  }
+
+  // Storage keys per type
+  const KEYS = {
+    hotworks: 'slan_hw_permits_v1', wah: 'slan_wah_permits_v1',
+    confined: 'slan_cs_permits_v1', excavation: 'slan_exc_permits_v1',
+    electrical: 'slan_elec_permits_v1', demolition: 'slan_demo_permits_v1',
+    lifting: 'slan_lift_permits_v1', concrete: 'slan_conc_permits_v1',
+    penetration: 'slan_pen_permits_v1', asbestos: 'slan_asb_permits_v1',
+    mobileplant: 'slan_mp_permits_v1', traffic: 'slan_trf_permits_v1'
+  };
+
+  // 24 permits — 2 per type, varied statuses
+  const seeds = [
+    // Hot Works
+    { type:'hotworks', prefix:'HW', extra:{ subtype:'Welding', work_type:'Welding' } },
+    { type:'hotworks', prefix:'HW', extra:{ subtype:'Grinding', work_type:'Grinding' } },
+    // WAH
+    { type:'wah', prefix:'WAH', extra:{ subtype:'EWP work', wah_type:'EWP', height_m:'4' } },
+    { type:'wah', prefix:'WAH', extra:{ subtype:'Roof access', wah_type:'Fall arrest', height_m:'6' } },
+    // CS
+    { type:'confined', prefix:'CS', extra:{ subtype:'Tank entry', cs_type:'Tank' } },
+    { type:'confined', prefix:'CS', extra:{ subtype:'Pit entry', cs_type:'Pit' } },
+    // EXC
+    { type:'excavation', prefix:'EXC', extra:{ subtype:'Trenching', exc_type:'Trench', depth_m:'2.0' } },
+    { type:'excavation', prefix:'EXC', extra:{ subtype:'Pile cap', exc_type:'Pit', depth_m:'1.6' } },
+    // ELEC
+    { type:'electrical', prefix:'ELEC', extra:{ subtype:'Switchboard', elec_type:'LV switchboard' } },
+    { type:'electrical', prefix:'ELEC', extra:{ subtype:'Cable pull', elec_type:'Cable installation' } },
+    // DEMO
+    { type:'demolition', prefix:'DEMO', extra:{ subtype:'Soft strip', demo_type:'Soft strip' } },
+    { type:'demolition', prefix:'DEMO', extra:{ subtype:'Slab break-up', demo_type:'Slab break-up' } },
+    // LIFT
+    { type:'lifting', prefix:'LIFT', extra:{ subtype:'Routine', lift_category:'Routine (under 75% SWL)' } },
+    { type:'lifting', prefix:'LIFT', extra:{ subtype:'Critical', lift_category:'Critical (over 90% SWL or near services)' } },
+    // CONC
+    { type:'concrete', prefix:'CONC', extra:{ subtype:'Column pour', pour_type:'Columns', volume_m3:'12' } },
+    { type:'concrete', prefix:'CONC', extra:{ subtype:'Slab pour', pour_type:'Slab', volume_m3:'40' } },
+    // PEN
+    { type:'penetration', prefix:'PEN', extra:{ subtype:'Through-floor', pen_type:'Through-floor' } },
+    { type:'penetration', prefix:'PEN', extra:{ subtype:'Wall', pen_type:'Wall' } },
+    // ASB
+    { type:'asbestos', prefix:'ASB', extra:{ subtype:'Class B bonded', asb_type:'Class B', material:'Cement sheet' } },
+    { type:'asbestos', prefix:'ASB', extra:{ subtype:'Class A friable', asb_type:'Class A', material:'Pipe lagging' } },
+    // MP
+    { type:'mobileplant', prefix:'MP', extra:{ subtype:'Excavator', plant_type:'Excavator' } },
+    { type:'mobileplant', prefix:'MP', extra:{ subtype:'Skid-steer', plant_type:'Skid-steer' } },
+    // TRF
+    { type:'traffic', prefix:'TRF', extra:{ subtype:'Lane closure', trf_type:'Lane closure' } },
+    { type:'traffic', prefix:'TRF', extra:{ subtype:'Footpath closure', trf_type:'Footpath closure' } }
+  ];
+
+  // Status mix: pending, approved, closed, rejected, revoked, approved-with-conditions
+  const statuses = ['pending','approved','closed','approved','rejected','approved','closed','revoked'];
+  const workers = ['Jake Ryan', 'Mark Flynn', 'Sam Carroll', 'Tom Burke', 'Chris Walsh', 'Lee O\'Brien', 'Brendan Kelly', 'Mick Doyle'];
+  const locs = ['Level 2 north', 'Basement carpark', 'Roof bay 4', 'Loading dock', 'Tower crane base', 'Service riser 3', 'Plant room', 'Loading bay'];
+
+  let added = 0;
+  seeds.forEach((s, idx) => {
+    const status = statuses[idx % statuses.length];
+    const worker = workers[idx % workers.length];
+    const role = (worker === 'Brendan Kelly') ? 'Crane Operator'
+               : (worker === 'Lee O\'Brien') ? 'Rigger'
+               : (worker === 'Mick Doyle') ? 'Excavator Operator'
+               : 'Worker';
+    const isYesterday = (idx % 7 === 6); // sprinkle some yesterday permits for "history"
+    const p = basePermit(s.prefix, idx + 1, worker, role, status, 1 + (idx * 0.7), {
+      yesterday: isYesterday, location: locs[idx % locs.length], extra: s.extra
+    });
+    const key = KEYS[s.type];
+    try {
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      // Skip if already seeded
+      if (existing.some(x => x.permit_id === p.permit_id)) return;
+      existing.push(p);
+      localStorage.setItem(key, JSON.stringify(existing));
+      added++;
+    } catch(e) { /* skip */ }
+  });
+
+  if (typeof slanToast === 'function') {
+    slanToast('Loaded ' + added + ' demo permits.');
+  } else {
+    alert('Loaded ' + added + ' demo permits.');
+  }
+  ptwRenderUnified();
+}
+
 // Diagnostic for PTW queue — shows what's actually in storage and what the
 // filter is matching, so we can debug "no permits showing" without console.
 function ptwDiag() {
@@ -15035,6 +15187,8 @@ function ptwOpenPermit(permitId) {
 function ptwRenderUnified() {
   const today = new Date().toLocaleDateString('en-AU');
   const typeFilter = (document.getElementById('ptw-type-filter') || {}).value || 'all';
+  const searchEl = document.getElementById('ptw-search');
+  const search = searchEl ? (searchEl.value || '').trim().toLowerCase() : '';
   let allRaw = ptwLoadAllPermits();
   // Worker view: filter to only this worker's own permits (case-insensitive name match).
   // Supervisor view: see everything.
@@ -15044,6 +15198,16 @@ function ptwRenderUnified() {
     if (myName) {
       allRaw = allRaw.filter(x => (x.worker_name || '').trim().toLowerCase() === myName);
     }
+  }
+  // Search filter — applies across pending/active/history. Matches permit ID, worker name, location.
+  if (search) {
+    allRaw = allRaw.filter(x =>
+      (x.permit_id || '').toLowerCase().includes(search) ||
+      (x.worker_name || '').toLowerCase().includes(search) ||
+      (x.location || '').toLowerCase().includes(search) ||
+      (x.subtype || '').toLowerCase().includes(search) ||
+      (x.type || '').toLowerCase().includes(search)
+    );
   }
   // Pending permits always show regardless of date (so supervisor never misses them).
   // Active and history filtered by today.
