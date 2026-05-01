@@ -10349,6 +10349,18 @@ if (localStorage.getItem('slan_demo')) {
 }
 
 // ── ONBOARDING ────────────────────────────────────────────────────────────
+
+// Stub — was being called but never defined. Reserved for a future browser-level
+// location-permission check (e.g. navigator.permissions.query({name:'geolocation'})
+// to surface a "Location is off" warning). For now, no-op so call sites don't
+// throw a ReferenceError during onboarding.
+function checkLocationPermissionStatus() { /* no-op for now */ }
+
+// Stub — toolbox-talk tile notification refresher. The tile sub is already
+// updated by updateAllTileSubs() so this is redundant; keeping the call site
+// in case real notification logic is wired in later.
+function checkTalkNotif() { /* no-op — handled by updateAllTileSubs */ }
+
 function startOnboarding() {
   localStorage.setItem('slan_onboarded', 'true');
   goTo('screen-profile');
