@@ -2032,7 +2032,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="tile-icon ic-red" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
       <span style="font-size:14px;font-weight:600;color:#fff">Incident Details</span>
     </div>
-    <button class="back-btn" onclick="downloadIncidentPdf()" title="Download PDF" aria-label="Download PDF"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    <div style="width:36px"></div>
   </div>
   <div style="padding:18px;padding-bottom:60px">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
@@ -17718,17 +17718,9 @@ function incUnskipPhotos(silent) {
 // past reports they've filed). If there are none, jump straight to the form.
 // Workers see their own; supervisors see all.
 function goToIncident() {
-  const me = (typeof getProfile === 'function') ? getProfile() : null;
-  const all = (typeof incLoadAll === 'function') ? incLoadAll() : [];
-  const isSup = !!(me && me.role === 'Site Supervisor');
-  // Worker sees only their own reports; supervisor sees all.
-  const visible = isSup ? all : all.filter(function(r){ return r.reporter_name === (me && me.name); });
-  if (visible.length > 0) {
-    // Send to list — they have records to look at
-    return goToIncidentList();
-  }
-  // No records → fresh form
-  return goToIncidentForm();
+  // Always go to the list — matches the canonical permits/toolbox pattern.
+  // The list itself has a "+ New incident report" button for filing a new one.
+  return goToIncidentList();
 }
 
 function goToIncidentForm() {
@@ -18063,6 +18055,12 @@ function incLoadCritical() {
 // for their own reports). Reads from localStorage and renders one card per
 // incident, sorted newest first.
 function goToIncidentList() {
+  // Set the list back button to return to the right home (matches the
+  // canonical goToPermitsToWork pattern)
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  const isSup = !!(p && p.role === 'Site Supervisor');
+  const backBtn = document.querySelector('#screen-incident-list .tbar .back-btn');
+  if (backBtn) backBtn.setAttribute('onclick', isSup ? "goTo('screen-dash')" : "goTo('screen-home')");
   // Reset search input each visit
   const sIn = document.getElementById('inc-list-search');
   if (sIn) sIn.value = '';
@@ -18382,7 +18380,10 @@ function goToIncidentDetail(ref) {
         fmtRow('Work resumed',             r.work_resumed) +
         fmtRow('Submitted',                (r.submission_date || '') + ' ' + (r.submission_time || '')) +
       '</div></div>' +
-      actionPanelHtml;
+      actionPanelHtml +
+      // Download PDF button — same style as permit detail screens (full-width
+      // outline button with download icon + "Download PDF" label)
+      '<div style="margin-top:16px"><button onclick="downloadIncidentPdf()" style="width:100%;padding:12px;background:transparent;color:#1B3A2D;border:1.5px solid #1B3A2D;border-radius:var(--r);font-weight:600;font-size:13.5px;cursor:pointer;font-family:DM Sans,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</button></div>';
   }
   goTo('screen-incident-detail');
 }
