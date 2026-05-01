@@ -1246,6 +1246,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="tile" onclick="goToIncident()">
         <div class="tile-icon ic-red"><svg viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
         <div class="tile-name">Report Incident</div><div class="tile-sub" id="worker-inc-tile-sub">Injury or near miss</div>
+        <div class="tile-notif" id="worker-inc-notif" style="display:none"></div>
       </div>
       <div class="tile" onclick="goToPermitsToWork()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
@@ -1568,6 +1569,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon ic-red"><svg viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
         <div class="tile-name">Report Incident</div>
         <div class="tile-sub" id="sup-inc-tile-sub">Injury or near miss</div>
+        <div class="tile-notif" id="sup-inc-notif" style="display:none"></div>
       </div>
 
       <div class="tile" onclick="goToPsychosocial()">
@@ -1738,7 +1740,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <div style="background:#FAEBEB;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--r);padding:14px 16px">
       <div style="font-size:13px;font-weight:600;color:#B83232;margin-bottom:3px">⚠️ Immediate action first</div>
-      <div style="font-size:12.5px;color:#8B2020;line-height:1.6">For life-threatening injuries call <b>000</b> immediately. For fatalities or serious injuries, also call <b>Slán Safety</b> on the contact number in your site contacts <b>before</b> filling out this form. Complete this report once the immediate situation is under control.</div>
+      <div style="font-size:12.5px;color:#8B2020;line-height:1.6">For life-threatening injuries call emergency services immediately. Make the area safe and care for anyone injured before filling out this report. Complete this form once the immediate situation is under control.</div>
     </div>
 
     <div class="fcard">
@@ -1746,14 +1748,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-body">
         <div class="fgroup">
           <label class="flabel">Type of report <span class="req">*</span></label>
-          <select id="inc-type">
-            <option value="">Select type...</option>
-            <option>Actual Injury</option>
-            <option>Near Miss</option>
-            <option>Dangerous Incident</option>
-            <option>Property Damage</option>
-            <option>Environmental</option>
-          </select>
+          <input type="hidden" id="inc-type" value="">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px" id="inc-type-grid">
+            <button class="ps-btn" id="inc-type-Injury" onclick="setIncType('Actual Injury')">Actual Injury</button>
+            <button class="ps-btn" id="inc-type-Near"   onclick="setIncType('Near Miss')">Near Miss</button>
+            <button class="ps-btn" id="inc-type-Dang"   onclick="setIncType('Dangerous Incident')">Dangerous Incident</button>
+            <button class="ps-btn" id="inc-type-Prop"   onclick="setIncType('Property Damage')">Property Damage</button>
+            <button class="ps-btn" id="inc-type-Env"    onclick="setIncType('Environmental')" style="grid-column:span 2">Environmental</button>
+          </div>
           <div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:6px;padding:8px 10px;background:#FAFCF9;border-left:2px solid #1B6E3A;border-radius:4px">
             <b>Actual Injury</b> — someone was hurt.<br>
             <b>Near Miss</b> — no harm but could have been bad (e.g. dropped tool from height, no one underneath).<br>
@@ -1793,17 +1795,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-body">
         <div class="fgroup">
           <label class="flabel">Role in event <span class="req">*</span></label>
-          <select id="inc-role-in-event">
-            <option value="">Select...</option>
-            <option>Person Involved / Injured</option>
-            <option>Witness</option>
-            <option>Circumstantial Witness</option>
-            <option>Reporting on behalf of another</option>
-          </select>
+          <input type="hidden" id="inc-role-in-event" value="">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px" id="inc-role-grid">
+            <button class="ps-btn" id="inc-role-Person"  onclick="setIncRole('Person Involved / Injured')">Person Involved / Injured</button>
+            <button class="ps-btn" id="inc-role-Witness" onclick="setIncRole('Witness')">Witness</button>
+            <button class="ps-btn" id="inc-role-Circ"    onclick="setIncRole('Circumstantial Witness')">Circumstantial Witness</button>
+            <button class="ps-btn" id="inc-role-Behalf"  onclick="setIncRole('Reporting on behalf of another')">Reporting on behalf</button>
+          </div>
         </div>
         <div class="fgroup">
-          <label class="flabel">Name of person involved (if not you)</label>
-          <input type="text" id="inc-person-name" placeholder="Leave blank if you are the person involved" autocomplete="off">
+          <label class="flabel">Name of person involved <span style="font-weight:400;color:var(--muted);font-size:11px" id="inc-name-helper">(leave blank if you are the person involved)</span></label>
+          <input type="text" id="inc-person-name" placeholder="e.g. Mary Walsh" autocomplete="off">
         </div>
         <div class="fgroup">
           <label class="flabel">Company / employer of person involved</label>
@@ -1908,6 +1910,26 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
+    <!-- Photos: optional but encouraged. Helps the WHS provider assess the
+         scene remotely and gives the corrective-actions process visual context. -->
+    <div class="fcard">
+      <div class="fcard-hdr">Photo evidence <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">— optional but recommended</span></div>
+      <div class="fcard-body">
+        <div class="fhint" style="margin-bottom:10px">Take photos of the scene, equipment involved, or any visible injury (with consent). Photos help your provider assess the incident without visiting site.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="inc-photo-grid">
+          <div class="hz-photo-slot" id="inc-slot-0" onclick="document.getElementById('inc-photo-input-0').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Add photo</span>
+          </div>
+          <div class="hz-photo-slot" id="inc-slot-1" onclick="document.getElementById('inc-photo-input-1').click()" style="display:none"></div>
+          <div class="hz-photo-slot" id="inc-slot-2" onclick="document.getElementById('inc-photo-input-2').click()" style="display:none"></div>
+        </div>
+        <input type="file" id="inc-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleIncidentPhoto(0,event)">
+        <input type="file" id="inc-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="handleIncidentPhoto(1,event)">
+        <input type="file" id="inc-photo-input-2" accept="image/*" capture="environment" style="display:none" onchange="handleIncidentPhoto(2,event)">
+      </div>
+    </div>
+
     <div class="fcard">
       <div class="fcard-hdr">6 — Is this notifiable to the regulator?</div>
       <div class="fcard-body">
@@ -1920,8 +1942,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button class="ps-btn" id="inc-notif-unsure"  onclick="setIncField('notif','unsure')">Not sure</button>
           </div>
         </div>
-        <div id="inc-notif-warning" style="display:none;background:#FAEBEB;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px 14px;font-size:12.5px;color:#8B2020;line-height:1.6">
-          <strong>Stop — call your provider now before continuing.</strong> Notifiable incidents require immediate verbal notification to the regulator. Do not disturb the scene. Call your Slán Safety provider immediately.
+        <div id="inc-notif-warning" style="display:none;background:#FAEBEB;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px 14px;font-size:12.5px;color:#8B2020;line-height:1.6;margin-top:10px">
+          <strong>⚠️ Notifiable incident — preserve the scene.</strong><br>
+          Notifiable incidents must be reported to the regulator immediately. Do not disturb the scene apart from making it safe or assisting injured persons. Submit this report now and follow up by phone using the contact in your site contacts.
+        </div>
+        <div id="inc-notif-advice" style="display:none;background:#FFF8E1;border:1.5px solid rgba(184,150,12,.25);border-radius:var(--rs);padding:12px 14px;font-size:12.5px;color:#5C4500;line-height:1.6;margin-top:10px">
+          <strong>What counts as a notifiable incident?</strong><br>
+          Under WHS law, a notifiable incident is any of the following:
+          <ul style="margin:6px 0 6px 18px;padding:0;line-height:1.55">
+            <li><b>Death</b> of any person at the workplace</li>
+            <li><b>Serious injury or illness</b> requiring immediate hospital treatment — amputation, serious head/eye injury, serious burns, spinal injury, loss of consciousness, exposure to a hazardous substance</li>
+            <li><b>Dangerous incident</b> that exposed anyone to a serious risk — collapse of a structure, uncontrolled spill or release, plant runaway, electric shock, fall from height with serious-harm potential</li>
+          </ul>
+          If <b>any</b> of these apply, treat it as notifiable. If none clearly apply, submit the report — it will be assessed and you'll be contacted within 24 hours. Take photos if it's safe to do so and avoid disturbing the area until clearance is given.
         </div>
       </div>
     </div>
@@ -1930,7 +1963,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-hdr">Declaration</div>
       <div class="fcard-body">
         <div class="sig-preview-wrap" id="inc-sig-preview"><span class="no-sig">No saved signature — go to Profile</span></div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px">By submitting I confirm this report is accurate to the best of my knowledge. I understand this report will be sent directly to my WHS provider within 24 hours as required under WHS Act 2011.</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px">By submitting I confirm this report is accurate to the best of my knowledge. I understand this report will be filed for review within 24 hours as required under WHS Act 2011.</div>
       </div>
     </div>
 
@@ -1938,6 +1971,46 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
       Submit incident report
     </button>
+  </div>
+</div>
+
+<!-- ═══════════════════ RECENT INCIDENTS LIST (supervisor view) ═══ -->
+<div id="screen-incident-list" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goTo('screen-dash')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="inc-list-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+  </div>
+  <div class="fbody">
+    <div style="padding:0 4px 8px">
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Recent incidents</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="inc-list-summary">Tap a record to view details.</div>
+    </div>
+    <div id="inc-list-container" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button onclick="goToIncident()" style="display:block;width:100%;padding:13px;margin-top:14px;background:#1B6E3A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">+ New incident report</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ INCIDENT DETAIL (read-only view) ═══ -->
+<div id="screen-incident-detail" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goToIncidentList()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="inc-detail-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+  </div>
+  <div class="fbody">
+    <div style="padding:0 4px 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div id="inc-detail-pill" style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:#E6F5ED;color:#1B6E3A;text-transform:uppercase;letter-spacing:.04em">Minor</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text)" id="inc-detail-title">Incident</div>
+    </div>
+    <div style="padding:0 4px 14px;font-size:11.5px;color:var(--muted);font-family:'DM Mono',monospace" id="inc-detail-meta">REF</div>
+    <div id="inc-detail-body"></div>
   </div>
 </div>
 
@@ -13461,8 +13534,7 @@ function supChipTapHazards() {
 }
 
 function supChipTapIncidents() {
-  // Round 2 will route to a "Recent incidents" list. For now, send straight
-  // to the incident form so supervisors can still file new reports.
+  // Route to the recent-incidents list (supervisor view of all reports)
   if (typeof goToIncidentList === 'function') goToIncidentList();
   else if (typeof goToIncident === 'function') goToIncident();
   else goTo('screen-incident');
@@ -16336,10 +16408,26 @@ function goTo(id){
   // Auto-refresh chip strip when landing on worker home or supervisor dash
   if (id === 'screen-home') {
     try { if (typeof updateStatusStrip === 'function') updateStatusStrip(); } catch(e) {}
+    try {
+      if (typeof updateAllTileSubs === 'function') {
+        const _p = (typeof getProfile === 'function') ? getProfile() : null;
+        updateAllTileSubs(_p);
+      }
+    } catch(e) {}
   }
   if (id === 'screen-dash') {
     try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
     try { if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip(); } catch(e) {}
+    try {
+      if (typeof updateAllTileSubs === 'function') {
+        const _p = (typeof getProfile === 'function') ? getProfile() : null;
+        updateAllTileSubs(_p);
+      }
+    } catch(e) {}
+  }
+  // Re-render incident list when arriving at it
+  if (id === 'screen-incident-list') {
+    try { if (typeof renderIncidentList === 'function') renderIncidentList(); } catch(e) {}
   }
   // Auto-render permit lists when arriving — fixes empty-list bug on first visit
   if (id === 'screen-hw-list') {
@@ -17398,6 +17486,94 @@ function translateElement(elementId, lang) {
 let incSeverity = null;
 let incFields   = {};
 let incBriefing = [];
+const incPhotos = [null, null, null];
+
+// Photo upload for incident report. Mirrors the hazard pattern: takes a file
+// from the input, downsizes to max 800px, watermarks with timestamp + site,
+// stores as JPEG data URL. Up to 3 photos. Optional.
+function handleIncidentPhoto(idx, e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new window.Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const MAX = 800;
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX/w, MAX/h);
+        w = Math.round(w*ratio); h = Math.round(h*ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // Timestamp + site watermark
+      const now = new Date();
+      const stamp = now.toLocaleDateString('en-AU') + '  ' +
+        now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+      const siteLine = (typeof SITE !== 'undefined') ? SITE : '';
+      const fontSize = Math.max(12, Math.round(w * 0.03));
+      ctx.font = `bold ${fontSize}px 'DM Mono', monospace`;
+      const lines = [stamp, siteLine].filter(l => l);
+      const padding = fontSize * 0.6;
+      const lineH   = fontSize * 1.5;
+      const boxH    = lines.length * lineH + padding * 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.62)';
+      ctx.fillRect(0, h - boxH, w, boxH);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'left';
+      lines.forEach((line, i) => {
+        ctx.fillText(line, padding, h - boxH + padding + (i + 1) * lineH - fontSize * 0.3);
+      });
+
+      const compressed = canvas.toDataURL('image/jpeg', 0.80);
+      incPhotos[idx] = {
+        data: compressed,
+        timestamp: now.toISOString(),
+        date: now.toLocaleDateString('en-AU'),
+        time: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}),
+        site: siteLine
+      };
+
+      // Render the slot
+      const slot = document.getElementById('inc-slot-' + idx);
+      if (slot) {
+        slot.innerHTML = `<img src="${compressed}" alt="Incident photo" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+        slot.classList.add('filled');
+      }
+      // Reveal next slot if there's one
+      if (idx < 2) {
+        const next = document.getElementById('inc-slot-' + (idx + 1));
+        if (next) {
+          next.style.display = 'flex';
+          next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Add photo</span>`;
+        }
+      }
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetIncidentPhotos() {
+  for (let i = 0; i < 3; i++) {
+    incPhotos[i] = null;
+    const slot = document.getElementById('inc-slot-' + i);
+    if (!slot) continue;
+    slot.classList.remove('filled');
+    if (i === 0) {
+      slot.style.display = 'flex';
+      slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Add photo</span>`;
+    } else {
+      slot.style.display = 'none';
+      slot.innerHTML = '';
+    }
+    const inp = document.getElementById('inc-photo-input-' + i);
+    if (inp) inp.value = '';
+  }
+}
 
 function goToIncident() {
   const p = getProfile(); if (!p) { goTo('screen-profile'); initSig(); return; }
@@ -17416,7 +17592,10 @@ function goToIncident() {
   });
   document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('inc-time').value = new Date().toTimeString().slice(0,5);
-  document.getElementById('inc-notif-warning').style.display = 'none';
+  const warnEl = document.getElementById('inc-notif-warning');
+  if (warnEl) warnEl.style.display = 'none';
+  const adviceEl = document.getElementById('inc-notif-advice');
+  if (adviceEl) adviceEl.style.display = 'none';
   ['Critical','Major','Moderate','Minor'].forEach(s => {
     const b = document.getElementById('inc-sev-'+s); if (b) { b.className='ps-btn'; b.style=''; }
   });
@@ -17428,6 +17607,22 @@ function goToIncident() {
   ['prestart','swms','talk','none'].forEach(b => {
     const el = document.getElementById('incb-'+b); if (el) { el.className='ps-btn'; el.style=''; }
   });
+  // Reset role-in-event button grid + hidden value
+  ['inc-role-Person','inc-role-Witness','inc-role-Circ','inc-role-Behalf'].forEach(id => {
+    const b = document.getElementById(id); if (b) { b.className='ps-btn'; b.style=''; }
+  });
+  const roleHidden = document.getElementById('inc-role-in-event');
+  if (roleHidden) roleHidden.value = '';
+  const helperReset = document.getElementById('inc-name-helper');
+  if (helperReset) helperReset.textContent = '(leave blank if you are the person involved)';
+  // Reset type-of-report button grid + hidden value
+  ['inc-type-Injury','inc-type-Near','inc-type-Dang','inc-type-Prop','inc-type-Env'].forEach(id => {
+    const b = document.getElementById(id); if (b) { b.className='ps-btn'; b.style=''; }
+  });
+  const typeHidden = document.getElementById('inc-type');
+  if (typeHidden) typeHidden.value = '';
+  // Reset photo slots
+  if (typeof resetIncidentPhotos === 'function') resetIncidentPhotos();
   goTo('screen-incident');
 }
 
@@ -17450,16 +17645,88 @@ function setIncField(field, val) {
     b.className = 'ps-btn' + (v===val?' pass':'');
     b.style = '';
   });
-  if (field === 'notif' && (val === 'yes' || val === 'unsure')) {
-    document.getElementById('inc-notif-warning').style.display = 'block';
-  } else if (field === 'notif') {
-    document.getElementById('inc-notif-warning').style.display = 'none';
+  if (field === 'notif') {
+    const warning = document.getElementById('inc-notif-warning');
+    const advice  = document.getElementById('inc-notif-advice');
+    if (warning) warning.style.display = (val === 'yes')   ? 'block' : 'none';
+    if (advice)  advice.style.display  = (val === 'unsure') ? 'block' : 'none';
+  }
+}
+
+// Type-of-report selector (replaces dropdown). Sets hidden input value and
+// highlights the matching button.
+function setIncType(typeName) {
+  const hidden = document.getElementById('inc-type');
+  if (hidden) hidden.value = typeName;
+  const map = {
+    'Actual Injury':       'inc-type-Injury',
+    'Near Miss':           'inc-type-Near',
+    'Dangerous Incident':  'inc-type-Dang',
+    'Property Damage':     'inc-type-Prop',
+    'Environmental':       'inc-type-Env'
+  };
+  Object.values(map).forEach(id => {
+    const b = document.getElementById(id); if (!b) return;
+    b.className = 'ps-btn' + (id === map[typeName] ? ' pass' : '');
+    b.style = '';
+  });
+}
+
+// Role-in-event selector (replaces dropdown). When "Person Involved / Injured"
+// is chosen and the user is the reporter, auto-fill their name + company so
+// they don't have to retype it. Helper label switches accordingly.
+function setIncRole(role) {
+  const hidden = document.getElementById('inc-role-in-event');
+  if (hidden) hidden.value = role;
+  // Highlight the chosen button, clear the rest
+  const map = {
+    'Person Involved / Injured':       'inc-role-Person',
+    'Witness':                          'inc-role-Witness',
+    'Circumstantial Witness':           'inc-role-Circ',
+    'Reporting on behalf of another':   'inc-role-Behalf'
+  };
+  Object.values(map).forEach(id => {
+    const b = document.getElementById(id); if (!b) return;
+    b.className = 'ps-btn' + (id === map[role] ? ' pass' : '');
+    b.style = '';
+  });
+  // Auto-fill name + company if the reporter IS the injured person
+  const nameEl    = document.getElementById('inc-person-name');
+  const companyEl = document.getElementById('inc-person-company');
+  const helperEl  = document.getElementById('inc-name-helper');
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (role === 'Person Involved / Injured') {
+    if (nameEl && !nameEl.value.trim() && p && p.name) nameEl.value = p.name;
+    if (companyEl && !companyEl.value.trim() && p && p.company) companyEl.value = p.company;
+    if (helperEl) helperEl.textContent = '(auto-filled — change if needed)';
+  } else {
+    // For Witness / Circumstantial / On behalf — clear if it was auto-filled
+    // We can't know if the user typed it, so only clear if it matches profile.
+    if (nameEl && p && p.name && nameEl.value.trim() === p.name) nameEl.value = '';
+    if (companyEl && p && p.company && companyEl.value.trim() === p.company) companyEl.value = '';
+    if (helperEl) helperEl.textContent = '(name of the person who was involved or injured)';
   }
 }
 
 function toggleIncBriefing(item) {
-  const idx = incBriefing.indexOf(item);
-  if (idx > -1) incBriefing.splice(idx, 1); else incBriefing.push(item);
+  // "None" is exclusive — clicking it clears the others, and clicking another
+  // clears "None". Matches how a worker would honestly answer this question.
+  const NONE = 'none';
+  if (item === NONE) {
+    // If toggling None ON, clear all others. If toggling OFF, just remove it.
+    const willBeOn = !incBriefing.includes(NONE);
+    if (willBeOn) {
+      incBriefing = [NONE];
+    } else {
+      incBriefing = incBriefing.filter(x => x !== NONE);
+    }
+  } else {
+    // Clicking a real briefing — remove None first, then toggle this one.
+    incBriefing = incBriefing.filter(x => x !== NONE);
+    const idx = incBriefing.indexOf(item);
+    if (idx > -1) incBriefing.splice(idx, 1);
+    else incBriefing.push(item);
+  }
   ['prestart','swms','talk','none'].forEach(b => {
     const el = document.getElementById('incb-'+b); if (!el) return;
     el.className = 'ps-btn' + (incBriefing.includes(b)?' pass':'');
@@ -17520,6 +17787,168 @@ function incLoadCritical() {
   });
 }
 
+// Recent-incidents list view (supervisor primary, also accessible to workers
+// for their own reports). Reads from localStorage and renders one card per
+// incident, sorted newest first.
+function goToIncidentList() {
+  // Mirror the logo across screens
+  const sl = document.querySelector('#screen-profile .setup-hero img');
+  const il = document.getElementById('inc-list-logo');
+  if (sl && il) il.src = sl.src;
+  renderIncidentList();
+  goTo('screen-incident-list');
+}
+
+function renderIncidentList() {
+  const container = document.getElementById('inc-list-container');
+  const summary   = document.getElementById('inc-list-summary');
+  if (!container) return;
+  const all = (typeof incLoadAll === 'function') ? incLoadAll() : [];
+  if (summary) {
+    if (all.length === 0) summary.textContent = 'No incidents reported yet.';
+    else {
+      const open = all.filter(function(r){ return (r.status || 'open') !== 'closed'; }).length;
+      summary.textContent = all.length + ' incident' + (all.length === 1 ? '' : 's') + ' on record \u00b7 ' + open + ' still open';
+    }
+  }
+  if (all.length === 0) {
+    container.innerHTML = '<div style="background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:24px 16px;text-align:center;font-size:13px;color:var(--muted)">No incidents reported yet. Tap <b>+ New incident report</b> below to file one.</div>';
+    return;
+  }
+  // Sort newest first
+  const sorted = all.slice().sort(function(a,b){
+    return new Date(b.submitted_at || 0) - new Date(a.submitted_at || 0);
+  });
+  // Severity colour map
+  const sevColours = {
+    Critical: { bg:'#FAEBEB', border:'rgba(184,50,50,.25)', text:'#B83232' },
+    Major:    { bg:'#FEF0E6', border:'rgba(212,99,10,.25)', text:'#D4630A' },
+    Moderate: { bg:'#FFFBF0', border:'rgba(151,101,0,.25)', text:'#976500' },
+    Minor:    { bg:'#E6F5ED', border:'rgba(27,110,58,.25)', text:'#1B6E3A' }
+  };
+  container.innerHTML = sorted.map(function(r){
+    const sev = sevColours[r.severity] || sevColours.Minor;
+    const isOpen = (r.status || 'open') !== 'closed';
+    const statusBadge = isOpen
+      ? '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:#FDF8EC;color:#BA7517;text-transform:uppercase;letter-spacing:.04em">Open</span>'
+      : '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:#E6F5ED;color:#1B6E3A;text-transform:uppercase;letter-spacing:.04em">Closed</span>';
+    const desc = (r.description || '').slice(0, 110) + ((r.description || '').length > 110 ? '\u2026' : '');
+    const safeRef = (r.ref || '').replace(/'/g, '\\\'');
+    return '<div onclick="goToIncidentDetail(\'' + safeRef + '\')" style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px">' +
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+        '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:' + sev.bg + ';color:' + sev.text + ';border:1px solid ' + sev.border + ';text-transform:uppercase;letter-spacing:.04em">' + (r.severity || 'Minor') + '</span>' +
+        '<span style="font-size:13px;font-weight:600;color:var(--text)">' + (r.incident_type || 'Incident') + '</span>' +
+        statusBadge +
+      '</div>' +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5">' + (desc || '<i>No description recorded</i>') + '</div>' +
+      '<div style="font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between;gap:8px">' +
+        '<span>' + (r.location || '\u2014') + '</span>' +
+        '<span style="font-family:\'DM Mono\',monospace;font-size:10px">' + (r.ref || '') + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// Detail screen for a single incident. Round 3 will add PDF download +
+// status update; for now this is a basic read-only view.
+function goToIncidentDetail(ref) {
+  const r = (typeof incLoadByRef === 'function') ? incLoadByRef(ref) : null;
+  if (!r) {
+    slanAlert('That incident could not be found.');
+    return;
+  }
+  // Mirror logo
+  const sl = document.querySelector('#screen-profile .setup-hero img');
+  const il = document.getElementById('inc-detail-logo');
+  if (sl && il) il.src = sl.src;
+  // Populate
+  const title = document.getElementById('inc-detail-title');
+  const meta  = document.getElementById('inc-detail-meta');
+  const body  = document.getElementById('inc-detail-body');
+  if (title) title.textContent = r.incident_type || 'Incident';
+  if (meta)  meta.textContent  = (r.ref || '') + '  \u00b7  ' + (r.severity || '');
+  // Severity colour pill
+  const sevColours = {
+    Critical: { bg:'#FAEBEB', text:'#B83232' },
+    Major:    { bg:'#FEF0E6', text:'#D4630A' },
+    Moderate: { bg:'#FFFBF0', text:'#976500' },
+    Minor:    { bg:'#E6F5ED', text:'#1B6E3A' }
+  };
+  const sev = sevColours[r.severity] || sevColours.Minor;
+  const pill = document.getElementById('inc-detail-pill');
+  if (pill) {
+    pill.textContent = r.severity || 'Minor';
+    pill.style.background = sev.bg;
+    pill.style.color = sev.text;
+  }
+  // Build the detail body
+  const isOpen = (r.status || 'open') !== 'closed';
+  const statusText = isOpen ? 'Open' : 'Closed';
+  const statusColour = isOpen ? '#BA7517' : '#1B6E3A';
+  const fmtRow = function(label, value) {
+    if (!value) return '';
+    return '<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #F0F2F0;font-size:12.5px"><span style="color:var(--muted);flex-shrink:0">' + label + '</span><span style="color:var(--text);font-weight:500;text-align:right">' + String(value).replace(/</g, '&lt;') + '</span></div>';
+  };
+  const fmtBlock = function(label, value) {
+    if (!value) return '';
+    return '<div style="padding:10px 0;border-bottom:1px solid #F0F2F0"><div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">' + label + '</div><div style="font-size:13px;color:var(--text);line-height:1.55;white-space:pre-wrap">' + String(value).replace(/</g, '&lt;') + '</div></div>';
+  };
+  if (body) {
+    body.innerHTML =
+      '<div class="fcard"><div class="fcard-hdr">Status</div><div class="fcard-body">' +
+        '<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="display:inline-block;width:10px;height:10px;border-radius:5px;background:' + statusColour + '"></span><span style="font-size:14px;font-weight:600;color:var(--text)">' + statusText + '</span></div>' +
+        '<div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4">Round 3 will add status updates (under-review, closed). Records remain open until reviewed.</div>' +
+      '</div></div>' +
+      '<div class="fcard"><div class="fcard-hdr">Incident details</div><div class="fcard-body">' +
+        fmtRow('Reference',          r.ref) +
+        fmtRow('Type',               r.incident_type) +
+        fmtRow('Severity',           r.severity) +
+        fmtRow('When',               (r.incident_date || '') + ' ' + (r.incident_time || '')) +
+        fmtRow('Location',           r.location) +
+        fmtRow('Site',               r.site) +
+      '</div></div>' +
+      '<div class="fcard"><div class="fcard-hdr">Reporter &amp; person involved</div><div class="fcard-body">' +
+        fmtRow('Reporter',           r.reporter_name) +
+        fmtRow('Reporter company',   r.reporter_company) +
+        fmtRow('Role in event',      r.role_in_event) +
+        fmtRow('Person involved',    r.person_name) +
+        fmtRow('Person company',     r.person_company) +
+        fmtRow('Supervisor present', r.supervisor_present) +
+      '</div></div>' +
+      '<div class="fcard"><div class="fcard-hdr">Work context &amp; injury</div><div class="fcard-body">' +
+        fmtRow('Activity at time',   r.work_activity) +
+        fmtRow('Briefing received',  Array.isArray(r.briefing_received) ? r.briefing_received.join(', ') : r.briefing_received) +
+        fmtRow('Shift start',        r.shift_start) +
+        fmtRow('Days worked',        r.days_worked) +
+        fmtRow('Injury nature',      r.injury_nature) +
+        fmtRow('Body part',          r.body_part) +
+        fmtRow('First aid given',    r.first_aid) +
+        fmtRow('Medical attention',  r.medical_attention) +
+      '</div></div>' +
+      '<div class="fcard"><div class="fcard-hdr">What happened</div><div class="fcard-body">' +
+        fmtBlock('Description',          r.description) +
+        fmtBlock('Immediate action',     r.immediate_action) +
+        fmtBlock('Corrective actions',   r.corrective_actions) +
+      '</div></div>' +
+      // Photos (if any)
+      (Array.isArray(r.photos) && r.photos.length > 0
+        ? '<div class="fcard"><div class="fcard-hdr">Photo evidence</div><div class="fcard-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+          r.photos.map(function(ph){
+            var src = (ph && ph.data) ? ph.data : ph; // tolerate older records that stored just the data URL
+            return '<div style="background:#000;border-radius:8px;overflow:hidden;aspect-ratio:1"><img src="' + src + '" alt="Incident photo" style="width:100%;height:100%;object-fit:cover;display:block"></div>';
+          }).join('') +
+          '</div></div></div>'
+        : '') +
+      '<div class="fcard"><div class="fcard-hdr">Notifiable assessment</div><div class="fcard-body">' +
+        fmtRow('Notifiable to regulator', r.potentially_notifiable) +
+        fmtRow('SWMS update required',     r.swms_update_required) +
+        fmtRow('Work resumed',             r.work_resumed) +
+        fmtRow('Submitted',                (r.submission_date || '') + ' ' + (r.submission_time || '')) +
+      '</div></div>';
+  }
+  goTo('screen-incident-detail');
+}
+
 async function submitIncident() {
   const p = getProfile();
   if (!document.getElementById('inc-type').value) { slanAlert('Please select the type of report you\'re submitting.'); return; }
@@ -17561,6 +17990,7 @@ async function submitIncident() {
     submission_time: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}),
     submitted_at: now.toISOString(),
     status: 'open',                     // open → under-review → closed
+    photos: incPhotos.filter(p => p),   // array of {data, timestamp, date, time, site} — only filled slots
     register_target: 'SLS-REG-006'
   };
 
@@ -17594,8 +18024,8 @@ async function submitIncident() {
     iconStroke: incSeverity==='Critical'||incSeverity==='Major' ? '#B83232' : 'var(--mid)',
     title: 'Incident Report Submitted',
     sub: incFields.notif==='yes'
-      ? 'Report submitted and provider notified. This may be notifiable — call your provider immediately if you have not already done so.'
-      : 'Incident report submitted. Your WHS provider has been notified and will contact you within 24 hours.',
+      ? 'Report submitted. This may be notifiable to the regulator — preserve the scene and follow up by phone using the contact in your site contacts.'
+      : 'Incident report submitted. It will be reviewed and you will be contacted within 24 hours.',
     ref,
     details: [
       {l:'Type',      v: document.getElementById('inc-type').value},
@@ -30877,7 +31307,7 @@ function updateAllTileSubs(p) {
       hazSub.textContent = 'Log site hazard';
     }
   }
-  // Incident tile (worker + supervisor) — show open count
+  // Incident tile (worker + supervisor) — show open count + red notif badge
   var incOpenList = (typeof incLoadOpen === 'function') ? incLoadOpen() : [];
   var incCriticalCount = (typeof incLoadCritical === 'function') ? incLoadCritical().length : 0;
   function _updateIncSub(elId) {
@@ -30893,6 +31323,12 @@ function updateAllTileSubs(p) {
   }
   _updateIncSub('worker-inc-tile-sub');
   _updateIncSub('sup-inc-tile-sub');
+  // Red dot notif badge — visible when any open incidents exist
+  ['worker-inc-notif','sup-inc-notif'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = incOpenList.length > 0 ? 'block' : 'none';
+  });
   // SWMS tile
   var swmsSub = document.getElementById('swms-tile-sub2');
   if (swmsSub) swmsSub.textContent = 'Read & sign SWMS';
