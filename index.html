@@ -2018,6 +2018,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div id="inc-list-container" style="display:flex;flex-direction:column;gap:8px"></div>
     <button onclick="goToIncidentForm()" style="display:block;width:100%;padding:13px;margin-top:14px;background:#1B6E3A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">+ New incident report</button>
+
+    <!-- Demo seed (always visible while testing) -->
+    <button id="inc-seed-btn" onclick="incSeedDemoIncidents()" style="display:block;width:100%;padding:8px;margin-top:6px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">⚡ Load 5 demo incident reports (mix of open and closed)</button>
   </div>
 </div>
 
@@ -13669,16 +13672,27 @@ function updateSupActivityStrip() {
     }
   }
 
-  // Incidents — count open incidents (any severity); 'fail' if any are Critical or Major
+  // Incidents — count open incidents (any severity); 'fail' if any are Critical
+  // or Major. The chip is HIDDEN entirely when there are no records on file —
+  // this is an event chip, not a daily-task chip, so it shouldn't show "all
+  // good" when nothing has been reported.
+  const allIncRecords = (typeof incLoadAll === 'function') ? incLoadAll() : [];
   const openIncidents = (typeof incLoadOpen === 'function') ? incLoadOpen() : [];
   const criticalIncidents = (typeof incLoadCritical === 'function') ? incLoadCritical() : [];
-  const incLbl = document.getElementById('d-pill-inc-lbl');
-  if (incLbl) {
-    if (openIncidents.length > 0) {
-      incLbl.textContent = 'Incidents (' + openIncidents.length + ' open)';
+  const incLbl  = document.getElementById('d-pill-inc-lbl');
+  const incPill = document.getElementById('d-pill-inc');
+  if (incPill) {
+    if (allIncRecords.length === 0) {
+      // No reports filed at all → hide the chip
+      incPill.style.display = 'none';
+    } else if (openIncidents.length > 0) {
+      incPill.style.display = '';
+      if (incLbl) incLbl.textContent = 'Incidents (' + openIncidents.length + ' open)';
       setPillState('d-pill-inc', criticalIncidents.length > 0 ? 'fail' : 'warn');
     } else {
-      incLbl.textContent = 'Incidents';
+      // All incidents closed → green
+      incPill.style.display = '';
+      if (incLbl) incLbl.textContent = 'Incidents (closed)';
       setPillState('d-pill-inc', 'done');
     }
   }
@@ -33922,6 +33936,275 @@ function seedDemoHazards(silent) {
   return added;
 }
 
+// ─── INCIDENT DEMO SEEDER ───────────────────────────────────────
+// Adds 5 representative incident reports across a mix of types, severities
+// and statuses so the supervisor (and worker) can see what a populated
+// register looks like without filing real data. Idempotent — won't duplicate
+// records if called twice.
+function incSeedDemoIncidents(silent) {
+  if (typeof incSaveRecord !== 'function') {
+    if (!silent && typeof slanAlert === 'function') {
+      slanAlert('Sorry — the incident store is not ready yet. Please refresh and try again.');
+    }
+    return 0;
+  }
+  var existing = (typeof incLoadAll === 'function') ? incLoadAll() : [];
+  var siteName = (typeof SITE !== 'undefined') ? SITE : 'Demo Site';
+  var now = Date.now();
+  // Helper: build an ISO timestamp N hours back
+  var ago = function(hrs){ return new Date(now - hrs * 60 * 60 * 1000).toISOString(); };
+  // Helper: build a date string in en-AU
+  var dateAU = function(hrs){ return new Date(now - hrs * 60 * 60 * 1000).toLocaleDateString('en-AU'); };
+  var timeAU = function(hrs){ return new Date(now - hrs * 60 * 60 * 1000).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false}); };
+
+  var demos = [
+    // 1) Recent CRITICAL injury — still open, awaiting supervisor review
+    {
+      ref: 'INC-DEMO-CRIT01',
+      site: siteName,
+      reporter_name: 'Jake Ryan',
+      reporter_company: 'Murphy Civil Construction',
+      reporter_role: 'Worker',
+      incident_type: 'Actual Injury',
+      severity: 'Critical',
+      incident_date: dateAU(4),
+      incident_time: timeAU(4),
+      location: 'Level 3 formwork \u2014 grid E2',
+      role_in_event: 'Witness',
+      person_name: 'Mark Flynn',
+      person_company: 'Murphy Civil Construction',
+      supervisor_present: 'no',
+      work_activity: 'Stripping perimeter formwork on level 3',
+      briefing_received: ['prestart','swms'],
+      shift_start: '07:00',
+      days_worked: '4',
+      description: 'Mark slipped on a wet plywood off-cut while carrying a soldier and fell approximately 1.5m. Landed on his right side. Conscious but in significant pain \u2014 ambulance called, area isolated. Suspected fractured wrist and bruised ribs.',
+      injury_nature: 'Suspected fracture and bruising',
+      body_part: 'Right wrist and ribs',
+      first_aid: 'yes',
+      medical_attention: 'yes',
+      immediate_action: 'Area cordoned off, ambulance called, first aid administered (immobilised arm and applied pressure to grazes). Supervisor notified by phone. Plywood off-cuts cleared from the deck.',
+      corrective_actions: 'Toolbox to be delivered tomorrow morning on housekeeping standards on level 3. Site walk-down each shift end. Dedicated bins to be installed for off-cuts.',
+      swms_update_required: 'yes',
+      work_resumed: 'no',
+      potentially_notifiable: 'yes',
+      submission_date: dateAU(4),
+      submission_time: timeAU(4),
+      submitted_at: ago(4),
+      status: 'open',
+      photos: [],
+      photos_skipped: true,
+      register_target: 'SLS-REG-006'
+    },
+    // 2) Near miss — open, moderate
+    {
+      ref: 'INC-DEMO-NM02',
+      site: siteName,
+      reporter_name: 'Eoin Burke',
+      reporter_company: 'Murphy Civil Construction',
+      reporter_role: 'Site Supervisor',
+      incident_type: 'Near Miss',
+      severity: 'Moderate',
+      incident_date: dateAU(28),
+      incident_time: timeAU(28),
+      location: 'Tower crane laydown \u2014 east side',
+      role_in_event: 'Reporting on behalf of another',
+      person_name: 'Tom Kelleher',
+      person_company: 'Crane Services Pty Ltd',
+      supervisor_present: 'yes',
+      work_activity: 'Tower crane lifting prefab steel beams',
+      briefing_received: ['prestart','swms','talk'],
+      shift_start: '06:30',
+      days_worked: '5',
+      description: 'During a tandem lift the load swung approximately 2m off the planned path due to a sudden gust. No one in the swing zone but the dogger had to step back. Lift halted immediately; load lowered safely. No damage, no injury.',
+      injury_nature: '',
+      body_part: '',
+      first_aid: 'no',
+      medical_attention: 'no',
+      immediate_action: 'Lift halted, load lowered to laydown. Wind speeds checked \u2014 gusts above 35 km/h logged. Crew stood down for the morning until conditions stabilised.',
+      corrective_actions: 'SWMS amendment for wind threshold on tandem lifts. Anemometer verification scheduled. Refresher briefing for all dogger and rigger teams.',
+      swms_update_required: 'yes',
+      work_resumed: 'yes',
+      potentially_notifiable: 'unsure',
+      submission_date: dateAU(28),
+      submission_time: timeAU(28),
+      submitted_at: ago(28),
+      status: 'open',
+      photos: [],
+      photos_skipped: true,
+      register_target: 'SLS-REG-006'
+    },
+    // 3) Minor injury — already closed by supervisor
+    {
+      ref: 'INC-DEMO-MIN03',
+      site: siteName,
+      reporter_name: 'Jake Ryan',
+      reporter_company: 'Murphy Civil Construction',
+      reporter_role: 'Worker',
+      incident_type: 'Actual Injury',
+      severity: 'Minor',
+      incident_date: dateAU(72),
+      incident_time: timeAU(72),
+      location: 'Site office \u2014 tea room',
+      role_in_event: 'Person Involved / Injured',
+      person_name: 'Jake Ryan',
+      person_company: 'Murphy Civil Construction',
+      supervisor_present: 'no',
+      work_activity: 'On break',
+      briefing_received: ['none'],
+      shift_start: '07:00',
+      days_worked: '2',
+      description: 'Cut my finger on a knife while making lunch in the site office tea room. Small laceration on left index finger.',
+      injury_nature: 'Minor laceration',
+      body_part: 'Left index finger',
+      first_aid: 'yes',
+      medical_attention: 'no',
+      immediate_action: 'Cleaned, dressed with band-aid from first aid kit. Logged in first aid book.',
+      corrective_actions: 'No structural cause \u2014 user error. Reminder to staff about kitchen knife handling posted in tea room.',
+      swms_update_required: 'no',
+      work_resumed: 'yes',
+      potentially_notifiable: 'no',
+      submission_date: dateAU(72),
+      submission_time: timeAU(72),
+      submitted_at: ago(72),
+      status: 'closed',
+      closed_at: ago(70),
+      closed_by: 'Eoin Burke',
+      reviewer_name: 'Eoin Burke',
+      reviewer_company: 'Murphy Civil Construction',
+      review_notes_text: 'Spoke to Jake \u2014 wound healed, no further issue. Reminder note posted about kitchen knife use.',
+      close_note: 'Minor injury, closed. No corrective action other than the reminder note.',
+      notifiable_assessment: {
+        reporter_said: 'no',
+        supervisor_said: 'no',
+        agreed: true,
+        assessed_at: ago(70),
+        assessed_by: 'Eoin Burke'
+      },
+      corrective_action_complete: true,
+      corrective_action_completed_at: ago(70),
+      corrective_action_completed_by: 'Eoin Burke',
+      photos: [],
+      photos_skipped: true,
+      register_target: 'SLS-REG-006'
+    },
+    // 4) Property damage — major, open
+    {
+      ref: 'INC-DEMO-PD04',
+      site: siteName,
+      reporter_name: 'Mark Flynn',
+      reporter_company: 'Murphy Civil Construction',
+      reporter_role: 'Worker',
+      incident_type: 'Property Damage',
+      severity: 'Major',
+      incident_date: dateAU(48),
+      incident_time: timeAU(48),
+      location: 'South gate \u2014 access road',
+      role_in_event: 'Witness',
+      person_name: '',
+      person_company: '',
+      supervisor_present: 'no',
+      work_activity: 'Plant operation',
+      briefing_received: ['prestart','swms'],
+      shift_start: '06:30',
+      days_worked: '6',
+      description: 'A skid steer reversed into the south gate boom while exiting site, bending the boom and breaking the actuator. No one was in the area at the time. Operator stopped immediately.',
+      injury_nature: '',
+      body_part: '',
+      first_aid: 'no',
+      medical_attention: 'no',
+      immediate_action: 'Boom isolated and tagged out of service. South gate operated manually with spotter until repair. Operator stood down pending review.',
+      corrective_actions: 'Reverse beepers verified working. Spotters required at all gate movements. Camera coverage to be reviewed for blind-spot extent.',
+      swms_update_required: 'yes',
+      work_resumed: 'yes',
+      potentially_notifiable: 'no',
+      submission_date: dateAU(48),
+      submission_time: timeAU(48),
+      submitted_at: ago(48),
+      status: 'open',
+      photos: [],
+      photos_skipped: true,
+      register_target: 'SLS-REG-006'
+    },
+    // 5) Environmental spill — moderate, closed
+    {
+      ref: 'INC-DEMO-ENV05',
+      site: siteName,
+      reporter_name: 'Tom Kelleher',
+      reporter_company: 'Crane Services Pty Ltd',
+      reporter_role: 'Worker',
+      incident_type: 'Environmental',
+      severity: 'Moderate',
+      incident_date: dateAU(120),
+      incident_time: timeAU(120),
+      location: 'Compound \u2014 fuel storage area',
+      role_in_event: 'Witness',
+      person_name: '',
+      person_company: '',
+      supervisor_present: 'yes',
+      work_activity: 'Refuelling generator',
+      briefing_received: ['prestart','swms','talk'],
+      shift_start: '07:00',
+      days_worked: '3',
+      description: 'Approximately 8 litres of diesel spilled from a transfer pump nozzle when the auto cut-off failed. Spill contained within bunded area. No diesel reached drains or soil.',
+      injury_nature: '',
+      body_part: '',
+      first_aid: 'no',
+      medical_attention: 'no',
+      immediate_action: 'Pump shut off at the source. Spill kit deployed. Absorbent placed and bunded area inspected for breach. Generator refuelling halted until pump replaced.',
+      corrective_actions: 'Transfer pump replaced. All site pumps to be checked monthly. Spill kit inventory verified.',
+      swms_update_required: 'no',
+      work_resumed: 'yes',
+      potentially_notifiable: 'no',
+      submission_date: dateAU(120),
+      submission_time: timeAU(120),
+      submitted_at: ago(120),
+      status: 'closed',
+      closed_at: ago(96),
+      closed_by: 'Eoin Burke',
+      reviewer_name: 'Eoin Burke',
+      reviewer_company: 'Murphy Civil Construction',
+      review_notes_text: 'Bunding effective \u2014 no environmental release. Pump replaced.',
+      close_note: 'Spill fully contained within bunded area. Replaced pump. Monthly inspection added to plant maintenance schedule.',
+      notifiable_assessment: {
+        reporter_said: 'no',
+        supervisor_said: 'no',
+        agreed: true,
+        assessed_at: ago(96),
+        assessed_by: 'Eoin Burke'
+      },
+      corrective_action_complete: true,
+      corrective_action_completed_at: ago(96),
+      corrective_action_completed_by: 'Eoin Burke',
+      photos: [],
+      photos_skipped: true,
+      register_target: 'SLS-REG-006'
+    }
+  ];
+
+  var added = 0;
+  demos.forEach(function(d) {
+    if (existing.some(function(x){ return x.ref === d.ref; })) return;
+    if (incSaveRecord(d)) added++;
+  });
+  if (!silent) {
+    var msg = 'Loaded ' + added + ' demo incidents.';
+    if (typeof slanToast === 'function') slanToast(msg, 'success');
+    else slanAlert('Demo data loaded', msg, 'info');
+    // Re-render the list if we're on it
+    if (typeof renderIncidentList === 'function') {
+      try { renderIncidentList(); } catch(e) {}
+    }
+    // Refresh chips/tiles everywhere
+    if (typeof updateAllTileSubs === 'function') {
+      try { updateAllTileSubs((typeof getProfile === 'function') ? getProfile() : null); } catch(e) {}
+    }
+    if (typeof updateStatusStrip === 'function') { try { updateStatusStrip(); } catch(e) {} }
+    if (typeof loadSuperDash === 'function')     { try { loadSuperDash(); } catch(e) {} }
+  }
+  return added;
+}
+
 // ─── MASTER DEMO LOADER ─────────────────────────────────────────
 // One-tap loader that fills the entire app with realistic demo data so the
 // supervisor (or worker) lands on a fully populated portal without manual setup.
@@ -33929,29 +34212,32 @@ function seedDemoHazards(silent) {
 function seedFullDemo() {
   slanConfirm({
     title: 'Load full demo data?',
-    body: 'This will populate:\n\u2022 24 permits across 12 types\n\u2022 4 site hazards (mix of open and resolved)\n\u2022 3 previous monthly toolbox rosters with signatures + debriefs\n\u2022 3 previous talks for the current worker\n\nAdds to existing data \u2014 won\u2019t duplicate.',
+    body: 'This will populate:\n\u2022 24 permits across 12 types\n\u2022 4 site hazards (mix of open and resolved)\n\u2022 5 incident reports (mix of open and closed, all severities)\n\u2022 3 previous monthly toolbox rosters with signatures + debriefs\n\u2022 3 previous talks for the current worker\n\nAdds to existing data \u2014 won\u2019t duplicate.',
     okText: 'Load demo data',
     cancelText: 'Cancel',
     variant: 'info'
   }).then(function(ok) {
     if (!ok) return;
 
-    var totals = { permits: 0, hazards: 0, rosters: 0, talks: 0 };
-    try { totals.permits = ptwSeedDemoPermits(true) || 0; } catch(e) {}
-    try { totals.hazards = seedDemoHazards(true) || 0; } catch(e) {}
-    try { totals.rosters = tbtSeedDemoSupervisorRosters(true) || 0; } catch(e) {}
-    try { totals.talks   = tbtSeedDemoHistory(true) || 0; } catch(e) {}
+    var totals = { permits: 0, hazards: 0, incidents: 0, rosters: 0, talks: 0 };
+    try { totals.permits   = ptwSeedDemoPermits(true) || 0; } catch(e) {}
+    try { totals.hazards   = seedDemoHazards(true) || 0; } catch(e) {}
+    try { totals.incidents = incSeedDemoIncidents(true) || 0; } catch(e) {}
+    try { totals.rosters   = tbtSeedDemoSupervisorRosters(true) || 0; } catch(e) {}
+    try { totals.talks     = tbtSeedDemoHistory(true) || 0; } catch(e) {}
 
     try { if (typeof ptwRenderUnified === 'function') ptwRenderUnified(); } catch(e) {}
     try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
     try { if (typeof updateAllTileSubs === 'function') updateAllTileSubs((typeof getProfile === 'function') ? getProfile() : null); } catch(e) {}
+    try { if (typeof updateStatusStrip === 'function') updateStatusStrip(); } catch(e) {}
+    try { if (typeof renderIncidentList === 'function') renderIncidentList(); } catch(e) {}
     try {
       if (document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
         goToTalk();
       }
     } catch(e) {}
 
-    var msg = 'Demo loaded: ' + totals.permits + ' permits, ' + totals.hazards + ' hazards, ' + totals.rosters + ' roster signatures, ' + totals.talks + ' worker talks.';
+    var msg = 'Demo loaded: ' + totals.permits + ' permits, ' + totals.hazards + ' hazards, ' + totals.incidents + ' incidents, ' + totals.rosters + ' roster signatures, ' + totals.talks + ' worker talks.';
     if (typeof slanToast === 'function') slanToast(msg, 'success');
     else slanAlert('Demo data loaded', msg, 'info');
   });
