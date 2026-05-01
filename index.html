@@ -799,16 +799,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="fgroup">
           <label class="flabel">Years of industry experience</label>
-          <select id="p-experience" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
-            <option value="">Select...</option>
-            <option value="<1">Less than 1 year</option>
-            <option value="1-2">1 – 2 years</option>
-            <option value="3-5">3 – 5 years</option>
-            <option value="6-10">6 – 10 years</option>
-            <option value="11-20">11 – 20 years</option>
-            <option value="20+">More than 20 years</option>
-          </select>
-          <div class="fhint">Auto-filled into incident reports — captures fatigue/experience context for investigators.</div>
+          <input type="hidden" id="p-experience" value="">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="p-exp-grid">
+            <button type="button" class="ps-btn" id="p-exp-0-2"  onclick="setProfileExperience('0-2')"  style="padding:9px 4px;font-size:12px">0&ndash;2 yrs</button>
+            <button type="button" class="ps-btn" id="p-exp-3-5"  onclick="setProfileExperience('3-5')"  style="padding:9px 4px;font-size:12px">3&ndash;5 yrs</button>
+            <button type="button" class="ps-btn" id="p-exp-6-10" onclick="setProfileExperience('6-10')" style="padding:9px 4px;font-size:12px">6&ndash;10 yrs</button>
+            <button type="button" class="ps-btn" id="p-exp-10+"  onclick="setProfileExperience('10+')"  style="padding:9px 4px;font-size:12px">10+ yrs</button>
+          </div>
+          <div class="fhint">Auto-filled into incident reports — captures fatigue/experience context for investigators. There's no fixed regulator standard for these bands; we've grouped them this way for a clean tap target.</div>
         </div>
       </div>
     </div>
@@ -1891,8 +1889,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div class="fgroup">
-          <label class="flabel">Was an offer of a support person made to the person involved? <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-support')">?</span></label>
-          <div id="inc-help-support" class="slan-help-tip">A support person can be a colleague, family member, union rep, or HSR. The person involved has the right to one if they're being interviewed about the event. This must be offered, not assumed.</div>
+          <label class="flabel">Support person offered to the person involved? <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-support')">?</span></label>
+          <div id="inc-help-support" class="slan-help-tip">A support person can be a colleague, family member, or HSR. The person involved has the right to one if they're being interviewed about the event. This must be offered, not assumed.</div>
           <input type="hidden" id="inc-support-offered" value="">
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
             <button class="ps-btn" id="inc-support-yes" onclick="setIncField('support','yes')">Offered &amp; accepted</button>
@@ -1935,15 +1933,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="fgroup">
           <label class="flabel">Years of industry experience <span style="font-weight:400;color:var(--muted);font-size:11px">(auto-filled from your profile)</span></label>
-          <select id="inc-experience" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
-            <option value="">Select...</option>
-            <option value="<1">Less than 1 year</option>
-            <option value="1-2">1 – 2 years</option>
-            <option value="3-5">3 – 5 years</option>
-            <option value="6-10">6 – 10 years</option>
-            <option value="11-20">11 – 20 years</option>
-            <option value="20+">More than 20 years</option>
-          </select>
+          <input type="hidden" id="inc-experience" value="">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="inc-exp-grid">
+            <button type="button" class="ps-btn" id="inc-exp-0-2"  onclick="setIncExperience('0-2')"  style="padding:9px 4px;font-size:12px">0&ndash;2 yrs</button>
+            <button type="button" class="ps-btn" id="inc-exp-3-5"  onclick="setIncExperience('3-5')"  style="padding:9px 4px;font-size:12px">3&ndash;5 yrs</button>
+            <button type="button" class="ps-btn" id="inc-exp-6-10" onclick="setIncExperience('6-10')" style="padding:9px 4px;font-size:12px">6&ndash;10 yrs</button>
+            <button type="button" class="ps-btn" id="inc-exp-10+"  onclick="setIncExperience('10+')"  style="padding:9px 4px;font-size:12px">10+ yrs</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2112,8 +2108,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <input type="hidden" id="inc-scene-preserved" value="">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
               <button class="ps-btn" id="inc-scene-yes" onclick="setIncField('scene','yes')">Yes</button>
-              <button class="ps-btn" id="inc-scene-no"  onclick="setIncField('scene','no')">No — explain in description</button>
+              <button class="ps-btn" id="inc-scene-no"  onclick="setIncField('scene','no')">No</button>
             </div>
+          </div>
+          <div class="fgroup" id="inc-scene-reason-wrap" style="display:none">
+            <label class="flabel">Why couldn't the scene be preserved?</label>
+            <div class="fhint" style="margin-bottom:6px">Brief reason — e.g. casualty needed urgent care, plant had to be moved to free trapped worker, fire risk required area to be cleared.</div>
+            <textarea id="inc-scene-reason" placeholder="e.g. Casualty was trapped — plant was moved to free them" rows="2" style="font-size:14px"></textarea>
           </div>
         </div>
       </div>
@@ -13298,6 +13299,18 @@ function slanWeatherAutoFill(opts) {
   });
 }
 
+// Pill-style experience picker on the profile screen. Mirrors the value
+// into the hidden #p-experience input so saveProfile can read it.
+function setProfileExperience(val) {
+  const hid = document.getElementById('p-experience');
+  if (hid) hid.value = val;
+  ['0-2','3-5','6-10','10+'].forEach(v => {
+    const b = document.getElementById('p-exp-' + v); if (!b) return;
+    b.className = 'ps-btn' + (v === val ? ' pass' : '');
+    b.style = '';
+  });
+}
+
 function saveProfile(){
   const n=document.getElementById('p-name').value.trim();
   const co=document.getElementById('p-company').value.trim();
@@ -17890,7 +17903,7 @@ function goToIncidentForm() {
   incSeverity = null; incFields = {}; incBriefing = [];
   ['inc-type','inc-role-in-event','inc-person-name','inc-person-company',
    'inc-person-dob','inc-person-phone','inc-supervisor-name',
-   'inc-witnesses','inc-treatment-dest',
+   'inc-witnesses','inc-treatment-dest','inc-scene-reason',
    'inc-reg-call-date','inc-reg-call-time','inc-reg-contact','inc-reg-ref',
    'inc-sup-notified','inc-support-offered','inc-scene-preserved',
    'inc-activity','inc-description','inc-injury-nature','inc-body-part',
@@ -17903,11 +17916,14 @@ function goToIncidentForm() {
   if (warnEl) warnEl.style.display = 'none';
   const adviceEl = document.getElementById('inc-notif-advice');
   if (adviceEl) adviceEl.style.display = 'none';
-  // Hide regulator block + treatment destination — only shown after picking notif=yes / med=yes
+  // Hide regulator block + treatment destination + scene reason — only shown
+  // after picking notif=yes / med=yes / scene=no
   const regBlock = document.getElementById('inc-regulator-block');
   if (regBlock) regBlock.style.display = 'none';
   const tWrap = document.getElementById('inc-treatment-wrap');
   if (tWrap) tWrap.style.display = 'none';
+  const sceneWrap = document.getElementById('inc-scene-reason-wrap');
+  if (sceneWrap) sceneWrap.style.display = 'none';
   const regSel = document.getElementById('inc-reg-state');
   if (regSel) regSel.value = '';
   if (typeof updateRegulatorPhone === 'function') updateRegulatorPhone();
@@ -17983,9 +17999,13 @@ function goToIncidentForm() {
       }
     }
   } catch(e) {}
-  // Years of industry experience — pre-fill from profile
-  const expEl = document.getElementById('inc-experience');
-  if (expEl && p.experience) expEl.value = p.experience;
+  // Years of industry experience — pre-fill from profile (pill style)
+  ['0-2','3-5','6-10','10+'].forEach(v => {
+    const b = document.getElementById('inc-exp-' + v); if (b) { b.className='ps-btn'; b.style=''; }
+  });
+  if (typeof setIncExperience === 'function' && p.experience) {
+    setIncExperience(p.experience);
+  }
   // Reset photo slots
   if (typeof resetIncidentPhotos === 'function') resetIncidentPhotos();
   // Reset submit button to disabled state (no required fields filled yet)
@@ -18111,6 +18131,11 @@ function setIncField(field, val) {
     const tw = document.getElementById('inc-treatment-wrap');
     if (tw) tw.style.display = (val === 'yes') ? 'block' : 'none';
   }
+  if (field === 'scene') {
+    // Show "Why couldn't the scene be preserved?" textarea only when No
+    const sw = document.getElementById('inc-scene-reason-wrap');
+    if (sw) sw.style.display = (val === 'no') ? 'block' : 'none';
+  }
   if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
 }
 
@@ -18160,6 +18185,18 @@ function setIncType(typeName) {
     b.style = '';
   });
   incRecheckSubmit();
+}
+
+// Pill-style experience picker on the incident form. Mirrors the value into
+// the hidden #inc-experience input so the submit payload picks it up.
+function setIncExperience(val) {
+  const hid = document.getElementById('inc-experience');
+  if (hid) hid.value = val;
+  ['0-2','3-5','6-10','10+'].forEach(v => {
+    const b = document.getElementById('inc-exp-' + v); if (!b) return;
+    b.className = 'ps-btn' + (v === val ? ' pass' : '');
+    b.style = '';
+  });
 }
 
 // Role-in-event selector (replaces dropdown). When "Person Involved / Injured"
@@ -18558,6 +18595,7 @@ function goToIncidentDetail(ref) {
         (r.review_notes_text ? '<div style="margin-bottom:4px"><span style="color:var(--muted);font-size:11.5px">Review notes:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.review_notes_text).replace(/</g,'&lt;') + '</div></div>' : '') +
         (supNotif ? '<div style="margin-bottom:2px"><span style="color:var(--muted);font-size:11.5px">Notifiable:</span> <b>' + (labels[supNotif] || supNotif) + '</b></div>' : '') +
         '<div style="margin-bottom:2px"><span style="color:var(--muted);font-size:11.5px">Corrective action:</span> ' + corrective + '</div>' +
+        (r.corrective_action_detail ? '<div style="margin-bottom:4px;padding-left:0"><span style="color:var(--muted);font-size:11.5px">What was done:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.corrective_action_detail).replace(/</g,'&lt;') + '</div></div>' : '') +
         (r.close_note ? '<div style="margin-top:4px"><span style="color:var(--muted);font-size:11.5px">Closing note:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.close_note).replace(/</g,'&lt;') + '</div></div>' : '') +
       '</div></div>';
     }
@@ -18575,8 +18613,11 @@ function goToIncidentDetail(ref) {
   };
   const expLabel = function(v){
     const map = {
-      '<1':'Less than 1 year', '1-2':'1 – 2 years', '3-5':'3 – 5 years',
-      '6-10':'6 – 10 years', '11-20':'11 – 20 years', '20+':'More than 20 years'
+      // New 4-band scheme
+      '0-2':'0 – 2 years', '3-5':'3 – 5 years', '6-10':'6 – 10 years', '10+':'10+ years',
+      // Legacy 6-band tolerance (records saved before step19y)
+      '<1':'Less than 1 year', '1-2':'1 – 2 years',
+      '11-20':'11 – 20 years', '20+':'More than 20 years'
     };
     return map[v] || v || '';
   };
@@ -18612,6 +18653,11 @@ function goToIncidentDetail(ref) {
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">' +
           '<button id="inc-sup-corrective-yes" class="ps-btn" onclick="incSetSupCorrective(\'yes\')">Yes \u2014 actioned</button>' +
           '<button id="inc-sup-corrective-no"  class="ps-btn" onclick="incSetSupCorrective(\'no\')">No \u2014 still pending</button>' +
+        '</div>' +
+        '<div id="inc-sup-corrective-detail-wrap" style="display:none;margin-top:8px">' +
+          '<label class="flabel" style="margin-top:8px">What was done? <span class="req">*</span></label>' +
+          '<div class="fhint" style="margin-bottom:6px">Brief description of the corrective action taken \u2014 e.g. SWMS updated and re-issued, area barricaded, retraining delivered to crew.</div>' +
+          '<textarea id="inc-sup-corrective-detail" placeholder="e.g. SWMS section 4 updated to require two-person lift above 20kg. Re-issued to all formworkers and toolbox delivered." rows="3" style="font-size:14px" oninput="incRecheckClose()"></textarea>' +
         '</div>' +
       '</div>' +
       '<div class="fgroup">' +
@@ -18736,6 +18782,10 @@ function incSetSupCorrective(val) {
     b.className = 'ps-btn' + (v === val ? ' pass' : '');
     b.style = '';
   });
+  // Show detail textarea only when Yes — actioned (so the supervisor can
+  // record what was actually done). Hidden again if they switch to No.
+  const detailWrap = document.getElementById('inc-sup-corrective-detail-wrap');
+  if (detailWrap) detailWrap.style.display = (val === 'yes') ? 'block' : 'none';
   incRecheckClose();
 }
 
@@ -18748,9 +18798,15 @@ function incRecheckClose() {
   const hint = document.getElementById('inc-close-hint');
   if (!btn) return;
   const closeNote = document.getElementById('inc-close-note');
+  const correctiveDetail = document.getElementById('inc-sup-corrective-detail');
+  // If corrective = yes, supervisor must describe what was done. If no, no detail required.
+  const correctiveOk =
+    _incSupCorrective === 'no' ||
+    (_incSupCorrective === 'yes' && !!(correctiveDetail && correctiveDetail.value && correctiveDetail.value.trim()));
   const ok =
     !!_incSupNotif &&
     !!_incSupCorrective &&
+    correctiveOk &&
     !!(closeNote && closeNote.value && closeNote.value.trim());
   if (ok) {
     btn.disabled = false;
@@ -18786,8 +18842,14 @@ function incCloseIncident() {
   if (!_incSupCorrective) { slanAlert('Please confirm whether corrective action is complete.'); return; }
   const notesEl = document.getElementById('inc-review-notes');
   const closeEl = document.getElementById('inc-close-note');
+  const correctiveDetailEl = document.getElementById('inc-sup-corrective-detail');
   const reviewNotesText = (notesEl && notesEl.value || '').trim();
   const closeNoteText   = (closeEl && closeEl.value || '').trim();
+  const correctiveDetailText = (correctiveDetailEl && correctiveDetailEl.value || '').trim();
+  if (_incSupCorrective === 'yes' && !correctiveDetailText) {
+    slanAlert('Please describe what corrective action was taken.');
+    return;
+  }
   if (!closeNoteText) { slanAlert('Please add a closing note.'); return; }
 
   // Confirm
@@ -18811,6 +18873,7 @@ function incCloseIncident() {
     rec.corrective_action_complete = (_incSupCorrective === 'yes');
     rec.corrective_action_completed_at = (_incSupCorrective === 'yes') ? now.toISOString() : null;
     rec.corrective_action_completed_by = (_incSupCorrective === 'yes') ? (me.name || '') : null;
+    rec.corrective_action_detail = (_incSupCorrective === 'yes') ? correctiveDetailText : '';
 
     // Persist (incSaveRecord handles photo split internally)
     if (typeof incSaveRecord === 'function') incSaveRecord(rec);
@@ -19066,7 +19129,10 @@ function downloadIncidentPdf() {
     drawCardRow('Shift start',        r.shift_start);
     drawCardRow('Days worked since last day off', r.days_worked);
     drawCardRow('Years of industry experience', (function(){
-      const m = {'<1':'Less than 1 year','1-2':'1 – 2 years','3-5':'3 – 5 years','6-10':'6 – 10 years','11-20':'11 – 20 years','20+':'More than 20 years'};
+      const m = {
+        '0-2':'0 – 2 years','3-5':'3 – 5 years','6-10':'6 – 10 years','10+':'10+ years',
+        '<1':'Less than 1 year','1-2':'1 – 2 years','11-20':'11 – 20 years','20+':'More than 20 years'
+      };
       return m[r.years_experience] || r.years_experience || '';
     })());
     drawCardRow('Injury nature',      r.injury_nature);
@@ -19095,14 +19161,29 @@ function downloadIncidentPdf() {
     drawCardRow('Work resumed',         r.work_resumed);
     drawCardRow('Submitted',            (r.submission_date || '') + (r.submission_time ? ' ' + r.submission_time : ''));
 
-    // SECTION 6 — Supervisor close-out (only if closed)
+    // SECTION 6 — Supervisor close-out (always rendered for audit trail —
+    // shows explicit "awaiting review" state when the incident is still open
+    // rather than silently omitting the section)
+    y = drawMajorBanner(y, 'SUPERVISOR CLOSE-OUT');
     if (status === 'closed') {
-      y = drawMajorBanner(y, 'SUPERVISOR CLOSE-OUT');
       drawCardRow('Closed by',     r.closed_by);
       drawCardRow('Closed at',     r.closed_at ? new Date(r.closed_at).toLocaleString('en-AU') : '');
+      drawCardRow('Notifiable confirmed', (function(){
+        const v = r.notifiable_assessment && r.notifiable_assessment.supervisor_said;
+        return v === 'yes' ? 'Yes' : v === 'no' ? 'No' : v === 'unsure' ? 'Unsure' : '';
+      })());
       drawCardRow('Corrective action', r.corrective_action_complete ? 'Yes \u2014 actioned' : 'No \u2014 still pending');
-      drawCardBlock('REVIEW NOTES',  r.review_notes_text);
-      drawCardBlock('CLOSING NOTE',  r.close_note);
+      if (r.corrective_action_detail) drawCardBlock('CORRECTIVE ACTION DETAIL', r.corrective_action_detail);
+      if (r.review_notes_text)        drawCardBlock('REVIEW NOTES',  r.review_notes_text);
+      if (r.close_note)               drawCardBlock('CLOSING NOTE',  r.close_note);
+    } else {
+      // Status open — explicit pending state for audit
+      ensure(14);
+      drawCard(y, 12, C.amberBg, '#E8DCC0');
+      setText('#BA7517');
+      doc.setFont('helvetica','italic'); doc.setFontSize(9);
+      doc.text('Awaiting supervisor review \u2014 close-out details will be added once a supervisor closes this incident.', ML + 4, y + 7.5);
+      y += 14;
     }
 
     // SECTION 7 — Photo evidence (always shown so the audit trail makes the
@@ -19278,6 +19359,7 @@ async function submitIncident() {
     regulator_contact:   ((document.getElementById('inc-reg-contact')   || {}).value || '').trim(),
     regulator_reference: ((document.getElementById('inc-reg-ref')       || {}).value || '').trim(),
     scene_preserved: incFields.scene || '',
+    scene_reason:    ((document.getElementById('inc-scene-reason') || {}).value || '').trim(),
     submission_date: now.toLocaleDateString('en-AU'),
     submission_time: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}),
     submitted_at: now.toISOString(),
@@ -34437,7 +34519,7 @@ function incSeedDemoIncidents(silent) {
       photos: [],
       photos_skipped: true,
       reporter_signature: sigEoin,
-      years_experience: '11-20',
+      years_experience: '10+',
       register_target: 'SLS-REG-006'
     },
     // 3) Minor injury — already closed by supervisor
@@ -34490,6 +34572,7 @@ function incSeedDemoIncidents(silent) {
       corrective_action_complete: true,
       corrective_action_completed_at: ago(70),
       corrective_action_completed_by: 'Eoin Burke',
+      corrective_action_detail: 'Reminder note posted in tea room about kitchen knife handling. Reviewed first aid kit \u2014 stock confirmed adequate. No SWMS change required (incident not work-task related).',
       photos: [],
       photos_skipped: true,
       reporter_signature: sigJake,
@@ -34587,11 +34670,12 @@ function incSeedDemoIncidents(silent) {
       corrective_action_complete: true,
       corrective_action_completed_at: ago(96),
       corrective_action_completed_by: 'Eoin Burke',
+      corrective_action_detail: 'Faulty transfer pump replaced with new auto cut-off model. Monthly inspection added to plant maintenance schedule (PM-014). Spill kit inventory verified and re-stocked. All site fuel-handling crew briefed on new procedure.',
       photos: [],
       photos_skipped: true,
       reporter_signature: sigTom,
       closer_signature: sigEoin,
-      years_experience: '11-20',
+      years_experience: '10+',
       register_target: 'SLS-REG-006'
     }
   ];
@@ -37375,13 +37459,14 @@ function demoPrefillAll(profile, role) {
     const phEl  = document.getElementById('p-phone');
     const dobEl = document.getElementById('p-dob');
     const stEl  = document.getElementById('p-state');
-    const exEl  = document.getElementById('p-experience');
     if (nameEl) nameEl.value = profile.name || '';
     if (coEl) coEl.value = profile.company || '';
     if (phEl)  phEl.value  = profile.phone || '';
     if (dobEl) dobEl.value = profile.dob || '';
     if (stEl)  stEl.value  = profile.state || '';
-    if (exEl)  exEl.value  = profile.experience || '';
+    if (typeof setProfileExperience === 'function' && profile.experience) {
+      setProfileExperience(profile.experience);
+    }
     if (typeof selectRoleAfterPin === 'function') {
       // Only run if profile screen DOM is actually loaded
       if (document.getElementById('p-role')) {
