@@ -770,6 +770,49 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
     <div class="fcard">
+      <div class="fcard-hdr">Contact &amp; emergency details</div>
+      <div class="fcard-body">
+        <div class="fhint" style="margin-bottom:10px;line-height:1.5">Used to auto-fill your name, DOB and contact details on incident and injury reports so you don't have to retype them every time.</div>
+        <div class="fgroup">
+          <label class="flabel">Mobile phone</label>
+          <input type="tel" id="p-phone" placeholder="e.g. 0412 345 678" autocomplete="tel" inputmode="tel">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Date of birth</label>
+          <input type="date" id="p-dob" autocomplete="bday" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box">
+          <div class="fhint">Required by WHS regulators for any notifiable injury report.</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">State / territory of work</label>
+          <select id="p-state" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
+            <option value="">Select state...</option>
+            <option value="NSW">New South Wales (NSW)</option>
+            <option value="VIC">Victoria (VIC)</option>
+            <option value="QLD">Queensland (QLD)</option>
+            <option value="WA">Western Australia (WA)</option>
+            <option value="SA">South Australia (SA)</option>
+            <option value="TAS">Tasmania (TAS)</option>
+            <option value="ACT">Australian Capital Territory (ACT)</option>
+            <option value="NT">Northern Territory (NT)</option>
+          </select>
+          <div class="fhint">Determines which WHS regulator's phone number is shown on notifiable incident reports.</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Years of industry experience</label>
+          <select id="p-experience" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
+            <option value="">Select...</option>
+            <option value="<1">Less than 1 year</option>
+            <option value="1-2">1 – 2 years</option>
+            <option value="3-5">3 – 5 years</option>
+            <option value="6-10">6 – 10 years</option>
+            <option value="11-20">11 – 20 years</option>
+            <option value="20+">More than 20 years</option>
+          </select>
+          <div class="fhint">Auto-filled into incident reports — captures fatigue/experience context for investigators.</div>
+        </div>
+      </div>
+    </div>
+    <div class="fcard">
       <div class="fcard-hdr">Profile photo</div>
       <div class="fcard-body">
         <div class="photo-upload-wrap">
@@ -1821,11 +1864,45 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <input type="text" id="inc-person-company" placeholder="e.g. Murphy Concreting Pty Ltd" autocomplete="off">
         </div>
         <div class="fgroup">
-          <label class="flabel">Was a supervisor present? <span class="req">*</span></label>
+          <label class="flabel">Date of birth <span style="font-weight:400;color:var(--muted);font-size:11px">(required by regulator for notifiable incidents)</span></label>
+          <input type="date" id="inc-person-dob" autocomplete="off" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Mobile phone of person involved</label>
+          <input type="tel" id="inc-person-phone" placeholder="e.g. 0412 345 678" autocomplete="off" inputmode="tel">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Supervisor name <span class="req">*</span></label>
+          <input type="text" id="inc-supervisor-name" placeholder="Name of the responsible supervisor for this work" autocomplete="off" oninput="incRecheckSubmit()">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Was a supervisor present at the event? <span class="req">*</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <button class="ps-btn" id="inc-sup-yes" onclick="setIncField('sup','yes')">Yes</button>
             <button class="ps-btn" id="inc-sup-no"  onclick="setIncField('sup','no')">No</button>
           </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Was the supervisor notified immediately? <span class="req">*</span></label>
+          <input type="hidden" id="inc-sup-notified" value="">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="ps-btn" id="inc-supnotif-yes" onclick="setIncField('supnotif','yes')">Yes</button>
+            <button class="ps-btn" id="inc-supnotif-no"  onclick="setIncField('supnotif','no')">No</button>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Was an offer of a support person made to the person involved? <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-support')">?</span></label>
+          <div id="inc-help-support" class="slan-help-tip">A support person can be a colleague, family member, union rep, or HSR. The person involved has the right to one if they're being interviewed about the event. This must be offered, not assumed.</div>
+          <input type="hidden" id="inc-support-offered" value="">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+            <button class="ps-btn" id="inc-support-yes" onclick="setIncField('support','yes')">Offered &amp; accepted</button>
+            <button class="ps-btn" id="inc-support-decl" onclick="setIncField('support','declined')">Offered &amp; declined</button>
+            <button class="ps-btn" id="inc-support-na" onclick="setIncField('support','na')">N/A</button>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Other witnesses <span style="font-weight:400;color:var(--muted);font-size:11px">(optional — list any additional people who saw the event)</span></label>
+          <textarea id="inc-witnesses" rows="2" placeholder="e.g. Sam Lynch (0412 111 222), Bobby Kelly (0433 555 666)"></textarea>
         </div>
       </div>
     </div>
@@ -1855,6 +1932,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <label class="flabel">Days worked since last day off</label>
             <input type="number" id="inc-days-worked" placeholder="e.g. 5" min="0" max="30" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box">
           </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Years of industry experience <span style="font-weight:400;color:var(--muted);font-size:11px">(auto-filled from your profile)</span></label>
+          <select id="inc-experience" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
+            <option value="">Select...</option>
+            <option value="<1">Less than 1 year</option>
+            <option value="1-2">1 – 2 years</option>
+            <option value="3-5">3 – 5 years</option>
+            <option value="6-10">6 – 10 years</option>
+            <option value="11-20">11 – 20 years</option>
+            <option value="20+">More than 20 years</option>
+          </select>
         </div>
       </div>
     </div>
@@ -1887,6 +1976,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button class="ps-btn" id="inc-med-yes" onclick="setIncField('med','yes')">Yes</button>
             <button class="ps-btn" id="inc-med-no"  onclick="setIncField('med','no')">No</button>
           </div>
+        </div>
+        <div class="fgroup" id="inc-treatment-wrap" style="display:none">
+          <label class="flabel">Where was the person taken for treatment?</label>
+          <div class="fhint" style="margin-bottom:6px">e.g. hospital name, GP clinic, on-site first aid only. Required by the regulator for any notifiable injury.</div>
+          <input type="text" id="inc-treatment-dest" placeholder="e.g. Royal North Shore Hospital ED, or Bondi Junction GP" autocomplete="off">
         </div>
       </div>
     </div>
@@ -1959,7 +2053,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div id="inc-notif-warning" style="display:none;background:#FAEBEB;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px 14px;font-size:12.5px;color:#8B2020;line-height:1.6;margin-top:10px">
           <strong>⚠️ Notifiable incident — preserve the scene.</strong><br>
-          Notifiable incidents must be reported to the regulator immediately. Do not disturb the scene apart from making it safe or assisting injured persons. Submit this report now and follow up by phone using the contact in your site contacts.
+          Notifiable incidents must be reported to the regulator immediately. Do not disturb the scene apart from making it safe or assisting injured persons. Submit this report now and call the regulator on the phone number below.
         </div>
         <div id="inc-notif-advice" style="display:none;background:#FFF8E1;border:1.5px solid rgba(184,150,12,.25);border-radius:var(--rs);padding:12px 14px;font-size:12.5px;color:#5C4500;line-height:1.6;margin-top:10px">
           <strong>What counts as a notifiable incident?</strong><br>
@@ -1970,6 +2064,57 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <li><b>Dangerous incident</b> that exposed anyone to a serious risk — collapse of a structure, uncontrolled spill or release, plant runaway, electric shock, fall from height with serious-harm potential</li>
           </ul>
           If <b>any</b> of these apply, treat it as notifiable. If none clearly apply, submit the report — it will be assessed and you'll be contacted within 24 hours. Take photos if it's safe to do so and avoid disturbing the area until clearance is given.
+        </div>
+
+        <!-- Regulator call workflow — only shown when notifiable = yes -->
+        <div id="inc-regulator-block" style="display:none;margin-top:14px;padding-top:14px;border-top:1.5px solid var(--border)">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">Regulator call</div>
+          <div class="fhint" style="margin-bottom:12px;line-height:1.55">Notifiable incidents must be reported to the regulator <b>immediately</b> by phone. Record the details of the call below — required by WHS law for the audit trail.</div>
+
+          <div class="fgroup">
+            <label class="flabel">State / territory</label>
+            <select id="inc-reg-state" onchange="updateRegulatorPhone()" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
+              <option value="">Select state...</option>
+              <option value="NSW">New South Wales (NSW)</option>
+              <option value="VIC">Victoria (VIC)</option>
+              <option value="QLD">Queensland (QLD)</option>
+              <option value="WA">Western Australia (WA)</option>
+              <option value="SA">South Australia (SA)</option>
+              <option value="TAS">Tasmania (TAS)</option>
+              <option value="ACT">Australian Capital Territory (ACT)</option>
+              <option value="NT">Northern Territory (NT)</option>
+            </select>
+          </div>
+          <div class="fgroup">
+            <div id="inc-regulator-info" style="background:#F1EFE8;border:1.5px solid var(--border);border-radius:var(--rs);padding:11px 13px;font-size:12.5px;line-height:1.55;color:var(--text)">
+              <span style="color:var(--muted)">Select a state to see the regulator phone number.</span>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Date of call</label>
+            <input type="date" id="inc-reg-call-date" autocomplete="off" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Time of call</label>
+            <input type="time" id="inc-reg-call-time" autocomplete="off" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:15px;width:100%;outline:none;color:var(--text);box-sizing:border-box">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Regulator contact / officer name</label>
+            <input type="text" id="inc-reg-contact" placeholder="Name of the person you spoke to at the regulator" autocomplete="off">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Reference number</label>
+            <input type="text" id="inc-reg-ref" placeholder="The reference number the regulator gave you" autocomplete="off">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Has the scene been preserved?<span class="slan-help" onclick="slanHelpToggle('inc-help-scene')">?</span></label>
+            <div id="inc-help-scene" class="slan-help-tip">Under s.39 WHS Act 2011, the site of a notifiable incident must not be disturbed until the regulator's inspector arrives — except to assist an injured person, make the area safe, or follow emergency-services directions. Disturbing it without clearance is a criminal offence.</div>
+            <input type="hidden" id="inc-scene-preserved" value="">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button class="ps-btn" id="inc-scene-yes" onclick="setIncField('scene','yes')">Yes</button>
+              <button class="ps-btn" id="inc-scene-no"  onclick="setIncField('scene','no')">No — explain in description</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -13162,8 +13307,16 @@ function saveProfile(){
   if(!co){slanAlert('Please enter your company before continuing.');return;}
   if(!ro){slanAlert('Please select your role on site before continuing.');return;}
   if(!hasSig){slanAlert('Please draw your signature in the box before saving your profile.');return;}
+  const phEl  = document.getElementById('p-phone');
+  const dobEl = document.getElementById('p-dob');
+  const stEl  = document.getElementById('p-state');
+  const exEl  = document.getElementById('p-experience');
   const prof={
     name:n, company:co, role:ro, whitecard:document.getElementById('p-whitecard').value.trim(),
+    phone: phEl ? phEl.value.trim() : '',
+    dob:   dobEl ? dobEl.value : '',
+    state: stEl ? stEl.value : '',
+    experience: exEl ? exEl.value : '',
     sig:getSigDataUrl(), photo:window._pendingPhoto||localStorage.getItem('slan_pending_photo')||null,
     created:new Date().toISOString(),
     licences: {
@@ -13190,7 +13343,7 @@ function saveProfile(){
 
 // Site contacts — provider updates these per client
 const SITE_CONTACTS = {
-  supervisor: { name: 'Site Supervisor', phone: '0400000000' },
+  supervisor: { name: 'Eoin Burke', phone: '0432 778 901' },
   safety:     { name: 'Slán Safety',     phone: '0800000000' }
 };
 
@@ -17736,8 +17889,12 @@ function goToIncidentForm() {
   // Reset
   incSeverity = null; incFields = {}; incBriefing = [];
   ['inc-type','inc-role-in-event','inc-person-name','inc-person-company',
+   'inc-person-dob','inc-person-phone','inc-supervisor-name',
+   'inc-witnesses','inc-treatment-dest',
+   'inc-reg-call-date','inc-reg-call-time','inc-reg-contact','inc-reg-ref',
+   'inc-sup-notified','inc-support-offered','inc-scene-preserved',
    'inc-activity','inc-description','inc-injury-nature','inc-body-part',
-   'inc-immediate-action','inc-corrective'].forEach(id => {
+   'inc-experience','inc-immediate-action','inc-corrective'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
@@ -17746,13 +17903,27 @@ function goToIncidentForm() {
   if (warnEl) warnEl.style.display = 'none';
   const adviceEl = document.getElementById('inc-notif-advice');
   if (adviceEl) adviceEl.style.display = 'none';
+  // Hide regulator block + treatment destination — only shown after picking notif=yes / med=yes
+  const regBlock = document.getElementById('inc-regulator-block');
+  if (regBlock) regBlock.style.display = 'none';
+  const tWrap = document.getElementById('inc-treatment-wrap');
+  if (tWrap) tWrap.style.display = 'none';
+  const regSel = document.getElementById('inc-reg-state');
+  if (regSel) regSel.value = '';
+  if (typeof updateRegulatorPhone === 'function') updateRegulatorPhone();
   ['Critical','Major','Moderate','Minor'].forEach(s => {
     const b = document.getElementById('inc-sev-'+s); if (b) { b.className='ps-btn'; b.style=''; }
   });
-  ['sup','fa','med','swms','resumed','notif'].forEach(f => {
-    ['yes','no','unsure'].forEach(v => {
+  ['sup','fa','med','swms','resumed','notif','supnotif','support','scene'].forEach(f => {
+    ['yes','no','unsure','declined','na'].forEach(v => {
       const b = document.getElementById(`inc-${f}-${v}`); if (b) { b.className='ps-btn'; b.style=''; }
     });
+  });
+  // Buttons that don't follow the inc-<field>-<val> id convention
+  ['inc-supnotif-yes','inc-supnotif-no',
+   'inc-support-yes','inc-support-decl','inc-support-na',
+   'inc-scene-yes','inc-scene-no'].forEach(id => {
+    const b = document.getElementById(id); if (b) { b.className='ps-btn'; b.style=''; }
   });
   ['prestart','swms','talk','none'].forEach(b => {
     const el = document.getElementById('incb-'+b); if (el) { el.className='ps-btn'; el.style=''; }
@@ -17771,6 +17942,50 @@ function goToIncidentForm() {
   });
   const typeHidden = document.getElementById('inc-type');
   if (typeHidden) typeHidden.value = '';
+  // ── AUTOFILL FROM PROFILE ─────────────────────────────────────
+  // Supervisor name: if the reporter is the site supervisor, autofill their
+  // own name; otherwise default to the recorded site supervisor contact.
+  const supEl = document.getElementById('inc-supervisor-name');
+  if (supEl) {
+    if (p.role === 'Site Supervisor' && p.name) {
+      supEl.value = p.name;
+    } else if (typeof SITE_CONTACTS !== 'undefined' && SITE_CONTACTS.supervisor && SITE_CONTACTS.supervisor.name) {
+      supEl.value = SITE_CONTACTS.supervisor.name;
+    }
+  }
+  // Regulator state — pre-pick from profile so the worker doesn't have to
+  // re-enter their state if they say notifiable=yes.
+  const regSelEl = document.getElementById('inc-reg-state');
+  if (regSelEl && p.state) regSelEl.value = p.state;
+  if (typeof updateRegulatorPhone === 'function') updateRegulatorPhone();
+  // Regulator call date/time — default to now (if they're filling this out
+  // they presumably called moments before)
+  const regDate = document.getElementById('inc-reg-call-date');
+  const regTime = document.getElementById('inc-reg-call-time');
+  if (regDate) regDate.value = new Date().toISOString().split('T')[0];
+  if (regTime) regTime.value = new Date().toTimeString().slice(0,5);
+  // Shift start — pull from today's sign-in time if we have it. Stored in
+  // 12-hour format (e.g. "06:55 am"), so convert to 24-hour for the time
+  // input. Falls back to empty if we don't have a sign-in record.
+  try {
+    const signedRaw = localStorage.getItem('slan_signed_in_today');
+    if (signedRaw) {
+      // Parse "06:55 am" / "06:55 AM" / "6:55 PM" robustly
+      const m = signedRaw.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+      if (m) {
+        let hh = parseInt(m[1], 10);
+        const mm = m[2];
+        const ampm = (m[3] || '').toLowerCase();
+        if (ampm === 'pm' && hh < 12) hh += 12;
+        else if (ampm === 'am' && hh === 12) hh = 0;
+        const shiftEl = document.getElementById('inc-shift-start');
+        if (shiftEl) shiftEl.value = String(hh).padStart(2,'0') + ':' + mm;
+      }
+    }
+  } catch(e) {}
+  // Years of industry experience — pre-fill from profile
+  const expEl = document.getElementById('inc-experience');
+  if (expEl && p.experience) expEl.value = p.experience;
   // Reset photo slots
   if (typeof resetIncidentPhotos === 'function') resetIncidentPhotos();
   // Reset submit button to disabled state (no required fields filled yet)
@@ -17812,6 +18027,7 @@ function incRecheckSubmit() {
   const location = document.getElementById('inc-location');
   const activity = document.getElementById('inc-activity');
   const desc     = document.getElementById('inc-description');
+  const supName  = document.getElementById('inc-supervisor-name');
   const v = el => (el && el.value && String(el.value).trim());
   const ok =
     !!v(type) &&
@@ -17820,7 +18036,10 @@ function incRecheckSubmit() {
     !!v(time) &&
     !!v(location) &&
     !!v(role) &&
+    !!v(supName) &&
     !!incFields.sup &&
+    !!incFields.supnotif &&
+    !!incFields.support &&
     !!v(activity) &&
     !!v(desc);
   if (ok) {
@@ -17844,18 +18063,83 @@ function incRecheckSubmit() {
 
 function setIncField(field, val) {
   incFields[field] = val;
-  ['yes','no','unsure'].forEach(v => {
+  ['yes','no','unsure','declined','na'].forEach(v => {
     const b = document.getElementById(`inc-${field}-${v}`); if (!b) return;
     b.className = 'ps-btn' + (v===val?' pass':'');
     b.style = '';
   });
+  // Field-specific id mappings for buttons whose id doesn't follow the
+  // `inc-<field>-<val>` convention. Keeps the helper above generic.
+  const altMap = {
+    'supnotif': { yes:'inc-supnotif-yes', no:'inc-supnotif-no' },
+    'support':  { yes:'inc-support-yes', declined:'inc-support-decl', na:'inc-support-na' },
+    'scene':    { yes:'inc-scene-yes', no:'inc-scene-no' }
+  };
+  if (altMap[field]) {
+    Object.entries(altMap[field]).forEach(([v, id]) => {
+      const b = document.getElementById(id); if (!b) return;
+      b.className = 'ps-btn' + (v === val ? ' pass' : '');
+      b.style = '';
+    });
+    // Mirror into hidden input for validation/submit
+    const hiddenIdMap = { supnotif:'inc-sup-notified', support:'inc-support-offered', scene:'inc-scene-preserved' };
+    const hid = document.getElementById(hiddenIdMap[field] || '');
+    if (hid) hid.value = val;
+  }
   if (field === 'notif') {
     const warning = document.getElementById('inc-notif-warning');
     const advice  = document.getElementById('inc-notif-advice');
+    const regBlock = document.getElementById('inc-regulator-block');
     if (warning) warning.style.display = (val === 'yes')   ? 'block' : 'none';
     if (advice)  advice.style.display  = (val === 'unsure') ? 'block' : 'none';
+    if (regBlock) regBlock.style.display = (val === 'yes') ? 'block' : 'none';
+    // When opening the regulator block, default the state from the user's
+    // profile so they don't have to pick it again every time.
+    if (val === 'yes') {
+      const sel = document.getElementById('inc-reg-state');
+      if (sel && !sel.value) {
+        const p = (typeof getProfile === 'function') ? getProfile() : null;
+        if (p && p.state) {
+          sel.value = p.state;
+          updateRegulatorPhone();
+        }
+      }
+    }
+  }
+  if (field === 'med') {
+    // Show "where was the person taken for treatment" only if medical was sought
+    const tw = document.getElementById('inc-treatment-wrap');
+    if (tw) tw.style.display = (val === 'yes') ? 'block' : 'none';
   }
   if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
+}
+
+// State → regulator name + 24/7 notification phone. Sourced from
+// SafeWork Australia's incident notification fact sheet (2022).
+const SLAN_REGULATORS = {
+  NSW: { name: 'SafeWork NSW',          phone: '13 10 50',     web: 'safework.nsw.gov.au' },
+  VIC: { name: 'WorkSafe Victoria',     phone: '13 23 60',     web: 'worksafe.vic.gov.au' },
+  QLD: { name: 'Workplace Health and Safety Queensland', phone: '1300 362 128', web: 'worksafe.qld.gov.au' },
+  WA:  { name: 'WorkSafe WA',           phone: '1300 307 877', web: 'commerce.wa.gov.au/worksafe' },
+  SA:  { name: 'SafeWork SA',           phone: '1800 777 209', web: 'safework.sa.gov.au' },
+  TAS: { name: 'WorkSafe Tasmania',     phone: '1300 366 322', web: 'worksafe.tas.gov.au' },
+  ACT: { name: 'WorkSafe ACT',          phone: '02 6207 3000', web: 'worksafe.act.gov.au' },
+  NT:  { name: 'NT WorkSafe',           phone: '1800 019 115', web: 'worksafe.nt.gov.au' }
+};
+
+function updateRegulatorPhone() {
+  const sel = document.getElementById('inc-reg-state');
+  const out = document.getElementById('inc-regulator-info');
+  if (!sel || !out) return;
+  const r = SLAN_REGULATORS[sel.value];
+  if (!r) {
+    out.innerHTML = '<span style="color:var(--muted)">Select a state to see the regulator phone number.</span>';
+    return;
+  }
+  out.innerHTML =
+    '<div style="font-weight:700;color:var(--text);margin-bottom:4px">' + r.name + '</div>' +
+    '<a href="tel:' + r.phone.replace(/\s/g,'') + '" style="display:inline-block;font-family:DM Mono,monospace;font-size:18px;font-weight:700;color:#1B6E3A;text-decoration:none;margin-bottom:4px">📞 ' + r.phone + '</a>' +
+    '<div style="color:var(--muted);font-size:11.5px">Tap to call \u00b7 ' + r.web + '</div>';
 }
 
 // Type-of-report selector (replaces dropdown). Sets hidden input value and
@@ -17896,22 +18180,28 @@ function setIncRole(role) {
     b.className = 'ps-btn' + (id === map[role] ? ' pass' : '');
     b.style = '';
   });
-  // Auto-fill name + company. When toggling TO Person Involved, the report is
-  // about the user themselves — overwrite whatever's in the boxes (a witness
-  // name typed in error, etc). When toggling AWAY, clear the boxes if they
-  // currently hold the user's profile (so they get a clean field for typing
-  // the actual involved person's name).
+  // Auto-fill name + company + DOB + phone. When toggling TO Person Involved,
+  // the report is about the user themselves — overwrite whatever's in the
+  // boxes (a witness name typed in error, etc). When toggling AWAY, clear the
+  // boxes if they currently hold the user's profile (so they get a clean
+  // field for typing the actual involved person's name).
   const nameEl    = document.getElementById('inc-person-name');
   const companyEl = document.getElementById('inc-person-company');
+  const dobEl     = document.getElementById('inc-person-dob');
+  const phoneEl   = document.getElementById('inc-person-phone');
   const helperEl  = document.getElementById('inc-name-helper');
   const p = (typeof getProfile === 'function') ? getProfile() : null;
   if (role === 'Person Involved / Injured') {
-    if (nameEl && p && p.name) nameEl.value = p.name;
+    if (nameEl    && p && p.name)    nameEl.value    = p.name;
     if (companyEl && p && p.company) companyEl.value = p.company;
+    if (dobEl     && p && p.dob)     dobEl.value     = p.dob;
+    if (phoneEl   && p && p.phone)   phoneEl.value   = p.phone;
     if (helperEl) helperEl.textContent = '(auto-filled \u2014 you can change it if needed)';
   } else {
-    if (nameEl && p && p.name && nameEl.value.trim() === p.name) nameEl.value = '';
+    if (nameEl    && p && p.name    && nameEl.value.trim()    === p.name)    nameEl.value    = '';
     if (companyEl && p && p.company && companyEl.value.trim() === p.company) companyEl.value = '';
+    if (dobEl     && p && p.dob     && dobEl.value           === p.dob)     dobEl.value     = '';
+    if (phoneEl   && p && p.phone   && phoneEl.value.trim()   === p.phone)   phoneEl.value   = '';
     if (helperEl) helperEl.textContent = '(name of the person who was involved or injured)';
   }
   incRecheckSubmit();
@@ -18169,7 +18459,7 @@ function renderIncidentList() {
     const desc = (r.description || '').slice(0, 110) + ((r.description || '').length > 110 ? '\u2026' : '');
     const safeRef = (r.ref || '').replace(/'/g, '\\\'');
     const photoBadge = (r.photo_count > 0)
-      ? '<span style="display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:#EFEAFB;color:#5535AD">📷 ' + r.photo_count + '</span>'
+      ? '<span style="display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:#EAF1ED;color:#1B6E3A">📷 ' + r.photo_count + '</span>'
       : '';
     return '<div onclick="goToIncidentDetail(\'' + safeRef + '\')" style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px">' +
       '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
@@ -18283,6 +18573,13 @@ function goToIncidentDetail(ref) {
     if (v === 'unsure') return 'Not sure';
     return v || '\u2014';
   };
+  const expLabel = function(v){
+    const map = {
+      '<1':'Less than 1 year', '1-2':'1 – 2 years', '3-5':'3 – 5 years',
+      '6-10':'6 – 10 years', '11-20':'11 – 20 years', '20+':'More than 20 years'
+    };
+    return map[v] || v || '';
+  };
 
   // Supervisor review form — single-submit pattern matching the rest of the
   // app. Visible to supervisors when the incident is still Open. One Submit
@@ -18293,7 +18590,7 @@ function goToIncidentDetail(ref) {
   const actionPanelHtml = (function(){
     if (!isSup) return '';
     if (status !== 'open') return '';      // closed records are read-only
-    return '<div class="fcard" style="border:1.5px solid #5535AD"><div class="fcard-hdr" style="background:#EFEAFB;color:#5535AD">Supervisor review &amp; close-out</div><div class="fcard-body">' +
+    return '<div class="fcard" style="border:1.5px solid #1B3A2D"><div class="fcard-hdr" style="background:#EAF1ED;color:#1B3A2D">Supervisor review &amp; close-out</div><div class="fcard-body">' +
       '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px">Review the report, complete the fields below, then submit to close the incident. The submit button stays disabled until every required (<span style="color:#B83232;font-weight:700">*</span>) field is filled.</div>' +
       '<div class="fgroup">' +
         '<label class="flabel">Review notes</label>' +
@@ -18346,20 +18643,29 @@ function goToIncidentDetail(ref) {
       '<div class="fcard"><div class="fcard-hdr">Reporter &amp; person involved</div><div class="fcard-body">' +
         fmtRow('Reporter',           r.reporter_name) +
         fmtRow('Reporter company',   r.reporter_company) +
+        fmtRow('Reporter phone',     r.reporter_phone) +
         fmtRow('Role in event',      r.role_in_event) +
         fmtRow('Person involved',    r.person_name) +
         fmtRow('Person company',     r.person_company) +
+        fmtRow('Person DOB',         r.person_dob) +
+        fmtRow('Person phone',       r.person_phone) +
+        fmtRow('Supervisor name',    r.supervisor_name) +
         fmtRow('Supervisor present', r.supervisor_present) +
+        fmtRow('Supervisor notified immediately', r.supervisor_notified_immediately) +
+        fmtRow('Support person offered', r.support_person_offered) +
+        fmtBlock('Other witnesses',  r.other_witnesses) +
       '</div></div>' +
       '<div class="fcard"><div class="fcard-hdr">Work context &amp; injury</div><div class="fcard-body">' +
         fmtRow('Activity at time',   r.work_activity) +
         fmtRow('Briefing received',  Array.isArray(r.briefing_received) ? r.briefing_received.join(', ') : r.briefing_received) +
         fmtRow('Shift start',        r.shift_start) +
         fmtRow('Days worked',        r.days_worked) +
+        fmtRow('Years experience',   r.years_experience ? expLabel(r.years_experience) : '') +
         fmtRow('Injury nature',      r.injury_nature) +
         fmtRow('Body part',          r.body_part) +
         fmtRow('First aid given',    r.first_aid) +
         fmtRow('Medical attention',  r.medical_attention) +
+        fmtRow('Treatment destination', r.treatment_destination) +
       '</div></div>' +
       '<div class="fcard"><div class="fcard-hdr">What happened</div><div class="fcard-body">' +
         fmtBlock('Description',          r.description) +
@@ -18759,6 +19065,10 @@ function downloadIncidentPdf() {
     drawCardRow('Briefing received',  Array.isArray(r.briefing_received) ? r.briefing_received.join(', ') : r.briefing_received);
     drawCardRow('Shift start',        r.shift_start);
     drawCardRow('Days worked since last day off', r.days_worked);
+    drawCardRow('Years of industry experience', (function(){
+      const m = {'<1':'Less than 1 year','1-2':'1 – 2 years','3-5':'3 – 5 years','6-10':'6 – 10 years','11-20':'11 – 20 years','20+':'More than 20 years'};
+      return m[r.years_experience] || r.years_experience || '';
+    })());
     drawCardRow('Injury nature',      r.injury_nature);
     drawCardRow('Body part',          r.body_part);
     drawCardRow('First aid given',    r.first_aid);
@@ -18928,6 +19238,8 @@ async function submitIncident() {
   const payload = {
     ref, site: SITE,
     reporter_name: p.name, reporter_company: p.company, reporter_role: p.role,
+    reporter_phone: p.phone || '',
+    reporter_dob: p.dob || '',
     incident_type: document.getElementById('inc-type').value,
     severity: incSeverity,
     incident_date: document.getElementById('inc-date').value,
@@ -18936,27 +19248,42 @@ async function submitIncident() {
     role_in_event: document.getElementById('inc-role-in-event').value,
     person_name: document.getElementById('inc-person-name').value.trim(),
     person_company: document.getElementById('inc-person-company').value.trim(),
+    person_dob: (document.getElementById('inc-person-dob') || {}).value || '',
+    person_phone: ((document.getElementById('inc-person-phone') || {}).value || '').trim(),
+    supervisor_name: ((document.getElementById('inc-supervisor-name') || {}).value || '').trim(),
     supervisor_present: incFields.sup,
+    supervisor_notified_immediately: incFields.supnotif || '',
+    support_person_offered: incFields.support || '',
+    other_witnesses: ((document.getElementById('inc-witnesses') || {}).value || '').trim(),
     work_activity: document.getElementById('inc-activity').value.trim(),
     briefing_received: incBriefing,
     shift_start: document.getElementById('inc-shift-start').value,
     days_worked: document.getElementById('inc-days-worked').value,
+    years_experience: ((document.getElementById('inc-experience') || {}).value || ''),
     description: document.getElementById('inc-description').value.trim(),
     injury_nature: document.getElementById('inc-injury-nature').value.trim(),
     body_part: document.getElementById('inc-body-part').value.trim(),
     first_aid: incFields.fa,
     medical_attention: incFields.med,
+    treatment_destination: ((document.getElementById('inc-treatment-dest') || {}).value || '').trim(),
     immediate_action: document.getElementById('inc-immediate-action').value.trim(),
     corrective_actions: document.getElementById('inc-corrective').value.trim(),
     swms_update_required: incFields.swms,
     work_resumed: incFields.resumed,
     potentially_notifiable: incFields.notif,
+    // Regulator call workflow — only meaningful when notifiable = yes
+    regulator_state:    ((document.getElementById('inc-reg-state')     || {}).value || ''),
+    regulator_call_date: ((document.getElementById('inc-reg-call-date') || {}).value || ''),
+    regulator_call_time: ((document.getElementById('inc-reg-call-time') || {}).value || ''),
+    regulator_contact:   ((document.getElementById('inc-reg-contact')   || {}).value || '').trim(),
+    regulator_reference: ((document.getElementById('inc-reg-ref')       || {}).value || '').trim(),
+    scene_preserved: incFields.scene || '',
     submission_date: now.toLocaleDateString('en-AU'),
     submission_time: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}),
     submitted_at: now.toISOString(),
     reporter_signature: (p && p.sig) ? p.sig : null,   // captured from profile so PDF shows it for any downloader
-    status: 'open',                     // open → under-review → closed
-    photos: incPhotos.filter(p => p),   // array of {data, timestamp, date, time, site} — only filled slots
+    status: 'open',
+    photos: incPhotos.filter(p => p),
     photos_skipped: !!window._incPhotosSkipped,
     register_target: 'SLS-REG-006'
   };
@@ -32047,9 +32374,9 @@ function startDemoAs(role) {
   localStorage.setItem('slan_demo', 'true');
   var today = new Date().toLocaleDateString('en-AU').replace(/\//g, '-');
   var profiles = {
-    worker:     { name:'Jake Ryan',      company:'Murphy Civil Construction', role:'Worker',           safetyPoints:912, licences:{ whitecard:{expiry:'2027-03-10'}, driver:{expiry:'2027-08-22'}, hrwl:{expiry:'2026-07-15'} } },
-    supervisor: { name:'Eoin Burke',     company:'Murphy Civil Construction', role:'Site Supervisor',  safetyPoints:0,   licences:{ whitecard:{expiry:'2027-06-15'}, hrwl:{expiry:'2026-09-20'}, firstaid:{expiry:'2026-11-30'} } },
-    director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   licences:{} }
+    worker:     { name:'Jake Ryan',      company:'Murphy Civil Construction', role:'Worker',           safetyPoints:912, phone:'0412 345 678', dob:'1992-06-14', state:'NSW', licences:{ whitecard:{expiry:'2027-03-10'}, driver:{expiry:'2027-08-22'}, hrwl:{expiry:'2026-07-15'} } },
+    supervisor: { name:'Eoin Burke',     company:'Murphy Civil Construction', role:'Site Supervisor',  safetyPoints:0,   phone:'0432 778 901', dob:'1985-11-22', state:'NSW', licences:{ whitecard:{expiry:'2027-06-15'}, hrwl:{expiry:'2026-09-20'}, firstaid:{expiry:'2026-11-30'} } },
+    director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   phone:'0419 222 333', dob:'1972-03-08', state:'NSW', licences:{} }
   };
   var p = profiles[role] || profiles.supervisor;
   p.created = new Date().toISOString(); p.demo = true; p.sig = null; p.photo = null;
@@ -34070,6 +34397,7 @@ function incSeedDemoIncidents(silent) {
       photos: [],
       photos_skipped: true,
       reporter_signature: sigJake,
+      years_experience: '6-10',
       register_target: 'SLS-REG-006'
     },
     // 2) Near miss — open, moderate
@@ -34109,6 +34437,7 @@ function incSeedDemoIncidents(silent) {
       photos: [],
       photos_skipped: true,
       reporter_signature: sigEoin,
+      years_experience: '11-20',
       register_target: 'SLS-REG-006'
     },
     // 3) Minor injury — already closed by supervisor
@@ -34165,6 +34494,7 @@ function incSeedDemoIncidents(silent) {
       photos_skipped: true,
       reporter_signature: sigJake,
       closer_signature: sigEoin,
+      years_experience: '6-10',
       register_target: 'SLS-REG-006'
     },
     // 4) Property damage — major, open
@@ -34204,6 +34534,7 @@ function incSeedDemoIncidents(silent) {
       photos: [],
       photos_skipped: true,
       reporter_signature: sigMark,
+      years_experience: '3-5',
       register_target: 'SLS-REG-006'
     },
     // 5) Environmental spill — moderate, closed
@@ -34260,6 +34591,7 @@ function incSeedDemoIncidents(silent) {
       photos_skipped: true,
       reporter_signature: sigTom,
       closer_signature: sigEoin,
+      years_experience: '11-20',
       register_target: 'SLS-REG-006'
     }
   ];
@@ -37040,8 +37372,16 @@ function demoPrefillAll(profile, role) {
     try {
     const nameEl = document.getElementById('p-name');
     const coEl = document.getElementById('p-company');
+    const phEl  = document.getElementById('p-phone');
+    const dobEl = document.getElementById('p-dob');
+    const stEl  = document.getElementById('p-state');
+    const exEl  = document.getElementById('p-experience');
     if (nameEl) nameEl.value = profile.name || '';
     if (coEl) coEl.value = profile.company || '';
+    if (phEl)  phEl.value  = profile.phone || '';
+    if (dobEl) dobEl.value = profile.dob || '';
+    if (stEl)  stEl.value  = profile.state || '';
+    if (exEl)  exEl.value  = profile.experience || '';
     if (typeof selectRoleAfterPin === 'function') {
       // Only run if profile screen DOM is actually loaded
       if (document.getElementById('p-role')) {
