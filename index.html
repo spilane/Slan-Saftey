@@ -1738,7 +1738,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <div style="background:#FAEBEB;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--r);padding:14px 16px">
       <div style="font-size:13px;font-weight:600;color:#B83232;margin-bottom:3px">⚠️ Immediate action first</div>
-      <div style="font-size:12.5px;color:#8B2020;line-height:1.6">For serious injuries call 000 first. For fatalities or serious injuries — call your provider before completing this form. Complete this form as soon as the immediate situation is under control.</div>
+      <div style="font-size:12.5px;color:#8B2020;line-height:1.6">For life-threatening injuries call <b>000</b> immediately. For fatalities or serious injuries, also call <b>Slán Safety</b> on the contact number in your site contacts <b>before</b> filling out this form. Complete this report once the immediate situation is under control.</div>
     </div>
 
     <div class="fcard">
@@ -1754,6 +1754,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <option>Property Damage</option>
             <option>Environmental</option>
           </select>
+          <div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:6px;padding:8px 10px;background:#FAFCF9;border-left:2px solid #1B6E3A;border-radius:4px">
+            <b>Actual Injury</b> — someone was hurt.<br>
+            <b>Near Miss</b> — no harm but could have been bad (e.g. dropped tool from height, no one underneath).<br>
+            <b>Dangerous Incident</b> — uncontrolled event with serious-harm potential (collapse, fire, plant runaway, hazardous release).<br>
+            <b>Property Damage</b> — equipment, vehicle or structure damaged with no injury.<br>
+            <b>Environmental</b> — spill, contamination, breach of environmental controls.
+          </div>
         </div>
         <div class="fgroup">
           <label class="flabel">Severity <span class="req">*</span></label>
@@ -1927,8 +1934,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <button class="submit-btn" onclick="submitIncident()" style="background:#B83232">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    <button class="submit-btn" onclick="submitIncident()" style="background:#1B6E3A">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
       Submit incident report
     </button>
   </div>
@@ -17565,13 +17572,22 @@ async function submitIncident() {
     incSaveRecord(payload);
   } catch(e) { console.error('Could not persist incident:', e); }
 
-  await fbInsert('incidents', payload);
+  // Firebase save — wrapped in try/catch so a network/db failure doesn't
+  // block the success modal or break the tile/chip refresh below. The
+  // localStorage save above already happened, so the user's data isn't lost.
+  try {
+    await fbInsert('incidents', payload);
+  } catch(e) {
+    console.error('Firebase insert failed (record still saved locally):', e);
+  }
 
-  // Always escalate incidents
-  sendEscalationEmail({
-    subject: `🚨 Incident Report — ${incSeverity} — ${document.getElementById('inc-type').value} — ${SITE}`,
-    body: `An incident report has been submitted.\n\nRef: ${ref}\nSite: ${SITE}\nType: ${document.getElementById('inc-type').value}\nSeverity: ${incSeverity}\nLocation: ${document.getElementById('inc-location').value.trim()}\nReporter: ${p.name}\nDate/Time: ${document.getElementById('inc-date').value} ${document.getElementById('inc-time').value}\nPotentially notifiable: ${incFields.notif||'Not indicated'}\n\nDescription:\n${document.getElementById('inc-description').value.trim()}\n\nImmediate action:\n${document.getElementById('inc-immediate-action').value.trim()||'None recorded'}`
-  });
+  // Email escalation — wrapped in try/catch for the same reason.
+  try {
+    sendEscalationEmail({
+      subject: `🚨 Incident Report — ${incSeverity} — ${document.getElementById('inc-type').value} — ${SITE}`,
+      body: `An incident report has been submitted.\n\nRef: ${ref}\nSite: ${SITE}\nType: ${document.getElementById('inc-type').value}\nSeverity: ${incSeverity}\nLocation: ${document.getElementById('inc-location').value.trim()}\nReporter: ${p.name}\nDate/Time: ${document.getElementById('inc-date').value} ${document.getElementById('inc-time').value}\nPotentially notifiable: ${incFields.notif||'Not indicated'}\n\nDescription:\n${document.getElementById('inc-description').value.trim()}\n\nImmediate action:\n${document.getElementById('inc-immediate-action').value.trim()||'None recorded'}`
+    });
+  } catch(e) { console.error('Escalation email failed:', e); }
 
   showSharedSuccess({
     icon: incSeverity==='Critical'||incSeverity==='Major' ? 'out' : 'in',
