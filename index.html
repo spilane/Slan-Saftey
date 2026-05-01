@@ -1992,18 +1992,29 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <!-- ═══════════════════ RECENT INCIDENTS LIST (supervisor view) ═══ -->
 <div id="screen-incident-list" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goTo('screen-dash')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="inc-list-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+      <div class="tile-icon ic-red" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Incident Reports</span>
     </div>
+    <div style="width:36px"></div>
   </div>
-  <div class="fbody">
-    <div style="padding:0 4px 8px">
+  <div style="padding:18px;padding-bottom:60px">
+    <div style="padding:0 0 8px">
       <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Recent incidents</div>
       <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="inc-list-summary">Tap a record to view details.</div>
+    </div>
+    <!-- Tab filter: Open vs Closed -->
+    <div style="display:flex;gap:6px;background:#F2F0E8;border-radius:10px;padding:4px;margin-bottom:10px" id="inc-list-tabs">
+      <button onclick="incListSetFilter('open')"   id="inc-tab-open"   style="flex:1;padding:8px 6px;border:none;border-radius:7px;background:#fff;color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Open</button>
+      <button onclick="incListSetFilter('closed')" id="inc-tab-closed" style="flex:1;padding:8px 6px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Closed</button>
+      <button onclick="incListSetFilter('all')"    id="inc-tab-all"    style="flex:1;padding:8px 6px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">All</button>
+    </div>
+    <!-- Search -->
+    <div style="position:relative;margin-bottom:10px">
+      <input type="text" id="inc-list-search" placeholder="Search by reference, location, reporter..." oninput="renderIncidentList()" style="padding:11px 13px 11px 36px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;pointer-events:none"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
     </div>
     <div id="inc-list-container" style="display:flex;flex-direction:column;gap:8px"></div>
     <button onclick="goToIncidentForm()" style="display:block;width:100%;padding:13px;margin-top:14px;background:#1B6E3A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">+ New incident report</button>
@@ -2012,21 +2023,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <!-- ═══════════════════ INCIDENT DETAIL (read-only view) ═══ -->
 <div id="screen-incident-detail" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goToIncidentList()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="inc-detail-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div style="width:36px"></div>
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goToIncidentList()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+      <div class="tile-icon ic-red" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Incident Details</span>
     </div>
+    <button class="back-btn" onclick="downloadIncidentPdf()" title="Download PDF" aria-label="Download PDF"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
   </div>
-  <div class="fbody">
-    <div style="padding:0 4px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+  <div style="padding:18px;padding-bottom:60px">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
       <div id="inc-detail-pill" style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:#E6F5ED;color:#1B6E3A;text-transform:uppercase;letter-spacing:.04em">Minor</div>
       <div id="inc-detail-status-pill" style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:#FDF8EC;color:#BA7517;text-transform:uppercase;letter-spacing:.04em">Open</div>
       <div style="font-size:18px;font-weight:700;color:var(--text);flex:1;min-width:140px" id="inc-detail-title">Incident</div>
     </div>
-    <div style="padding:0 4px 14px;font-size:11.5px;color:var(--muted);font-family:'DM Mono',monospace" id="inc-detail-meta">REF</div>
+    <div style="font-size:11.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:14px" id="inc-detail-meta">REF</div>
     <div id="inc-detail-body"></div>
   </div>
 </div>
@@ -18038,12 +18049,35 @@ function incLoadCritical() {
 // for their own reports). Reads from localStorage and renders one card per
 // incident, sorted newest first.
 function goToIncidentList() {
-  // Mirror the logo across screens
-  const sl = document.querySelector('#screen-profile .setup-hero img');
-  const il = document.getElementById('inc-list-logo');
-  if (sl && il) il.src = sl.src;
-  renderIncidentList();
+  // Reset search input each visit
+  const sIn = document.getElementById('inc-list-search');
+  if (sIn) sIn.value = '';
+  // Default to "Open" tab so the action items are front-and-centre
+  if (typeof incListSetFilter === 'function') incListSetFilter('open');
+  else renderIncidentList();
   goTo('screen-incident-list');
+}
+
+// Filter state for the recent-incidents list. Defaults to 'open' so the
+// supervisor lands on what they need to act on. Tapping a tab updates this
+// and re-renders.
+let _incListFilter = 'open';   // 'open' | 'closed' | 'all'
+
+function incListSetFilter(filter) {
+  _incListFilter = filter;
+  // Update tab pill styles
+  ['open','closed','all'].forEach(function(f){
+    const btn = document.getElementById('inc-tab-' + f);
+    if (!btn) return;
+    if (f === filter) {
+      btn.style.background = '#fff';
+      btn.style.color = 'var(--text)';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--muted)';
+    }
+  });
+  renderIncidentList();
 }
 
 function renderIncidentList() {
@@ -18054,22 +18088,52 @@ function renderIncidentList() {
   const isSup = !!(me && me.role === 'Site Supervisor');
   const allRaw = (typeof incLoadAll === 'function') ? incLoadAll() : [];
   // Supervisors see every incident; workers see only their own reports
-  const all = isSup ? allRaw : allRaw.filter(function(r){ return r.reporter_name === (me && me.name); });
+  const scoped = isSup ? allRaw : allRaw.filter(function(r){ return r.reporter_name === (me && me.name); });
+  // Apply Open / Closed / All tab filter
+  const filter = _incListFilter || 'open';
+  let filtered;
+  if (filter === 'open')        filtered = scoped.filter(function(r){ return (r.status || 'open') !== 'closed'; });
+  else if (filter === 'closed') filtered = scoped.filter(function(r){ return (r.status || 'open') === 'closed'; });
+  else                          filtered = scoped.slice();
+  // Apply search filter (by ref / location / reporter / type / description)
+  const searchEl = document.getElementById('inc-list-search');
+  const q = (searchEl && searchEl.value || '').trim().toLowerCase();
+  if (q) {
+    filtered = filtered.filter(function(r){
+      return [r.ref, r.location, r.reporter_name, r.incident_type, r.description, r.severity]
+        .map(function(x){ return String(x || '').toLowerCase(); })
+        .some(function(s){ return s.indexOf(q) !== -1; });
+    });
+  }
+  // Summary line counts the SCOPED set (so workers don't see "of 28" if only 3 are theirs)
   if (summary) {
-    if (all.length === 0) {
+    if (scoped.length === 0) {
       summary.textContent = isSup ? 'No incidents reported yet.' : 'You have not filed any incident reports yet.';
     } else {
-      const open = all.filter(function(r){ return (r.status || 'open') !== 'closed'; }).length;
-      const scope = isSup ? 'on record' : 'filed by you';
-      summary.textContent = all.length + ' incident' + (all.length === 1 ? '' : 's') + ' ' + scope + ' \u00b7 ' + open + ' still open';
+      const open    = scoped.filter(function(r){ return (r.status || 'open') !== 'closed'; }).length;
+      const closed  = scoped.filter(function(r){ return (r.status || 'open') === 'closed'; }).length;
+      const scope   = isSup ? 'on record' : 'filed by you';
+      summary.textContent = scoped.length + ' incident' + (scoped.length === 1 ? '' : 's') + ' ' + scope + ' \u00b7 ' + open + ' open \u00b7 ' + closed + ' closed';
     }
   }
-  if (all.length === 0) {
-    container.innerHTML = '<div style="background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:24px 16px;text-align:center;font-size:13px;color:var(--muted)">No incidents reported yet. Tap <b>+ New incident report</b> below to file one.</div>';
+  if (filtered.length === 0) {
+    let emptyMsg;
+    if (scoped.length === 0) {
+      emptyMsg = 'No incidents reported yet. Tap <b>+ New incident report</b> below to file one.';
+    } else if (q) {
+      emptyMsg = 'No incidents match \u201C' + q.replace(/</g,'&lt;') + '\u201D in the <b>' + filter + '</b> tab.';
+    } else if (filter === 'closed') {
+      emptyMsg = 'No closed incidents yet. Closed reports will appear here once a supervisor has reviewed them.';
+    } else if (filter === 'open') {
+      emptyMsg = 'No open incidents \u2014 nothing pending review.';
+    } else {
+      emptyMsg = 'No incidents to show.';
+    }
+    container.innerHTML = '<div style="background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:24px 16px;text-align:center;font-size:13px;color:var(--muted);line-height:1.5">' + emptyMsg + '</div>';
     return;
   }
   // Sort newest first
-  const sorted = all.slice().sort(function(a,b){
+  const sorted = filtered.slice().sort(function(a,b){
     return new Date(b.submitted_at || 0) - new Date(a.submitted_at || 0);
   });
   // Severity colour map
@@ -18083,9 +18147,8 @@ function renderIncidentList() {
     const sev = sevColours[r.severity] || sevColours.Minor;
     const status = r.status || 'open';
     const statusStyles = {
-      'open':         { bg:'#FDF8EC', text:'#BA7517', label:'Open' },
-      'under-review': { bg:'#EFEAFB', text:'#5535AD', label:'Under Review' },
-      'closed':       { bg:'#E6F5ED', text:'#1B6E3A', label:'Closed' }
+      'open':   { bg:'#FDF8EC', text:'#BA7517', label:'Open' },
+      'closed': { bg:'#E6F5ED', text:'#1B6E3A', label:'Closed' }
     };
     const ss = statusStyles[status] || statusStyles.open;
     const statusBadge = '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:' + ss.bg + ';color:' + ss.text + ';text-transform:uppercase;letter-spacing:.04em">' + ss.label + '</span>';
@@ -18119,12 +18182,11 @@ function goToIncidentDetail(ref) {
     slanAlert('That incident could not be found.');
     return;
   }
-  // Mirror logo
-  const sl = document.querySelector('#screen-profile .setup-hero img');
-  const il = document.getElementById('inc-detail-logo');
-  if (sl && il) il.src = sl.src;
   // Stash the active ref so action handlers know what record they're working on
   window._incActiveRef = ref;
+  // Reset the supervisor review form's local state on every entry
+  _incSupNotif = '';
+  _incSupCorrective = '';
   // Populate
   const title = document.getElementById('inc-detail-title');
   const meta  = document.getElementById('inc-detail-meta');
@@ -18145,13 +18207,12 @@ function goToIncidentDetail(ref) {
     pill.style.background = sev.bg;
     pill.style.color = sev.text;
   }
-  // Status pill — open / under-review / closed
+  // Status pill — open / closed (no intermediate state in this build)
   const status = r.status || 'open';
   const statusPillEl = document.getElementById('inc-detail-status-pill');
   const statusColours = {
-    'open':         { bg:'#FDF8EC', text:'#BA7517', label:'Open' },
-    'under-review': { bg:'#EFEAFB', text:'#5535AD', label:'Under Review' },
-    'closed':       { bg:'#E6F5ED', text:'#1B6E3A', label:'Closed' }
+    'open':   { bg:'#FDF8EC', text:'#BA7517', label:'Open' },
+    'closed': { bg:'#E6F5ED', text:'#1B6E3A', label:'Closed' }
   };
   const sc = statusColours[status] || statusColours.open;
   if (statusPillEl) {
@@ -18172,23 +18233,29 @@ function goToIncidentDetail(ref) {
   };
 
   // Review timeline — shown to both worker and supervisor
-  const notes = Array.isArray(r.review_notes) ? r.review_notes : [];
   const reviewTimelineHtml = (function(){
-    if (notes.length === 0 && status === 'open') {
-      return '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;padding:6px 0">This incident has not been reviewed yet. ' + (isSup ? 'Tap <b>Start review</b> below to begin.' : 'Your supervisor will review and add notes here.') + '</div>';
-    }
     let html = '';
-    if (r.review_started_at) {
-      html += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F0F2F0"><div style="width:6px;height:6px;border-radius:50%;background:#5535AD;margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.5"><div style="color:var(--muted)">' + new Date(r.review_started_at).toLocaleString('en-AU') + ' \u00b7 ' + (r.reviewer_name || 'Supervisor').replace(/</g,'&lt;') + '</div><div style="color:var(--text)"><b>Review started.</b></div></div></div>';
+    // Submitted (always)
+    if (r.submitted_at) {
+      html += '<div style="display:flex;gap:10px;padding:8px 0' + (status === 'closed' ? ';border-bottom:1px solid #F0F2F0' : '') + '"><div style="width:6px;height:6px;border-radius:50%;background:var(--muted);margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.5"><div style="color:var(--muted)">' + new Date(r.submitted_at).toLocaleString('en-AU') + ' \u00b7 ' + String(r.reporter_name || '').replace(/</g,'&lt;') + '</div><div style="color:var(--text)"><b>Incident reported.</b></div></div></div>';
     }
-    notes.forEach(function(n){
-      html += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F0F2F0"><div style="width:6px;height:6px;border-radius:50%;background:var(--muted);margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.5"><div style="color:var(--muted)">' + new Date(n.timestamp || Date.now()).toLocaleString('en-AU') + ' \u00b7 ' + String(n.author || 'Supervisor').replace(/</g,'&lt;') + '</div><div style="color:var(--text);white-space:pre-wrap">' + String(n.note || '').replace(/</g,'&lt;') + '</div></div></div>';
-    });
-    if (r.corrective_action_completed_at) {
-      html += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F0F2F0"><div style="width:6px;height:6px;border-radius:50%;background:#1B6E3A;margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.5"><div style="color:var(--muted)">' + new Date(r.corrective_action_completed_at).toLocaleString('en-AU') + ' \u00b7 ' + String(r.corrective_action_completed_by || 'Supervisor').replace(/</g,'&lt;') + '</div><div style="color:var(--text)"><b>Corrective action marked complete.</b></div></div></div>';
+    // Awaiting review banner (open status only)
+    if (status === 'open') {
+      html += '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;padding:6px 0">' + (isSup ? 'Awaiting your review. Use the form below to record your assessment and close the incident.' : 'Awaiting supervisor review. The outcome will appear here once reviewed.') + '</div>';
     }
+    // Closed (with all rolled-up data)
     if (r.closed_at) {
-      html += '<div style="display:flex;gap:10px;padding:8px 0"><div style="width:6px;height:6px;border-radius:50%;background:#1B6E3A;margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.5"><div style="color:var(--muted)">' + new Date(r.closed_at).toLocaleString('en-AU') + ' \u00b7 ' + String(r.closed_by || 'Supervisor').replace(/</g,'&lt;') + '</div><div style="color:var(--text)"><b>Incident closed.</b>' + (r.close_note ? '<div style="margin-top:4px;color:var(--text);white-space:pre-wrap">' + String(r.close_note).replace(/</g,'&lt;') + '</div>' : '') + '</div></div></div>';
+      const labels = { yes:'Yes', no:'No', unsure:'Unsure' };
+      const supNotif = r.notifiable_assessment && r.notifiable_assessment.supervisor_said;
+      const corrective = r.corrective_action_complete ? 'Yes \u2014 actioned' : 'No \u2014 still pending';
+      html += '<div style="display:flex;gap:10px;padding:8px 0"><div style="width:6px;height:6px;border-radius:50%;background:#1B6E3A;margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.6">' +
+        '<div style="color:var(--muted)">' + new Date(r.closed_at).toLocaleString('en-AU') + ' \u00b7 ' + String(r.closed_by || 'Supervisor').replace(/</g,'&lt;') + '</div>' +
+        '<div style="color:var(--text);font-weight:600;margin-bottom:4px">Incident closed.</div>' +
+        (r.review_notes_text ? '<div style="margin-bottom:4px"><span style="color:var(--muted);font-size:11.5px">Review notes:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.review_notes_text).replace(/</g,'&lt;') + '</div></div>' : '') +
+        (supNotif ? '<div style="margin-bottom:2px"><span style="color:var(--muted);font-size:11.5px">Notifiable:</span> <b>' + (labels[supNotif] || supNotif) + '</b></div>' : '') +
+        '<div style="margin-bottom:2px"><span style="color:var(--muted);font-size:11.5px">Corrective action:</span> ' + corrective + '</div>' +
+        (r.close_note ? '<div style="margin-top:4px"><span style="color:var(--muted);font-size:11.5px">Closing note:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.close_note).replace(/</g,'&lt;') + '</div></div>' : '') +
+      '</div></div>';
     }
     return html;
   })();
@@ -18203,47 +18270,49 @@ function goToIncidentDetail(ref) {
     return v || '\u2014';
   };
 
-  // Supervisor action panel — only visible to supervisors, content varies by status
+  // Supervisor review form — single-submit pattern matching the rest of the
+  // app. Visible to supervisors when the incident is still Open. One Submit
+  // button at the bottom, greyed out until everything required is filled.
+  // Captures: review notes, notifiable assessment, corrective action complete,
+  // closing note. On submit → status flips to Closed, all four pieces of data
+  // saved in one go.
   const actionPanelHtml = (function(){
     if (!isSup) return '';
-    if (status === 'open') {
-      return '<div class="fcard" style="border:1.5px solid #5535AD"><div class="fcard-hdr" style="background:#EFEAFB;color:#5535AD">Supervisor actions</div><div class="fcard-body">' +
-        '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:10px">This incident is awaiting review. Start the review when you\'ve assessed the situation \u2014 you\'ll then be able to add notes, confirm whether it\'s notifiable, mark corrective action complete, and close the report.</div>' +
-        '<button onclick="incStartReview()" style="display:block;width:100%;padding:13px;background:#5535AD;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Start review</button>' +
-      '</div></div>';
-    }
-    if (status === 'under-review') {
-      return '<div class="fcard" style="border:1.5px solid #5535AD"><div class="fcard-hdr" style="background:#EFEAFB;color:#5535AD">Supervisor actions</div><div class="fcard-body">' +
-        '<div class="fgroup">' +
-          '<label class="flabel">Add a review note</label>' +
-          '<textarea id="inc-action-note" placeholder="What\'s being done? e.g. Spoke to crew, additional barricading installed, retraining scheduled" rows="3" style="font-size:14px"></textarea>' +
-          '<button onclick="incAddReviewNote()" style="display:block;width:100%;padding:11px;margin-top:8px;background:transparent;color:#5535AD;border:1.5px solid #5535AD;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Add note</button>' +
+    if (status !== 'open') return '';      // closed records are read-only
+    return '<div class="fcard" style="border:1.5px solid #5535AD"><div class="fcard-hdr" style="background:#EFEAFB;color:#5535AD">Supervisor review &amp; close-out</div><div class="fcard-body">' +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px">Review the report, complete the fields below, then submit to close the incident. The submit button stays disabled until every required (<span style="color:#B83232;font-weight:700">*</span>) field is filled.</div>' +
+      '<div class="fgroup">' +
+        '<label class="flabel">Review notes</label>' +
+        '<textarea id="inc-review-notes" placeholder="What did you find? e.g. Spoke to crew, area secured, retraining scheduled, SWMS reviewed." rows="3" style="font-size:14px" oninput="incRecheckClose()"></textarea>' +
+      '</div>' +
+      '<div class="fgroup">' +
+        '<label class="flabel">Confirm notifiable to the regulator <span class="req">*</span></label>' +
+        '<div style="font-size:11.5px;color:var(--muted);margin-bottom:6px">Reporter said: <b>' + notifLabel(notifReporter) + '</b></div>' +
+        '<input type="hidden" id="inc-sup-notif" value="">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">' +
+          '<button id="inc-sup-notif-yes"    class="ps-btn" onclick="incSetSupNotif(\'yes\')">Yes</button>' +
+          '<button id="inc-sup-notif-no"     class="ps-btn" onclick="incSetSupNotif(\'no\')">No</button>' +
+          '<button id="inc-sup-notif-unsure" class="ps-btn" onclick="incSetSupNotif(\'unsure\')">Unsure</button>' +
         '</div>' +
-        '<div class="fgroup" style="margin-top:14px">' +
-          '<label class="flabel">Confirm notifiable to the regulator</label>' +
-          '<div style="font-size:11.5px;color:var(--muted);margin-bottom:6px">Reporter said: <b>' + notifLabel(notifReporter) + '</b>' + (notifSup ? ' \u00b7 You confirmed: <b>' + notifLabel(notifSup) + '</b>' : '') + '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">' +
-            '<button onclick="incSetSupervisorNotifiable(\'yes\')"    class="ps-btn' + (notifSup === 'yes' ? ' pass' : '') + '">Yes</button>' +
-            '<button onclick="incSetSupervisorNotifiable(\'no\')"     class="ps-btn' + (notifSup === 'no' ? ' pass' : '') + '">No</button>' +
-            '<button onclick="incSetSupervisorNotifiable(\'unsure\')" class="ps-btn' + (notifSup === 'unsure' ? ' pass' : '') + '">Unsure</button>' +
-          '</div>' +
+      '</div>' +
+      '<div class="fgroup">' +
+        '<label class="flabel">Corrective action complete? <span class="req">*</span></label>' +
+        '<input type="hidden" id="inc-sup-corrective" value="">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">' +
+          '<button id="inc-sup-corrective-yes" class="ps-btn" onclick="incSetSupCorrective(\'yes\')">Yes \u2014 actioned</button>' +
+          '<button id="inc-sup-corrective-no"  class="ps-btn" onclick="incSetSupCorrective(\'no\')">No \u2014 still pending</button>' +
         '</div>' +
-        '<div class="fgroup" style="margin-top:14px">' +
-          '<label class="flabel">Corrective action</label>' +
-          (r.corrective_action_complete
-            ? '<div style="background:#E6F5ED;border:1px solid rgba(27,110,58,.25);border-radius:8px;padding:9px 12px;font-size:12.5px;color:#1B6E3A">\u2713 Marked complete by ' + String(r.corrective_action_completed_by || '').replace(/</g,'&lt;') + '</div>'
-            : '<button onclick="incMarkCorrective()" style="display:block;width:100%;padding:11px;background:transparent;color:#1B6E3A;border:1.5px solid #1B6E3A;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Mark corrective action complete</button>') +
-        '</div>' +
-        '<div class="fgroup" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">' +
-          '<label class="flabel">Close incident</label>' +
-          '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">Add a final note summarising the outcome. The incident will move to <b>Closed</b> and stop counting against the open chip.</div>' +
-          '<textarea id="inc-close-note" placeholder="e.g. SWMS updated and toolbox delivered. No further action required." rows="3" style="font-size:14px"></textarea>' +
-          '<button onclick="incCloseIncident()" style="display:block;width:100%;padding:13px;margin-top:8px;background:#1B6E3A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Close incident</button>' +
-        '</div>' +
-      '</div></div>';
-    }
-    // Status === closed: read-only summary
-    return '';
+      '</div>' +
+      '<div class="fgroup">' +
+        '<label class="flabel">Closing note <span class="req">*</span></label>' +
+        '<textarea id="inc-close-note" placeholder="Summarise the outcome. e.g. SWMS updated, crew briefed, no further action required." rows="3" style="font-size:14px" oninput="incRecheckClose()"></textarea>' +
+      '</div>' +
+      '<button id="inc-close-btn" class="submit-btn" onclick="incCloseIncident()" style="background:#C8C8C8 !important;color:#fff;cursor:not-allowed;opacity:.65;pointer-events:none" disabled>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>' +
+        'Close incident' +
+      '</button>' +
+      '<div id="inc-close-hint" style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.45">Complete the required sections (marked <span style="color:#B83232;font-weight:700">*</span>) to enable submit.</div>' +
+    '</div></div>';
   })();
 
   if (body) {
@@ -18305,143 +18374,477 @@ function goToIncidentDetail(ref) {
 }
 
 // ─── SUPERVISOR REVIEW ACTIONS ───────────────────────────────
-// Each handler reads the active record, mutates it, persists via incSaveRecord,
-// then re-renders the detail screen so the new state is visible immediately.
+// Single-submit pattern. The supervisor opens an Open incident, fills the
+// review form (notes, notifiable, corrective, closing note), and taps
+// Close incident — everything is captured + persisted in one go.
+//
+// Three small helpers + one final submit. No piecemeal saves, no scroll-jump
+// from intermediate goToIncidentDetail re-renders.
 
-function incLoadActiveRecord() {
-  const ref = window._incActiveRef;
-  if (!ref) {
-    slanAlert('No incident is open. Tap on a record from the list to review it.');
-    return null;
-  }
-  const rec = (typeof incLoadByRef === 'function') ? incLoadByRef(ref) : null;
-  if (!rec) {
-    slanAlert('That incident could not be found.');
-    return null;
-  }
-  return rec;
-}
+// Local state for the review form (cleared each time we open the detail)
+let _incSupNotif = '';      // 'yes' | 'no' | 'unsure'
+let _incSupCorrective = ''; // 'yes' | 'no'
 
-function incPersistAndRefresh(rec) {
-  if (typeof incSaveRecord !== 'function') return;
-  // Photos are stored separately so we strip them before save (incSaveRecord
-  // does this internally, but we want to make sure we're passing the live
-  // record with photos still attached so they survive).
-  incSaveRecord(rec);
-  // Re-render the detail screen
-  goToIncidentDetail(rec.ref);
-  // Refresh tile chips and lists
-  if (typeof updateAllTileSubs === 'function') {
-    const _p = (typeof getProfile === 'function') ? getProfile() : null;
-    try { updateAllTileSubs(_p); } catch(e) {}
-  }
-  if (typeof updateStatusStrip === 'function') { try { updateStatusStrip(); } catch(e) {} }
-  if (typeof loadSuperDash === 'function')     { try { loadSuperDash(); } catch(e) {} }
-}
-
-function incStartReview() {
-  const rec = incLoadActiveRecord(); if (!rec) return;
-  const me = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!me || me.role !== 'Site Supervisor') {
-    slanAlert('Only a site supervisor can start an incident review.');
-    return;
-  }
-  rec.status = 'under-review';
-  rec.reviewer_name = me.name || '';
-  rec.reviewer_company = me.company || '';
-  rec.review_started_at = new Date().toISOString();
-  if (!Array.isArray(rec.review_notes)) rec.review_notes = [];
-  incPersistAndRefresh(rec);
-}
-
-function incAddReviewNote() {
-  const rec = incLoadActiveRecord(); if (!rec) return;
-  const me = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!me || me.role !== 'Site Supervisor') return;
-  const ta = document.getElementById('inc-action-note');
-  const txt = (ta && ta.value || '').trim();
-  if (!txt) {
-    slanAlert('Please type a note before adding it to the review timeline.');
-    return;
-  }
-  if (!Array.isArray(rec.review_notes)) rec.review_notes = [];
-  rec.review_notes.push({
-    timestamp: new Date().toISOString(),
-    author: me.name || 'Supervisor',
-    note: txt
+function incSetSupNotif(val) {
+  _incSupNotif = val;
+  const hidden = document.getElementById('inc-sup-notif');
+  if (hidden) hidden.value = val;
+  ['yes','no','unsure'].forEach(v => {
+    const b = document.getElementById('inc-sup-notif-' + v); if (!b) return;
+    b.className = 'ps-btn' + (v === val ? ' pass' : '');
+    b.style = '';
   });
-  incPersistAndRefresh(rec);
+  incRecheckClose();
 }
 
-function incSetSupervisorNotifiable(val) {
-  const rec = incLoadActiveRecord(); if (!rec) return;
-  const me = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!me || me.role !== 'Site Supervisor') return;
-  if (!rec.notifiable_assessment) rec.notifiable_assessment = {};
-  rec.notifiable_assessment.reporter_said = rec.potentially_notifiable || '';
-  rec.notifiable_assessment.supervisor_said = val;
-  rec.notifiable_assessment.agreed = (rec.potentially_notifiable === val);
-  rec.notifiable_assessment.assessed_at = new Date().toISOString();
-  rec.notifiable_assessment.assessed_by = me.name || '';
-  // Auto-add a review note for visibility
-  if (!Array.isArray(rec.review_notes)) rec.review_notes = [];
-  const labels = { yes:'Yes', no:'No', unsure:'Unsure' };
-  rec.review_notes.push({
-    timestamp: new Date().toISOString(),
-    author: me.name || 'Supervisor',
-    note: 'Notifiable assessment: ' + (labels[val] || val) + (rec.notifiable_assessment.agreed ? ' (agrees with reporter)' : ' (overrides reporter\u2019s answer)')
+function incSetSupCorrective(val) {
+  _incSupCorrective = val;
+  const hidden = document.getElementById('inc-sup-corrective');
+  if (hidden) hidden.value = val;
+  ['yes','no'].forEach(v => {
+    const b = document.getElementById('inc-sup-corrective-' + v); if (!b) return;
+    b.className = 'ps-btn' + (v === val ? ' pass' : '');
+    b.style = '';
   });
-  incPersistAndRefresh(rec);
+  incRecheckClose();
 }
 
-function incMarkCorrective() {
-  const rec = incLoadActiveRecord(); if (!rec) return;
-  const me = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!me || me.role !== 'Site Supervisor') return;
-  rec.corrective_action_complete = true;
-  rec.corrective_action_completed_at = new Date().toISOString();
-  rec.corrective_action_completed_by = me.name || '';
-  incPersistAndRefresh(rec);
+// Re-evaluates the Close incident button state. Required: notifiable
+// assessment + corrective action answer + closing note. (Review notes are
+// optional.) Mirrors the disabled-until-valid pattern used on the worker
+// submit button.
+function incRecheckClose() {
+  const btn  = document.getElementById('inc-close-btn');
+  const hint = document.getElementById('inc-close-hint');
+  if (!btn) return;
+  const closeNote = document.getElementById('inc-close-note');
+  const ok =
+    !!_incSupNotif &&
+    !!_incSupCorrective &&
+    !!(closeNote && closeNote.value && closeNote.value.trim());
+  if (ok) {
+    btn.disabled = false;
+    btn.style.setProperty('background', '#1B6E3A', 'important');
+    btn.style.setProperty('color', '#fff', 'important');
+    btn.style.setProperty('cursor', 'pointer', 'important');
+    btn.style.setProperty('opacity', '1', 'important');
+    btn.style.setProperty('pointer-events', 'auto', 'important');
+    if (hint) hint.style.display = 'none';
+  } else {
+    btn.disabled = true;
+    btn.style.setProperty('background', '#C8C8C8', 'important');
+    btn.style.setProperty('color', '#fff', 'important');
+    btn.style.setProperty('cursor', 'not-allowed', 'important');
+    btn.style.setProperty('opacity', '0.65', 'important');
+    btn.style.setProperty('pointer-events', 'none', 'important');
+    if (hint) hint.style.display = 'block';
+  }
 }
 
 function incCloseIncident() {
-  const rec = incLoadActiveRecord(); if (!rec) return;
+  const ref = window._incActiveRef;
+  if (!ref) { slanAlert('No incident is open.'); return; }
+  const rec = (typeof incLoadByRef === 'function') ? incLoadByRef(ref) : null;
+  if (!rec) { slanAlert('That incident could not be found.'); return; }
   const me = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!me || me.role !== 'Site Supervisor') return;
-  // Require corrective action complete + notifiable assessment + a close note
-  if (!rec.corrective_action_complete) {
-    slanAlert('Mark the corrective action as complete before closing the incident.');
+  if (!me || me.role !== 'Site Supervisor') {
+    slanAlert('Only a site supervisor can close an incident.');
     return;
   }
-  if (!rec.notifiable_assessment || !rec.notifiable_assessment.supervisor_said) {
-    slanAlert('Confirm the notifiable assessment (Yes / No / Unsure) before closing the incident.');
-    return;
-  }
-  const noteEl = document.getElementById('inc-close-note');
-  const noteTxt = (noteEl && noteEl.value || '').trim();
-  if (!noteTxt) {
-    slanAlert('Please add a closing note summarising the outcome before closing the incident.');
-    return;
-  }
+  // Belt-and-braces validation in case button state was bypassed
+  if (!_incSupNotif)      { slanAlert('Please set the notifiable assessment before closing.'); return; }
+  if (!_incSupCorrective) { slanAlert('Please confirm whether corrective action is complete.'); return; }
+  const notesEl = document.getElementById('inc-review-notes');
+  const closeEl = document.getElementById('inc-close-note');
+  const reviewNotesText = (notesEl && notesEl.value || '').trim();
+  const closeNoteText   = (closeEl && closeEl.value || '').trim();
+  if (!closeNoteText) { slanAlert('Please add a closing note.'); return; }
+
   // Confirm
+  const finalize = function() {
+    const now = new Date();
+    rec.status = 'closed';
+    rec.closed_at = now.toISOString();
+    rec.closed_by = me.name || 'Supervisor';
+    rec.reviewer_name = me.name || '';
+    rec.reviewer_company = me.company || '';
+    rec.review_notes_text = reviewNotesText;          // single block, optional
+    rec.close_note = closeNoteText;
+    rec.notifiable_assessment = {
+      reporter_said:  rec.potentially_notifiable || '',
+      supervisor_said: _incSupNotif,
+      agreed: rec.potentially_notifiable === _incSupNotif,
+      assessed_at: now.toISOString(),
+      assessed_by: me.name || ''
+    };
+    rec.corrective_action_complete = (_incSupCorrective === 'yes');
+    rec.corrective_action_completed_at = (_incSupCorrective === 'yes') ? now.toISOString() : null;
+    rec.corrective_action_completed_by = (_incSupCorrective === 'yes') ? (me.name || '') : null;
+
+    // Persist (incSaveRecord handles photo split internally)
+    if (typeof incSaveRecord === 'function') incSaveRecord(rec);
+
+    // Reset local form state
+    _incSupNotif = '';
+    _incSupCorrective = '';
+
+    // Refresh chips/lists everywhere
+    if (typeof updateAllTileSubs === 'function') {
+      const _p = (typeof getProfile === 'function') ? getProfile() : null;
+      try { updateAllTileSubs(_p); } catch(e) {}
+    }
+    if (typeof updateStatusStrip === 'function') { try { updateStatusStrip(); } catch(e) {} }
+    if (typeof loadSuperDash === 'function')     { try { loadSuperDash(); } catch(e) {} }
+
+    // Re-render this detail screen so the closed state is reflected
+    goToIncidentDetail(rec.ref);
+
+    if (typeof slanAlert === 'function') {
+      slanAlert('Incident closed', 'The report is now closed and will appear in the closed-incidents history.', 'success');
+    }
+  };
+
   if (typeof slanConfirm === 'function') {
-    slanConfirm('Close this incident? It will be marked Closed and the open count will drop.').then(function(ok){
-      if (!ok) return;
-      _incFinalizeClose(rec, me, noteTxt);
+    slanConfirm('Close this incident? It will move to Closed and the open count will drop.').then(function(ok){
+      if (ok) finalize();
     });
   } else {
-    _incFinalizeClose(rec, me, noteTxt);
+    finalize();
   }
 }
 
-function _incFinalizeClose(rec, me, noteTxt) {
-  rec.status = 'closed';
-  rec.closed_at = new Date().toISOString();
-  rec.closed_by = me.name || '';
-  rec.close_note = noteTxt;
-  incPersistAndRefresh(rec);
-  if (typeof slanAlert === 'function') {
-    slanAlert('Incident closed', 'The report is now closed and will appear in the closed-incidents history.', 'success');
+// ─── INCIDENT PDF DOWNLOAD ───────────────────────────────────
+// Generates an A4 PDF of the active incident, styled to match the
+// toolbox/permit PDFs in this app: same margins (22/22/18/16), same
+// PDF_COLOURS palette, same banner/sublabel/card helpers, same footer.
+function downloadIncidentPdf() {
+  const ref = window._incActiveRef;
+  if (!ref) { slanAlert('No incident is open.'); return; }
+  const r = (typeof incLoadByRef === 'function') ? incLoadByRef(ref) : null;
+  if (!r) { slanAlert('That incident could not be found.'); return; }
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    slanAlert('PDF library not loaded. Please refresh and try again.');
+    return;
+  }
+  try {
+    const jsPDF = window.jspdf.jsPDF;
+    const doc = new jsPDF({ unit:'mm', format:'a4' });
+    const PAGE_W = 210, PAGE_H = 297;
+    const ML = 22, MR = 22, MT = 18, MB = 16;   // canonical permit margins
+    const CW = PAGE_W - ML - MR;
+
+    const TITLE = 'INCIDENT REPORT';
+    const FOOTER_CODE = 'SLS-INC \u00b7 v1.0';
+
+    // Use the global PDF_COLOURS palette so we share the exact same look as
+    // the toolbox + permit PDFs. Fall back if it's somehow not in scope.
+    const C = (typeof PDF_COLOURS !== 'undefined') ? PDF_COLOURS : {
+      darkGreen:'#1B3A2D', darkText:'#1A2A1F', subLabel:'#5C6B62',
+      greyLabel:'#888888', greyLight:'#dddddd', border:'#e5e5e5',
+      neutralBg:'#F8F7F3', white:'#FFFFFF',
+      paleGreen:'#F0F7E8', greenBorder:'#d4e3c2', greenDark:'#1B6E3A',
+      amberBg:'#FDF8EC', amberDark:'#BA7517',
+      redBg:'#FCEBEB', redDark:'#A32D2D'
+    };
+    const hex = function(h){
+      h = h.replace('#','');
+      return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+    };
+    const setFill   = function(c){ var rgb = hex(c); doc.setFillColor(rgb[0], rgb[1], rgb[2]); };
+    const setStroke = function(c){ var rgb = hex(c); doc.setDrawColor(rgb[0], rgb[1], rgb[2]); };
+    const setText   = function(c){ var rgb = hex(c); doc.setTextColor(rgb[0], rgb[1], rgb[2]); };
+
+    // Canonical helpers (mirror generatePermitPDF + tbtDownloadPDF)
+    function drawHeader() {
+      const logoW = 30, logoH = 13;
+      const logoX = PAGE_W - MR - logoW;
+      const logoY = MT;
+      if (window.SLAN_LOGO_B64) {
+        try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', logoX, logoY, logoW, logoH); } catch(e) {}
+      } else {
+        setFill(C.darkGreen);
+        doc.rect(logoX, logoY, logoW, logoH, 'F');
+      }
+      setText(C.darkText);
+      doc.setFont('helvetica','bold'); doc.setFontSize(16);
+      doc.text(TITLE, PAGE_W/2, logoY + logoH/2 + 1.5, { align:'center' });
+      setStroke(C.darkGreen); doc.setLineWidth(0.5);
+      doc.line(ML, logoY + logoH + 1, PAGE_W - MR, logoY + logoH + 1);
+      return logoY + logoH + 5;
+    }
+
+    function drawFooter(pageNum, totalPages) {
+      const footY = PAGE_H - MB;
+      setStroke(C.greyLight); doc.setLineWidth(0.2);
+      doc.line(ML, footY - 4, PAGE_W - MR, footY - 4);
+      setText(C.greyLabel);
+      doc.setFont('courier','normal'); doc.setFontSize(7);
+      doc.text(FOOTER_CODE, ML, footY);
+      doc.setFont('helvetica','normal');
+      doc.text('Page ' + pageNum + ' of ' + totalPages, PAGE_W - MR, footY, { align:'right' });
+    }
+
+    function drawMajorBanner(yPos, label) {
+      const h = 6;
+      setFill(C.darkGreen);
+      doc.rect(ML, yPos, CW, h, 'F');
+      setText(C.white);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9);
+      doc.text(label, ML + 4, yPos + h/2 + 1.5);
+      return yPos + h + 4;
+    }
+
+    function drawSubLabel(yPos, label) {
+      yPos += 2;
+      setText(C.subLabel);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+      doc.text(label, ML, yPos);
+      return yPos + 3;
+    }
+
+    function drawCard(yPos, height, bgColor, borderColor, accentColor) {
+      if (accentColor) {
+        setFill(accentColor);
+        doc.rect(ML, yPos, 1.5, height, 'F');
+        setFill(bgColor); setStroke(borderColor); doc.setLineWidth(0.2);
+        doc.rect(ML + 1.5, yPos, CW - 1.5, height, 'FD');
+      } else {
+        setFill(bgColor); setStroke(borderColor); doc.setLineWidth(0.2);
+        doc.rect(ML, yPos, CW, height, 'FD');
+      }
+    }
+
+    function drawField(x, yPos, label, value) {
+      setText(C.greyLabel);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+      doc.text(label + ':', x, yPos);
+      const lblW = doc.getTextWidth(label + ':');
+      setText(C.darkText);
+      doc.setFont('helvetica','normal');
+      doc.text(String(value || '\u2014'), x + lblW + 1.5, yPos);
+    }
+
+    // Returns required height (mm) for a wrapped label/value row in a card.
+    function rowHeight(value, valueW) {
+      if (!value && value !== 0) return 0;
+      const lines = doc.splitTextToSize(String(value), valueW);
+      return Math.max(5, lines.length * 4.2) + 0.5;
+    }
+
+    // Page-aware drawing of a multi-row card. Each row: { label, value }.
+    // If we'd overflow the page, draws a continuation card on a new page.
+    let y = drawHeader();
+    let pageNum = 1;
+    // We don't know totalPages up front so we pass a sentinel and rewrite at end
+    drawFooter(pageNum, '__TP__');
+
+    const ensure = function(need) {
+      if (y + need > PAGE_H - MB - 8) {
+        doc.addPage();
+        pageNum++;
+        y = drawHeader();
+        drawFooter(pageNum, '__TP__');
+      }
+    };
+
+    // Row drawing inside a card (label + wrapped value)
+    function drawCardRow(label, value) {
+      if (!value && value !== 0) return;
+      const labelW = 56;
+      const valueW = CW - labelW - 8;
+      const valueLines = doc.splitTextToSize(String(value), valueW);
+      const rowH = Math.max(6, valueLines.length * 4.2 + 2);
+      ensure(rowH + 1);
+      // Row background card
+      drawCard(y, rowH, C.neutralBg, C.border);
+      setText(C.greyLabel);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+      doc.text(label, ML + 3, y + 4.5);
+      setText(C.darkText);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.text(valueLines, ML + labelW, y + 4.5);
+      y += rowH + 1.5;
+    }
+
+    // Long-form text block under an uppercase sublabel
+    function drawCardBlock(label, value) {
+      if (!value) return;
+      ensure(12);
+      y = drawSubLabel(y, label);
+      const lines = doc.splitTextToSize(String(value), CW - 6);
+      const blockH = Math.max(8, lines.length * 4.2 + 5);
+      ensure(blockH + 1);
+      drawCard(y, blockH, C.neutralBg, C.border);
+      setText(C.darkText);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.text(lines, ML + 3, y + 5);
+      y += blockH + 3;
+    }
+
+    // ═══════════════ HEADER STRIP — REF / STATUS / SITE ═══════════════
+    y = drawMajorBanner(y, 'INCIDENT DETAILS');
+
+    y = drawSubLabel(y, 'INCIDENT REFERENCE');
+    let cardH = 14;
+    drawCard(y, cardH, C.neutralBg, C.border);
+    let innerY = y + 5;
+    const colW = CW / 3;
+    setText(C.greyLabel);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    doc.text('Reference', ML + 4, innerY);
+    doc.text('Date',      ML + colW + 4, innerY);
+    doc.text('Status',    ML + 2*colW + 4, innerY);
+    doc.setFont('courier','bold'); doc.setFontSize(9.5);
+    setText(C.darkText);
+    doc.text(String(r.ref || '\u2014'), ML + 4, innerY + 6);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text(String(r.incident_date || '') + (r.incident_time ? '  ' + r.incident_time : ''), ML + colW + 4, innerY + 6);
+    // Status pill
+    const status = (r.status || 'open').toLowerCase();
+    const statusBg = (status === 'closed') ? C.paleGreen : C.amberBg;
+    const statusTx = (status === 'closed') ? C.greenDark : C.amberDark;
+    const statusLb = (status === 'closed') ? 'CLOSED' : 'OPEN';
+    setFill(statusBg);
+    doc.roundedRect(ML + 2*colW + 4, innerY + 2, 22, 5, 1, 1, 'F');
+    setText(statusTx);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.text(statusLb, ML + 2*colW + 5, innerY + 5.5);
+    y += cardH + 4;
+
+    // SECTION 1 — Incident details rows
+    drawCardRow('Type of report', r.incident_type);
+    drawCardRow('Severity',       r.severity);
+    drawCardRow('Date',           r.incident_date);
+    drawCardRow('Time',           r.incident_time);
+    drawCardRow('Location',       r.location);
+    drawCardRow('Site',           r.site);
+
+    // SECTION 2 — Reporter & person involved
+    y = drawMajorBanner(y, 'REPORTER & PERSON INVOLVED');
+    drawCardRow('Reporter',           r.reporter_name);
+    drawCardRow('Reporter company',   r.reporter_company);
+    drawCardRow('Role in event',      r.role_in_event);
+    drawCardRow('Person involved',    r.person_name);
+    drawCardRow('Person company',     r.person_company);
+    drawCardRow('Supervisor present', r.supervisor_present);
+
+    // SECTION 3 — Work context & injury
+    y = drawMajorBanner(y, 'WORK CONTEXT & INJURY');
+    drawCardRow('Activity at the time',   r.work_activity);
+    drawCardRow('Briefing received',  Array.isArray(r.briefing_received) ? r.briefing_received.join(', ') : r.briefing_received);
+    drawCardRow('Shift start',        r.shift_start);
+    drawCardRow('Days worked since last day off', r.days_worked);
+    drawCardRow('Injury nature',      r.injury_nature);
+    drawCardRow('Body part',          r.body_part);
+    drawCardRow('First aid given',    r.first_aid);
+    drawCardRow('Medical attention',  r.medical_attention);
+
+    // SECTION 4 — What happened
+    y = drawMajorBanner(y, 'WHAT HAPPENED');
+    drawCardBlock('DESCRIPTION',         r.description);
+    drawCardBlock('IMMEDIATE ACTION',    r.immediate_action);
+    drawCardBlock('CORRECTIVE ACTIONS',  r.corrective_actions);
+
+    // SECTION 5 — Notifiable assessment
+    y = drawMajorBanner(y, 'NOTIFIABLE ASSESSMENT');
+    const notifLbl = function(v){
+      if (v === 'yes') return 'Yes'; if (v === 'no') return 'No'; if (v === 'unsure') return 'Not sure';
+      return v || '\u2014';
+    };
+    drawCardRow('Reporter said',         notifLbl(r.potentially_notifiable));
+    if (r.notifiable_assessment && r.notifiable_assessment.supervisor_said) {
+      drawCardRow('Supervisor confirmed',
+        notifLbl(r.notifiable_assessment.supervisor_said) + (r.notifiable_assessment.agreed === false ? ' (overrides reporter)' : ''));
+    }
+    drawCardRow('SWMS update required', r.swms_update_required);
+    drawCardRow('Work resumed',         r.work_resumed);
+    drawCardRow('Submitted',            (r.submission_date || '') + (r.submission_time ? ' ' + r.submission_time : ''));
+
+    // SECTION 6 — Supervisor close-out (only if closed)
+    if (status === 'closed') {
+      y = drawMajorBanner(y, 'SUPERVISOR CLOSE-OUT');
+      drawCardRow('Closed by',     r.closed_by);
+      drawCardRow('Closed at',     r.closed_at ? new Date(r.closed_at).toLocaleString('en-AU') : '');
+      drawCardRow('Corrective action', r.corrective_action_complete ? 'Yes \u2014 actioned' : 'No \u2014 still pending');
+      drawCardBlock('REVIEW NOTES',  r.review_notes_text);
+      drawCardBlock('CLOSING NOTE',  r.close_note);
+    }
+
+    // SECTION 7 — Photo evidence
+    const photos = Array.isArray(r.photos) ? r.photos : [];
+    if (photos.length > 0) {
+      y = drawMajorBanner(y, 'PHOTO EVIDENCE');
+      const photoW = (CW - 4) / 2;
+      const photoH = photoW * 0.75;
+      let col = 0;
+      photos.forEach(function(ph, idx){
+        if (col === 0) ensure(photoH + 8);
+        const x = ML + (col * (photoW + 4));
+        const src = (ph && ph.data) ? ph.data : ph;
+        try {
+          doc.addImage(src, 'JPEG', x, y, photoW, photoH, undefined, 'FAST');
+        } catch(e) {
+          setFill(C.greyLight);
+          doc.rect(x, y, photoW, photoH, 'F');
+          setText(C.greyLabel);
+          doc.setFont('helvetica','italic'); doc.setFontSize(8);
+          doc.text('[photo ' + (idx+1) + ' could not be embedded]', x + photoW/2, y + photoH/2, { align:'center' });
+        }
+        setText(C.subLabel);
+        doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+        const cap = 'Photo ' + (idx+1) + (ph && ph.date ? '  \u00b7  ' + ph.date + ' ' + (ph.time || '') : '');
+        doc.text(cap, x, y + photoH + 3.5);
+        col++;
+        if (col >= 2) {
+          col = 0;
+          y += photoH + 8;
+        }
+      });
+      if (col > 0) y += photoH + 8;
+    }
+
+    // SECTION 8 — Declaration & signature
+    ensure(40);
+    y = drawMajorBanner(y, 'DECLARATION');
+    setText(C.darkText);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+    const decl = doc.splitTextToSize('I confirm this report is accurate to the best of my knowledge. This report will be filed for review within 24 hours as required under WHS Act 2011.', CW);
+    decl.forEach(function(line){ ensure(4); doc.text(line, ML, y + 3); y += 4; });
+    y += 2;
+
+    // Signature panel — same style as permits
+    ensure(28);
+    y = drawSubLabel(y, 'REPORTER SIGNATURE');
+    drawCard(y, 22, C.white, C.greyLight);
+    try {
+      const me = (typeof getProfile === 'function') ? getProfile() : null;
+      const sig = r.reporter_signature || (me && me.sig && me.name === r.reporter_name ? me.sig : null);
+      if (sig) doc.addImage(sig, 'PNG', ML + 2, y + 2, CW - 4, 18);
+    } catch(e) {}
+    setText(C.subLabel);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(String(r.reporter_name || ''), ML + 2, y + 25);
+    doc.text(String(r.submission_date || ''), PAGE_W - MR - 2, y + 25, { align:'right' });
+    y += 28;
+
+    // ═══════════════ Rewrite footer placeholders with real total ═══════════════
+    const totalPages = pageNum;
+    const finalDoc = doc;
+    // jsPDF text placement is per-page; we already drew footers with __TP__.
+    // To replace, walk pages and redraw the footer.
+    for (let i = 1; i <= totalPages; i++) {
+      finalDoc.setPage(i);
+      // Wipe the old footer area with white
+      setFill(C.white);
+      finalDoc.rect(0, PAGE_H - MB - 5, PAGE_W, MB + 5, 'F');
+      drawFooter(i, totalPages);
+    }
+
+    const filename = 'Incident_' + (r.ref || 'report').replace(/[^A-Z0-9-]/gi,'_') + '.pdf';
+    doc.save(filename);
+  } catch (e) {
+    console.error('Incident PDF generation failed:', e);
+    slanAlert('Could not generate PDF', 'Something went wrong building the PDF. Please try again or contact support.');
   }
 }
 
