@@ -1193,6 +1193,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="sp-talk" onclick="chipTapTalk()">
         <div class="sp-dot sp-pending"></div><span id="sp-talk-lbl">Toolbox Talk</span>
       </div>
+      <div class="status-pill" id="sp-inc" onclick="chipTapIncidents()">
+        <div class="sp-dot sp-pending"></div><span id="sp-inc-lbl">Incidents</span>
+      </div>
     </div>
   </div>
 
@@ -1749,19 +1752,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fgroup">
           <label class="flabel">Type of report <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-type')">?</span></label>
           <div id="inc-help-type" class="slan-help-tip">
-            <b>Actual Injury</b> — someone was hurt.<br>
+            <b>Injury</b> — someone was hurt.<br>
             <b>Near Miss</b> — no harm but could have been bad (e.g. dropped tool from height, no one underneath).<br>
-            <b>Dangerous Incident</b> — uncontrolled event with serious-harm potential (collapse, fire, plant runaway, hazardous release).<br>
-            <b>Property Damage</b> — equipment, vehicle or structure damaged with no injury.<br>
-            <b>Environmental</b> — spill, contamination, breach of environmental controls.
+            <b>Dangerous</b> — uncontrolled event with serious-harm potential (collapse, fire, plant runaway, hazardous release).<br>
+            <b>Damage</b> — property, equipment, vehicle or structure damaged with no injury.<br>
+            <b>Spill</b> — environmental release: spill, contamination, breach of environmental controls.
           </div>
           <input type="hidden" id="inc-type" value="">
-          <div style="display:flex;flex-direction:column;gap:6px" id="inc-type-grid">
-            <button class="ps-btn" id="inc-type-Injury" onclick="setIncType('Actual Injury')" style="white-space:normal;line-height:1.25;padding:11px 12px;font-size:13px;text-align:left">Actual Injury</button>
-            <button class="ps-btn" id="inc-type-Near"   onclick="setIncType('Near Miss')" style="white-space:normal;line-height:1.25;padding:11px 12px;font-size:13px;text-align:left">Near Miss</button>
-            <button class="ps-btn" id="inc-type-Dang"   onclick="setIncType('Dangerous Incident')" style="white-space:normal;line-height:1.25;padding:11px 12px;font-size:13px;text-align:left">Dangerous Incident</button>
-            <button class="ps-btn" id="inc-type-Prop"   onclick="setIncType('Property Damage')" style="white-space:normal;line-height:1.25;padding:11px 12px;font-size:13px;text-align:left">Property Damage</button>
-            <button class="ps-btn" id="inc-type-Env"    onclick="setIncType('Environmental')" style="white-space:normal;line-height:1.25;padding:11px 12px;font-size:13px;text-align:left">Environmental</button>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px" id="inc-type-grid">
+            <button class="ps-btn" id="inc-type-Injury" onclick="setIncType('Actual Injury')" style="padding:9px 4px;font-size:11px;line-height:1.2">Injury</button>
+            <button class="ps-btn" id="inc-type-Near"   onclick="setIncType('Near Miss')" style="padding:9px 4px;font-size:11px;line-height:1.2">Near&nbsp;Miss</button>
+            <button class="ps-btn" id="inc-type-Dang"   onclick="setIncType('Dangerous Incident')" style="padding:9px 4px;font-size:11px;line-height:1.2">Dangerous</button>
+            <button class="ps-btn" id="inc-type-Prop"   onclick="setIncType('Property Damage')" style="padding:9px 4px;font-size:11px;line-height:1.2">Damage</button>
+            <button class="ps-btn" id="inc-type-Env"    onclick="setIncType('Environmental')" style="padding:9px 4px;font-size:11px;line-height:1.2">Spill</button>
           </div>
         </div>
         <div class="fgroup">
@@ -1796,17 +1799,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fgroup">
           <label class="flabel">Role in event <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-role')">?</span></label>
           <div id="inc-help-role" class="slan-help-tip">
-            <b>Person Involved / Injured</b> — you were directly involved or were the injured person.<br>
+            <b>Involved</b> — you were directly involved or were the injured person.<br>
             <b>Witness</b> — you saw the event happen.<br>
-            <b>Circumstantial Witness</b> — you didn't see it happen but were nearby and have relevant information.<br>
-            <b>Reporting on behalf</b> — you're filing this for someone else who can't do it themselves.
+            <b>Nearby</b> — you didn't see it happen but were nearby and have relevant information (circumstantial witness).<br>
+            <b>On behalf</b> — you're filing this for someone else who can't do it themselves.
           </div>
           <input type="hidden" id="inc-role-in-event" value="">
-          <div style="display:flex;flex-direction:column;gap:6px" id="inc-role-grid">
-            <button class="ps-btn" id="inc-role-Person"  onclick="setIncRole('Person Involved / Injured')" style="white-space:normal;line-height:1.25;padding:11px 12px;font-size:13px;text-align:left">Person Involved / Injured</button>
-            <button class="ps-btn" id="inc-role-Witness" onclick="setIncRole('Witness')" style="white-space:normal;line-height:1.25;padding:11px 12px;font-size:13px;text-align:left">Witness</button>
-            <button class="ps-btn" id="inc-role-Circ"    onclick="setIncRole('Circumstantial Witness')" style="white-space:normal;line-height:1.25;padding:11px 12px;font-size:13px;text-align:left">Circumstantial Witness</button>
-            <button class="ps-btn" id="inc-role-Behalf"  onclick="setIncRole('Reporting on behalf of another')" style="white-space:normal;line-height:1.25;padding:11px 12px;font-size:13px;text-align:left">Reporting on behalf of another</button>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px" id="inc-role-grid">
+            <button class="ps-btn" id="inc-role-Person"  onclick="setIncRole('Person Involved / Injured')" style="padding:9px 4px;font-size:11px;line-height:1.2">Involved</button>
+            <button class="ps-btn" id="inc-role-Witness" onclick="setIncRole('Witness')" style="padding:9px 4px;font-size:11px;line-height:1.2">Witness</button>
+            <button class="ps-btn" id="inc-role-Circ"    onclick="setIncRole('Circumstantial Witness')" style="padding:9px 4px;font-size:11px;line-height:1.2">Nearby</button>
+            <button class="ps-btn" id="inc-role-Behalf"  onclick="setIncRole('Reporting on behalf of another')" style="padding:9px 4px;font-size:11px;line-height:1.2">On&nbsp;behalf</button>
           </div>
         </div>
         <div class="fgroup">
@@ -1926,12 +1929,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
 
         <div id="inc-photo-grid" style="display:flex;flex-direction:column;gap:8px">
-          <div class="inc-photo-slot-full" id="inc-slot-0" onclick="document.getElementById('inc-photo-input-0').click()" style="background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;min-height:90px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span style="font-size:13px;font-weight:600;color:var(--muted)">Add photo</span>
+          <div class="inc-photo-slot-full" id="inc-slot-0" onclick="document.getElementById('inc-photo-input-0').click()" style="background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:36px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:140px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span style="font-size:14px;font-weight:600;color:var(--muted)">Add photo</span>
+            <span style="font-size:11px;color:var(--muted);text-align:center;line-height:1.4">Tap to take or upload a photo</span>
           </div>
-          <div class="inc-photo-slot-full" id="inc-slot-1" onclick="document.getElementById('inc-photo-input-1').click()" style="display:none;background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:24px;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;min-height:90px"></div>
-          <div class="inc-photo-slot-full" id="inc-slot-2" onclick="document.getElementById('inc-photo-input-2').click()" style="display:none;background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:24px;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;min-height:90px"></div>
+          <div class="inc-photo-slot-full" id="inc-slot-1" onclick="document.getElementById('inc-photo-input-1').click()" style="display:none;background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:36px 24px;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:140px"></div>
+          <div class="inc-photo-slot-full" id="inc-slot-2" onclick="document.getElementById('inc-photo-input-2').click()" style="display:none;background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:36px 24px;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:140px"></div>
         </div>
 
         <button id="inc-skip-photos-btn" onclick="incSkipPhotos()" style="display:block;width:100%;padding:10px;margin-top:10px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif">Skip — no photos available</button>
@@ -13250,6 +13254,30 @@ async function updateStatusStrip() {
   const wkSignedToday = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(_meWk && _meWk.name) : null;
   setPillState('sp-talk', wkSignedToday ? 'done' : 'warn');
 
+  // Incidents — green when no open reports filed by this worker; amber if any
+  // open; red if any open are Critical or Major
+  const incLbl = document.getElementById('sp-inc-lbl');
+  if (incLbl) {
+    const allInc = (typeof incLoadAll === 'function') ? incLoadAll() : [];
+    const myOpen = allInc.filter(function(r){
+      return r.reporter_name === (_meWk && _meWk.name) && (r.status || 'open') !== 'closed';
+    });
+    const myCrit = myOpen.filter(function(r){
+      const s = (r.severity || '').toLowerCase();
+      return s === 'critical' || s === 'major';
+    });
+    if (myOpen.length === 0) {
+      incLbl.textContent = 'Incidents';
+      setPillState('sp-inc', 'done');
+    } else if (myCrit.length > 0) {
+      incLbl.textContent = 'Incidents (' + myOpen.length + ' open)';
+      setPillState('sp-inc', 'fail');
+    } else {
+      incLbl.textContent = 'Incidents (' + myOpen.length + ' open)';
+      setPillState('sp-inc', 'warn');
+    }
+  }
+
   // Legacy banner for supervisor pre-start
   try {
     const supPrestarts = await sbQuery('prestart_checks', { site: (typeof SITE !== 'undefined' ? SITE : ''), date: new Date().toLocaleDateString('en-AU'), is_supervisor_check: true });
@@ -13352,6 +13380,11 @@ function chipTapSignIn() {
 function chipTapPrestart() { goTo('screen-prestart'); if (typeof initPrestart === 'function') setTimeout(initPrestart, 20); }
 function chipTapSwms()     { goTo('screen-swms-library'); if (typeof initSwmsLibrary === 'function') setTimeout(initSwmsLibrary, 20); }
 function chipTapTalk()     { goTo('screen-talk'); if (typeof initTalk === 'function') setTimeout(initTalk, 20); }
+function chipTapIncidents() {
+  // Same routing as the tile click — list view if records, form if not
+  if (typeof goToIncident === 'function') goToIncident();
+  else goTo('screen-incident');
+}
 
 // ────────────────────────────────────────────
 // PERMISSIONS ONBOARDING
@@ -17579,7 +17612,7 @@ function handleIncidentPhoto(idx, e) {
         const next = document.getElementById('inc-slot-' + (idx + 1));
         if (next) {
           next.style.display = 'flex';
-          next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="font-size:13px;font-weight:600;color:var(--muted)">Add another photo</span>`;
+          next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="font-size:14px;font-weight:600;color:var(--muted)">Add another photo</span><span style="font-size:11px;color:var(--muted)">Tap to take or upload</span>`;
         }
       }
     };
@@ -17597,9 +17630,9 @@ function resetIncidentPhotos() {
       slot.style.display = 'flex';
       slot.style.background = '#FAFCF9';
       slot.style.border = '1.5px dashed var(--border)';
-      slot.style.padding = '24px';
-      slot.style.minHeight = '90px';
-      slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="font-size:13px;font-weight:600;color:var(--muted)">Add photo</span>`;
+      slot.style.padding = '36px 24px';
+      slot.style.minHeight = '140px';
+      slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="font-size:14px;font-weight:600;color:var(--muted)">Add photo</span><span style="font-size:11px;color:var(--muted)">Tap to take or upload a photo</span>`;
     } else {
       slot.style.display = 'none';
       slot.innerHTML = '';
@@ -17774,18 +17807,20 @@ function setIncRole(role) {
     b.className = 'ps-btn' + (id === map[role] ? ' pass' : '');
     b.style = '';
   });
-  // Auto-fill name + company if the reporter IS the injured person
+  // Auto-fill name + company. When toggling TO Person Involved, the report is
+  // about the user themselves — overwrite whatever's in the boxes (a witness
+  // name typed in error, etc). When toggling AWAY, clear the boxes if they
+  // currently hold the user's profile (so they get a clean field for typing
+  // the actual involved person's name).
   const nameEl    = document.getElementById('inc-person-name');
   const companyEl = document.getElementById('inc-person-company');
   const helperEl  = document.getElementById('inc-name-helper');
   const p = (typeof getProfile === 'function') ? getProfile() : null;
   if (role === 'Person Involved / Injured') {
-    if (nameEl && !nameEl.value.trim() && p && p.name) nameEl.value = p.name;
-    if (companyEl && !companyEl.value.trim() && p && p.company) companyEl.value = p.company;
-    if (helperEl) helperEl.textContent = '(auto-filled — change if needed)';
+    if (nameEl && p && p.name) nameEl.value = p.name;
+    if (companyEl && p && p.company) companyEl.value = p.company;
+    if (helperEl) helperEl.textContent = '(auto-filled \u2014 you can change it if needed)';
   } else {
-    // For Witness / Circumstantial / On behalf — clear if it was auto-filled
-    // We can't know if the user typed it, so only clear if it matches profile.
     if (nameEl && p && p.name && nameEl.value.trim() === p.name) nameEl.value = '';
     if (companyEl && p && p.company && companyEl.value.trim() === p.company) companyEl.value = '';
     if (helperEl) helperEl.textContent = '(name of the person who was involved or injured)';
