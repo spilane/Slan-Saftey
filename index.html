@@ -1779,11 +1779,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div class="fgroup">
             <label class="flabel">Date of incident <span class="req">*</span></label>
-            <input type="date" id="inc-date" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text)">
+            <input type="date" id="inc-date" oninput="incRecheckSubmit()" onchange="incRecheckSubmit()" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text)">
           </div>
           <div class="fgroup">
             <label class="flabel">Time of incident <span class="req">*</span></label>
-            <input type="time" id="inc-time" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;color:var(--text)">
+            <input type="time" id="inc-time" oninput="incRecheckSubmit()" onchange="incRecheckSubmit()" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none;color:var(--text)">
           </div>
         </div>
         <div class="fgroup">
@@ -1835,7 +1835,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-body">
         <div class="fgroup">
           <label class="flabel">Work activity at the time <span class="req">*</span></label>
-          <input type="text" id="inc-activity" placeholder="e.g. Formwork stripping, concrete pour, scaffold erection" autocomplete="off">
+          <input type="text" id="inc-activity" placeholder="e.g. Formwork stripping, concrete pour, scaffold erection" autocomplete="off" oninput="incRecheckSubmit()">
         </div>
         <div class="fgroup">
           <label class="flabel">Briefing / documents received before the task</label>
@@ -17774,20 +17774,35 @@ function setIncSev(sev) {
 // Re-evaluates required fields and toggles the submit button state.
 // Required: type, severity, location, description, role-in-event.
 // Called from every required setter and from the keyup handler on text fields.
+// Re-evaluates required fields and toggles the submit button state.
+// Required fields (must match every label marked with <span class="req">*</span>):
+//   Section 1: Type, Severity, Date, Time, Location
+//   Section 2: Role in event, Supervisor present
+//   Section 3: Work activity at the time
+//   Section 4: Description
+// Called from every required setter and from oninput on text fields.
 function incRecheckSubmit() {
   const btn  = document.getElementById('inc-submit-btn');
   const hint = document.getElementById('inc-submit-hint');
   if (!btn) return;
   const type     = document.getElementById('inc-type');
   const role     = document.getElementById('inc-role-in-event');
+  const date     = document.getElementById('inc-date');
+  const time     = document.getElementById('inc-time');
   const location = document.getElementById('inc-location');
+  const activity = document.getElementById('inc-activity');
   const desc     = document.getElementById('inc-description');
+  const v = el => (el && el.value && String(el.value).trim());
   const ok =
-    !!(type && type.value) &&
+    !!v(type) &&
     !!incSeverity &&
-    !!(location && location.value && location.value.trim()) &&
-    !!(desc && desc.value && desc.value.trim()) &&
-    !!(role && role.value);
+    !!v(date) &&
+    !!v(time) &&
+    !!v(location) &&
+    !!v(role) &&
+    !!incFields.sup &&
+    !!v(activity) &&
+    !!v(desc);
   if (ok) {
     btn.disabled = false;
     btn.style.setProperty('background', '#1B6E3A', 'important');
@@ -17820,6 +17835,7 @@ function setIncField(field, val) {
     if (warning) warning.style.display = (val === 'yes')   ? 'block' : 'none';
     if (advice)  advice.style.display  = (val === 'unsure') ? 'block' : 'none';
   }
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
 }
 
 // Type-of-report selector (replaces dropdown). Sets hidden input value and
@@ -18191,11 +18207,16 @@ function goToIncidentDetail(ref) {
 
 async function submitIncident() {
   const p = getProfile();
+  // Validate every required (*) field. Should match incRecheckSubmit() exactly.
   if (!document.getElementById('inc-type').value) { slanAlert('Please select the type of report you\'re submitting.'); return; }
   if (!incSeverity) { slanAlert('Please select the severity level before submitting the report.'); return; }
+  if (!document.getElementById('inc-date').value)  { slanAlert('Please enter the date of the incident before submitting.'); return; }
+  if (!document.getElementById('inc-time').value)  { slanAlert('Please enter the time of the incident before submitting.'); return; }
   if (!document.getElementById('inc-location').value.trim()) { slanAlert('Please enter where on site this happened before submitting.'); return; }
-  if (!document.getElementById('inc-description').value.trim()) { slanAlert('Please describe what happened before submitting the report.'); return; }
   if (!document.getElementById('inc-role-in-event').value) { slanAlert('Please select your role in the event before submitting.'); return; }
+  if (!incFields.sup) { slanAlert('Please indicate whether a supervisor was present before submitting.'); return; }
+  if (!document.getElementById('inc-activity').value.trim()) { slanAlert('Please enter the work activity at the time before submitting.'); return; }
+  if (!document.getElementById('inc-description').value.trim()) { slanAlert('Please describe what happened before submitting the report.'); return; }
 
   const now = new Date();
   const ref = 'INC-'+now.getFullYear().toString().slice(-2)+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+Math.random().toString(36).slice(-4).toUpperCase();
