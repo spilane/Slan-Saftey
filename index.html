@@ -10598,7 +10598,7 @@ function myProfRedraw() {
 }
 
 function myProfSignOut() {
-  slanConfirm('Sign out of the app? Your profile will be cleared.').then(function(_ok){
+  slanConfirm('Sign out of the Sl\u00e1n Safety app?\n\nYour profile will be cleared from this device. You will need to sign in again next time.').then(function(_ok){
     if (!_ok) return;
 
   try {
@@ -10632,7 +10632,7 @@ function myProfRefreshTfbToggle() {
 }
 
 function myProfResetDemo() {
-  slanConfirm('Reset the demo? This clears profile, permissions, PIN session and all permits/data.\n\nThis is intended for demo testing only.').then(function(_ok){
+  slanConfirm('Reset all demo data?\n\nThis will clear your profile, permissions, PIN session, all permits, all toolbox records and any other locally stored data. The app will reload with a fresh build.\n\nThis is intended for demo testing only.').then(function(_ok){
     if (!_ok) return;
 
   try {
@@ -11079,9 +11079,9 @@ async function awardAutoPoints(type, workerName, workerCompany) {
 
 async function submitStarAward() {
   const worker = document.getElementById('sup-award-worker').value;
-  if (!worker)         { slanAlert('Please select a worker.'); return; }
-  if (!supAwardReason) { slanAlert('Please select a reason.'); return; }
-  if (!supAwardPts)    { slanAlert('Please select points to award.'); return; }
+  if (!worker)         { slanAlert('Please select a worker before awarding a star.'); return; }
+  if (!supAwardReason) { slanAlert('Please select a reason for the award before submitting.'); return; }
+  if (!supAwardPts)    { slanAlert('Please select how many points to award before submitting.'); return; }
 
   const p   = getProfile();
   const now = new Date();
@@ -11174,7 +11174,7 @@ async function viewSitePreStart() {
       .where('date','==',today)
       .where('is_site_prestart','==',true)
       .limit(1).get();
-    if (snap.empty) { slanAlert('No site pre-start has been submitted today yet. Check with your supervisor.'); return; }
+    if (snap.empty) { slanAlert('No site pre-start has been completed yet today. Check with your supervisor before starting work.'); return; }
     const sps = snap.docs[0].data();
 
     // Build a simple modal overlay
@@ -11213,9 +11213,9 @@ function submitVisitorSignIn() {
   const name    = document.getElementById('vis-name').value.trim();
   const company = document.getElementById('vis-company').value.trim();
   const reason  = document.getElementById('vis-reason').value;
-  if (!name)    { slanAlert('Please enter the visitor\'s name.'); return; }
-  if (!company) { slanAlert('Please enter their company.'); return; }
-  if (!reason)  { slanAlert('Please select a reason for visit.'); return; }
+  if (!name)    { slanAlert('Please enter the visitor\'s full name before signing them in.'); return; }
+  if (!company) { slanAlert('Please enter the visitor\'s company before signing them in.'); return; }
+  if (!reason)  { slanAlert('Please select a reason for the visit before signing the visitor in.'); return; }
 
   const p   = getProfile();
   const now = new Date();
@@ -11847,9 +11847,9 @@ function submitVisitorSignIn2() {
   const name    = document.getElementById('vis2-name').value.trim();
   const company = document.getElementById('vis2-company').value.trim();
   const reason  = document.getElementById('vis2-reason').value;
-  if (!name)   { slanAlert('Please enter the visitor\'s name.'); return; }
-  if (!company){ slanAlert('Please enter their company.'); return; }
-  if (!reason) { slanAlert('Please select a reason for visit.'); return; }
+  if (!name)   { slanAlert('Please enter the visitor\'s full name before signing them in.'); return; }
+  if (!company){ slanAlert('Please enter the visitor\'s company before signing them in.'); return; }
+  if (!reason) { slanAlert('Please select a reason for the visit before signing the visitor in.'); return; }
   const p   = getProfile();
   const now = new Date();
   const ref = 'VIS-'+now.getFullYear().toString().slice(-2)+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+Math.random().toString(36).slice(-4).toUpperCase();
@@ -11920,9 +11920,9 @@ function selectAwardPts2(el,val) {
 
 async function submitStarAward2() {
   const worker=document.getElementById('award2-worker').value;
-  if(!worker){slanAlert('Please select a worker.');return;}
-  if(!award2Reason){slanAlert('Please select a reason.');return;}
-  if(!award2Pts){slanAlert('Please select points.');return;}
+  if(!worker){slanAlert('Please select a worker before awarding a star.');return;}
+  if(!award2Reason){slanAlert('Please select a reason for the award before submitting.');return;}
+  if(!award2Pts){slanAlert('Please select how many points to award before submitting.');return;}
   const p=getProfile(); const now=new Date();
   const month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const note=document.getElementById('award2-note').value.trim();
@@ -12646,7 +12646,7 @@ function checkSpsComplete() {
 
 async function submitSitePreStart() {
   const p = getProfile();
-  if (!p.sig) { slanAlert('No saved signature.'); return; }
+  if (!p.sig) { slanAlert('No saved signature on file. Open Profile and add your signature before continuing.'); return; }
   const allItems = [...SITE_CHECKLIST.site, ...SITE_CHECKLIST.plant, ...SITE_CHECKLIST.docs];
   const critFail = allItems.filter(i => i.c && spsResults[i.id]==='fail');
   const anyFail  = allItems.filter(i => spsResults[i.id]==='fail');
@@ -13034,10 +13034,10 @@ function saveProfile(){
   const co=document.getElementById('p-company').value.trim();
   const ro=document.getElementById('p-role').value;
   const wc='';
-  if(!n){slanAlert('Please enter your full name.');return;}
-  if(!co){slanAlert('Please enter your company.');return;}
-  if(!ro){slanAlert('Please select your role.');return;}
-  if(!hasSig){slanAlert('Please draw your signature.');return;}
+  if(!n){slanAlert('Please enter your full name before continuing.');return;}
+  if(!co){slanAlert('Please enter your company before continuing.');return;}
+  if(!ro){slanAlert('Please select your role on site before continuing.');return;}
+  if(!hasSig){slanAlert('Please draw your signature in the box before saving your profile.');return;}
   const prof={
     name:n, company:co, role:ro, whitecard:document.getElementById('p-whitecard').value.trim(),
     sig:getSigDataUrl(), photo:window._pendingPhoto||localStorage.getItem('slan_pending_photo')||null,
@@ -14681,7 +14681,7 @@ function hwSubmitCloseout() {
   }
   // Offer to download PDF after closeout
   setTimeout(function() {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { hwDownloadPermitPDF(_hwCloseoutPermit && _hwCloseoutPermit.permit_id); } catch(e) { console.error(e); }
@@ -15757,7 +15757,7 @@ function hwSupOpenReview(permitId) {
 
 function hwSupCloseHandoverPermit() {
   if (!_hwSupCurrentPermit) return;
-  slanConfirm('Confirm fire watch is complete and permit can be closed?\n\nPermit: ' + _hwSupCurrentPermit.permit_id).then(function(_ok){
+  slanConfirm('Confirm the fire watch is complete and the permit can be closed?\n\nPermit: ' + _hwSupCurrentPermit.permit_id).then(function(_ok){
     if (!_ok) return;
 
   const sup = (getProfile() || {}).name || 'Supervisor';
@@ -15785,7 +15785,7 @@ function hwSupAcceptHandover() {
   if (!_hwSupCurrentPermit) return;
   const ho = _hwSupCurrentPermit.fire_watch_handover;
   if (!ho) return;
-  slanConfirm('Accept handover of fire watch for permit ' + _hwSupCurrentPermit.permit_id + '?\n\nBy accepting, you confirm you are physically near the work area and will monitor it until the watch is complete and the area is safe.').then(function(_ok){
+  slanConfirm('Accept handover of fire watch responsibility for permit ' + _hwSupCurrentPermit.permit_id + '?\n\nBy accepting, you confirm you are physically near the work area and will monitor it until the watch is complete and the area is safe.').then(function(_ok){
     if (!_ok) return;
 
   const sup = (getProfile() || {}).name || 'Supervisor';
@@ -16255,10 +16255,10 @@ function handlePhotoUpload(e) {
       const btn = document.querySelector('.photo-upload-btn');
       if (btn) { btn.textContent = 'Photo saved ✓'; btn.style.color = '#1B6E3A'; setTimeout(function(){ btn.textContent = 'Retake or change photo'; btn.style.color=''; }, 2500); }
     };
-    img.onerror = () => slanAlert('Could not load image. Please try again.');
+    img.onerror = () => slanAlert('Could not load that image \u2014 the file may be corrupted. Please try a different photo.');
     img.src = ev.target.result;
   };
-  reader.onerror = () => slanAlert('Could not read file. Please try again.');
+  reader.onerror = () => slanAlert('Could not read that file \u2014 the file may be corrupted. Please try a different photo.');
   reader.readAsDataURL(file);
 }
 
@@ -17426,11 +17426,11 @@ function toggleIncBriefing(item) {
 
 async function submitIncident() {
   const p = getProfile();
-  if (!document.getElementById('inc-type').value) { slanAlert('Please select the type of report.'); return; }
-  if (!incSeverity) { slanAlert('Please select the severity.'); return; }
-  if (!document.getElementById('inc-location').value.trim()) { slanAlert('Please enter the location on site.'); return; }
-  if (!document.getElementById('inc-description').value.trim()) { slanAlert('Please describe what happened.'); return; }
-  if (!document.getElementById('inc-role-in-event').value) { slanAlert('Please select your role in the event.'); return; }
+  if (!document.getElementById('inc-type').value) { slanAlert('Please select the type of report you\'re submitting.'); return; }
+  if (!incSeverity) { slanAlert('Please select the severity level before submitting the report.'); return; }
+  if (!document.getElementById('inc-location').value.trim()) { slanAlert('Please enter where on site this happened before submitting.'); return; }
+  if (!document.getElementById('inc-description').value.trim()) { slanAlert('Please describe what happened before submitting the report.'); return; }
+  if (!document.getElementById('inc-role-in-event').value) { slanAlert('Please select your role in the event before submitting.'); return; }
 
   const now = new Date();
   const ref = 'INC-'+now.getFullYear().toString().slice(-2)+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+Math.random().toString(36).slice(-4).toUpperCase();
@@ -17545,8 +17545,8 @@ function togglePsyAnon() {
 }
 
 async function submitPsychosocial() {
-  if (!document.getElementById('psy-type').value) { slanAlert('Please select the type of concern.'); return; }
-  if (!document.getElementById('psy-description').value.trim()) { slanAlert('Please describe your concern.'); return; }
+  if (!document.getElementById('psy-type').value) { slanAlert('Please select the type of concern before submitting.'); return; }
+  if (!document.getElementById('psy-description').value.trim()) { slanAlert('Please describe your concern in the text box before submitting.'); return; }
 
   const p   = getProfile();
   const now = new Date();
@@ -17726,11 +17726,11 @@ function toggleIncBrief(key) {
 
 function submitIncident() {
   const p = getProfile();
-  if (!document.getElementById('inc-type').value) { slanAlert('Please select the type of report.'); return; }
-  if (!incSeverity) { slanAlert('Please select severity.'); return; }
-  if (!document.getElementById('inc-location').value.trim()) { slanAlert('Please enter the location.'); return; }
-  if (!document.getElementById('inc-desc').value.trim()) { slanAlert('Please describe what happened.'); return; }
-  if (!document.getElementById('inc-action').value.trim()) { slanAlert('Please describe the immediate action taken.'); return; }
+  if (!document.getElementById('inc-type').value) { slanAlert('Please select the type of report you\'re submitting.'); return; }
+  if (!incSeverity) { slanAlert('Please select the severity level before submitting the report.'); return; }
+  if (!document.getElementById('inc-location').value.trim()) { slanAlert('Please enter where on site this happened before submitting.'); return; }
+  if (!document.getElementById('inc-desc').value.trim()) { slanAlert('Please describe what happened before submitting the report.'); return; }
+  if (!document.getElementById('inc-action').value.trim()) { slanAlert('Please describe what immediate action was taken before submitting.'); return; }
 
   const now = new Date();
   const ref = 'INC-'+now.getFullYear().toString().slice(-2)+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+Math.random().toString(36).slice(-4).toUpperCase();
@@ -17809,8 +17809,8 @@ function togglePsyAnon() {
 
 function submitPsychosocial() {
   const p = getProfile();
-  if (!document.getElementById('psy-type').value) { slanAlert('Please select the type of concern.'); return; }
-  if (!document.getElementById('psy-desc').value.trim()) { slanAlert('Please describe your concern.'); return; }
+  if (!document.getElementById('psy-type').value) { slanAlert('Please select the type of concern before submitting.'); return; }
+  if (!document.getElementById('psy-desc').value.trim()) { slanAlert('Please describe your concern in the text box before submitting.'); return; }
 
   const now = new Date();
   const ref = 'PSY-'+now.getFullYear().toString().slice(-2)+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+Math.random().toString(36).slice(-4).toUpperCase();
@@ -18273,7 +18273,7 @@ function updatePsOutcome() {
 
 function submitPreStart() {
   const p = getProfile();
-  if (!p.sig) { slanAlert('No saved signature. Please go to Profile and add your signature.'); return; }
+  if (!p.sig) { slanAlert('No saved signature on file. Open Profile and add your signature before continuing.'); return; }
 
   const items    = CHECKLISTS[psEquipType] || CHECKLISTS.other;
   const anyFail  = items.filter(i => psResults[i.id]?.result==='fail');
@@ -18803,7 +18803,7 @@ async function submitWAH() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!wahValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!wahValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -18848,7 +18848,7 @@ async function submitWAH() {
     list.push(permit);
     const result = wahSaveAll(list);
     if (!result.ok) {
-      slanAlert('Could not save permit. Storage may be full. Try removing photos or clearing old permits.');
+      slanAlert('Could not save the permit. Your device storage may be full. Try removing photos or older permits and try again.');
       reset();
       return;
     }
@@ -18913,7 +18913,7 @@ function wahStatusBadge(status, p) {
 
 function wahViewPermit(permitId) {
   const p = wahLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   const body = document.getElementById('wah-view-body');
   if (!body) return;
 
@@ -19008,7 +19008,7 @@ let _wahSupCurrentPermit = null;
 
 function wahSupOpenReview(permitId) {
   const p = wahLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _wahSupCurrentPermit = p;
 
   // Reset action panels
@@ -19248,7 +19248,7 @@ let _wahAckedSet = null;
 
 function wahOpenAckConditions(permitId) {
   const p = wahLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) {
     slanToast('No conditions to acknowledge for this permit.', 'error');
     return;
@@ -19302,7 +19302,7 @@ function wahSubmitAck() {
   if (!_wahAckPermit) return;
   const all = wahLoadAll();
   const idx = all.findIndex(x => x.permit_id === _wahAckPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].conditions_acknowledged = true;
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
@@ -19330,7 +19330,7 @@ let _wahFromGate = false;
 function wahOpenCloseout(permitId, fromGate) {
   _wahFromGate = !!fromGate;
   const p = wahLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _wahCloseoutPermit = p;
   _wahCloseoutTicks = {};
 
@@ -19405,7 +19405,7 @@ function wahSubmitCloseout() {
   // NOT when they're rushing through the sign-out gate closing several permits.
   // The PDF is always available later from the permit view anyway.
   if (!_wahFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { wahDownloadPermitPDF(_wahCloseoutPermit && _wahCloseoutPermit.permit_id); } catch(e) { console.error(e); }
@@ -19607,7 +19607,7 @@ function wahViewRescueTemplate() {
     window.open(url, '_blank');
   } catch(err) {
     console.error('Rescue plan template error:', err);
-    slanToast('Could not open rescue plan template. Please try again.', 'error');
+    slanToast('Could not open the rescue plan template. Please try again in a moment.', 'error');
   }
 }
 
@@ -19788,7 +19788,7 @@ function csViewRescueTemplate() {
     window.open(url, '_blank');
   } catch(err) {
     console.error('CS rescue plan template error:', err);
-    slanToast('Could not open rescue plan template. Please try again.', 'error');
+    slanToast('Could not open the rescue plan template. Please try again in a moment.', 'error');
   }
 }
 
@@ -20217,7 +20217,7 @@ async function submitExc() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!excValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!excValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -20272,7 +20272,7 @@ async function submitExc() {
     list.push(permit);
     const result = excSaveAll(list);
     if (!result.ok) {
-      slanAlert('Could not save permit. Storage may be full.');
+      slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.');
       reset();
       return;
     }
@@ -20349,7 +20349,7 @@ function excStatusBadge(status, p) {
 
 function excViewPermit(permitId) {
   const p = excLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   // If conditions need ack, route to ack screen
   if (p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
     excOpenAckConditions(permitId);
@@ -20444,7 +20444,7 @@ let _excSupCurrentPermit = null;
 
 function excSupOpenReview(permitId) {
   const p = excLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _excSupCurrentPermit = p;
 
   document.getElementById('sup-exc-review-actions').style.display = 'none';
@@ -20564,7 +20564,7 @@ function excSupApprove() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = excLoadAll();
   const idx = all.findIndex(x => x.permit_id === _excSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved';
   all[idx].approved_by = supName;
   all[idx].approved_at = new Date().toISOString();
@@ -20611,7 +20611,7 @@ function excSupApproveWithConditions() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = excLoadAll();
   const idx = all.findIndex(x => x.permit_id === _excSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved';
   all[idx].approved_by = supName;
   all[idx].approved_at = new Date().toISOString();
@@ -20640,7 +20640,7 @@ function excSupReject() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = excLoadAll();
   const idx = all.findIndex(x => x.permit_id === _excSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'rejected';
   all[idx].rejected_by = supName;
   all[idx].rejected_at = new Date().toISOString();
@@ -20664,7 +20664,7 @@ let _excAckedSet = null;
 
 function excOpenAckConditions(permitId) {
   const p = excLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) {
     slanToast('No conditions to acknowledge.', 'error');
     return;
@@ -20718,7 +20718,7 @@ function excSubmitAck() {
   if (!_excAckPermit) return;
   const all = excLoadAll();
   const idx = all.findIndex(x => x.permit_id === _excAckPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].conditions_acknowledged = true;
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
@@ -20741,7 +20741,7 @@ let _excFromGate = false;
 function excOpenCloseout(permitId, fromGate) {
   _excFromGate = !!fromGate;
   const p = excLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _excCloseoutPermit = p;
   _excCloseoutTicks = {};
 
@@ -20792,7 +20792,7 @@ function excSubmitCloseout() {
   const comments = (document.getElementById('exc-closeout-comments').value || '').trim();
   const all = excLoadAll();
   const idx = all.findIndex(x => x.permit_id === _excCloseoutPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'closed';
   all[idx].closed_at = new Date().toISOString();
   all[idx].closed_by = (getProfile() || {}).name || 'Worker';
@@ -20804,7 +20804,7 @@ function excSubmitCloseout() {
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
 
   if (!_excFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { excDownloadPermitPDF(_excCloseoutPermit.permit_id); } catch(e) { console.error(e); }
@@ -20984,7 +20984,7 @@ function excViewRescueTemplate() {
     window.open(url, '_blank');
   } catch(err) {
     console.error('EXC rescue plan template error:', err);
-    slanToast('Could not open rescue plan template. Please try again.', 'error');
+    slanToast('Could not open the rescue plan template. Please try again in a moment.', 'error');
   }
 }
 
@@ -21244,7 +21244,7 @@ async function submitDemo() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!demoValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!demoValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -21291,7 +21291,7 @@ async function submitDemo() {
     const list = demoLoadAll();
     list.push(permit);
     const result = demoSaveAll(list);
-    if (!result.ok) { slanAlert('Could not save permit. Storage may be full.'); reset(); return; }
+    if (!result.ok) { slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.'); reset(); return; }
 
     document.getElementById('demo-success-id').textContent = permit.permit_id;
     document.getElementById('demo-success-sub').textContent = permit.subtype || 'Demolition';
@@ -21357,7 +21357,7 @@ function demoStatusBadge(status, p) {
 
 function demoViewPermit(permitId) {
   const p = demoLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
     demoOpenAckConditions(permitId);
     return;
@@ -21432,7 +21432,7 @@ let _demoSupCurrentPermit = null;
 
 function demoSupOpenReview(permitId) {
   const p = demoLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _demoSupCurrentPermit = p;
 
   document.getElementById('sup-demo-review-actions').style.display = 'none';
@@ -21519,7 +21519,7 @@ function demoSupApprove() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = demoLoadAll();
   const idx = all.findIndex(x => x.permit_id === _demoSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   demoSaveAll(all);
   slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
@@ -21556,7 +21556,7 @@ function demoSupApproveWithConditions() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = demoLoadAll();
   const idx = all.findIndex(x => x.permit_id === _demoSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
@@ -21581,7 +21581,7 @@ function demoSupReject() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = demoLoadAll();
   const idx = all.findIndex(x => x.permit_id === _demoSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   demoSaveAll(all);
@@ -21601,7 +21601,7 @@ let _demoAckedSet = null;
 
 function demoOpenAckConditions(permitId) {
   const p = demoLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) { slanToast('No conditions to acknowledge.', 'error'); return; }
   _demoAckPermit = p; _demoAckedSet = new Set();
   document.getElementById('demo-ack-permit-info').innerHTML = 'Your supervisor approved permit <strong>' + p.permit_id + '</strong> with conditions. Acknowledge each before work commences.';
@@ -21638,7 +21638,7 @@ function demoSubmitAck() {
   if (!_demoAckPermit) return;
   const all = demoLoadAll();
   const idx = all.findIndex(x => x.permit_id === _demoAckPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].conditions_acknowledged = true;
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
@@ -21657,7 +21657,7 @@ let _demoFromGate = false;
 function demoOpenCloseout(permitId, fromGate) {
   _demoFromGate = !!fromGate;
   const p = demoLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _demoCloseoutPermit = p; _demoCloseoutTicks = {};
   const info = document.getElementById('demo-closeout-info');
   if (info) info.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:12.5px;font-weight:700;color:var(--text)">' + p.permit_id + '</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">' + (p.subtype || 'Demolition') + ' · ' + (p.location || '') + '</div>';
@@ -21694,7 +21694,7 @@ function demoSubmitCloseout() {
   const comments = (document.getElementById('demo-closeout-comments').value || '').trim();
   const all = demoLoadAll();
   const idx = all.findIndex(x => x.permit_id === _demoCloseoutPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'closed';
   all[idx].closed_at = new Date().toISOString();
   all[idx].closed_by = (getProfile() || {}).name || 'Worker';
@@ -21704,7 +21704,7 @@ function demoSubmitCloseout() {
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   if (!_demoFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { demoDownloadPermitPDF(_demoCloseoutPermit.permit_id); } catch(e) { console.error(e); }
@@ -22123,7 +22123,7 @@ async function submitLift() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!liftValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!liftValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -22175,7 +22175,7 @@ async function submitLift() {
     const list = liftLoadAll();
     list.push(permit);
     const result = liftSaveAll(list);
-    if (!result.ok) { slanAlert('Could not save permit. Storage may be full.'); reset(); return; }
+    if (!result.ok) { slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.'); reset(); return; }
 
     document.getElementById('lift-success-id').textContent = permit.permit_id;
     document.getElementById('lift-success-sub').textContent = permit.subtype || 'Lifting / Crane';
@@ -22241,7 +22241,7 @@ function liftStatusBadge(status, p) {
 
 function liftViewPermit(permitId) {
   const p = liftLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
     liftOpenAckConditions(permitId);
     return;
@@ -22320,7 +22320,7 @@ let _liftSupCurrentPermit = null;
 
 function liftSupOpenReview(permitId) {
   const p = liftLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _liftSupCurrentPermit = p;
 
   document.getElementById('sup-lift-review-actions').style.display = 'none';
@@ -22422,7 +22422,7 @@ function liftSupApprove() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = liftLoadAll();
   const idx = all.findIndex(x => x.permit_id === _liftSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   liftSaveAll(all);
   slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
@@ -22459,7 +22459,7 @@ function liftSupApproveWithConditions() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = liftLoadAll();
   const idx = all.findIndex(x => x.permit_id === _liftSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
@@ -22484,7 +22484,7 @@ function liftSupReject() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = liftLoadAll();
   const idx = all.findIndex(x => x.permit_id === _liftSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   liftSaveAll(all);
@@ -22504,7 +22504,7 @@ let _liftAckedSet = null;
 
 function liftOpenAckConditions(permitId) {
   const p = liftLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) { slanToast('No conditions to acknowledge.', 'error'); return; }
   _liftAckPermit = p; _liftAckedSet = new Set();
   document.getElementById('lift-ack-permit-info').innerHTML = 'Your supervisor approved permit <strong>' + p.permit_id + '</strong> with conditions. Acknowledge each before work commences.';
@@ -22541,7 +22541,7 @@ function liftSubmitAck() {
   if (!_liftAckPermit) return;
   const all = liftLoadAll();
   const idx = all.findIndex(x => x.permit_id === _liftAckPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].conditions_acknowledged = true;
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
@@ -22560,7 +22560,7 @@ let _liftFromGate = false;
 function liftOpenCloseout(permitId, fromGate) {
   _liftFromGate = !!fromGate;
   const p = liftLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _liftCloseoutPermit = p; _liftCloseoutTicks = {};
   const info = document.getElementById('lift-closeout-info');
   if (info) info.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:12.5px;font-weight:700;color:var(--text)">' + p.permit_id + '</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">' + (p.subtype || 'Lifting / Crane') + ' · ' + (p.location || '') + '</div>';
@@ -22597,7 +22597,7 @@ function liftSubmitCloseout() {
   const comments = (document.getElementById('lift-closeout-comments').value || '').trim();
   const all = liftLoadAll();
   const idx = all.findIndex(x => x.permit_id === _liftCloseoutPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'closed';
   all[idx].closed_at = new Date().toISOString();
   all[idx].closed_by = (getProfile() || {}).name || 'Worker';
@@ -22607,7 +22607,7 @@ function liftSubmitCloseout() {
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   if (!_liftFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { liftDownloadPermitPDF(_liftCloseoutPermit.permit_id); } catch(e) { console.error(e); }
@@ -22895,7 +22895,7 @@ async function submitConc() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!concValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!concValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -22946,7 +22946,7 @@ async function submitConc() {
     const list = concLoadAll();
     list.push(permit);
     const result = concSaveAll(list);
-    if (!result.ok) { slanAlert('Could not save permit. Storage may be full.'); reset(); return; }
+    if (!result.ok) { slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.'); reset(); return; }
 
     document.getElementById('conc-success-id').textContent = permit.permit_id;
     document.getElementById('conc-success-sub').textContent = permit.subtype || 'Concrete Pour';
@@ -23012,7 +23012,7 @@ function concStatusBadge(status, p) {
 
 function concViewPermit(permitId) {
   const p = concLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
     concOpenAckConditions(permitId);
     return;
@@ -23088,7 +23088,7 @@ let _concSupCurrentPermit = null;
 
 function concSupOpenReview(permitId) {
   const p = concLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _concSupCurrentPermit = p;
 
   document.getElementById('sup-conc-review-actions').style.display = 'none';
@@ -23184,7 +23184,7 @@ function concSupApprove() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = concLoadAll();
   const idx = all.findIndex(x => x.permit_id === _concSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   concSaveAll(all);
   slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
@@ -23221,7 +23221,7 @@ function concSupApproveWithConditions() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = concLoadAll();
   const idx = all.findIndex(x => x.permit_id === _concSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
@@ -23246,7 +23246,7 @@ function concSupReject() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = concLoadAll();
   const idx = all.findIndex(x => x.permit_id === _concSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   concSaveAll(all);
@@ -23266,7 +23266,7 @@ let _concAckedSet = null;
 
 function concOpenAckConditions(permitId) {
   const p = concLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) { slanToast('No conditions to acknowledge.', 'error'); return; }
   _concAckPermit = p; _concAckedSet = new Set();
   document.getElementById('conc-ack-permit-info').innerHTML = 'Your supervisor approved permit <strong>' + p.permit_id + '</strong> with conditions. Acknowledge each before work commences.';
@@ -23303,7 +23303,7 @@ function concSubmitAck() {
   if (!_concAckPermit) return;
   const all = concLoadAll();
   const idx = all.findIndex(x => x.permit_id === _concAckPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].conditions_acknowledged = true;
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
@@ -23322,7 +23322,7 @@ let _concFromGate = false;
 function concOpenCloseout(permitId, fromGate) {
   _concFromGate = !!fromGate;
   const p = concLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _concCloseoutPermit = p; _concCloseoutTicks = {};
   const info = document.getElementById('conc-closeout-info');
   if (info) info.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:12.5px;font-weight:700;color:var(--text)">' + p.permit_id + '</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">' + (p.subtype || 'Concrete Pour') + ' · ' + (p.location || '') + '</div>';
@@ -23359,7 +23359,7 @@ function concSubmitCloseout() {
   const comments = (document.getElementById('conc-closeout-comments').value || '').trim();
   const all = concLoadAll();
   const idx = all.findIndex(x => x.permit_id === _concCloseoutPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'closed';
   all[idx].closed_at = new Date().toISOString();
   all[idx].closed_by = (getProfile() || {}).name || 'Worker';
@@ -23369,7 +23369,7 @@ function concSubmitCloseout() {
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   if (!_concFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { concDownloadPermitPDF(_concCloseoutPermit.permit_id); } catch(e) { console.error(e); }
@@ -23655,7 +23655,7 @@ async function submitPen() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!penValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!penValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -23707,7 +23707,7 @@ async function submitPen() {
     const list = penLoadAll();
     list.push(permit);
     const result = penSaveAll(list);
-    if (!result.ok) { slanAlert('Could not save permit. Storage may be full.'); reset(); return; }
+    if (!result.ok) { slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.'); reset(); return; }
 
     document.getElementById('pen-success-id').textContent = permit.permit_id;
     document.getElementById('pen-success-sub').textContent = permit.subtype || 'Penetration';
@@ -23773,7 +23773,7 @@ function penStatusBadge(status, p) {
 
 function penViewPermit(permitId) {
   const p = penLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
     penOpenAckConditions(permitId);
     return;
@@ -23850,7 +23850,7 @@ let _penSupCurrentPermit = null;
 
 function penSupOpenReview(permitId) {
   const p = penLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _penSupCurrentPermit = p;
 
   document.getElementById('sup-pen-review-actions').style.display = 'none';
@@ -23947,7 +23947,7 @@ function penSupApprove() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = penLoadAll();
   const idx = all.findIndex(x => x.permit_id === _penSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   penSaveAll(all);
   slanToast('Permit ' + all[idx].permit_id + ' approved', 'success');
@@ -23984,7 +23984,7 @@ function penSupApproveWithConditions() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = penLoadAll();
   const idx = all.findIndex(x => x.permit_id === _penSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'approved'; all[idx].approved_by = supName; all[idx].approved_at = new Date().toISOString();
   all[idx].approval_conditions = conditions.join('\n'); all[idx].approval_conditions_list = conditions;
   all[idx].conditions_acknowledged = false;
@@ -24009,7 +24009,7 @@ function penSupReject() {
   const supName = (getProfile() || {}).name || 'Supervisor';
   const all = penLoadAll();
   const idx = all.findIndex(x => x.permit_id === _penSupCurrentPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'rejected'; all[idx].rejected_by = supName; all[idx].rejected_at = new Date().toISOString();
   all[idx].reject_reason = reason;
   penSaveAll(all);
@@ -24029,7 +24029,7 @@ let _penAckedSet = null;
 
 function penOpenAckConditions(permitId) {
   const p = penLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) { slanToast('No conditions to acknowledge.', 'error'); return; }
   _penAckPermit = p; _penAckedSet = new Set();
   document.getElementById('pen-ack-permit-info').innerHTML = 'Your supervisor approved permit <strong>' + p.permit_id + '</strong> with conditions. Acknowledge each before work commences.';
@@ -24066,7 +24066,7 @@ function penSubmitAck() {
   if (!_penAckPermit) return;
   const all = penLoadAll();
   const idx = all.findIndex(x => x.permit_id === _penAckPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].conditions_acknowledged = true;
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
@@ -24085,7 +24085,7 @@ let _penFromGate = false;
 function penOpenCloseout(permitId, fromGate) {
   _penFromGate = !!fromGate;
   const p = penLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _penCloseoutPermit = p; _penCloseoutTicks = {};
   const info = document.getElementById('pen-closeout-info');
   if (info) info.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:12.5px;font-weight:700;color:var(--text)">' + p.permit_id + '</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">' + (p.subtype || 'Penetration') + ' · ' + (p.location || '') + '</div>';
@@ -24122,7 +24122,7 @@ function penSubmitCloseout() {
   const comments = (document.getElementById('pen-closeout-comments').value || '').trim();
   const all = penLoadAll();
   const idx = all.findIndex(x => x.permit_id === _penCloseoutPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].status = 'closed';
   all[idx].closed_at = new Date().toISOString();
   all[idx].closed_by = (getProfile() || {}).name || 'Worker';
@@ -24132,7 +24132,7 @@ function penSubmitCloseout() {
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   if (!_penFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { penDownloadPermitPDF(_penCloseoutPermit.permit_id); } catch(e) { console.error(e); }
@@ -24472,7 +24472,7 @@ async function submitElec() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!elecValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!elecValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -24519,7 +24519,7 @@ async function submitElec() {
     const list = elecLoadAll();
     list.push(permit);
     const result = elecSaveAll(list);
-    if (!result.ok) { slanAlert('Could not save permit. Storage may be full.'); reset(); return; }
+    if (!result.ok) { slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.'); reset(); return; }
 
     document.getElementById('elec-success-id').textContent = permit.permit_id;
     document.getElementById('elec-success-sub').textContent = permit.subtype || 'Electrical';
@@ -24593,7 +24593,7 @@ function elecStatusBadge(status, p) {
 
 function elecViewPermit(permitId) {
   const p = elecLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
     elecOpenAckConditions(permitId);
     return;
@@ -24688,7 +24688,7 @@ let _elecSupCurrentPermit = null;
 
 function elecSupOpenReview(permitId) {
   const p = elecLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _elecSupCurrentPermit = p;
 
   document.getElementById('sup-elec-review-actions').style.display = 'none';
@@ -24915,7 +24915,7 @@ let _elecAckedSet = null;
 
 function elecOpenAckConditions(permitId) {
   const p = elecLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) { slanToast('No conditions to acknowledge.', 'error'); return; }
   _elecAckPermit = p;
   _elecAckedSet = new Set();
@@ -24983,7 +24983,7 @@ let _elecFromGate = false;
 function elecOpenCloseout(permitId, fromGate) {
   _elecFromGate = !!fromGate;
   const p = elecLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _elecCloseoutPermit = p;
   _elecCloseoutTicks = {};
 
@@ -25046,7 +25046,7 @@ function elecSubmitCloseout() {
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
 
   if (!_elecFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { elecDownloadPermitPDF(_elecCloseoutPermit.permit_id); } catch(e) { console.error(e); }
@@ -25086,7 +25086,7 @@ function elecDownloadPermitPDF(permitId) {
 
 // ─── ELEC RESCUE PLAN TEMPLATE ─────────────────────────────
 function elecViewRescueTemplate() {
-  if (!window.jspdf) { slanToast('PDF library not loaded.', 'error'); return; }
+  if (!window.jspdf) { slanToast('PDF generator is not loaded yet. Please wait a moment and try again.', 'error'); return; }
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -25220,7 +25220,7 @@ function elecViewRescueTemplate() {
     window.open(url, '_blank');
   } catch(err) {
     console.error('ELEC rescue plan template error:', err);
-    slanToast('Could not open rescue plan template. Please try again.', 'error');
+    slanToast('Could not open the rescue plan template. Please try again in a moment.', 'error');
   }
 }
 
@@ -25315,7 +25315,7 @@ function penSelectDust(btn) {
 // ═══════════════════════════════════════════════════════
 
 function _renderRescuePDF(opts) {
-  if (!window.jspdf) { slanAlert('PDF library not loaded.'); return; }
+  if (!window.jspdf) { slanAlert('PDF generator is not loaded yet. Please wait a moment and try again.'); return; }
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -25412,7 +25412,7 @@ function _renderRescuePDF(opts) {
     window.open(url, '_blank');
   } catch(err) {
     console.error('Rescue template error:', err);
-    slanAlert('Could not open rescue plan template. Please try again.');
+    slanAlert('Could not open the rescue plan template. Please try again in a moment.');
   }
 }
 
@@ -25800,7 +25800,7 @@ async function submitAsb() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!asbValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!asbValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -25849,7 +25849,7 @@ async function submitAsb() {
     const list = asbLoadAll();
     list.push(permit);
     const result = asbSaveAll(list);
-    if (!result.ok) { slanAlert('Could not save permit. Storage may be full.'); reset(); return; }
+    if (!result.ok) { slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.'); reset(); return; }
 
     document.getElementById('asb-success-id').textContent = permit.permit_id;
     document.getElementById('asb-success-sub').textContent = permit.subtype || 'Asbestos';
@@ -25915,7 +25915,7 @@ function asbStatusBadge(status, p) {
 
 function asbViewPermit(permitId) {
   const p = asbLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
     asbOpenAckConditions(permitId);
     return;
@@ -25993,7 +25993,7 @@ let _asbSupCurrentPermit = null;
 
 function asbSupOpenReview(permitId) {
   const p = asbLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _asbSupCurrentPermit = p;
 
   document.getElementById('sup-asb-review-actions').style.display = 'none';
@@ -26268,7 +26268,7 @@ function asbSubmitCloseout() {
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   if (!_asbFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { asbDownloadPermitPDF(_asbCloseoutPermit.permit_id); } catch(e) {}
@@ -26586,7 +26586,7 @@ async function submitMp() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!mpValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!mpValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -26635,7 +26635,7 @@ async function submitMp() {
     const list = mpLoadAll();
     list.push(permit);
     const result = mpSaveAll(list);
-    if (!result.ok) { slanAlert('Could not save permit. Storage may be full.'); reset(); return; }
+    if (!result.ok) { slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.'); reset(); return; }
 
     document.getElementById('mp-success-id').textContent = permit.permit_id;
     document.getElementById('mp-success-sub').textContent = permit.subtype || 'Mobile Plant';
@@ -26701,7 +26701,7 @@ function mpStatusBadge(status, p) {
 
 function mpViewPermit(permitId) {
   const p = mpLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
     mpOpenAckConditions(permitId);
     return;
@@ -26780,7 +26780,7 @@ let _mpSupCurrentPermit = null;
 
 function mpSupOpenReview(permitId) {
   const p = mpLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _mpSupCurrentPermit = p;
 
   document.getElementById('sup-mp-review-actions').style.display = 'none';
@@ -27063,7 +27063,7 @@ function mpSubmitCloseout() {
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   if (!_mpFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { mpDownloadPermitPDF(_mpCloseoutPermit.permit_id); } catch(e) {}
@@ -27380,7 +27380,7 @@ async function submitTrf() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!trfValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!trfValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -27430,7 +27430,7 @@ async function submitTrf() {
     const list = trfLoadAll();
     list.push(permit);
     const result = trfSaveAll(list);
-    if (!result.ok) { slanAlert('Could not save permit. Storage may be full.'); reset(); return; }
+    if (!result.ok) { slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.'); reset(); return; }
 
     document.getElementById('trf-success-id').textContent = permit.permit_id;
     document.getElementById('trf-success-sub').textContent = permit.subtype || 'Traffic Management';
@@ -27496,7 +27496,7 @@ function trfStatusBadge(status, p) {
 
 function trfViewPermit(permitId) {
   const p = trfLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (p.approval_conditions && !p.conditions_acknowledged && (p.status === 'approved' || p.status === 'active')) {
     trfOpenAckConditions(permitId);
     return;
@@ -27575,7 +27575,7 @@ let _trfSupCurrentPermit = null;
 
 function trfSupOpenReview(permitId) {
   const p = trfLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _trfSupCurrentPermit = p;
 
   document.getElementById('sup-trf-review-actions').style.display = 'none';
@@ -27858,7 +27858,7 @@ function trfSubmitCloseout() {
   try { if (typeof hwUpdateChip === 'function') hwUpdateChip(); } catch(e) {}
   try { if (typeof ptwUpdateTileSubtitle === 'function') ptwUpdateTileSubtitle(); } catch(e) {}
   if (!_trfFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { trfDownloadPermitPDF(_trfCloseoutPermit.permit_id); } catch(e) {}
@@ -28272,7 +28272,7 @@ async function submitCS() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = originalHtml; }
   }
   try {
-    if (!csValidate()) { slanAlert('Please complete all required fields.'); reset(); return; }
+    if (!csValidate()) { slanAlert('Please complete all required fields before submitting the permit.'); reset(); return; }
     const p = getProfile();
     const now = new Date();
 
@@ -28324,7 +28324,7 @@ async function submitCS() {
     list.push(permit);
     const result = csSaveAll(list);
     if (!result.ok) {
-      slanAlert('Could not save permit. Storage may be full.');
+      slanAlert('Could not save the permit. Your device storage may be full \u2014 try removing photos or older permits and try again.');
       reset();
       return;
     }
@@ -28401,7 +28401,7 @@ function csStatusBadge(status, p) {
 
 function csViewPermit(permitId) {
   const p = csLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   const body = document.getElementById('cs-view-body');
   if (!body) return;
 
@@ -28501,7 +28501,7 @@ let _csSupCurrentPermit = null;
 
 function csSupOpenReview(permitId) {
   const p = csLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _csSupCurrentPermit = p;
 
   // Reset action panels
@@ -28731,7 +28731,7 @@ let _csAckedSet = null;
 
 function csOpenAckConditions(permitId) {
   const p = csLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   if (!p.approval_conditions_list || p.approval_conditions_list.length === 0) {
     slanToast('No conditions to acknowledge for this permit.', 'error');
     return;
@@ -28785,7 +28785,7 @@ function csSubmitAck() {
   if (!_csAckPermit) return;
   const all = csLoadAll();
   const idx = all.findIndex(x => x.permit_id === _csAckPermit.permit_id);
-  if (idx < 0) { slanToast('Permit not found', 'error'); return; }
+  if (idx < 0) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   all[idx].conditions_acknowledged = true;
   all[idx].conditions_acknowledged_at = new Date().toISOString();
   all[idx].status = 'active';
@@ -28810,7 +28810,7 @@ let _csFromGate = false;
 function csOpenCloseout(permitId, fromGate) {
   _csFromGate = !!fromGate;
   const p = csLoadAll().find(x => x.permit_id === permitId);
-  if (!p) { slanToast('Permit not found', 'error'); return; }
+  if (!p) { slanToast('That permit could not be found. It may have been removed.', 'error'); return; }
   _csCloseoutPermit = p;
   _csCloseoutTicks = {};
 
@@ -28872,7 +28872,7 @@ function csSubmitCloseout() {
 
   // Offer PDF download (skip if going through gate sign-out flow)
   if (!_csFromGate) {
-    slanConfirm('Permit closed successfully.\n\nDownload PDF for your records?').then(function(_ok){
+    slanConfirm('Permit closed successfully.\n\nWould you like to download the PDF for your records?').then(function(_ok){
     if (!_ok) return;
 
       try { csDownloadPermitPDF(_csCloseoutPermit.permit_id); } catch(e) { console.error(e); }
@@ -29213,7 +29213,7 @@ async function submitHotWorks() {
   // CRITICAL: wrap entire body in try/catch/finally so button ALWAYS resets and errors are visible
   try {
   if (!hwValidate()) {
-    slanAlert('Please complete all required fields and checks.');
+    slanAlert('Please complete all required fields and checklist items before submitting this permit.');
     _hwResetSubmit();
     return;
   }
@@ -29729,11 +29729,11 @@ function toggleHzAnon() {
 
 function submitHazard() {
   const p = getProfile();
-  if (!document.getElementById('hz-type').value) { slanAlert('Please select a hazard type.'); return; }
-  if (!hzSeverity)  { slanAlert('Please select a severity level.'); return; }
-  if (!document.getElementById('hz-location').value.trim()) { slanAlert('Please enter the location on site.'); return; }
-  if (!document.getElementById('hz-desc').value.trim()) { slanAlert('Please describe the hazard.'); return; }
-  if (!hzPhotos.some(Boolean)) { slanAlert('Please add at least one photo of the hazard.'); return; }
+  if (!document.getElementById('hz-type').value) { slanAlert('Please select the type of hazard before submitting the report.'); return; }
+  if (!hzSeverity)  { slanAlert('Please select the severity level before submitting.'); return; }
+  if (!document.getElementById('hz-location').value.trim()) { slanAlert('Please enter where on site this happened before submitting.'); return; }
+  if (!document.getElementById('hz-desc').value.trim()) { slanAlert('Please describe the hazard in detail before submitting.'); return; }
+  if (!hzPhotos.some(Boolean)) { slanAlert('Please add at least one photo of the hazard before submitting the report.'); return; }
 
   const now = new Date();
   const ref = 'HAZ-'+now.getFullYear().toString().slice(-2)+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+'-'+Math.random().toString(36).slice(-4).toUpperCase();
@@ -30157,7 +30157,7 @@ function goToScorecard() {
   var p = getProfile();
   // Director only
   if (p && p.role !== 'Company Director') {
-    slanAlert('The Monthly Scorecard is only available to the Company Director.');
+    slanAlert('The Monthly Scorecard is restricted to the Company Director. Please ask your director to access this feature.');
     return;
   }
   goTo('screen-scorecard');
@@ -30307,7 +30307,7 @@ function openNewAction() {
 }
 function saveNewAction() {
   var desc = document.getElementById('ca-new-desc').value.trim();
-  if (!desc) { slanAlert('Please enter a description.'); return; }
+  if (!desc) { slanAlert('Please enter a description before submitting.'); return; }
   var source = document.getElementById('ca-new-source').value;
   var assign = document.getElementById('ca-new-assign').value.trim() || 'Site Supervisor';
   var due = document.getElementById('ca-new-due').value;
@@ -30420,7 +30420,7 @@ function bcTemplate(text) {
 }
 function sendBroadcast() {
   var msg = document.getElementById('bc-message').value.trim();
-  if (!msg) { slanAlert('Please type a message before sending.'); return; }
+  if (!msg) { slanAlert('Please type a message before sending it to the team.'); return; }
   var priority = document.getElementById('bc-priority').value;
   // Write to Firebase broadcasts collection
   if (typeof fbInsert === 'function') {
@@ -30886,8 +30886,8 @@ function updateAllTileSubs(p) {
 function submitTalk() {
   var chk1 = document.getElementById('chk1');
   var chk2 = document.getElementById('chk2');
-  if (!chk1 || !chk1.classList.contains('checked')) { slanAlert('Acknowledgement required', 'Please confirm you have read and understood the toolbox talk.', 'warn'); return; }
-  if (!chk2 || !chk2.classList.contains('checked')) { slanAlert('Commitment required', 'Please confirm you commit to working safely.', 'warn'); return; }
+  if (!chk1 || !chk1.classList.contains('checked')) { slanAlert('Please confirm you have read and understood the toolbox talk before signing.', 'Please confirm you have read and understood the toolbox talk.', 'warn'); return; }
+  if (!chk2 || !chk2.classList.contains('checked')) { slanAlert('Please confirm your commitment to working safely before signing.', 'Please confirm you commit to working safely.', 'warn'); return; }
 
   var p = getProfile();
 
@@ -31045,7 +31045,7 @@ function tbtHasSignedCurrent(workerName) {
 function tbtSaveWrapup() {
   try {
     var p = (typeof getProfile === 'function') ? getProfile() : null;
-    if (!p || p.role !== 'Site Supervisor') { slanAlert('Supervisor only', 'Only supervisors can save the debrief.', 'warn'); return; }
+    if (!p || p.role !== 'Site Supervisor') { slanAlert('This action is restricted to site supervisors only.', 'Only supervisors can save the debrief.', 'warn'); return; }
     var talkId = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? TODAYS_TALK.version : '';
     var todayDate = new Date().toLocaleDateString('en-AU');
     var key = 'slan_tbt_wrapups_v1';
@@ -31053,7 +31053,7 @@ function tbtSaveWrapup() {
     try { all = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) { all = {}; }
     var attRaw = (document.getElementById('wu-attendance') || {}).value || '';
     var att = attRaw === '' ? null : Number(attRaw);
-    if (att != null && (isNaN(att) || att < 0)) { slanAlert('Invalid attendance', 'Attendance count must be a positive number.', 'warn'); return; }
+    if (att != null && (isNaN(att) || att < 0)) { slanAlert('Attendance count must be a whole positive number.', 'Attendance count must be a positive number.', 'warn'); return; }
     var entry = {
       talk_id: talkId,
       date: todayDate,
@@ -31068,7 +31068,7 @@ function tbtSaveWrapup() {
     localStorage.setItem(key, JSON.stringify(all));
     var msg = document.getElementById('wu-saved-msg');
     if (msg) { msg.style.display = 'block'; setTimeout(function(){ msg.style.display = 'none'; }, 2500); }
-  } catch(e) { slanAlert('Save failed', 'Could not save debrief: ' + (e.message || e), 'danger'); }
+  } catch(e) { slanAlert('Could not save your changes. Please try again.', 'Could not save debrief: ' + (e.message || e), 'danger'); }
 }
 
 function tbtLoadWrapup(talkId, dateStr) {
@@ -31088,14 +31088,14 @@ function tbtDownloadRosterByTalkId(talkId) {
 
 function tbtDownloadRosterPDF(targetTalkId) {
   try {
-    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF unavailable', 'PDF generator not available right now. Try again in a moment.', 'danger'); return; }
+    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF generator is not loaded yet. Please wait a moment and try again.', 'PDF generator not available right now. Try again in a moment.', 'danger'); return; }
 
     var todayDate = new Date().toLocaleDateString('en-AU');
     var allRecs = tbtLoadAll();
     // If a specific talk_id was passed (e.g. re-downloading last month's roster),
     // use that. Otherwise use the current active talk.
     var useTalkId = targetTalkId || (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK ? TODAYS_TALK.version : '');
-    if (!useTalkId) { slanAlert('No active talk', 'No talk is currently active.', 'warn'); return; }
+    if (!useTalkId) { slanAlert('No toolbox talk is currently active.', 'No talk is currently active.', 'warn'); return; }
 
     var talkRecs = allRecs.filter(function(r){
       return r.talk_id === useTalkId;
@@ -31125,7 +31125,7 @@ function tbtDownloadRosterPDF(targetTalkId) {
         sections: first.sections_snapshot || []
       };
     } else {
-      slanAlert('No records found', 'No records found for that talk.', 'warn'); return;
+      slanAlert('No signed records were found for that talk.', 'No records found for that talk.', 'warn'); return;
     }
 
     // Wrap-up: prefer today's wrapup if generating for current talk, otherwise
@@ -31440,7 +31440,7 @@ function tbtDownloadRosterPDF(targetTalkId) {
     var fname = 'Toolbox-Roster-' + (talkMeta.version || 'TBT') + '-' + todayDate.replace(/\//g,'-') + '.pdf';
     doc.save(fname);
   } catch(e) {
-    slanAlert('Could not generate PDF', 'Roster PDF generation failed: ' + (e.message || e), 'danger');
+    slanAlert('Could not generate the PDF. Please try again in a moment.', 'Roster PDF generation failed: ' + (e.message || e), 'danger');
   }
 }
 
@@ -31775,7 +31775,7 @@ function openTopicRequestForm() {
     if (text == null) return; // cancelled
     text = String(text).trim();
     if (!text) {
-      slanAlert('Description required', 'Please describe the topic you\u2019d like.', 'warn');
+      slanAlert('Please describe the topic before sending the request.', 'Please describe the topic you\u2019d like.', 'warn');
       return;
     }
     var to = 'hello@slansafety.com.au';
@@ -31879,7 +31879,7 @@ function closeCustomTalkBuilder() {
 function ctAddSection() {
   if (!window._ctSections) window._ctSections = [];
   if (window._ctSections.length >= 4) {
-    slanAlert('Maximum reached', 'You can have up to 4 sections per talk.', 'warn');
+    slanAlert('You can have up to 4 sections per talk.', 'You can have up to 4 sections per talk.', 'warn');
     return;
   }
   var idx = window._ctSections.length;
@@ -31922,7 +31922,7 @@ function saveCustomTalk() {
   var presenter = (document.getElementById('ct-presenter') || {}).value || '';
   title = title.trim();
   presenter = presenter.trim();
-  if (!title) { slanAlert('Title required', 'Please enter a talk title.', 'warn'); return; }
+  if (!title) { slanAlert('Please give the talk a title before saving.', 'Please enter a talk title.', 'warn'); return; }
   if (!presenter) presenter = 'Site Supervisor';
 
   var sections = [];
@@ -31940,7 +31940,7 @@ function saveCustomTalk() {
   });
 
   if (sections.length < 1) {
-    slanAlert('Section incomplete', 'Please complete at least one section with a heading and at least 2 bullet points.', 'warn');
+    slanAlert('Please complete at least one section with a heading and at least 2 bullet points.', 'Please complete at least one section with a heading and at least 2 bullet points.', 'warn');
     return;
   }
 
@@ -32030,7 +32030,7 @@ function clearStagedTalk() {
 function applyStagedTalk() {
   var staged = getStagedTalk();
   if (!staged) {
-    slanAlert('Nothing staged', 'No new topic is currently staged.', 'warn');
+    slanAlert('No new topic is currently staged. Pick a topic from the library or write a custom one.', 'No new topic is currently staged.', 'warn');
     return;
   }
   slanConfirm({
@@ -32163,7 +32163,7 @@ function goTalkBack() {
 // Adds 3 historical records (1 month ago, 2 months ago, 3 months ago) with realistic content.
 function tbtSeedDemoHistory(silent) {
   var p = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!p || !p.name) { if (!silent) slanAlert('Sign in required', 'Please sign in first.', 'warn'); return 0; }
+  if (!p || !p.name) { if (!silent) slanAlert('Please sign in before continuing.', 'Please sign in first.', 'warn'); return 0; }
   var key = 'slan_tbt_records_v1';
   var existing = [];
   try { existing = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { existing = []; }
@@ -32270,7 +32270,7 @@ function tbtLoadForWorker(workerName) {
 // populates with re-downloadable full roster PDFs the supervisor can demo.
 function tbtSeedDemoSupervisorRosters(silent) {
   var p = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!p || !p.name) { if (!silent) slanAlert('Sign in required', 'Please sign in first.', 'warn'); return 0; }
+  if (!p || !p.name) { if (!silent) slanAlert('Please sign in before continuing.', 'Please sign in first.', 'warn'); return 0; }
 
   // 6 distinct demo signature PNGs so each worker has a unique mark
   var DEMO_SIGS = [
@@ -32451,7 +32451,7 @@ function tbtSeedDemoSupervisorRosters(silent) {
     localStorage.setItem(key, JSON.stringify(existing));
     localStorage.setItem(wrapupKey, JSON.stringify(allWrapups));
   } catch(e) {
-    slanAlert('Could not save', 'Saving demo data failed: ' + (e.message || e), 'danger');
+    slanAlert('Could not save your changes. Please try again.', 'Saving demo data failed: ' + (e.message || e), 'danger');
     return;
   }
 
@@ -32584,8 +32584,8 @@ function tbtDownloadPDF(recordId) {
   try {
     var all = tbtLoadAll();
     var r = all.find(function(x){ return x.record_id === recordId; });
-    if (!r) { slanAlert('Record not found', 'That signed record could not be found.', 'warn'); return; }
-    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF unavailable', 'PDF generator not available right now. Try again in a moment.', 'danger'); return; }
+    if (!r) { slanAlert('That signed record could not be found in your history.', 'That signed record could not be found.', 'warn'); return; }
+    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF generator is not loaded yet. Please wait a moment and try again.', 'PDF generator not available right now. Try again in a moment.', 'danger'); return; }
 
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -32841,7 +32841,7 @@ function tbtDownloadPDF(recordId) {
 
     doc.save((r.record_id || 'TBT') + '.pdf');
   } catch(e) {
-    slanAlert('Could not generate PDF', 'PDF generation failed: ' + (e.message || e), 'danger');
+    slanAlert('Could not generate the PDF. Please try again in a moment.', 'PDF generation failed: ' + (e.message || e), 'danger');
   }
 }
 
@@ -32980,9 +32980,9 @@ function ptwClearPhoto() {
 
 function submitPermit() {
   var type = document.getElementById('ptw-type').value;
-  if (!type) { slanAlert('Please select a permit type.'); return; }
+  if (!type) { slanAlert('Please select a permit type before submitting.'); return; }
   var loc = (document.getElementById('ptw-location').value || '').trim();
-  if (!loc) { slanAlert('Please enter a location or description.'); return; }
+  if (!loc) { slanAlert('Please enter a location or description before submitting the permit.'); return; }
   var ref  = (document.getElementById('ptw-ref').value || '').trim();
   var date = document.getElementById('ptw-date').value;
   var wkrs = (document.getElementById('ptw-workers-field').value || '').trim();
@@ -33179,7 +33179,7 @@ function sdsReportMissing() {
   var name = document.getElementById('sds-missing-name');
   var usage = document.getElementById('sds-missing-usage');
   var confirm = document.getElementById('sds-missing-confirm');
-  if (!name || !name.value.trim()) { slanAlert('Please enter the chemical name.'); return; }
+  if (!name || !name.value.trim()) { slanAlert('Please enter the chemical name before continuing.'); return; }
   var p = getProfile();
   var payload = {
     form_type: 'sds_missing_report',
@@ -33427,10 +33427,10 @@ function reSelectResult(result) {
 function reSubmit() {
   var desc = document.getElementById("re-item-desc");
   var date = document.getElementById("re-date");
-  if (!desc || !desc.value.trim()) { slanAlert("Please enter the item description."); return; }
-  if (!date || !date.value) { slanAlert("Please enter the date."); return; }
+  if (!desc || !desc.value.trim()) { slanAlert("Please describe the item or task before submitting."); return; }
+  if (!date || !date.value) { slanAlert("Please enter the date before submitting."); return; }
   if ((_reAction === "inspection" || _reAction === "test_tag" || _reAction === "repair" || _reAction === "repaired") && !_reResult) {
-    slanAlert("Please select a pass or fail result."); return;
+    slanAlert("Please record a pass or fail result for each item before submitting."); return;
   }
 
   var payload = {
@@ -33866,7 +33866,7 @@ function t5Answer(q, answer) {
 
 function take5Submit() {
   var task = document.getElementById('t5-task').value.trim();
-  if (!task) { slanAlert('Please describe the task you are about to perform.'); return; }
+  if (!task) { slanAlert('Please describe the task you are about to perform before continuing.'); return; }
   var p = getProfile();
   var payload = {
     form_type: 'take5',
@@ -34100,9 +34100,9 @@ function submitContactSlan() {
   var subject = document.getElementById('cs-subject').value;
   var message = (document.getElementById('cs-message').value || '').trim();
 
-  if (!name)    { slanAlert('Please enter your name.'); return; }
-  if (!subject) { slanAlert('Please select a subject.'); return; }
-  if (!message) { slanAlert('Please type your message.'); return; }
+  if (!name)    { slanAlert('Please enter your full name before continuing.'); return; }
+  if (!subject) { slanAlert('Please select a subject before sending the message.'); return; }
+  if (!message) { slanAlert('Please type your message before sending.'); return; }
 
   var p = getProfile();
   var company = p ? p.company : '';
@@ -35481,7 +35481,7 @@ function tfbCloseSubmitBlockModal() {
 // Worker contact supervisor button
 function tfbContactSupervisor() {
   const supContact = '0400000000'; // demo placeholder — would be configured per site
-  slanConfirm('Total Fire Ban active. Call your supervisor now to discuss?').then(function(_ok){
+  slanConfirm('A Total Fire Ban is currently active for this site.\n\nCall your supervisor now to discuss before proceeding?').then(function(_ok){
     if (!_ok) return;
 
     window.location.href = 'tel:' + supContact;
@@ -35499,7 +35499,7 @@ function tfbShowOverrideModal(permitId) {
   // Validate permitId is set
   if (!permitId) {
     console.error('tfbShowOverrideModal called with no permitId');
-    slanAlert('Error: no permit selected. Please re-open the permit and try again.');
+    slanAlert('No permit is currently selected. Please re-open the permit and try again.');
     return;
   }
   // Stash which permit this override is for
@@ -35507,7 +35507,7 @@ function tfbShowOverrideModal(permitId) {
   const m = document.getElementById('tfb-override-modal');
   if (!m) {
     console.error('tfb-override-modal not found in DOM');
-    slanAlert('Error: override modal not found. Please refresh.');
+    slanAlert('The override dialog could not be opened. Please refresh the app and try again.');
     return;
   }
   m.style.display = 'flex';
@@ -35563,7 +35563,7 @@ function _tfbCompressPhoto(file, cb) {
   // Memory-efficient: use createObjectURL instead of FileReader (avoids huge base64 spike)
   let objectUrl = null;
   try { objectUrl = URL.createObjectURL(file); }
-  catch(err) { slanAlert('Could not load photo'); return; }
+  catch(err) { slanAlert('Could not load that photo. Please try a different image.'); return; }
   const img = new Image();
   img.onload = function() {
     try {
@@ -35586,7 +35586,7 @@ function _tfbCompressPhoto(file, cb) {
   };
   img.onerror = function() {
     try { URL.revokeObjectURL(objectUrl); } catch(e) {}
-    slanAlert('Could not load photo');
+    slanAlert('Could not load that photo. Please try a different image.');
   };
   img.src = objectUrl;
 }
@@ -35673,11 +35673,11 @@ function tfbApplyOverrideAndApprove() {
 
   // Find the permit, attach override, set status to approved with conditions
   const permitId = window._tfbOverrideForPermitId;
-  if (!permitId) { slanAlert('Permit ID not found'); return; }
+  if (!permitId) { slanAlert('That permit ID could not be found. It may have been removed or never created.'); return; }
 
   const all = (typeof hwLoadAll === 'function') ? hwLoadAll() : [];
   const idx = all.findIndex(x => x.permit_id === permitId);
-  if (idx < 0) { slanAlert('Permit not found'); return; }
+  if (idx < 0) { slanAlert('That permit could not be found. It may have been removed.'); return; }
 
   // Mark approved + attach TFB override + auto-add conditions for the worker to acknowledge
   all[idx].status = 'approved';
