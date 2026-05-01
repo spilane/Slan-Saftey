@@ -1193,7 +1193,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="sp-talk" onclick="chipTapTalk()">
         <div class="sp-dot sp-pending"></div><span id="sp-talk-lbl">Toolbox Talk</span>
       </div>
-      <div class="status-pill" id="sp-inc" onclick="chipTapIncidents()">
+      <div class="status-pill" id="sp-inc" onclick="chipTapIncidents()" style="display:none">
         <div class="sp-dot sp-pending"></div><span id="sp-inc-lbl">Incidents</span>
       </div>
     </div>
@@ -1753,8 +1753,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <label class="flabel">Type of report <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-type')">?</span></label>
           <div id="inc-help-type" class="slan-help-tip">
             <b>Injury</b> — someone was hurt.<br>
-            <b>Near Miss</b> — no harm but could have been bad (e.g. dropped tool from height, no one underneath).<br>
-            <b>Dangerous</b> — uncontrolled event with serious-harm potential (collapse, fire, plant runaway, hazardous release).<br>
+            <b>Near Miss</b> — close call with no harm done. Rule of thumb: an everyday "could have been bad" event (e.g. tripped over a cable, dropped a bolt from a ladder).<br>
+            <b>Dangerous</b> — more serious than Near Miss. A specific event listed in WHS Act s.37 — collapse, plant runaway, fire/explosion, hazardous release, electric shock, fall from height. <i>These must be reported to the regulator</i>, even with no injury.<br>
             <b>Damage</b> — property, equipment, vehicle or structure damaged with no injury.<br>
             <b>Spill</b> — environmental release: spill, contamination, breach of environmental controls.
           </div>
@@ -1788,7 +1788,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="fgroup">
           <label class="flabel">Exact location on site <span class="req">*</span></label>
-          <input type="text" id="inc-location" placeholder="e.g. Level 3 Formwork Grid E, near lift shaft" autocomplete="off">
+          <input type="text" id="inc-location" placeholder="e.g. Level 3 Formwork Grid E, near lift shaft" autocomplete="off" oninput="incRecheckSubmit()">
         </div>
       </div>
     </div>
@@ -1864,7 +1864,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-body">
         <div class="fgroup">
           <label class="flabel">Description of the incident <span class="req">*</span></label>
-          <textarea id="inc-description" placeholder="Describe exactly what happened — sequence of events, what you saw, what led to the incident. Be as specific as possible." rows="5" style="font-size:14px"></textarea>
+          <textarea id="inc-description" placeholder="Describe exactly what happened — sequence of events, what you saw, what led to the incident. Be as specific as possible." rows="5" style="font-size:14px" oninput="incRecheckSubmit()"></textarea>
         </div>
         <div class="fgroup">
           <label class="flabel">Nature of injury / damage (if applicable)</label>
@@ -1928,14 +1928,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <b>No photos attached.</b> You confirmed there are no photos available for this incident. <button onclick="incUnskipPhotos()" style="background:transparent;border:none;color:#1B6E3A;font-size:12.5px;font-weight:600;cursor:pointer;padding:0;margin-left:4px;text-decoration:underline">Add a photo</button>
         </div>
 
-        <div id="inc-photo-grid" style="display:flex;flex-direction:column;gap:8px">
-          <div class="inc-photo-slot-full" id="inc-slot-0" onclick="document.getElementById('inc-photo-input-0').click()" style="background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:36px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:140px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span style="font-size:14px;font-weight:600;color:var(--muted)">Add photo</span>
-            <span style="font-size:11px;color:var(--muted);text-align:center;line-height:1.4">Tap to take or upload a photo</span>
+        <div id="inc-photo-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div class="hz-photo-slot" id="inc-slot-0" onclick="document.getElementById('inc-photo-input-0').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Add photo</span>
           </div>
-          <div class="inc-photo-slot-full" id="inc-slot-1" onclick="document.getElementById('inc-photo-input-1').click()" style="display:none;background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:36px 24px;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:140px"></div>
-          <div class="inc-photo-slot-full" id="inc-slot-2" onclick="document.getElementById('inc-photo-input-2').click()" style="display:none;background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:36px 24px;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:140px"></div>
+          <div class="hz-photo-slot" id="inc-slot-1" onclick="document.getElementById('inc-photo-input-1').click()" style="display:none"></div>
+          <div class="hz-photo-slot" id="inc-slot-2" onclick="document.getElementById('inc-photo-input-2').click()" style="display:none"></div>
         </div>
 
         <button id="inc-skip-photos-btn" onclick="incSkipPhotos()" style="display:block;width:100%;padding:10px;margin-top:10px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif">Skip — no photos available</button>
@@ -1983,10 +1982,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <button class="submit-btn" onclick="submitIncident()" style="background:#1B6E3A">
+    <button class="submit-btn" id="inc-submit-btn" onclick="submitIncident()" style="background:#C8C8C8 !important;color:#fff;cursor:not-allowed;opacity:.65;pointer-events:none" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
       Submit incident report
     </button>
+    <div id="inc-submit-hint" style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.45">Complete the required sections (marked <span style="color:#B83232;font-weight:700">*</span>) to enable submit.</div>
   </div>
 </div>
 
@@ -13254,26 +13254,40 @@ async function updateStatusStrip() {
   const wkSignedToday = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(_meWk && _meWk.name) : null;
   setPillState('sp-talk', wkSignedToday ? 'done' : 'warn');
 
-  // Incidents — green when no open reports filed by this worker; amber if any
-  // open; red if any open are Critical or Major
-  const incLbl = document.getElementById('sp-inc-lbl');
-  if (incLbl) {
+  // Incidents chip — ONLY shows when this worker has incident reports filed.
+  // Hidden entirely otherwise (it's an event chip, not a daily-task chip
+  // like Sign In / Pre-Start / SWMS / Toolbox Talk).
+  const incLbl  = document.getElementById('sp-inc-lbl');
+  const incPill = document.getElementById('sp-inc');
+  if (incPill) {
     const allInc = (typeof incLoadAll === 'function') ? incLoadAll() : [];
-    const myOpen = allInc.filter(function(r){
-      return r.reporter_name === (_meWk && _meWk.name) && (r.status || 'open') !== 'closed';
+    const mine   = allInc.filter(function(r){
+      return r.reporter_name === (_meWk && _meWk.name);
+    });
+    const myOpen = mine.filter(function(r){
+      return (r.status || 'open') !== 'closed';
     });
     const myCrit = myOpen.filter(function(r){
       const s = (r.severity || '').toLowerCase();
       return s === 'critical' || s === 'major';
     });
-    if (myOpen.length === 0) {
-      incLbl.textContent = 'Incidents';
+    if (mine.length === 0) {
+      // No reports filed by this worker — hide the chip completely
+      incPill.style.display = 'none';
+    } else if (myOpen.length === 0) {
+      // All reports closed — show green (you have a clean record)
+      incPill.style.display = '';
+      if (incLbl) incLbl.textContent = 'Incidents (closed)';
       setPillState('sp-inc', 'done');
     } else if (myCrit.length > 0) {
-      incLbl.textContent = 'Incidents (' + myOpen.length + ' open)';
+      // Open critical/major — red
+      incPill.style.display = '';
+      if (incLbl) incLbl.textContent = 'Incidents (' + myOpen.length + ' open)';
       setPillState('sp-inc', 'fail');
     } else {
-      incLbl.textContent = 'Incidents (' + myOpen.length + ' open)';
+      // Open minor/moderate — amber
+      incPill.style.display = '';
+      if (incLbl) incLbl.textContent = 'Incidents (' + myOpen.length + ' open)';
       setPillState('sp-inc', 'warn');
     }
   }
@@ -17598,21 +17612,18 @@ function handleIncidentPhoto(idx, e) {
         site: siteLine
       };
 
-      // Render the slot — full-width thumbnail
+      // Render the slot — small thumbnail in 3-col grid (matches hazard form)
       const slot = document.getElementById('inc-slot-' + idx);
       if (slot) {
-        slot.innerHTML = `<img src="${compressed}" alt="Incident photo" style="width:100%;max-height:280px;object-fit:contain;border-radius:8px;display:block">`;
-        slot.style.background = '#fff';
-        slot.style.border = '1.5px solid #1B6E3A';
-        slot.style.padding = '6px';
-        slot.style.minHeight = '0';
+        slot.innerHTML = `<img src="${compressed}" alt="Incident photo">`;
+        slot.classList.add('filled');
       }
       // Reveal next slot if there's one
       if (idx < 2) {
         const next = document.getElementById('inc-slot-' + (idx + 1));
         if (next) {
           next.style.display = 'flex';
-          next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="font-size:14px;font-weight:600;color:var(--muted)">Add another photo</span><span style="font-size:11px;color:var(--muted)">Tap to take or upload</span>`;
+          next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Add photo</span>`;
         }
       }
     };
@@ -17626,13 +17637,15 @@ function resetIncidentPhotos() {
     incPhotos[i] = null;
     const slot = document.getElementById('inc-slot-' + i);
     if (!slot) continue;
+    slot.classList.remove('filled');
+    // Wipe inline overrides we may have applied previously
+    slot.style.background = '';
+    slot.style.border = '';
+    slot.style.padding = '';
+    slot.style.minHeight = '';
     if (i === 0) {
       slot.style.display = 'flex';
-      slot.style.background = '#FAFCF9';
-      slot.style.border = '1.5px dashed var(--border)';
-      slot.style.padding = '36px 24px';
-      slot.style.minHeight = '140px';
-      slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="font-size:14px;font-weight:600;color:var(--muted)">Add photo</span><span style="font-size:11px;color:var(--muted)">Tap to take or upload a photo</span>`;
+      slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Add photo</span>`;
     } else {
       slot.style.display = 'none';
       slot.innerHTML = '';
@@ -17645,7 +17658,7 @@ function resetIncidentPhotos() {
   const banner = document.getElementById('inc-photo-skipped-banner');
   if (banner) banner.style.display = 'none';
   const grid = document.getElementById('inc-photo-grid');
-  if (grid) grid.style.display = 'flex';
+  if (grid) grid.style.display = 'grid';
   const skipBtn = document.getElementById('inc-skip-photos-btn');
   if (skipBtn) skipBtn.style.display = 'block';
 }
@@ -17669,7 +17682,7 @@ function incUnskipPhotos(silent) {
   const banner = document.getElementById('inc-photo-skipped-banner');
   if (banner) banner.style.display = 'none';
   const grid = document.getElementById('inc-photo-grid');
-  if (grid) grid.style.display = 'flex';
+  if (grid) grid.style.display = 'grid';
   const skipBtn = document.getElementById('inc-skip-photos-btn');
   if (skipBtn) skipBtn.style.display = 'block';
 }
@@ -17740,6 +17753,8 @@ function goToIncidentForm() {
   if (typeHidden) typeHidden.value = '';
   // Reset photo slots
   if (typeof resetIncidentPhotos === 'function') resetIncidentPhotos();
+  // Reset submit button to disabled state (no required fields filled yet)
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
   goTo('screen-incident');
 }
 
@@ -17753,6 +17768,43 @@ function setIncSev(sev) {
     if (s === sev) { b.style.borderColor=colours[s]; b.style.background=bgs[s]; b.style.color=colours[s]; }
     else { b.style = ''; }
   });
+  incRecheckSubmit();
+}
+
+// Re-evaluates required fields and toggles the submit button state.
+// Required: type, severity, location, description, role-in-event.
+// Called from every required setter and from the keyup handler on text fields.
+function incRecheckSubmit() {
+  const btn  = document.getElementById('inc-submit-btn');
+  const hint = document.getElementById('inc-submit-hint');
+  if (!btn) return;
+  const type     = document.getElementById('inc-type');
+  const role     = document.getElementById('inc-role-in-event');
+  const location = document.getElementById('inc-location');
+  const desc     = document.getElementById('inc-description');
+  const ok =
+    !!(type && type.value) &&
+    !!incSeverity &&
+    !!(location && location.value && location.value.trim()) &&
+    !!(desc && desc.value && desc.value.trim()) &&
+    !!(role && role.value);
+  if (ok) {
+    btn.disabled = false;
+    btn.style.setProperty('background', '#1B6E3A', 'important');
+    btn.style.setProperty('color', '#fff', 'important');
+    btn.style.setProperty('cursor', 'pointer', 'important');
+    btn.style.setProperty('opacity', '1', 'important');
+    btn.style.setProperty('pointer-events', 'auto', 'important');
+    if (hint) hint.style.display = 'none';
+  } else {
+    btn.disabled = true;
+    btn.style.setProperty('background', '#C8C8C8', 'important');
+    btn.style.setProperty('color', '#fff', 'important');
+    btn.style.setProperty('cursor', 'not-allowed', 'important');
+    btn.style.setProperty('opacity', '0.65', 'important');
+    btn.style.setProperty('pointer-events', 'none', 'important');
+    if (hint) hint.style.display = 'block';
+  }
 }
 
 function setIncField(field, val) {
@@ -17787,6 +17839,7 @@ function setIncType(typeName) {
     b.className = 'ps-btn' + (id === map[typeName] ? ' pass' : '');
     b.style = '';
   });
+  incRecheckSubmit();
 }
 
 // Role-in-event selector (replaces dropdown). When "Person Involved / Injured"
@@ -17825,6 +17878,7 @@ function setIncRole(role) {
     if (companyEl && p && p.company && companyEl.value.trim() === p.company) companyEl.value = '';
     if (helperEl) helperEl.textContent = '(name of the person who was involved or injured)';
   }
+  incRecheckSubmit();
 }
 
 function toggleIncBriefing(item) {
