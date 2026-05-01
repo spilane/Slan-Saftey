@@ -2021,9 +2021,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
   <div class="fbody">
-    <div style="padding:0 4px 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <div style="padding:0 4px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div id="inc-detail-pill" style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:#E6F5ED;color:#1B6E3A;text-transform:uppercase;letter-spacing:.04em">Minor</div>
-      <div style="font-size:18px;font-weight:700;color:var(--text)" id="inc-detail-title">Incident</div>
+      <div id="inc-detail-status-pill" style="display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:#FDF8EC;color:#BA7517;text-transform:uppercase;letter-spacing:.04em">Open</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text);flex:1;min-width:140px" id="inc-detail-title">Incident</div>
     </div>
     <div style="padding:0 4px 14px;font-size:11.5px;color:var(--muted);font-family:'DM Mono',monospace" id="inc-detail-meta">REF</div>
     <div id="inc-detail-body"></div>
@@ -18080,10 +18081,14 @@ function renderIncidentList() {
   };
   container.innerHTML = sorted.map(function(r){
     const sev = sevColours[r.severity] || sevColours.Minor;
-    const isOpen = (r.status || 'open') !== 'closed';
-    const statusBadge = isOpen
-      ? '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:#FDF8EC;color:#BA7517;text-transform:uppercase;letter-spacing:.04em">Open</span>'
-      : '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:#E6F5ED;color:#1B6E3A;text-transform:uppercase;letter-spacing:.04em">Closed</span>';
+    const status = r.status || 'open';
+    const statusStyles = {
+      'open':         { bg:'#FDF8EC', text:'#BA7517', label:'Open' },
+      'under-review': { bg:'#EFEAFB', text:'#5535AD', label:'Under Review' },
+      'closed':       { bg:'#E6F5ED', text:'#1B6E3A', label:'Closed' }
+    };
+    const ss = statusStyles[status] || statusStyles.open;
+    const statusBadge = '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:' + ss.bg + ';color:' + ss.text + ';text-transform:uppercase;letter-spacing:.04em">' + ss.label + '</span>';
     const desc = (r.description || '').slice(0, 110) + ((r.description || '').length > 110 ? '\u2026' : '');
     const safeRef = (r.ref || '').replace(/'/g, '\\\'');
     const photoBadge = (r.photo_count > 0)
@@ -18105,8 +18110,9 @@ function renderIncidentList() {
   }).join('');
 }
 
-// Detail screen for a single incident. Round 3 will add PDF download +
-// status update; for now this is a basic read-only view.
+// Detail screen for a single incident. Round 2 adds the supervisor review
+// lifecycle: open → under-review → closed, with notes timeline and action
+// panel.
 function goToIncidentDetail(ref) {
   const r = (typeof incLoadByRef === 'function') ? incLoadByRef(ref) : null;
   if (!r) {
@@ -18117,6 +18123,8 @@ function goToIncidentDetail(ref) {
   const sl = document.querySelector('#screen-profile .setup-hero img');
   const il = document.getElementById('inc-detail-logo');
   if (sl && il) il.src = sl.src;
+  // Stash the active ref so action handlers know what record they're working on
+  window._incActiveRef = ref;
   // Populate
   const title = document.getElementById('inc-detail-title');
   const meta  = document.getElementById('inc-detail-meta');
@@ -18137,10 +18145,23 @@ function goToIncidentDetail(ref) {
     pill.style.background = sev.bg;
     pill.style.color = sev.text;
   }
+  // Status pill — open / under-review / closed
+  const status = r.status || 'open';
+  const statusPillEl = document.getElementById('inc-detail-status-pill');
+  const statusColours = {
+    'open':         { bg:'#FDF8EC', text:'#BA7517', label:'Open' },
+    'under-review': { bg:'#EFEAFB', text:'#5535AD', label:'Under Review' },
+    'closed':       { bg:'#E6F5ED', text:'#1B6E3A', label:'Closed' }
+  };
+  const sc = statusColours[status] || statusColours.open;
+  if (statusPillEl) {
+    statusPillEl.textContent = sc.label;
+    statusPillEl.style.background = sc.bg;
+    statusPillEl.style.color = sc.text;
+  }
   // Build the detail body
-  const isOpen = (r.status || 'open') !== 'closed';
-  const statusText = isOpen ? 'Open' : 'Closed';
-  const statusColour = isOpen ? '#BA7517' : '#1B6E3A';
+  const me = (typeof getProfile === 'function') ? getProfile() : null;
+  const isSup = !!(me && me.role === 'Site Supervisor');
   const fmtRow = function(label, value) {
     if (!value) return '';
     return '<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #F0F2F0;font-size:12.5px"><span style="color:var(--muted);flex-shrink:0">' + label + '</span><span style="color:var(--text);font-weight:500;text-align:right">' + String(value).replace(/</g, '&lt;') + '</span></div>';
@@ -18149,11 +18170,87 @@ function goToIncidentDetail(ref) {
     if (!value) return '';
     return '<div style="padding:10px 0;border-bottom:1px solid #F0F2F0"><div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">' + label + '</div><div style="font-size:13px;color:var(--text);line-height:1.55;white-space:pre-wrap">' + String(value).replace(/</g, '&lt;') + '</div></div>';
   };
+
+  // Review timeline — shown to both worker and supervisor
+  const notes = Array.isArray(r.review_notes) ? r.review_notes : [];
+  const reviewTimelineHtml = (function(){
+    if (notes.length === 0 && status === 'open') {
+      return '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;padding:6px 0">This incident has not been reviewed yet. ' + (isSup ? 'Tap <b>Start review</b> below to begin.' : 'Your supervisor will review and add notes here.') + '</div>';
+    }
+    let html = '';
+    if (r.review_started_at) {
+      html += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F0F2F0"><div style="width:6px;height:6px;border-radius:50%;background:#5535AD;margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.5"><div style="color:var(--muted)">' + new Date(r.review_started_at).toLocaleString('en-AU') + ' \u00b7 ' + (r.reviewer_name || 'Supervisor').replace(/</g,'&lt;') + '</div><div style="color:var(--text)"><b>Review started.</b></div></div></div>';
+    }
+    notes.forEach(function(n){
+      html += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F0F2F0"><div style="width:6px;height:6px;border-radius:50%;background:var(--muted);margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.5"><div style="color:var(--muted)">' + new Date(n.timestamp || Date.now()).toLocaleString('en-AU') + ' \u00b7 ' + String(n.author || 'Supervisor').replace(/</g,'&lt;') + '</div><div style="color:var(--text);white-space:pre-wrap">' + String(n.note || '').replace(/</g,'&lt;') + '</div></div></div>';
+    });
+    if (r.corrective_action_completed_at) {
+      html += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F0F2F0"><div style="width:6px;height:6px;border-radius:50%;background:#1B6E3A;margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.5"><div style="color:var(--muted)">' + new Date(r.corrective_action_completed_at).toLocaleString('en-AU') + ' \u00b7 ' + String(r.corrective_action_completed_by || 'Supervisor').replace(/</g,'&lt;') + '</div><div style="color:var(--text)"><b>Corrective action marked complete.</b></div></div></div>';
+    }
+    if (r.closed_at) {
+      html += '<div style="display:flex;gap:10px;padding:8px 0"><div style="width:6px;height:6px;border-radius:50%;background:#1B6E3A;margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.5"><div style="color:var(--muted)">' + new Date(r.closed_at).toLocaleString('en-AU') + ' \u00b7 ' + String(r.closed_by || 'Supervisor').replace(/</g,'&lt;') + '</div><div style="color:var(--text)"><b>Incident closed.</b>' + (r.close_note ? '<div style="margin-top:4px;color:var(--text);white-space:pre-wrap">' + String(r.close_note).replace(/</g,'&lt;') + '</div>' : '') + '</div></div></div>';
+    }
+    return html;
+  })();
+
+  // Notifiable assessment — show both reporter answer and (if set) supervisor's
+  const notifReporter = r.potentially_notifiable || '';
+  const notifSup      = (r.notifiable_assessment && r.notifiable_assessment.supervisor_said) || '';
+  const notifLabel = function(v){
+    if (v === 'yes')    return 'Yes';
+    if (v === 'no')     return 'No';
+    if (v === 'unsure') return 'Not sure';
+    return v || '\u2014';
+  };
+
+  // Supervisor action panel — only visible to supervisors, content varies by status
+  const actionPanelHtml = (function(){
+    if (!isSup) return '';
+    if (status === 'open') {
+      return '<div class="fcard" style="border:1.5px solid #5535AD"><div class="fcard-hdr" style="background:#EFEAFB;color:#5535AD">Supervisor actions</div><div class="fcard-body">' +
+        '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:10px">This incident is awaiting review. Start the review when you\'ve assessed the situation \u2014 you\'ll then be able to add notes, confirm whether it\'s notifiable, mark corrective action complete, and close the report.</div>' +
+        '<button onclick="incStartReview()" style="display:block;width:100%;padding:13px;background:#5535AD;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Start review</button>' +
+      '</div></div>';
+    }
+    if (status === 'under-review') {
+      return '<div class="fcard" style="border:1.5px solid #5535AD"><div class="fcard-hdr" style="background:#EFEAFB;color:#5535AD">Supervisor actions</div><div class="fcard-body">' +
+        '<div class="fgroup">' +
+          '<label class="flabel">Add a review note</label>' +
+          '<textarea id="inc-action-note" placeholder="What\'s being done? e.g. Spoke to crew, additional barricading installed, retraining scheduled" rows="3" style="font-size:14px"></textarea>' +
+          '<button onclick="incAddReviewNote()" style="display:block;width:100%;padding:11px;margin-top:8px;background:transparent;color:#5535AD;border:1.5px solid #5535AD;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Add note</button>' +
+        '</div>' +
+        '<div class="fgroup" style="margin-top:14px">' +
+          '<label class="flabel">Confirm notifiable to the regulator</label>' +
+          '<div style="font-size:11.5px;color:var(--muted);margin-bottom:6px">Reporter said: <b>' + notifLabel(notifReporter) + '</b>' + (notifSup ? ' \u00b7 You confirmed: <b>' + notifLabel(notifSup) + '</b>' : '') + '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">' +
+            '<button onclick="incSetSupervisorNotifiable(\'yes\')"    class="ps-btn' + (notifSup === 'yes' ? ' pass' : '') + '">Yes</button>' +
+            '<button onclick="incSetSupervisorNotifiable(\'no\')"     class="ps-btn' + (notifSup === 'no' ? ' pass' : '') + '">No</button>' +
+            '<button onclick="incSetSupervisorNotifiable(\'unsure\')" class="ps-btn' + (notifSup === 'unsure' ? ' pass' : '') + '">Unsure</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="fgroup" style="margin-top:14px">' +
+          '<label class="flabel">Corrective action</label>' +
+          (r.corrective_action_complete
+            ? '<div style="background:#E6F5ED;border:1px solid rgba(27,110,58,.25);border-radius:8px;padding:9px 12px;font-size:12.5px;color:#1B6E3A">\u2713 Marked complete by ' + String(r.corrective_action_completed_by || '').replace(/</g,'&lt;') + '</div>'
+            : '<button onclick="incMarkCorrective()" style="display:block;width:100%;padding:11px;background:transparent;color:#1B6E3A;border:1.5px solid #1B6E3A;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Mark corrective action complete</button>') +
+        '</div>' +
+        '<div class="fgroup" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">' +
+          '<label class="flabel">Close incident</label>' +
+          '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">Add a final note summarising the outcome. The incident will move to <b>Closed</b> and stop counting against the open chip.</div>' +
+          '<textarea id="inc-close-note" placeholder="e.g. SWMS updated and toolbox delivered. No further action required." rows="3" style="font-size:14px"></textarea>' +
+          '<button onclick="incCloseIncident()" style="display:block;width:100%;padding:13px;margin-top:8px;background:#1B6E3A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">Close incident</button>' +
+        '</div>' +
+      '</div></div>';
+    }
+    // Status === closed: read-only summary
+    return '';
+  })();
+
   if (body) {
     body.innerHTML =
-      '<div class="fcard"><div class="fcard-hdr">Status</div><div class="fcard-body">' +
-        '<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="display:inline-block;width:10px;height:10px;border-radius:5px;background:' + statusColour + '"></span><span style="font-size:14px;font-weight:600;color:var(--text)">' + statusText + '</span></div>' +
-        '<div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4">Round 3 will add status updates (under-review, closed). Records remain open until reviewed.</div>' +
+      // Review timeline (always shown — workers see what supervisor's done)
+      '<div class="fcard"><div class="fcard-hdr">Review timeline</div><div class="fcard-body">' +
+        reviewTimelineHtml +
       '</div></div>' +
       '<div class="fcard"><div class="fcard-hdr">Incident details</div><div class="fcard-body">' +
         fmtRow('Reference',          r.ref) +
@@ -18196,13 +18293,156 @@ function goToIncidentDetail(ref) {
           '</div></div></div>'
         : '') +
       '<div class="fcard"><div class="fcard-hdr">Notifiable assessment</div><div class="fcard-body">' +
-        fmtRow('Notifiable to regulator', r.potentially_notifiable) +
+        fmtRow('Reporter said', notifLabel(notifReporter)) +
+        (notifSup ? fmtRow('Supervisor confirmed', notifLabel(notifSup)) : '') +
         fmtRow('SWMS update required',     r.swms_update_required) +
         fmtRow('Work resumed',             r.work_resumed) +
         fmtRow('Submitted',                (r.submission_date || '') + ' ' + (r.submission_time || '')) +
-      '</div></div>';
+      '</div></div>' +
+      actionPanelHtml;
   }
   goTo('screen-incident-detail');
+}
+
+// ─── SUPERVISOR REVIEW ACTIONS ───────────────────────────────
+// Each handler reads the active record, mutates it, persists via incSaveRecord,
+// then re-renders the detail screen so the new state is visible immediately.
+
+function incLoadActiveRecord() {
+  const ref = window._incActiveRef;
+  if (!ref) {
+    slanAlert('No incident is open. Tap on a record from the list to review it.');
+    return null;
+  }
+  const rec = (typeof incLoadByRef === 'function') ? incLoadByRef(ref) : null;
+  if (!rec) {
+    slanAlert('That incident could not be found.');
+    return null;
+  }
+  return rec;
+}
+
+function incPersistAndRefresh(rec) {
+  if (typeof incSaveRecord !== 'function') return;
+  // Photos are stored separately so we strip them before save (incSaveRecord
+  // does this internally, but we want to make sure we're passing the live
+  // record with photos still attached so they survive).
+  incSaveRecord(rec);
+  // Re-render the detail screen
+  goToIncidentDetail(rec.ref);
+  // Refresh tile chips and lists
+  if (typeof updateAllTileSubs === 'function') {
+    const _p = (typeof getProfile === 'function') ? getProfile() : null;
+    try { updateAllTileSubs(_p); } catch(e) {}
+  }
+  if (typeof updateStatusStrip === 'function') { try { updateStatusStrip(); } catch(e) {} }
+  if (typeof loadSuperDash === 'function')     { try { loadSuperDash(); } catch(e) {} }
+}
+
+function incStartReview() {
+  const rec = incLoadActiveRecord(); if (!rec) return;
+  const me = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!me || me.role !== 'Site Supervisor') {
+    slanAlert('Only a site supervisor can start an incident review.');
+    return;
+  }
+  rec.status = 'under-review';
+  rec.reviewer_name = me.name || '';
+  rec.reviewer_company = me.company || '';
+  rec.review_started_at = new Date().toISOString();
+  if (!Array.isArray(rec.review_notes)) rec.review_notes = [];
+  incPersistAndRefresh(rec);
+}
+
+function incAddReviewNote() {
+  const rec = incLoadActiveRecord(); if (!rec) return;
+  const me = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!me || me.role !== 'Site Supervisor') return;
+  const ta = document.getElementById('inc-action-note');
+  const txt = (ta && ta.value || '').trim();
+  if (!txt) {
+    slanAlert('Please type a note before adding it to the review timeline.');
+    return;
+  }
+  if (!Array.isArray(rec.review_notes)) rec.review_notes = [];
+  rec.review_notes.push({
+    timestamp: new Date().toISOString(),
+    author: me.name || 'Supervisor',
+    note: txt
+  });
+  incPersistAndRefresh(rec);
+}
+
+function incSetSupervisorNotifiable(val) {
+  const rec = incLoadActiveRecord(); if (!rec) return;
+  const me = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!me || me.role !== 'Site Supervisor') return;
+  if (!rec.notifiable_assessment) rec.notifiable_assessment = {};
+  rec.notifiable_assessment.reporter_said = rec.potentially_notifiable || '';
+  rec.notifiable_assessment.supervisor_said = val;
+  rec.notifiable_assessment.agreed = (rec.potentially_notifiable === val);
+  rec.notifiable_assessment.assessed_at = new Date().toISOString();
+  rec.notifiable_assessment.assessed_by = me.name || '';
+  // Auto-add a review note for visibility
+  if (!Array.isArray(rec.review_notes)) rec.review_notes = [];
+  const labels = { yes:'Yes', no:'No', unsure:'Unsure' };
+  rec.review_notes.push({
+    timestamp: new Date().toISOString(),
+    author: me.name || 'Supervisor',
+    note: 'Notifiable assessment: ' + (labels[val] || val) + (rec.notifiable_assessment.agreed ? ' (agrees with reporter)' : ' (overrides reporter\u2019s answer)')
+  });
+  incPersistAndRefresh(rec);
+}
+
+function incMarkCorrective() {
+  const rec = incLoadActiveRecord(); if (!rec) return;
+  const me = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!me || me.role !== 'Site Supervisor') return;
+  rec.corrective_action_complete = true;
+  rec.corrective_action_completed_at = new Date().toISOString();
+  rec.corrective_action_completed_by = me.name || '';
+  incPersistAndRefresh(rec);
+}
+
+function incCloseIncident() {
+  const rec = incLoadActiveRecord(); if (!rec) return;
+  const me = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!me || me.role !== 'Site Supervisor') return;
+  // Require corrective action complete + notifiable assessment + a close note
+  if (!rec.corrective_action_complete) {
+    slanAlert('Mark the corrective action as complete before closing the incident.');
+    return;
+  }
+  if (!rec.notifiable_assessment || !rec.notifiable_assessment.supervisor_said) {
+    slanAlert('Confirm the notifiable assessment (Yes / No / Unsure) before closing the incident.');
+    return;
+  }
+  const noteEl = document.getElementById('inc-close-note');
+  const noteTxt = (noteEl && noteEl.value || '').trim();
+  if (!noteTxt) {
+    slanAlert('Please add a closing note summarising the outcome before closing the incident.');
+    return;
+  }
+  // Confirm
+  if (typeof slanConfirm === 'function') {
+    slanConfirm('Close this incident? It will be marked Closed and the open count will drop.').then(function(ok){
+      if (!ok) return;
+      _incFinalizeClose(rec, me, noteTxt);
+    });
+  } else {
+    _incFinalizeClose(rec, me, noteTxt);
+  }
+}
+
+function _incFinalizeClose(rec, me, noteTxt) {
+  rec.status = 'closed';
+  rec.closed_at = new Date().toISOString();
+  rec.closed_by = me.name || '';
+  rec.close_note = noteTxt;
+  incPersistAndRefresh(rec);
+  if (typeof slanAlert === 'function') {
+    slanAlert('Incident closed', 'The report is now closed and will appear in the closed-incidents history.', 'success');
+  }
 }
 
 async function submitIncident() {
