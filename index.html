@@ -8504,13 +8504,24 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-hdr">This month's toolbox topic</div>
       <div class="fcard-body" style="padding:14px">
         <div id="set-topic-current" style="background:#F8FAF8;border:1px solid #E5E9E6;border-radius:8px;padding:12px 14px;margin-bottom:12px">
-          <div style="font-size:11px;color:#5C6B62;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Current topic</div>
+          <div style="font-size:11px;color:#5C6B62;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Current topic <span style="color:#1B6E3A">\u2022 Live</span></div>
           <div id="set-topic-current-title" style="font-size:14px;font-weight:600;color:#1A2A1F;line-height:1.35">—</div>
           <div id="set-topic-current-meta" style="font-size:11px;color:#5C6B62;margin-top:3px">—</div>
         </div>
+
+        <!-- Staged-topic banner: appears when supervisor has chosen a new topic but hasn\u2019t confirmed go-live yet -->
+        <div id="set-topic-staged" style="display:none;background:#FDF8EC;border:1px solid #E8D5A3;border-radius:8px;padding:12px 14px;margin-bottom:12px">
+          <div style="font-size:11px;color:#BA7517;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Staged \u2014 not yet live</div>
+          <div id="set-topic-staged-title" style="font-size:14px;font-weight:600;color:#1A2A1F;line-height:1.35">—</div>
+          <div id="set-topic-staged-meta" style="font-size:11px;color:#5C6B62;margin-top:3px;margin-bottom:10px">—</div>
+          <div style="font-size:11.5px;color:#5C6B62;line-height:1.45;margin-bottom:10px">Workers are still seeing the current topic. Tap <b>Go live</b> below when you\u2019re ready to roll out the new talk.</div>
+          <button onclick="applyStagedTalk()" style="display:block;width:100%;padding:11px;background:#1B6E3A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:6px">\u2713  Confirm and go live</button>
+          <button onclick="cancelStagedTalk()" style="display:block;width:100%;padding:9px;background:transparent;color:#5C6B62;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif">Discard staged topic</button>
+        </div>
+
         <button onclick="openTopicPicker()" style="display:block;width:100%;padding:11px;background:#1B6E3A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">Choose from library</button>
         <button onclick="openCustomTalkBuilder()" style="display:block;width:100%;padding:11px;background:transparent;color:#1B3A2D;border:1.5px solid #1B3A2D;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Write a custom talk</button>
-        <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">Setting a new topic resets signatures so workers re-sign for the new content. Previous rosters remain intact in your records.</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">Setting a new topic stages it. Workers won\u2019t see the new topic on their tile until you tap \u201cConfirm and go live\u201d.</div>
       </div>
     </div>
 
@@ -8530,6 +8541,35 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <!-- Supervisor: download combined roster PDF (single PDF with all signers + wrap-up) -->
+    <!-- Supervisor: delivery-state stepper. Two-step flow:
+         Step 1 = Talk delivery (debrief + sign-attendance HIDDEN).
+         Step 2 = After delivery (debrief required, supervisor signs).
+         The state lives in localStorage and applies for the active talk_id only. -->
+    <div class="fcard" id="talk-delivery-state-card" style="display:none;margin-top:8px">
+      <div class="fcard-body" style="padding:14px">
+
+        <!-- Step 1 — delivering -->
+        <div id="delivery-step-1" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div style="width:24px;height:24px;border-radius:12px;background:#1B6E3A;color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:24px;flex-shrink:0">1</div>
+            <div style="font-size:13px;font-weight:700;color:#1A2A1F">Talk delivery — in progress</div>
+          </div>
+          <div style="font-size:12.5px;color:#3A453E;line-height:1.5;margin-bottom:10px">Deliver the talk to the crew and let workers sign in throughout the day. The debrief and your own attendance signing become available <b>after</b> delivery is complete.</div>
+          <button onclick="tbtMarkTalkDelivered()" style="display:block;width:100%;padding:11px;background:#1B6E3A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Mark talk delivered \u2014 start debrief</button>
+        </div>
+
+        <!-- Step 2 — debrief -->
+        <div id="delivery-step-2" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div style="width:24px;height:24px;border-radius:12px;background:#1B6E3A;color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:24px;flex-shrink:0">\u2713</div>
+            <div style="flex:1;font-size:13px;font-weight:700;color:#1A2A1F">Talk delivered \u2014 complete the debrief below</div>
+            <button onclick="tbtRevertToDelivery()" style="background:transparent;border:none;color:#5C6B62;font-size:11px;cursor:pointer;padding:4px 6px;font-family:inherit;text-decoration:underline">Undo</button>
+          </div>
+          <div style="font-size:11.5px;color:#5C6B62;line-height:1.45">Fill in the debrief honestly based on what happened during delivery, then sign your own attendance to finalise the roster.</div>
+        </div>
+      </div>
+    </div>
+
     <div id="talk-roster-wrap" style="display:none;margin-top:8px">
       <button onclick="tbtDownloadRosterPDF()" style="display:block;width:100%;padding:11px 14px;background:#1B3A2D;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
         📄 Download combined roster PDF
@@ -13543,7 +13583,27 @@ function goToPermitsToWork() {
 // Seed a chunk of demo permits across all 12 types so the app looks populated for demos.
 // Uses real worker names from DEMO_WORKERS so the supervisor view feels lived-in.
 function ptwSeedDemoPermits(silent) {
-  if (!silent && !confirm('This will add 24 demo permits to your local storage across all 12 types (mix of pending, approved, rejected, revoked, closed). OK to proceed?')) return;
+  if (silent) {
+    return _ptwSeedDemoPermitsImpl();
+  }
+  // Non-silent: ask first
+  slanConfirm({
+    title: 'Load demo permits?',
+    body: 'This will add 24 demo permits across all 12 types (mix of pending, approved, rejected, revoked, closed).',
+    okText: 'Load permits',
+    cancelText: 'Cancel',
+    variant: 'info'
+  }).then(function(ok) {
+    if (!ok) return;
+    var added = _ptwSeedDemoPermitsImpl();
+    if (typeof slanToast === 'function') slanToast('Loaded ' + added + ' demo permits.');
+    else slanAlert('Demo data loaded', 'Loaded ' + added + ' demo permits.', 'info');
+    ptwRenderUnified();
+  });
+  return 0;
+}
+
+function _ptwSeedDemoPermitsImpl() {
 
   const today = new Date();
   const todayStr = today.toLocaleDateString('en-AU');
@@ -13677,14 +13737,6 @@ function ptwSeedDemoPermits(silent) {
     } catch(e) { /* skip */ }
   });
 
-  if (!silent) {
-    if (typeof slanToast === 'function') {
-      slanToast('Loaded ' + added + ' demo permits.');
-    } else {
-      alert('Loaded ' + added + ' demo permits.');
-    }
-    ptwRenderUnified();
-  }
   return added;
 }
 
@@ -17041,6 +17093,23 @@ function goToTalk() {
         var versionLabel = TODAYS_TALK && TODAYS_TALK.version ? TODAYS_TALK.version : '';
         curMeta.textContent = (isCustom ? 'Custom talk' : 'From library') + (versionLabel ? ' \u00b7 ' + versionLabel : '');
       }
+      // Staged talk banner
+      var stagedBox = document.getElementById('set-topic-staged');
+      var stagedTitleEl = document.getElementById('set-topic-staged-title');
+      var stagedMetaEl = document.getElementById('set-topic-staged-meta');
+      var staged = (typeof getStagedTalk === 'function') ? getStagedTalk() : null;
+      if (stagedBox) {
+        if (staged) {
+          stagedBox.style.display = 'block';
+          if (stagedTitleEl) stagedTitleEl.textContent = staged.title || '\u2014';
+          if (stagedMetaEl) {
+            var stagedIsCustom = staged.version && staged.version.indexOf('TBT-CUSTOM-') === 0;
+            stagedMetaEl.textContent = (stagedIsCustom ? 'Custom talk' : 'From library') + (staged.version ? ' \u00b7 ' + staged.version : '');
+          }
+        } else {
+          stagedBox.style.display = 'none';
+        }
+      }
     } else {
       setTopicCard.style.display = 'none';
     }
@@ -17053,8 +17122,24 @@ function goToTalk() {
   const supRostersList = document.getElementById('talk-sup-rosters-list');
   if (rosterWrap && wrapupCard) {
     if (isSupervisor) {
+      // Two-step delivery flow: in step 1 (delivering), the debrief and the
+      // sign-attendance section are HIDDEN. Roster download stays visible
+      // because workers may sign during delivery and the supervisor can
+      // download a partial roster at any point.
+      var deliveryState = (typeof tbtCurrentDeliveryState === 'function') ? tbtCurrentDeliveryState() : 'delivering';
+      var inDebrief = (deliveryState === 'debrief');
       rosterWrap.style.display = 'block';
-      wrapupCard.style.display = 'block';
+      wrapupCard.style.display = inDebrief ? 'block' : 'none';
+      // Hide the sign-section during step 1; show it during step 2
+      var supSignSection = document.getElementById('talk-sign-section');
+      if (supSignSection) supSignSection.style.display = inDebrief ? 'block' : 'none';
+      // Show the delivery-state stepper card
+      var deliveryCard = document.getElementById('talk-delivery-state-card');
+      var step1 = document.getElementById('delivery-step-1');
+      var step2 = document.getElementById('delivery-step-2');
+      if (deliveryCard) deliveryCard.style.display = 'block';
+      if (step1) step1.style.display = inDebrief ? 'none' : 'block';
+      if (step2) step2.style.display = inDebrief ? 'block' : 'none';
       // Populate auto-count and load saved wrap-up
       try {
         const todayDateStr = new Date().toLocaleDateString('en-AU');
@@ -17128,6 +17213,12 @@ function goToTalk() {
       if (supRostersCard) supRostersCard.style.display = 'none';
       var supSeedBtnHide = document.getElementById('talk-sup-seed-btn');
       if (supSeedBtnHide) supSeedBtnHide.style.display = 'none';
+      // Workers always see the sign section
+      var workerSignSection = document.getElementById('talk-sign-section');
+      if (workerSignSection) workerSignSection.style.display = 'block';
+      // Hide delivery-state card for non-supervisors
+      var deliveryCardHide = document.getElementById('talk-delivery-state-card');
+      if (deliveryCardHide) deliveryCardHide.style.display = 'none';
     }
   }
 
@@ -30708,8 +30799,8 @@ function updateAllTileSubs(p) {
 function submitTalk() {
   var chk1 = document.getElementById('chk1');
   var chk2 = document.getElementById('chk2');
-  if (!chk1 || !chk1.classList.contains('checked')) { alert('Please confirm you have read and understood the toolbox talk.'); return; }
-  if (!chk2 || !chk2.classList.contains('checked')) { alert('Please confirm you commit to working safely.'); return; }
+  if (!chk1 || !chk1.classList.contains('checked')) { slanAlert('Acknowledgement required', 'Please confirm you have read and understood the toolbox talk.', 'warn'); return; }
+  if (!chk2 || !chk2.classList.contains('checked')) { slanAlert('Commitment required', 'Please confirm you commit to working safely.', 'warn'); return; }
 
   var p = getProfile();
 
@@ -30731,7 +30822,11 @@ function submitTalk() {
     if (!qns) missing.push('Questions or concerns raised');
     if (!act) missing.push('Action items / follow-ups');
     if (missing.length) {
-      alert('Supervisor debrief required.\n\nPlease fill in the following before signing your attendance:\n\n\u2022 ' + missing.join('\n\u2022 ') + '\n\nYour debrief becomes part of the audit roster and must be completed.');
+      slanAlert({
+        title: 'Supervisor debrief required',
+        body: 'Please fill in the following before signing your attendance:\n\n\u2022 ' + missing.join('\n\u2022 ') + '\n\nThe debrief becomes part of the audit roster and must be completed.',
+        variant: 'warn'
+      });
       // Scroll to the debrief card so they see what's required
       var card = document.getElementById('talk-wrapup-card');
       if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -30863,7 +30958,7 @@ function tbtHasSignedCurrent(workerName) {
 function tbtSaveWrapup() {
   try {
     var p = (typeof getProfile === 'function') ? getProfile() : null;
-    if (!p || p.role !== 'Site Supervisor') { alert('Only supervisors can save the debrief.'); return; }
+    if (!p || p.role !== 'Site Supervisor') { slanAlert('Supervisor only', 'Only supervisors can save the debrief.', 'warn'); return; }
     var talkId = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? TODAYS_TALK.version : '';
     var todayDate = new Date().toLocaleDateString('en-AU');
     var key = 'slan_tbt_wrapups_v1';
@@ -30871,7 +30966,7 @@ function tbtSaveWrapup() {
     try { all = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) { all = {}; }
     var attRaw = (document.getElementById('wu-attendance') || {}).value || '';
     var att = attRaw === '' ? null : Number(attRaw);
-    if (att != null && (isNaN(att) || att < 0)) { alert('Attendance count must be a positive number.'); return; }
+    if (att != null && (isNaN(att) || att < 0)) { slanAlert('Invalid attendance', 'Attendance count must be a positive number.', 'warn'); return; }
     var entry = {
       talk_id: talkId,
       date: todayDate,
@@ -30886,7 +30981,7 @@ function tbtSaveWrapup() {
     localStorage.setItem(key, JSON.stringify(all));
     var msg = document.getElementById('wu-saved-msg');
     if (msg) { msg.style.display = 'block'; setTimeout(function(){ msg.style.display = 'none'; }, 2500); }
-  } catch(e) { alert('Could not save debrief: ' + (e.message || e)); }
+  } catch(e) { slanAlert('Save failed', 'Could not save debrief: ' + (e.message || e), 'danger'); }
 }
 
 function tbtLoadWrapup(talkId, dateStr) {
@@ -30906,14 +31001,14 @@ function tbtDownloadRosterByTalkId(talkId) {
 
 function tbtDownloadRosterPDF(targetTalkId) {
   try {
-    if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF generator not available.'); return; }
+    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF unavailable', 'PDF generator not available right now. Try again in a moment.', 'danger'); return; }
 
     var todayDate = new Date().toLocaleDateString('en-AU');
     var allRecs = tbtLoadAll();
     // If a specific talk_id was passed (e.g. re-downloading last month's roster),
     // use that. Otherwise use the current active talk.
     var useTalkId = targetTalkId || (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK ? TODAYS_TALK.version : '');
-    if (!useTalkId) { alert('No active talk.'); return; }
+    if (!useTalkId) { slanAlert('No active talk', 'No talk is currently active.', 'warn'); return; }
 
     var talkRecs = allRecs.filter(function(r){
       return r.talk_id === useTalkId;
@@ -30943,7 +31038,7 @@ function tbtDownloadRosterPDF(targetTalkId) {
         sections: first.sections_snapshot || []
       };
     } else {
-      alert('No records found for that talk.'); return;
+      slanAlert('No records found', 'No records found for that talk.', 'warn'); return;
     }
 
     // Wrap-up: prefer today's wrapup if generating for current talk, otherwise
@@ -31032,6 +31127,14 @@ function tbtDownloadRosterPDF(targetTalkId) {
     function sectionBreak(yPos, neededSpace, gapIfStaying) {
       if (yPos + neededSpace > PAGE_H - MB - 6) { doc.addPage(); return drawHeader(); }
       return yPos + (gapIfStaying || 0);
+    }
+    function drawTick(x, yPos, color, size) {
+      size = size || 3;
+      setStroke(color);
+      doc.setLineWidth(0.5);
+      // Simple checkmark shape
+      doc.line(x, yPos - size*0.2, x + size*0.4, yPos + size*0.3);
+      doc.line(x + size*0.4, yPos + size*0.3, x + size*1.1, yPos - size*0.7);
     }
 
     var y = drawHeader();
@@ -31129,6 +31232,32 @@ function tbtDownloadRosterPDF(targetTalkId) {
       debriefBlock('Action items / follow-ups', wrapup.actions);
     }
 
+    // ── WORKER ACKNOWLEDGEMENT (audit completeness) ──
+    // What each signer in the roster below committed to. Required for audit:
+    // a roster of names is meaningless without showing what they agreed to.
+    y = sectionBreak(y, 40, 4);
+    y = drawMajorBanner(y, 'WORKER ACKNOWLEDGEMENT \u2014 AGREED BY EACH SIGNER');
+    y += 4;
+    setText(C.darkText);
+    doc.setFont('helvetica','italic'); doc.setFontSize(9);
+    doc.text('By signing below, each worker confirmed:', ML, y);
+    y += 5;
+    var rosterAckStatements = [
+      'I confirm I have read and understood this toolbox talk content, the safety information presented, and have had the opportunity to ask questions or raise concerns.',
+      'I commit to applying this knowledge, working safely in accordance with the controls discussed, and reporting any unsafe conditions or near misses to my supervisor immediately.'
+    ];
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+    rosterAckStatements.forEach(function(s){
+      var lines = doc.splitTextToSize(s, CW - 8);
+      var blockH = lines.length * 4.8 + 3;
+      y = newPageIfNeeded(y, blockH);
+      drawTick(ML + 1, y - 1, C.greenDark, 3);
+      setText(C.darkText);
+      doc.text(lines, ML + 7, y);
+      y += blockH;
+    });
+    y += 4;
+
     // ── SIGNATURE ROSTER ──
     y = sectionBreak(y, 30, 4);
     y = drawMajorBanner(y, 'SIGNATURE ROSTER');
@@ -31224,7 +31353,7 @@ function tbtDownloadRosterPDF(targetTalkId) {
     var fname = 'Toolbox-Roster-' + (talkMeta.version || 'TBT') + '-' + todayDate.replace(/\//g,'-') + '.pdf';
     doc.save(fname);
   } catch(e) {
-    alert('Could not generate roster PDF: ' + (e.message || e));
+    slanAlert('Could not generate PDF', 'Roster PDF generation failed: ' + (e.message || e), 'danger');
   }
 }
 
@@ -31244,6 +31373,123 @@ function tbtBlocksSignInOut() {
 
 // Renders a styled modal overlay that asks the worker to sign the current
 // toolbox talk before they can sign in or out. One CTA — go sign it.
+// ─── REUSABLE STYLED DIALOGS ──────────────────────────────────
+// Replaces native browser confirm() / alert() for user-facing messages so
+// dialogs match the app's visual language and don't show "spilane.github.io says".
+//
+// slanAlert(opts)     → returns Promise<void> (resolves on OK)
+// slanConfirm(opts)   → returns Promise<boolean> (true on OK, false on Cancel)
+// slanPrompt(opts)    → returns Promise<string|null> (input value or null on cancel)
+//
+// opts: { title, body, okText, cancelText, variant: 'info'|'warn'|'danger', icon }
+function slanDialog(opts) {
+  return new Promise(function(resolve) {
+    opts = opts || {};
+    // Tear down any existing
+    var prev = document.getElementById('slan-dialog');
+    if (prev) prev.remove();
+
+    var variant = opts.variant || 'info';
+    var iconBg = '#E5F4EA', iconStroke = '#1B6E3A';
+    if (variant === 'warn')   { iconBg = '#FDF8EC'; iconStroke = '#BA7517'; }
+    if (variant === 'danger') { iconBg = '#FCEBEB'; iconStroke = '#A32D2D'; }
+
+    var iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="' + iconStroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px">';
+    if (variant === 'warn' || variant === 'danger') {
+      iconSvg += '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+    } else {
+      iconSvg += '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>';
+    }
+    iconSvg += '</svg>';
+
+    var overlay = document.createElement('div');
+    overlay.id = 'slan-dialog';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,25,20,.55);z-index:10000;display:flex;align-items:flex-end;justify-content:center;animation:tbtGateFade 200ms ease-out;font-family:\'DM Sans\',sans-serif';
+
+    var inputHtml = '';
+    if (opts.kind === 'prompt') {
+      var ph = (opts.placeholder || '').replace(/"/g, '&quot;');
+      var defVal = (opts.defaultValue || '').replace(/"/g, '&quot;');
+      if (opts.multiline) {
+        inputHtml = '<textarea id="slan-dialog-input" rows="' + (opts.rows || 4) + '" placeholder="' + ph + '" style="padding:11px 13px;border:1.5px solid #E5E9E6;border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical;margin-top:4px">' + defVal + '</textarea>';
+      } else {
+        inputHtml = '<input id="slan-dialog-input" type="text" placeholder="' + ph + '" value="' + defVal + '" style="padding:11px 13px;border:1.5px solid #E5E9E6;border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:14px;width:100%;outline:none;margin-top:4px" autocomplete="off" />';
+      }
+    }
+
+    var okText = opts.okText || 'OK';
+    var cancelText = opts.cancelText || 'Cancel';
+    var showCancel = (opts.kind === 'confirm' || opts.kind === 'prompt');
+
+    var btnBg = '#1B6E3A';
+    if (variant === 'danger') btnBg = '#A32D2D';
+
+    overlay.innerHTML =
+      '<style>@keyframes tbtGateFade{from{opacity:0}to{opacity:1}}@keyframes tbtGateSlide{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}</style>' +
+      '<div style="background:#fff;width:100%;max-width:440px;border-radius:18px 18px 0 0;padding:22px 22px 18px;box-shadow:0 -8px 32px rgba(0,0,0,.18);animation:tbtGateSlide 240ms cubic-bezier(.22,.61,.36,1)">' +
+        '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px">' +
+          '<div style="width:42px;height:42px;border-radius:21px;background:' + iconBg + ';border:1.5px solid ' + iconBg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">' + iconSvg + '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:16px;font-weight:700;color:#1A2A1F;line-height:1.3">' + (opts.title || '').replace(/</g, '&lt;') + '</div>' +
+            (opts.subtitle ? '<div style="font-size:12px;color:#5C6B62;margin-top:2px">' + opts.subtitle.replace(/</g,'&lt;') + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+        (opts.body ? '<div style="font-size:13.5px;color:#3A453E;line-height:1.55;margin-bottom:' + (inputHtml ? '8px' : '18px') + ';white-space:pre-wrap">' + opts.body.replace(/</g,'&lt;') + '</div>' : '') +
+        inputHtml +
+        '<div style="display:flex;flex-direction:column;gap:8px;margin-top:18px">' +
+          '<button id="slan-dialog-ok" style="padding:13px;background:' + btnBg + ';color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif">' + okText + '</button>' +
+          (showCancel ? '<button id="slan-dialog-cancel" style="padding:11px;background:transparent;color:#5C6B62;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:\'DM Sans\',sans-serif">' + cancelText + '</button>' : '') +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+
+    var inputEl = document.getElementById('slan-dialog-input');
+    if (inputEl) setTimeout(function(){ inputEl.focus(); }, 50);
+
+    function close(result) {
+      overlay.remove();
+      resolve(result);
+    }
+
+    document.getElementById('slan-dialog-ok').onclick = function() {
+      if (opts.kind === 'prompt') {
+        var v = (inputEl && inputEl.value || '').trim();
+        close(v);
+      } else if (opts.kind === 'confirm') {
+        close(true);
+      } else {
+        close();
+      }
+    };
+
+    var cancelBtn = document.getElementById('slan-dialog-cancel');
+    if (cancelBtn) cancelBtn.onclick = function() {
+      close(opts.kind === 'prompt' ? null : false);
+    };
+
+    overlay.onclick = function(e) {
+      if (e.target === overlay) close(opts.kind === 'prompt' ? null : (opts.kind === 'confirm' ? false : undefined));
+    };
+  });
+}
+
+function slanAlert(titleOrOpts, body, variant) {
+  var opts = (typeof titleOrOpts === 'object') ? titleOrOpts : { title: titleOrOpts, body: body, variant: variant };
+  opts.kind = 'alert';
+  return slanDialog(opts);
+}
+function slanConfirm(titleOrOpts, body, variant) {
+  var opts = (typeof titleOrOpts === 'object') ? titleOrOpts : { title: titleOrOpts, body: body, variant: variant || 'warn' };
+  opts.kind = 'confirm';
+  return slanDialog(opts);
+}
+function slanPrompt(opts) {
+  opts = opts || {};
+  opts.kind = 'prompt';
+  return slanDialog(opts);
+}
+
 function tbtShowGateModal() {
   // Remove any prior instance
   var existing = document.getElementById('tbt-gate-modal');
@@ -31349,6 +31595,19 @@ function openTopicPicker() {
     '<div style="padding:10px 16px 6px;background:#FAFCF9;font-size:10.5px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid #E5E9E6;border-top:1px solid #E5E9E6">Library (' + TBT_LIBRARY.length + ')</div>' +
     TBT_LIBRARY.map(function(t, i){ return topicRowHtml(t, i, 'lib'); }).join('');
 
+  // "Don't see your topic?" — supervisor types what they want, opens an email
+  // to Slán Safety with their request. Sits at the bottom of the picker as a
+  // distinctive row so it doesn't compete with the actual topics.
+  var requestRow =
+    '<div onclick="openTopicRequestForm()" style="padding:13px 16px;border-top:1px solid #E5E9E6;cursor:pointer;display:flex;align-items:center;gap:11px;background:#FAFCF9">' +
+      '<div style="width:30px;height:30px;border-radius:15px;background:#FDF8EC;color:#BA7517;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;font-weight:700">+</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13.5px;font-weight:600;color:#1A2A1F">Don\u2019t see your topic?</div>' +
+        '<div style="font-size:11px;color:#5C6B62;margin-top:2px">Request a custom toolbox talk from Slán Safety</div>' +
+      '</div>' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>' +
+    '</div>';
+
   overlay.innerHTML =
     '<div style="background:#fff;width:100%;max-width:480px;max-height:80vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 32px rgba(0,0,0,.18);animation:tbtGateSlide 240ms cubic-bezier(.22,.61,.36,1)">' +
       '<div style="padding:18px 20px 12px;border-bottom:1px solid #E5E9E6;flex-shrink:0">' +
@@ -31360,7 +31619,7 @@ function openTopicPicker() {
           '<button onclick="closeTopicPicker()" style="background:transparent;border:none;color:#5C6B62;font-size:14px;cursor:pointer;padding:6px 10px;font-family:inherit">Cancel</button>' +
         '</div>' +
       '</div>' +
-      '<div style="flex:1;overflow-y:auto">' + customSection + libSection + '</div>' +
+      '<div style="flex:1;overflow-y:auto">' + customSection + libSection + requestRow + '</div>' +
     '</div>';
   document.body.appendChild(overlay);
   overlay.onclick = function(e) { if (e.target === overlay) closeTopicPicker(); };
@@ -31375,7 +31634,7 @@ function pickLibraryTopic(idx) {
   var topic = TBT_LIBRARY[idx];
   if (!topic) return;
   closeTopicPicker();
-  applyNewTalk(topic);
+  stageNewTalk(topic);
 }
 
 function pickCustomTopic(idx) {
@@ -31383,18 +31642,77 @@ function pickCustomTopic(idx) {
   var topic = lib[idx];
   if (!topic) return;
   closeTopicPicker();
-  applyNewTalk(topic);
+  stageNewTalk(topic);
+}
+
+// "Don't see your topic?" → supervisor describes what they need, system opens
+// a pre-filled email to Slán Safety with topic + supervisor name + site.
+function openTopicRequestForm() {
+  closeTopicPicker();
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  slanPrompt({
+    title: 'Request a toolbox topic',
+    subtitle: 'We\u2019ll write it for you and load it into your library',
+    body: 'What topic would you like? Add as much detail as you can — site context, hazards to focus on, any specific procedures.',
+    placeholder: 'e.g. Working safely around 11kV overhead lines on the Eastern Boundary site — focus on exclusion zones and spotter requirements.',
+    multiline: true,
+    rows: 5,
+    okText: 'Send request',
+    cancelText: 'Cancel'
+  }).then(function(text) {
+    if (text == null) return; // cancelled
+    text = String(text).trim();
+    if (!text) {
+      slanAlert('Description required', 'Please describe the topic you\u2019d like.', 'warn');
+      return;
+    }
+    var to = 'hello@slansafety.com.au';
+    var subject = 'Toolbox topic request \u2014 ' + (p && p.name ? p.name : 'Slán Safety client');
+    var lines = [
+      'Toolbox Talk Request',
+      '------------------------',
+      '',
+      'Topic / details:',
+      text,
+      '',
+      'Requested by: ' + (p && p.name ? p.name : '\u2014'),
+      'Role: '         + (p && p.role ? p.role : '\u2014'),
+      'Company: '      + (p && p.company ? p.company : '\u2014'),
+      'Site: '         + ((typeof SITE !== 'undefined' && SITE) ? SITE : '\u2014'),
+      'Submitted at: ' + new Date().toLocaleString('en-AU'),
+      '',
+      '------------------------',
+      'Sent from the Slán Safety app.'
+    ];
+    var body = encodeURIComponent(lines.join('\n'));
+    var subLine = encodeURIComponent(subject);
+    window.location.href = 'mailto:' + to + '?subject=' + subLine + '&body=' + body;
+    setTimeout(function(){
+      slanAlert({
+        title: 'Request prepared',
+        body: 'Your email app should open with the request pre-filled. Send it to us at hello@slansafety.com.au and we\u2019ll write the talk and load it into your library.',
+        variant: 'info'
+      });
+    }, 300);
+  });
 }
 
 function confirmDeleteCustomTalk(version) {
   var lib = loadCustomLibrary();
   var t = lib.find(function(x){ return x.version === version; });
   if (!t) return;
-  if (!confirm('Delete custom talk "' + t.title + '"?\n\nAny existing signatures or roster PDFs from this talk are kept in your records — only the saved template is removed.')) return;
-  deleteCustomTalkFromLibrary(version);
-  closeTopicPicker();
-  // Re-open with the updated list
-  setTimeout(openTopicPicker, 50);
+  slanConfirm({
+    title: 'Delete custom talk?',
+    body: '"' + t.title + '" will be removed from your saved templates.\n\nAny existing signatures or roster PDFs from this talk are kept in your records — only the saved template is removed.',
+    okText: 'Delete',
+    cancelText: 'Keep',
+    variant: 'danger'
+  }).then(function(ok) {
+    if (!ok) return;
+    deleteCustomTalkFromLibrary(version);
+    closeTopicPicker();
+    setTimeout(openTopicPicker, 50);
+  });
 }
 
 // ─── CUSTOM TALK BUILDER ──────────────────────────────────────
@@ -31449,7 +31767,7 @@ function closeCustomTalkBuilder() {
 function ctAddSection() {
   if (!window._ctSections) window._ctSections = [];
   if (window._ctSections.length >= 4) {
-    alert('Maximum 4 sections per talk.');
+    slanAlert('Maximum reached', 'You can have up to 4 sections per talk.', 'warn');
     return;
   }
   var idx = window._ctSections.length;
@@ -31492,7 +31810,7 @@ function saveCustomTalk() {
   var presenter = (document.getElementById('ct-presenter') || {}).value || '';
   title = title.trim();
   presenter = presenter.trim();
-  if (!title) { alert('Please enter a talk title.'); return; }
+  if (!title) { slanAlert('Title required', 'Please enter a talk title.', 'warn'); return; }
   if (!presenter) presenter = 'Site Supervisor';
 
   var sections = [];
@@ -31510,7 +31828,7 @@ function saveCustomTalk() {
   });
 
   if (sections.length < 1) {
-    alert('Please complete at least one section with a heading and at least 2 bullet points.');
+    slanAlert('Section incomplete', 'Please complete at least one section with a heading and at least 2 bullet points.', 'warn');
     return;
   }
 
@@ -31529,7 +31847,7 @@ function saveCustomTalk() {
   // Persist to the user's saved custom library so they can re-use the talk later
   saveCustomTalkToLibrary(newTalk);
   closeCustomTalkBuilder();
-  applyNewTalk(newTalk);
+  stageNewTalk(newTalk);
 }
 
 // ─── CUSTOM TALKS LIBRARY ────────────────────────────────────
@@ -31561,11 +31879,86 @@ function deleteCustomTalkFromLibrary(version) {
 
 // Apply a freshly chosen / created talk: persist, reassign TODAYS_TALK,
 // re-render the talk screen so the new content shows immediately.
+// ─── TWO-STEP TOPIC ROLLOUT ────────────────────────────────
+// Staging pattern: when the supervisor picks a topic from the library / custom
+// builder / request, the choice is parked in `slan_tbt_staged_talk_v1` until
+// they explicitly tap "Confirm and go live". That way the WORKER home tile
+// doesn\u2019t change topic mid-shift just because the supervisor was browsing.
+// Only when they tap go-live does the new talk replace the active one for
+// everyone.
+function stageNewTalk(talk) {
+  if (!talk || !talk.version) return;
+  // Don\u2019t stage if it\u2019s already the active talk
+  var active = (typeof getActiveTalk === 'function') ? getActiveTalk() : null;
+  if (active && active.version === talk.version) {
+    if (typeof slanToast === 'function') slanToast('Already the current topic.');
+    if (typeof goToTalk === 'function') goToTalk();
+    return;
+  }
+  try { localStorage.setItem('slan_tbt_staged_talk_v1', JSON.stringify(talk)); } catch(e) {}
+  if (typeof slanToast === 'function') {
+    slanToast('Staged: ' + talk.title + ' \u2014 tap go-live to confirm', 'info');
+  }
+  if (typeof goToTalk === 'function') goToTalk();
+}
+
+function getStagedTalk() {
+  try {
+    var raw = localStorage.getItem('slan_tbt_staged_talk_v1');
+    if (!raw) return null;
+    var parsed = JSON.parse(raw);
+    return (parsed && parsed.version && parsed.title) ? parsed : null;
+  } catch(e) { return null; }
+}
+
+function clearStagedTalk() {
+  try { localStorage.removeItem('slan_tbt_staged_talk_v1'); } catch(e) {}
+}
+
+function applyStagedTalk() {
+  var staged = getStagedTalk();
+  if (!staged) {
+    slanAlert('Nothing staged', 'No new topic is currently staged.', 'warn');
+    return;
+  }
+  slanConfirm({
+    title: 'Confirm and go live?',
+    body: '"' + staged.title + '" will become the active toolbox talk.\n\n\u2022 Workers will see the new topic on their home tile\n\u2022 Sign-in will be blocked until each worker signs the new talk\n\u2022 Past rosters and signatures stay intact in your records',
+    okText: 'Go live',
+    cancelText: 'Keep editing',
+    variant: 'info'
+  }).then(function(ok) {
+    if (!ok) return;
+    clearStagedTalk();
+    applyNewTalk(staged);
+  });
+}
+
+function cancelStagedTalk() {
+  var staged = getStagedTalk();
+  if (!staged) return;
+  slanConfirm({
+    title: 'Cancel staged topic?',
+    body: '"' + staged.title + '" won\u2019t become the active talk. The current topic remains live.',
+    okText: 'Discard',
+    cancelText: 'Keep staged',
+    variant: 'warn'
+  }).then(function(ok) {
+    if (!ok) return;
+    clearStagedTalk();
+    if (typeof slanToast === 'function') slanToast('Staged topic discarded.');
+    if (typeof goToTalk === 'function') goToTalk();
+  });
+}
+
+// Original "go live now" logic — used by applyStagedTalk after confirmation.
 function applyNewTalk(talk) {
   if (!talk || !talk.version) return;
   setActiveTalk(talk);
+  // New talk = fresh delivery cycle. Reset delivery state to step 1.
+  tbtSetDeliveryState(talk.version, 'delivering');
   if (typeof slanToast === 'function') {
-    slanToast('Topic set: ' + talk.title, 'success');
+    slanToast('Live: ' + talk.title, 'success');
   }
   // Re-render the talk screen if active
   if (typeof goToTalk === 'function' && document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
@@ -31575,6 +31968,76 @@ function applyNewTalk(talk) {
   }
   // Update tile sub on home/dash
   try { if (typeof updateAllTileSubs === 'function') updateAllTileSubs((typeof getProfile === 'function') ? getProfile() : null); } catch(e) {}
+}
+
+// ─── DELIVERY STATE (TWO-STEP TALK FLOW) ───────────────────
+// While a toolbox talk is being delivered, the supervisor's debrief and own-
+// attendance signing are HIDDEN. Once they tap "Mark talk delivered", state
+// flips to "debrief" and those controls become visible. Workers can sign
+// throughout both states.
+//
+// State shape: { talk_id, state: 'delivering'|'debrief', set_at }
+// Stored under: slan_tbt_delivery_state_v1
+function tbtGetDeliveryState() {
+  try {
+    var raw = localStorage.getItem('slan_tbt_delivery_state_v1');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function tbtSetDeliveryState(talkId, state) {
+  try {
+    localStorage.setItem('slan_tbt_delivery_state_v1', JSON.stringify({
+      talk_id: talkId,
+      state: state,
+      set_at: new Date().toISOString()
+    }));
+  } catch(e) {}
+}
+
+// Returns the active state for the CURRENT live talk. If state is for a
+// different (older) talk, treat as "delivering" so the supervisor restarts
+// the flow.
+function tbtCurrentDeliveryState() {
+  var active = (typeof getActiveTalk === 'function') ? getActiveTalk() : null;
+  if (!active || !active.version) return 'delivering';
+  var s = tbtGetDeliveryState();
+  if (!s || s.talk_id !== active.version) return 'delivering';
+  return s.state || 'delivering';
+}
+
+function tbtMarkTalkDelivered() {
+  var active = (typeof getActiveTalk === 'function') ? getActiveTalk() : null;
+  if (!active || !active.version) return;
+  slanConfirm({
+    title: 'Mark talk delivered?',
+    body: 'Once marked delivered, the supervisor debrief and your attendance signing will become available. Workers can keep signing in throughout the rest of the shift.',
+    okText: 'Mark delivered',
+    cancelText: 'Not yet',
+    variant: 'info'
+  }).then(function(ok) {
+    if (!ok) return;
+    tbtSetDeliveryState(active.version, 'debrief');
+    if (typeof slanToast === 'function') slanToast('Talk delivered \u2014 complete the debrief below.', 'success');
+    if (typeof goToTalk === 'function') goToTalk();
+  });
+}
+
+function tbtRevertToDelivery() {
+  var active = (typeof getActiveTalk === 'function') ? getActiveTalk() : null;
+  if (!active || !active.version) return;
+  slanConfirm({
+    title: 'Revert to delivery?',
+    body: 'The debrief and attendance-signing controls will be hidden again until you mark the talk delivered.',
+    okText: 'Revert',
+    cancelText: 'Stay in debrief',
+    variant: 'warn'
+  }).then(function(ok) {
+    if (!ok) return;
+    tbtSetDeliveryState(active.version, 'delivering');
+    if (typeof goToTalk === 'function') goToTalk();
+  });
 }
 
 // Role-aware back from the talk screen
@@ -31588,7 +32051,7 @@ function goTalkBack() {
 // Adds 3 historical records (1 month ago, 2 months ago, 3 months ago) with realistic content.
 function tbtSeedDemoHistory(silent) {
   var p = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!p || !p.name) { if (!silent) alert('Sign in first.'); return 0; }
+  if (!p || !p.name) { if (!silent) slanAlert('Sign in required', 'Please sign in first.', 'warn'); return 0; }
   var key = 'slan_tbt_records_v1';
   var existing = [];
   try { existing = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { existing = []; }
@@ -31672,7 +32135,7 @@ function tbtSeedDemoHistory(silent) {
   try { localStorage.setItem(key, JSON.stringify(existing)); } catch(e) {}
   if (!silent) {
     if (typeof slanToast === 'function') slanToast('Loaded ' + added + ' demo previous talks.');
-    else alert('Loaded ' + added + ' demo previous talks.');
+    else slanAlert('Demo data loaded', 'Loaded ' + added + ' demo previous talks.', 'info');
     // Re-render the talk screen if we're on it
     if (typeof goToTalk === 'function' && document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
       goToTalk();
@@ -31695,7 +32158,7 @@ function tbtLoadForWorker(workerName) {
 // populates with re-downloadable full roster PDFs the supervisor can demo.
 function tbtSeedDemoSupervisorRosters(silent) {
   var p = (typeof getProfile === 'function') ? getProfile() : null;
-  if (!p || !p.name) { if (!silent) alert('Sign in first.'); return 0; }
+  if (!p || !p.name) { if (!silent) slanAlert('Sign in required', 'Please sign in first.', 'warn'); return 0; }
 
   // 6 distinct demo signature PNGs so each worker has a unique mark
   var DEMO_SIGS = [
@@ -31876,16 +32339,14 @@ function tbtSeedDemoSupervisorRosters(silent) {
     localStorage.setItem(key, JSON.stringify(existing));
     localStorage.setItem(wrapupKey, JSON.stringify(allWrapups));
   } catch(e) {
-    alert('Could not save demo data: ' + (e.message || e));
+    slanAlert('Could not save', 'Saving demo data failed: ' + (e.message || e), 'danger');
     return;
   }
 
   if (!silent) {
     if (typeof slanToast === 'function') {
       slanToast('Loaded ' + addedRecs + ' demo signatures across ' + addedWrapups + ' previous rosters.');
-    } else {
-      alert('Loaded ' + addedRecs + ' demo signatures across ' + addedWrapups + ' previous rosters.');
-    }
+    } else { slanAlert('Demo data loaded', 'Loaded ' + addedRecs + ' demo signatures across ' + addedWrapups + ' previous rosters.', 'info'); }
     // Re-render the talk screen if we're on it
     if (typeof goToTalk === 'function' && document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
       goToTalk();
@@ -31963,7 +32424,7 @@ function seedDemoHazards(silent) {
   try { localStorage.setItem(key, JSON.stringify(existing)); } catch(e) {}
   if (!silent) {
     if (typeof slanToast === 'function') slanToast('Loaded ' + added + ' demo hazards.');
-    else alert('Loaded ' + added + ' demo hazards.');
+    else slanAlert('Demo data loaded', 'Loaded ' + added + ' demo hazards.', 'info');
   }
   return added;
 }
@@ -31973,27 +32434,34 @@ function seedDemoHazards(silent) {
 // supervisor (or worker) lands on a fully populated portal without manual setup.
 // Calls each module's seeder silently and reports a single summary toast.
 function seedFullDemo() {
-  if (!confirm('Load full demo data?\n\nThis will populate:\n\u2022 24 permits across 12 types\n\u2022 4 site hazards (mix of open and resolved)\n\u2022 3 previous monthly toolbox rosters with signatures + debriefs\n\u2022 3 previous talks for the current worker\n\nAdds to existing data \u2014 won\u2019t duplicate.')) return;
+  slanConfirm({
+    title: 'Load full demo data?',
+    body: 'This will populate:\n\u2022 24 permits across 12 types\n\u2022 4 site hazards (mix of open and resolved)\n\u2022 3 previous monthly toolbox rosters with signatures + debriefs\n\u2022 3 previous talks for the current worker\n\nAdds to existing data \u2014 won\u2019t duplicate.',
+    okText: 'Load demo data',
+    cancelText: 'Cancel',
+    variant: 'info'
+  }).then(function(ok) {
+    if (!ok) return;
 
-  var totals = { permits: 0, hazards: 0, rosters: 0, talks: 0 };
-  try { totals.permits = ptwSeedDemoPermits(true) || 0; } catch(e) {}
-  try { totals.hazards = seedDemoHazards(true) || 0; } catch(e) {}
-  try { totals.rosters = tbtSeedDemoSupervisorRosters(true) || 0; } catch(e) {}
-  try { totals.talks   = tbtSeedDemoHistory(true) || 0; } catch(e) {}
+    var totals = { permits: 0, hazards: 0, rosters: 0, talks: 0 };
+    try { totals.permits = ptwSeedDemoPermits(true) || 0; } catch(e) {}
+    try { totals.hazards = seedDemoHazards(true) || 0; } catch(e) {}
+    try { totals.rosters = tbtSeedDemoSupervisorRosters(true) || 0; } catch(e) {}
+    try { totals.talks   = tbtSeedDemoHistory(true) || 0; } catch(e) {}
 
-  // Refresh whatever screen is active
-  try { if (typeof ptwRenderUnified === 'function') ptwRenderUnified(); } catch(e) {}
-  try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
-  try { if (typeof updateAllTileSubs === 'function') updateAllTileSubs((typeof getProfile === 'function') ? getProfile() : null); } catch(e) {}
-  try {
-    if (document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
-      goToTalk();
-    }
-  } catch(e) {}
+    try { if (typeof ptwRenderUnified === 'function') ptwRenderUnified(); } catch(e) {}
+    try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
+    try { if (typeof updateAllTileSubs === 'function') updateAllTileSubs((typeof getProfile === 'function') ? getProfile() : null); } catch(e) {}
+    try {
+      if (document.getElementById('screen-talk') && document.getElementById('screen-talk').classList.contains('active')) {
+        goToTalk();
+      }
+    } catch(e) {}
 
-  var msg = 'Demo loaded: ' + totals.permits + ' permits, ' + totals.hazards + ' hazards, ' + totals.rosters + ' roster signatures, ' + totals.talks + ' worker talks.';
-  if (typeof slanToast === 'function') slanToast(msg, 'success');
-  else alert(msg);
+    var msg = 'Demo loaded: ' + totals.permits + ' permits, ' + totals.hazards + ' hazards, ' + totals.rosters + ' roster signatures, ' + totals.talks + ' worker talks.';
+    if (typeof slanToast === 'function') slanToast(msg, 'success');
+    else slanAlert('Demo data loaded', msg, 'info');
+  });
 }
 
 
@@ -32004,8 +32472,8 @@ function tbtDownloadPDF(recordId) {
   try {
     var all = tbtLoadAll();
     var r = all.find(function(x){ return x.record_id === recordId; });
-    if (!r) { alert('Record not found.'); return; }
-    if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF generator not available.'); return; }
+    if (!r) { slanAlert('Record not found', 'That signed record could not be found.', 'warn'); return; }
+    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF unavailable', 'PDF generator not available right now. Try again in a moment.', 'danger'); return; }
 
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -32261,7 +32729,7 @@ function tbtDownloadPDF(recordId) {
 
     doc.save((r.record_id || 'TBT') + '.pdf');
   } catch(e) {
-    alert('Could not generate PDF: ' + (e.message || e));
+    slanAlert('Could not generate PDF', 'PDF generation failed: ' + (e.message || e), 'danger');
   }
 }
 
