@@ -1245,7 +1245,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="tile" onclick="goToIncident()">
         <div class="tile-icon ic-red"><svg viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-        <div class="tile-name">Report Incident</div><div class="tile-sub">Injury or near miss</div>
+        <div class="tile-name">Report Incident</div><div class="tile-sub" id="worker-inc-tile-sub">Injury or near miss</div>
       </div>
       <div class="tile" onclick="goToPermitsToWork()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
@@ -1501,6 +1501,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="d-pill-swms" onclick="supChipTapSwms()"><div class="sp-dot sp-pending"></div><span id="d-pill-swms-lbl">SWMS</span></div>
       <div class="status-pill" id="d-pill-talk" onclick="supChipTapTalk()"><div class="sp-dot sp-pending"></div><span id="d-pill-talk-lbl">Toolbox Talk</span></div>
       <div class="status-pill" id="d-pill-haz" onclick="supChipTapHazards()"><div class="sp-dot sp-pending"></div><span id="d-pill-haz-lbl">Hazards</span></div>
+      <div class="status-pill" id="d-pill-inc" onclick="supChipTapIncidents()"><div class="sp-dot sp-pending"></div><span id="d-pill-inc-lbl">Incidents</span></div>
     </div>
   </div>
 
@@ -1566,7 +1567,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="tile" onclick="goToIncident()">
         <div class="tile-icon ic-red"><svg viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
         <div class="tile-name">Report Incident</div>
-        <div class="tile-sub">Injury or near miss</div>
+        <div class="tile-sub" id="sup-inc-tile-sub">Injury or near miss</div>
       </div>
 
       <div class="tile" onclick="goToPsychosocial()">
@@ -13440,6 +13441,14 @@ function supChipTapHazards() {
   else goTo('screen-hazard');
 }
 
+function supChipTapIncidents() {
+  // Round 2 will route to a "Recent incidents" list. For now, send straight
+  // to the incident form so supervisors can still file new reports.
+  if (typeof goToIncidentList === 'function') goToIncidentList();
+  else if (typeof goToIncident === 'function') goToIncident();
+  else goTo('screen-incident');
+}
+
 // Update supervisor activity strip - 5 chips (no Permits; that's the tile)
 function updateSupActivityStrip() {
   const p = getProfile && getProfile();
@@ -13495,6 +13504,20 @@ function updateSupActivityStrip() {
     } else {
       hazLbl.textContent = 'Hazards';
       setPillState('d-pill-haz', 'done');
+    }
+  }
+
+  // Incidents — count open incidents (any severity); 'fail' if any are Critical or Major
+  const openIncidents = (typeof incLoadOpen === 'function') ? incLoadOpen() : [];
+  const criticalIncidents = (typeof incLoadCritical === 'function') ? incLoadCritical() : [];
+  const incLbl = document.getElementById('d-pill-inc-lbl');
+  if (incLbl) {
+    if (openIncidents.length > 0) {
+      incLbl.textContent = 'Incidents (' + openIncidents.length + ' open)';
+      setPillState('d-pill-inc', criticalIncidents.length > 0 ? 'fail' : 'warn');
+    } else {
+      incLbl.textContent = 'Incidents';
+      setPillState('d-pill-inc', 'done');
     }
   }
 
@@ -17424,6 +17447,60 @@ function toggleIncBriefing(item) {
   });
 }
 
+// ─── INCIDENT PERSISTENCE ────────────────────────────────────
+// Stores submitted incident reports in localStorage so the app can show:
+// • a chip on the home + dashboard tiles (count of open incidents)
+// • a "Recent incidents" list for supervisors and reporters
+// • per-record detail screens with PDF download
+//
+// Mirrors the pattern used by permits (slan_*_permits_v1) and the toolbox talks
+// (slan_tbt_records_v1). One storage key, array of records keyed by `ref`.
+const SLAN_INC_KEY = 'slan_incidents_v1';
+
+function incLoadAll() {
+  try {
+    var raw = localStorage.getItem(SLAN_INC_KEY);
+    var arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch(e) { return []; }
+}
+
+function incSaveRecord(rec) {
+  if (!rec || !rec.ref) return false;
+  var all = incLoadAll();
+  // Replace if same ref already exists; otherwise prepend (newest first)
+  var idx = all.findIndex(function(r){ return r.ref === rec.ref; });
+  if (idx >= 0) all[idx] = rec;
+  else all.unshift(rec);
+  try {
+    localStorage.setItem(SLAN_INC_KEY, JSON.stringify(all));
+    return true;
+  } catch(e) {
+    console.error('incSaveRecord failed:', e);
+    return false;
+  }
+}
+
+function incLoadByRef(ref) {
+  if (!ref) return null;
+  return incLoadAll().find(function(r){ return r.ref === ref; }) || null;
+}
+
+function incLoadOpen() {
+  // "Open" = anything not closed. Mirrors the permit/hazard chip logic.
+  return incLoadAll().filter(function(r){
+    return (r.status || 'open') !== 'closed';
+  });
+}
+
+function incLoadCritical() {
+  // Counts open Critical/Major incidents — drives the amber/red chip variant.
+  return incLoadOpen().filter(function(r){
+    var s = (r.severity || '').toLowerCase();
+    return s === 'critical' || s === 'major';
+  });
+}
+
 async function submitIncident() {
   const p = getProfile();
   if (!document.getElementById('inc-type').value) { slanAlert('Please select the type of report you\'re submitting.'); return; }
@@ -17463,8 +17540,18 @@ async function submitIncident() {
     potentially_notifiable: incFields.notif,
     submission_date: now.toLocaleDateString('en-AU'),
     submission_time: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}),
+    submitted_at: now.toISOString(),
+    status: 'open',                     // open → under-review → closed
     register_target: 'SLS-REG-006'
   };
+
+  // ── PERSIST LOCALLY ──────────────────────────────────────
+  // Save to localStorage so the supervisor list, tile chips, and previous-records
+  // history can read it. The register feed (SLS-REG-006) is populated from this
+  // same store. Mirrors the pattern used by permits and toolbox talks.
+  try {
+    incSaveRecord(payload);
+  } catch(e) { console.error('Could not persist incident:', e); }
 
   await fbInsert('incidents', payload);
 
@@ -17496,6 +17583,10 @@ async function submitIncident() {
     fetch(PA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,form_type:'incident'})})
       .then(r=>{if(!r.ok)queueSub({...payload,form_type:'incident'});}).catch(()=>queueSub({...payload,form_type:'incident'}));
   } else { queueSub({...payload,form_type:'incident'}); }
+
+  // Refresh tile subs + supervisor dashboard chip so the new incident shows up
+  try { if (typeof updateAllTileSubs === 'function') updateAllTileSubs(p); } catch(e) {}
+  try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -17701,102 +17792,7 @@ function checkLicenceExpiry(p, now) {
   });
 }
 
-// ── INCIDENT REPORT ───────────────────────────────────────────────────────
-let incBriefings = {};
 
-
-function setIncSev(sev) {
-  incSeverity = sev;
-  const colours = {Critical:'#B83232',Major:'#D4630A',Moderate:'#976500',Minor:'#1B6E3A'};
-  ['Critical','Major','Moderate','Minor'].forEach(s => {
-    const b = document.getElementById('inc-sev-'+s);
-    if (!b) return;
-    if (s===sev) {
-      b.className='ps-btn fail';
-      b.style=`border-color:${colours[s]};background:${s==='Critical'?'#FAEBEB':s==='Major'?'#FEF0E6':s==='Moderate'?'#FFFBF0':'#E6F5ED'};color:${colours[s]}`;
-    } else { b.className='ps-btn'; b.style=''; }
-  });
-}
-
-function toggleIncBrief(key) {
-  incBriefings[key] = !incBriefings[key];
-  const b = document.getElementById('inc-brief-'+key);
-  if (b) b.className = 'ps-btn' + (incBriefings[key] ? ' pass' : '');
-}
-
-function submitIncident() {
-  const p = getProfile();
-  if (!document.getElementById('inc-type').value) { slanAlert('Please select the type of report you\'re submitting.'); return; }
-  if (!incSeverity) { slanAlert('Please select the severity level before submitting the report.'); return; }
-  if (!document.getElementById('inc-location').value.trim()) { slanAlert('Please enter where on site this happened before submitting.'); return; }
-  if (!document.getElementById('inc-desc').value.trim()) { slanAlert('Please describe what happened before submitting the report.'); return; }
-  if (!document.getElementById('inc-action').value.trim()) { slanAlert('Please describe what immediate action was taken before submitting.'); return; }
-
-  const now = new Date();
-  const ref = 'INC-'+now.getFullYear().toString().slice(-2)+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+Math.random().toString(36).slice(-4).toUpperCase();
-
-  const notifiable = document.getElementById('inc-notifiable').value;
-  const type = document.getElementById('inc-type').value;
-
-  const payload = {
-    ref, form_type:'incident_report',
-    timestamp:now.toISOString(),
-    date:now.toLocaleDateString('en-AU'),
-    time:now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}),
-    reported_by: p.name, reporter_company: p.company, site: SITE,
-    incident_type: type,
-    severity: incSeverity,
-    incident_date: document.getElementById('inc-date').value,
-    incident_time: document.getElementById('inc-time').value,
-    location: document.getElementById('inc-location').value.trim(),
-    role_in_event: document.getElementById('inc-role-in-event').value,
-    person_involved: document.getElementById('inc-person-name').value.trim(),
-    person_company: document.getElementById('inc-person-company').value.trim(),
-    person_trade: document.getElementById('inc-person-trade').value.trim(),
-    task: document.getElementById('inc-task').value.trim(),
-    supervisor_present: document.getElementById('inc-sup-present').value,
-    briefings_received: Object.keys(incBriefings).filter(k=>incBriefings[k]).join(', ')||'None',
-    description: document.getElementById('inc-desc').value.trim(),
-    injury_nature: document.getElementById('inc-injury').value.trim(),
-    body_part: document.getElementById('inc-body-part').value,
-    immediate_action: document.getElementById('inc-action').value.trim(),
-    return_to_work: document.getElementById('inc-return').value,
-    notifiable: notifiable,
-    corrective_actions: document.getElementById('inc-ca').value.trim(),
-    swms_update: document.getElementById('inc-swms-update').value,
-    signature_png: p.sig,
-    device_online: isOnline,
-    register_target: 'SLS-REG-006'
-  };
-
-  // Save to Firebase + auto stars
-  fbInsert('incidents', payload);
-  queueSub(payload);
-
-  // Email escalation — always for incidents
-  sendEscalationEmail({
-    subject: `🚨 Incident Report — ${incSeverity} — ${type} — ${SITE}`,
-    body: `An incident report has been submitted via the Slán Safety app.\n\nRef: ${ref}\nSite: ${SITE}\nType: ${type}\nSeverity: ${incSeverity}\nLocation: ${payload.location}\nDate/Time: ${payload.incident_date} at ${payload.incident_time}\nPerson involved: ${payload.person_involved} (${payload.person_company})\n\nDescription:\n${payload.description}\n\nImmediate action taken:\n${payload.immediate_action}\n\nNotifiable incident: ${notifiable||'Not assessed'}\n\nThis record must be entered into SLS-REG-006 within 24 hours.\nRef: ${ref}`
-  });
-
-  showSharedSuccess({
-    icon: incSeverity==='Critical'||incSeverity==='Major'?'out':'in',
-    iconStroke: incSeverity==='Critical'||incSeverity==='Major'?'#B83232':'var(--mid)',
-    title: 'Incident Reported',
-    sub: incSeverity==='Critical'||incSeverity==='Major'
-      ? 'Critical incident submitted. Slán Safety has been notified immediately. Do not disturb the scene.'
-      : 'Incident report submitted. Slán Safety will review and enter it into the register within 24 hours.',
-    ref,
-    details:[
-      {l:'Type',     v:type},
-      {l:'Severity', v:incSeverity},
-      {l:'Location', v:payload.location},
-      {l:'Time',     v:payload.incident_time},
-      {l:'Register', v:'SLS-REG-006 Incident Register'},
-      {l:'Status',   v:'Sent to Slán Safety ✓'}
-    ]
-  });
-}
 
 // ── PSYCHOSOCIAL / CONCERN ────────────────────────────────────────────────
 
@@ -30853,6 +30849,22 @@ function updateAllTileSubs(p) {
       hazSub.textContent = 'Log site hazard';
     }
   }
+  // Incident tile (worker + supervisor) — show open count
+  var incOpenList = (typeof incLoadOpen === 'function') ? incLoadOpen() : [];
+  var incCriticalCount = (typeof incLoadCritical === 'function') ? incLoadCritical().length : 0;
+  function _updateIncSub(elId) {
+    var sub = document.getElementById(elId);
+    if (!sub) return;
+    if (incOpenList.length === 0) {
+      sub.textContent = 'Injury or near miss';
+    } else if (incCriticalCount > 0) {
+      sub.textContent = incCriticalCount + ' critical/major \u00b7 ' + incOpenList.length + ' open';
+    } else {
+      sub.textContent = incOpenList.length + ' open report' + (incOpenList.length === 1 ? '' : 's');
+    }
+  }
+  _updateIncSub('worker-inc-tile-sub');
+  _updateIncSub('sup-inc-tile-sub');
   // SWMS tile
   var swmsSub = document.getElementById('swms-tile-sub2');
   if (swmsSub) swmsSub.textContent = 'Read & sign SWMS';
