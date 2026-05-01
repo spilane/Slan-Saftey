@@ -15868,9 +15868,9 @@ function hwSupOpenReview(permitId) {
     ${row('Fire watch duration', p.fire_watch_duration)}
     ${row('Nearest muster point', p.muster_point)}
     ${row('Submitted at', p.submitted_at ? new Date(p.submitted_at).toLocaleString('en-AU') : '')}
-    ${(p.photos && p.photos.length > 0) ? `
-      <div class="hw-view-row" style="display:block">
-        <div class="hw-view-label" style="margin-bottom:8px">Photo evidence</div>
+    <div class="hw-view-row" style="display:block">
+      <div class="hw-view-label" style="margin-bottom:8px">Photo evidence</div>
+      ${(p.photos && p.photos.length > 0) ? `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           ${p.photos.map(ph => {
             const labels = { 1: 'Work area', 2: '10m clear zone', 3: 'Extinguisher', 4: 'Equipment' };
@@ -15883,8 +15883,10 @@ function hwSupOpenReview(permitId) {
             </div>`;
           }).join('')}
         </div>
-      </div>
-    ` : ''}
+      ` : `
+        <div style="font-size:12.5px;color:var(--muted);font-style:italic;line-height:1.55;padding:4px 0">No photos uploaded with this permit.</div>
+      `}
+    </div>
   `;
 
   // Add "Download PDF" button to the supervisor review for ALL permits
@@ -18364,15 +18366,22 @@ function goToIncidentDetail(ref) {
         fmtBlock('Immediate action',     r.immediate_action) +
         fmtBlock('Corrective actions',   r.corrective_actions) +
       '</div></div>' +
-      // Photos (if any)
-      (Array.isArray(r.photos) && r.photos.length > 0
-        ? '<div class="fcard"><div class="fcard-hdr">Photo evidence</div><div class="fcard-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          r.photos.map(function(ph){
-            var src = (ph && ph.data) ? ph.data : ph; // tolerate older records that stored just the data URL
-            return '<div style="background:#000;border-radius:8px;overflow:hidden;aspect-ratio:1"><img src="' + src + '" alt="Incident photo" style="width:100%;height:100%;object-fit:cover;display:block"></div>';
-          }).join('') +
-          '</div></div></div>'
-        : '') +
+      // Photo evidence — always rendered so the audit trail is explicit
+      // (if no photos are attached, we say so rather than hiding the section)
+      '<div class="fcard"><div class="fcard-hdr">Photo evidence</div><div class="fcard-body">' +
+        (Array.isArray(r.photos) && r.photos.length > 0
+          ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+            r.photos.map(function(ph){
+              var src = (ph && ph.data) ? ph.data : ph;
+              return '<div style="background:#000;border-radius:8px;overflow:hidden;aspect-ratio:1"><img src="' + src + '" alt="Incident photo" style="width:100%;height:100%;object-fit:cover;display:block"></div>';
+            }).join('') +
+            '</div>'
+          : '<div style="font-size:12.5px;color:var(--muted);font-style:italic;line-height:1.55;padding:4px 0">' +
+            (r.photos_skipped
+              ? 'No photos uploaded \u2014 reporter explicitly skipped photo capture.'
+              : 'No photos uploaded with this report.') +
+            '</div>') +
+      '</div></div>' +
       '<div class="fcard"><div class="fcard-hdr">Notifiable assessment</div><div class="fcard-body">' +
         fmtRow('Reporter said', notifLabel(notifReporter)) +
         (notifSup ? fmtRow('Supervisor confirmed', notifLabel(notifSup)) : '') +
@@ -18481,6 +18490,7 @@ function incCloseIncident() {
     rec.status = 'closed';
     rec.closed_at = now.toISOString();
     rec.closed_by = me.name || 'Supervisor';
+    rec.closer_signature = (me && me.sig) ? me.sig : null;   // saved so PDF can render it
     rec.reviewer_name = me.name || '';
     rec.reviewer_company = me.company || '';
     rec.review_notes_text = reviewNotesText;          // single block, optional
@@ -18785,10 +18795,11 @@ function downloadIncidentPdf() {
       drawCardBlock('CLOSING NOTE',  r.close_note);
     }
 
-    // SECTION 7 — Photo evidence
+    // SECTION 7 — Photo evidence (always shown so the audit trail makes the
+    // photo situation explicit — empty section is recorded, not hidden)
     const photos = Array.isArray(r.photos) ? r.photos : [];
+    y = drawMajorBanner(y, 'PHOTO EVIDENCE');
     if (photos.length > 0) {
-      y = drawMajorBanner(y, 'PHOTO EVIDENCE');
       const photoW = (CW - 4) / 2;
       const photoH = photoW * 0.75;
       let col = 0;
@@ -18816,6 +18827,18 @@ function downloadIncidentPdf() {
         }
       });
       if (col > 0) y += photoH + 8;
+    } else {
+      // No photos — write an explicit audit-trail note so the absence is
+      // recorded rather than silently omitted.
+      ensure(14);
+      drawCard(y, 12, C.neutralBg, C.border);
+      setText(C.subLabel);
+      doc.setFont('helvetica','italic'); doc.setFontSize(9);
+      var msg = r.photos_skipped
+        ? 'No photos uploaded \u2014 reporter explicitly skipped photo capture.'
+        : 'No photos uploaded with this report.';
+      doc.text(msg, ML + 4, y + 7.5);
+      y += 14;
     }
 
     // SECTION 8 — Declaration & signature
@@ -18827,11 +18850,15 @@ function downloadIncidentPdf() {
     decl.forEach(function(line){ ensure(4); doc.text(line, ML, y + 3); y += 4; });
     y += 2;
 
-    // Signature panel — same style as permits
+    // Signature panel — same style as permits. Reporter always shown; if the
+    // incident is closed, the supervisor's close-out signature follows.
     ensure(28);
     y = drawSubLabel(y, 'REPORTER SIGNATURE');
     drawCard(y, 22, C.white, C.greyLight);
     try {
+      // Prefer the signature stored on the record at submission time (saved
+      // since step19u). Fall back to the active profile if the downloader is
+      // the original reporter (legacy records).
       const me = (typeof getProfile === 'function') ? getProfile() : null;
       const sig = r.reporter_signature || (me && me.sig && me.name === r.reporter_name ? me.sig : null);
       if (sig) doc.addImage(sig, 'PNG', ML + 2, y + 2, CW - 4, 18);
@@ -18841,6 +18868,25 @@ function downloadIncidentPdf() {
     doc.text(String(r.reporter_name || ''), ML + 2, y + 25);
     doc.text(String(r.submission_date || ''), PAGE_W - MR - 2, y + 25, { align:'right' });
     y += 28;
+
+    // Supervisor close-out signature — only when the incident is closed
+    if (status === 'closed') {
+      ensure(28);
+      y = drawSubLabel(y, 'SUPERVISOR CLOSE-OUT SIGNATURE');
+      drawCard(y, 22, C.white, C.greyLight);
+      try {
+        const me = (typeof getProfile === 'function') ? getProfile() : null;
+        // Prefer signature stored on the record at close-out. Fall back to
+        // active profile only if the downloader is the closer (legacy).
+        const csig = r.closer_signature || (me && me.sig && me.name === r.closed_by ? me.sig : null);
+        if (csig) doc.addImage(csig, 'PNG', ML + 2, y + 2, CW - 4, 18);
+      } catch(e) {}
+      setText(C.subLabel);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.text(String(r.closed_by || ''), ML + 2, y + 25);
+      doc.text(r.closed_at ? new Date(r.closed_at).toLocaleDateString('en-AU') : '', PAGE_W - MR - 2, y + 25, { align:'right' });
+      y += 28;
+    }
 
     // ═══════════════ Rewrite footer placeholders with real total ═══════════════
     const totalPages = pageNum;
@@ -18908,6 +18954,7 @@ async function submitIncident() {
     submission_date: now.toLocaleDateString('en-AU'),
     submission_time: now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true}),
     submitted_at: now.toISOString(),
+    reporter_signature: (p && p.sig) ? p.sig : null,   // captured from profile so PDF shows it for any downloader
     status: 'open',                     // open → under-review → closed
     photos: incPhotos.filter(p => p),   // array of {data, timestamp, date, time, site} — only filled slots
     photos_skipped: !!window._incPhotosSkipped,
@@ -33958,6 +34005,33 @@ function incSeedDemoIncidents(silent) {
   var dateAU = function(hrs){ return new Date(now - hrs * 60 * 60 * 1000).toLocaleDateString('en-AU'); };
   var timeAU = function(hrs){ return new Date(now - hrs * 60 * 60 * 1000).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false}); };
 
+  // Build a simple signature placeholder PNG (cursive name on transparent
+  // background). Generated once per call via canvas so demo PDFs aren't blank.
+  function makeSigDataUrl(name) {
+    try {
+      var c = document.createElement('canvas');
+      c.width = 600; c.height = 160;
+      var ctx = c.getContext('2d');
+      ctx.clearRect(0,0,c.width,c.height);
+      ctx.font = 'italic 700 64px "Brush Script MT", "Lucida Handwriting", cursive';
+      ctx.fillStyle = '#1A2A1F';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(name || '', 20, 90);
+      // Underline
+      ctx.strokeStyle = '#1A2A1F';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(20, 130);
+      ctx.lineTo(Math.min(580, 20 + ctx.measureText(name || '').width + 20), 130);
+      ctx.stroke();
+      return c.toDataURL('image/png');
+    } catch(e) { return null; }
+  }
+  var sigJake = makeSigDataUrl('Jake Ryan');
+  var sigEoin = makeSigDataUrl('Eoin Burke');
+  var sigMark = makeSigDataUrl('Mark Flynn');
+  var sigTom  = makeSigDataUrl('Tom Kelleher');
+
   var demos = [
     // 1) Recent CRITICAL injury — still open, awaiting supervisor review
     {
@@ -33995,6 +34069,7 @@ function incSeedDemoIncidents(silent) {
       status: 'open',
       photos: [],
       photos_skipped: true,
+      reporter_signature: sigJake,
       register_target: 'SLS-REG-006'
     },
     // 2) Near miss — open, moderate
@@ -34033,6 +34108,7 @@ function incSeedDemoIncidents(silent) {
       status: 'open',
       photos: [],
       photos_skipped: true,
+      reporter_signature: sigEoin,
       register_target: 'SLS-REG-006'
     },
     // 3) Minor injury — already closed by supervisor
@@ -34087,6 +34163,8 @@ function incSeedDemoIncidents(silent) {
       corrective_action_completed_by: 'Eoin Burke',
       photos: [],
       photos_skipped: true,
+      reporter_signature: sigJake,
+      closer_signature: sigEoin,
       register_target: 'SLS-REG-006'
     },
     // 4) Property damage — major, open
@@ -34125,6 +34203,7 @@ function incSeedDemoIncidents(silent) {
       status: 'open',
       photos: [],
       photos_skipped: true,
+      reporter_signature: sigMark,
       register_target: 'SLS-REG-006'
     },
     // 5) Environmental spill — moderate, closed
@@ -34179,13 +34258,16 @@ function incSeedDemoIncidents(silent) {
       corrective_action_completed_by: 'Eoin Burke',
       photos: [],
       photos_skipped: true,
+      reporter_signature: sigTom,
+      closer_signature: sigEoin,
       register_target: 'SLS-REG-006'
     }
   ];
 
+  // Upsert: always write so re-running the seeder refreshes any new fields
+  // (e.g. signatures added in a later release) on existing demo records.
   var added = 0;
   demos.forEach(function(d) {
-    if (existing.some(function(x){ return x.ref === d.ref; })) return;
     if (incSaveRecord(d)) added++;
   });
   if (!silent) {
