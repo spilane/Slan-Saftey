@@ -1747,21 +1747,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-hdr">1 — Incident details</div>
       <div class="fcard-body">
         <div class="fgroup">
-          <label class="flabel">Type of report <span class="req">*</span></label>
-          <input type="hidden" id="inc-type" value="">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px" id="inc-type-grid">
-            <button class="ps-btn" id="inc-type-Injury" onclick="setIncType('Actual Injury')">Actual Injury</button>
-            <button class="ps-btn" id="inc-type-Near"   onclick="setIncType('Near Miss')">Near Miss</button>
-            <button class="ps-btn" id="inc-type-Dang"   onclick="setIncType('Dangerous Incident')">Dangerous Incident</button>
-            <button class="ps-btn" id="inc-type-Prop"   onclick="setIncType('Property Damage')">Property Damage</button>
-            <button class="ps-btn" id="inc-type-Env"    onclick="setIncType('Environmental')" style="grid-column:span 2">Environmental</button>
-          </div>
-          <div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:6px;padding:8px 10px;background:#FAFCF9;border-left:2px solid #1B6E3A;border-radius:4px">
+          <label class="flabel">Type of report <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-type')">?</span></label>
+          <div id="inc-help-type" class="slan-help-tip">
             <b>Actual Injury</b> — someone was hurt.<br>
             <b>Near Miss</b> — no harm but could have been bad (e.g. dropped tool from height, no one underneath).<br>
             <b>Dangerous Incident</b> — uncontrolled event with serious-harm potential (collapse, fire, plant runaway, hazardous release).<br>
             <b>Property Damage</b> — equipment, vehicle or structure damaged with no injury.<br>
             <b>Environmental</b> — spill, contamination, breach of environmental controls.
+          </div>
+          <input type="hidden" id="inc-type" value="">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="inc-type-grid">
+            <button class="ps-btn" id="inc-type-Injury" onclick="setIncType('Actual Injury')" style="white-space:normal;line-height:1.25;padding:8px 6px">Actual Injury</button>
+            <button class="ps-btn" id="inc-type-Near"   onclick="setIncType('Near Miss')" style="white-space:normal;line-height:1.25;padding:8px 6px">Near Miss</button>
+            <button class="ps-btn" id="inc-type-Dang"   onclick="setIncType('Dangerous Incident')" style="white-space:normal;line-height:1.25;padding:8px 6px">Dangerous Incident</button>
+            <button class="ps-btn" id="inc-type-Prop"   onclick="setIncType('Property Damage')" style="white-space:normal;line-height:1.25;padding:8px 6px">Property Damage</button>
+            <button class="ps-btn" id="inc-type-Env"    onclick="setIncType('Environmental')" style="grid-column:span 2;white-space:normal;line-height:1.25;padding:8px 6px">Environmental</button>
           </div>
         </div>
         <div class="fgroup">
@@ -1794,13 +1794,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-hdr">2 — Person(s) involved</div>
       <div class="fcard-body">
         <div class="fgroup">
-          <label class="flabel">Role in event <span class="req">*</span></label>
+          <label class="flabel">Role in event <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-role')">?</span></label>
+          <div id="inc-help-role" class="slan-help-tip">
+            <b>Person Involved / Injured</b> — you were directly involved or were the injured person.<br>
+            <b>Witness</b> — you saw the event happen.<br>
+            <b>Circumstantial Witness</b> — you didn't see it happen but were nearby and have relevant information.<br>
+            <b>Reporting on behalf</b> — you're filing this for someone else who can't do it themselves.
+          </div>
           <input type="hidden" id="inc-role-in-event" value="">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px" id="inc-role-grid">
-            <button class="ps-btn" id="inc-role-Person"  onclick="setIncRole('Person Involved / Injured')">Person Involved / Injured</button>
-            <button class="ps-btn" id="inc-role-Witness" onclick="setIncRole('Witness')">Witness</button>
-            <button class="ps-btn" id="inc-role-Circ"    onclick="setIncRole('Circumstantial Witness')">Circumstantial Witness</button>
-            <button class="ps-btn" id="inc-role-Behalf"  onclick="setIncRole('Reporting on behalf of another')">Reporting on behalf</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="inc-role-grid">
+            <button class="ps-btn" id="inc-role-Person"  onclick="setIncRole('Person Involved / Injured')" style="white-space:normal;line-height:1.25;padding:8px 6px">Person Involved / Injured</button>
+            <button class="ps-btn" id="inc-role-Witness" onclick="setIncRole('Witness')" style="white-space:normal;line-height:1.25;padding:8px 6px">Witness</button>
+            <button class="ps-btn" id="inc-role-Circ"    onclick="setIncRole('Circumstantial Witness')" style="white-space:normal;line-height:1.25;padding:8px 6px">Circumstantial Witness</button>
+            <button class="ps-btn" id="inc-role-Behalf"  onclick="setIncRole('Reporting on behalf of another')" style="white-space:normal;line-height:1.25;padding:8px 6px">Reporting on behalf</button>
           </div>
         </div>
         <div class="fgroup">
@@ -1910,20 +1916,26 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <!-- Photos: optional but encouraged. Helps the WHS provider assess the
-         scene remotely and gives the corrective-actions process visual context. -->
     <div class="fcard">
-      <div class="fcard-hdr">Photo evidence <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">— optional but recommended</span></div>
+      <div class="fcard-hdr">6 — Photo evidence <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">— optional</span></div>
       <div class="fcard-body">
-        <div class="fhint" style="margin-bottom:10px">Take photos of the scene, equipment involved, or any visible injury (with consent). Photos help your provider assess the incident without visiting site.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="inc-photo-grid">
-          <div class="hz-photo-slot" id="inc-slot-0" onclick="document.getElementById('inc-photo-input-0').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <span>Add photo</span>
-          </div>
-          <div class="hz-photo-slot" id="inc-slot-1" onclick="document.getElementById('inc-photo-input-1').click()" style="display:none"></div>
-          <div class="hz-photo-slot" id="inc-slot-2" onclick="document.getElementById('inc-photo-input-2').click()" style="display:none"></div>
+        <div class="fhint" style="margin-bottom:10px">Take photos of the scene, equipment involved, or any visible injury (with consent). Photos help assessment without visiting site. <b>You can skip this section if no photos are available.</b></div>
+
+        <div id="inc-photo-skipped-banner" style="display:none;background:#FAFCF9;border:1.5px dashed var(--border);border-radius:8px;padding:11px 14px;font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:8px">
+          <b>No photos attached.</b> You confirmed there are no photos available for this incident. <button onclick="incUnskipPhotos()" style="background:transparent;border:none;color:#1B6E3A;font-size:12.5px;font-weight:600;cursor:pointer;padding:0;margin-left:4px;text-decoration:underline">Add a photo</button>
         </div>
+
+        <div id="inc-photo-grid" style="display:flex;flex-direction:column;gap:8px">
+          <div class="inc-photo-slot-full" id="inc-slot-0" onclick="document.getElementById('inc-photo-input-0').click()" style="background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;min-height:90px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span style="font-size:13px;font-weight:600;color:var(--muted)">Add photo</span>
+          </div>
+          <div class="inc-photo-slot-full" id="inc-slot-1" onclick="document.getElementById('inc-photo-input-1').click()" style="display:none;background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:24px;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;min-height:90px"></div>
+          <div class="inc-photo-slot-full" id="inc-slot-2" onclick="document.getElementById('inc-photo-input-2').click()" style="display:none;background:#FAFCF9;border:1.5px dashed var(--border);border-radius:10px;padding:24px;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;min-height:90px"></div>
+        </div>
+
+        <button id="inc-skip-photos-btn" onclick="incSkipPhotos()" style="display:block;width:100%;padding:10px;margin-top:10px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif">Skip — no photos available</button>
+
         <input type="file" id="inc-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleIncidentPhoto(0,event)">
         <input type="file" id="inc-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="handleIncidentPhoto(1,event)">
         <input type="file" id="inc-photo-input-2" accept="image/*" capture="environment" style="display:none" onchange="handleIncidentPhoto(2,event)">
@@ -1931,7 +1943,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <div class="fcard">
-      <div class="fcard-hdr">6 — Is this notifiable to the regulator?</div>
+      <div class="fcard-hdr">7 — Is this notifiable to the regulator?</div>
       <div class="fcard-body">
         <div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:12px">Under the WHS Act, certain incidents must be notified to SafeWork / WorkSafe immediately. This includes fatalities, serious injuries requiring hospitalisation, and dangerous incidents (near miss with potential for serious harm).</div>
         <div class="fgroup">
@@ -16429,6 +16441,20 @@ function goTo(id){
   if (id === 'screen-incident-list') {
     try { if (typeof renderIncidentList === 'function') renderIncidentList(); } catch(e) {}
   }
+  // After any submission lands on the success screen, pre-warm the data so
+  // when the user taps "Back to home" the tile chips/subs reflect the new
+  // record. Worker home and supervisor dash both have refresh hooks above
+  // when goTo('screen-home') / goTo('screen-dash') fires, but pre-warming
+  // here ensures the data is ready and avoids any race conditions.
+  if (id === 'screen-success') {
+    try {
+      if (typeof updateAllTileSubs === 'function') {
+        const _p = (typeof getProfile === 'function') ? getProfile() : null;
+        updateAllTileSubs(_p);
+      }
+    } catch(e) {}
+    try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e) {}
+  }
   // Auto-render permit lists when arriving — fixes empty-list bug on first visit
   if (id === 'screen-hw-list') {
     try { if (typeof hwRenderList === 'function') hwRenderList(); } catch(e) {}
@@ -17494,6 +17520,8 @@ const incPhotos = [null, null, null];
 function handleIncidentPhoto(idx, e) {
   const file = e.target.files[0];
   if (!file) return;
+  // Selecting a photo cancels the "skipped" state automatically
+  if (typeof incUnskipPhotos === 'function') incUnskipPhotos(true);
   const reader = new FileReader();
   reader.onload = ev => {
     const img = new window.Image();
@@ -17537,18 +17565,21 @@ function handleIncidentPhoto(idx, e) {
         site: siteLine
       };
 
-      // Render the slot
+      // Render the slot — full-width thumbnail
       const slot = document.getElementById('inc-slot-' + idx);
       if (slot) {
-        slot.innerHTML = `<img src="${compressed}" alt="Incident photo" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
-        slot.classList.add('filled');
+        slot.innerHTML = `<img src="${compressed}" alt="Incident photo" style="width:100%;max-height:280px;object-fit:contain;border-radius:8px;display:block">`;
+        slot.style.background = '#fff';
+        slot.style.border = '1.5px solid #1B6E3A';
+        slot.style.padding = '6px';
+        slot.style.minHeight = '0';
       }
       // Reveal next slot if there's one
       if (idx < 2) {
         const next = document.getElementById('inc-slot-' + (idx + 1));
         if (next) {
           next.style.display = 'flex';
-          next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Add photo</span>`;
+          next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="font-size:13px;font-weight:600;color:var(--muted)">Add another photo</span>`;
         }
       }
     };
@@ -17562,10 +17593,13 @@ function resetIncidentPhotos() {
     incPhotos[i] = null;
     const slot = document.getElementById('inc-slot-' + i);
     if (!slot) continue;
-    slot.classList.remove('filled');
     if (i === 0) {
       slot.style.display = 'flex';
-      slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Add photo</span>`;
+      slot.style.background = '#FAFCF9';
+      slot.style.border = '1.5px dashed var(--border)';
+      slot.style.padding = '24px';
+      slot.style.minHeight = '90px';
+      slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="font-size:13px;font-weight:600;color:var(--muted)">Add photo</span>`;
     } else {
       slot.style.display = 'none';
       slot.innerHTML = '';
@@ -17573,6 +17607,38 @@ function resetIncidentPhotos() {
     const inp = document.getElementById('inc-photo-input-' + i);
     if (inp) inp.value = '';
   }
+  // Reset skip state
+  window._incPhotosSkipped = false;
+  const banner = document.getElementById('inc-photo-skipped-banner');
+  if (banner) banner.style.display = 'none';
+  const grid = document.getElementById('inc-photo-grid');
+  if (grid) grid.style.display = 'flex';
+  const skipBtn = document.getElementById('inc-skip-photos-btn');
+  if (skipBtn) skipBtn.style.display = 'block';
+}
+
+// Skip photos — collapses the slots and shows a confirmation banner.
+// Submit will record photos:[] and a `photos_skipped: true` flag.
+function incSkipPhotos() {
+  window._incPhotosSkipped = true;
+  // Clear any half-filled photos
+  for (let i = 0; i < 3; i++) incPhotos[i] = null;
+  const banner = document.getElementById('inc-photo-skipped-banner');
+  if (banner) banner.style.display = 'block';
+  const grid = document.getElementById('inc-photo-grid');
+  if (grid) grid.style.display = 'none';
+  const skipBtn = document.getElementById('inc-skip-photos-btn');
+  if (skipBtn) skipBtn.style.display = 'none';
+}
+
+function incUnskipPhotos(silent) {
+  window._incPhotosSkipped = false;
+  const banner = document.getElementById('inc-photo-skipped-banner');
+  if (banner) banner.style.display = 'none';
+  const grid = document.getElementById('inc-photo-grid');
+  if (grid) grid.style.display = 'flex';
+  const skipBtn = document.getElementById('inc-skip-photos-btn');
+  if (skipBtn) skipBtn.style.display = 'block';
 }
 
 function goToIncident() {
@@ -17991,6 +18057,7 @@ async function submitIncident() {
     submitted_at: now.toISOString(),
     status: 'open',                     // open → under-review → closed
     photos: incPhotos.filter(p => p),   // array of {data, timestamp, date, time, site} — only filled slots
+    photos_skipped: !!window._incPhotosSkipped,
     register_target: 'SLS-REG-006'
   };
 
