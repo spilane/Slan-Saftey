@@ -3126,6 +3126,24 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 
   <div class="fbody" style="gap:12px">
+    <!-- Emergency contacts banner -->
+    <div class="fcard" style="background:#FFF0F0;border-color:rgba(184,50,50,.3)">
+      <div class="fcard-hdr" style="color:#B83232;display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Chemical Emergency Contacts
+      </div>
+      <div class="fcard-body" style="gap:8px">
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:12px">
+          <div style="font-weight:600;color:#B83232">Poisons Info:</div>
+          <div style="color:#B83232"><a href="tel:131126" style="color:#B83232;text-decoration:none;font-weight:600">13 11 26</a> (24/7)</div>
+          <div style="font-weight:600;color:#B83232">EPA Pollution:</div>
+          <div style="color:#B83232"><a href="tel:131555" style="color:#B83232;text-decoration:none;font-weight:600">131 555</a></div>
+          <div style="font-weight:600;color:#B83232">Site Coordinator:</div>
+          <div style="color:#B83232"><a href="tel:0412345678" style="color:#B83232;text-decoration:none;font-weight:600">Eoin Burke 0412 345 678</a></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Search box -->
     <div class="fcard">
       <div class="fcard-body">
@@ -3166,6 +3184,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fgroup">
           <label class="flabel">Where is it being used / who is using it?</label>
           <input type="text" id="sds-missing-usage" placeholder="e.g. Waterproofing membrane - Applicator..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Photo of product label (optional but recommended)</label>
+          <div style="position:relative">
+            <input type="file" id="sds-missing-photo" accept="image/*" capture="environment" style="display:none" onchange="sdsMissingPhotoPreview(this)">
+            <button type="button" onclick="document.getElementById('sds-missing-photo').click()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px dashed rgba(184,150,12,.4);background:#FFFBF0;color:#8B6914;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span id="sds-photo-btn-text">Take photo of label</span>
+            </button>
+          </div>
+          <div id="sds-photo-preview" style="display:none;margin-top:8px;position:relative">
+            <img id="sds-photo-img" style="width:100%;border-radius:var(--rs);border:1.5px solid rgba(184,150,12,.4)">
+            <button type="button" onclick="sdsMissingPhotoRemove()" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(184,50,50,.9);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">×</button>
+          </div>
         </div>
         <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#B8960C;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report to supervisor</button>
         <div id="sds-missing-confirm" style="display:none;text-align:center;font-size:13px;font-weight:600;color:#1B6E3A;padding:8px">Reported - supervisor has been notified</div>
@@ -12926,6 +12958,22 @@ const SITE_CHECKLIST = {
 };
 
 let spsResults = {};
+
+function spsTap(itemId, type) {
+  const passBtn = document.getElementById(itemId + '-pass');
+  const failBtn = document.getElementById(itemId + '-fail');
+  const naBtn = document.getElementById(itemId + '-na');
+  
+  // Clear all states
+  if (passBtn) passBtn.classList.remove('pass', 'fail', 'na');
+  if (failBtn) failBtn.classList.remove('pass', 'fail', 'na');
+  if (naBtn) naBtn.classList.remove('pass', 'fail', 'na');
+  
+  // Set the selected state
+  if (type === 'pass' && passBtn) passBtn.classList.add('pass');
+  else if (type === 'fail' && failBtn) failBtn.classList.add('fail');
+  else if (type === 'na' && naBtn) naBtn.classList.add('na');
+}
 
 function goToSitePreStart() {
   const p = getProfile();
@@ -35722,81 +35770,211 @@ function tbtSeedDemoSupervisorRosters(silent) {
   var DEMO_SIGS = [
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADVUlEQVR4nO2bQW7kMAwE85Q8ZN+0/78l2EOQxWDcpsgWJdtVQA7JSJQsddHJIR9fAHDIx+oNAOwMggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBAAQIAiBAEAABggAIEARAgCAAAgQBECAIgABBYDqff/6u3kIaBHkAowF1BvpfrZ+vK4IgN2c0oM5A/18LQWAa2XCNBtQZ6NdaCAJTyAYsE1BXoN+tjSANXPWQs1QCNhpQZ6BnCLLq7i8jyMpOtOpysgHLBNQV6Nf5buG6uYQgK1/VO6x7FUHezXUKhyAHrDokV0d1rB2tk+ngrl+J3ILs8HdMSZCuDV9VEOffD7sLcjRvxRk4SQsyY9NHtVYckjMwXeHIdPCMUJF1o+tHaiLISb2rCeKa++77kbmR+TsK4tiTiy0EUWFydpEVIe8KR+T8nOtl62fqPVqQszC5BMl24soFd4YjI0g1jJGxjnqPFSQSJocgo/OvJsioBNX1XHuLjkWQiYKMzn8dV7ngrnBkBKmGsXPcIwWJhqkiSKabX02Q7OezhHTuMbuekyWCvJt79rPqpcwWJPpM0bnRGtlAZ9esNirX/rtoF2Skc3ULkg15pRufjXOEdfQsEOSXWwriDPpsQVYImBWk485H5nfQKshoJ8kIkr0M97zI3MqYbMPoWG/m/rtpEyQTNFfnq8xdsWZk3JUFcTfXmbQIkrmUzCXNCusMeSKfH42rNCfXXYyAIIaxVUFWyDNzTTXWIcjo+EowHfVuK4izS2aDejYmE/Tq82cFqXbfXQSp1Oik/P8g2Q56NjYaSoeoo89Rea7R+a/jHYJk1qvgqHU7QVydTgWrGtRojR0FGaEqiAMEGfgsUi8S5hWCVMI9ume1/ijVfTuo1LqVIK5Op+pWgzayz90EyZK5j124jSCuLhcVpLLfiiCVZ+p4A9yNWwhSfYhRQbr2u4MgP7WeCoJ8xYLofkNF6rjeWk9+AzhYcYY2QVy/I0fqOAWM1kKQPeg+v2/VLbCP31mzoAAAAABJRU5ErkJggg==',
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADaUlEQVR4nO2cTY4cIQxG5yg5SM6U++8SRVGUCHV94B8MFO9Js5kC7Lb9qF71108AeORrdQIAO4MgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCIAAQQAECAIgQBAAAYIACBAEQIAgAAIEARAgCAzz7fuP1SmUgyAwxG85/v7dxHJBbiv4ifwvx239WiqIp+i3NWgHEMRJpFieot/apJW0fbqt9m5BIgXzFP3mJq0EQZwgyBgn5dryqU8nfx4P5YJ4in5qk07Lt2UnQVbFRZBJnJbvJ3YRZGXsUkHaPSNn7NIkK6fl2+Lp1ew8EKSz56SBOy3fFgT5Q5kgn9a/VZDT8m3x9mp2LgjS2XPKwGULsnIo1f8q83i1IE9rEcR2VhUI8o/pgqh11mfRQlUUOPMr4Yrh8F5mnhiWXBBk4FmkUFVF9ggy8gZ9gyCWumReNBGmCmL9CtV75i1UZZGtjR2tQfXbz/N89GwEGVxjva08haoschvD8vnfKsjToF8vyOiHsrwprIWqLnKmICuGI1uQp/ytcRDEOVSZ52ZgidkTIEMQ700fWdOu81x0rxDkNxk3/QxBPLfWSJ4ja3YRJHLbZ63x9hBBHtZmNCkjJ2vMpzWW4c8UxLrP82boxfT2cMblFiFdkMjNNaO43rye8rPm1atRtiCefVFBMuO9WpCM2y5zEC3PR3OL5jVSM2tNvDn3cu+ty8hx9NkqSbYUxBJzNG7GoHnkqxTEsy/jfOvQXilIRrGit5hlnyevnQWpqEtGv1VMjziz2U6QWTEja7ME6ckQ+YweQTw9yxjUqwWJnjErZuRGjTSuQhBrzpY1T/siIEjgHGvM7BgVgqj9WfEteVXjEfoVgkTP8sTN3DPjZkOQsdi75hv+6dFViXvieQfdO4TtmpGzLcOTJe4KRj63Wl9Fym/zriqylR0F+bRmRJDIQK2Wo83BWsdKlv+6eyXZX0dGm+YRpLcfQWq4XpBIcyxNs7xlenGqcp6JVZB2TxUI4hy2zGZZBIkO086CjO6r5GpBIsO2uyAVeUfwClLNL2DtsI+jQiOdAAAAAElFTkSuQmCC',
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADYElEQVR4nO2cSW7jQAxFc5QcpM/U99+lYTQC24L8i1NN0ntAFpZYA1l85az89QMAH/mavQGAlUEQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECQEuT7z9+qfQCYGdl3YUEem/z9a8UBVGHtuyq6CjI6Gbg2r/20vSAzkoFrgyAvY+EJ9fgPghjmvRvU48llBDkmYk2Gf8veoR5Poj2VBUEWhno8ub0gvQqwa2PNaohVuYwgZ4nMEmTn5kKQd24tSFQqz5w70aMeO+OtR2WtLinI7s2FIO946lFdr+mCHGOyCV6hua6QQyXWevSoV6kgkWavFKRathlcIYdqbiuIZY7K/ewAgrxjrUevb1wEWYhVchhdr4r/MJYT5NOmrIdrSTSyj+xcM1lBkMwF1WM9a022FOQYk3lu2YPn3Qh2kzzaYBXf+hlBLH0YZYogVU0dKa5lzorYKtFXFyTTlK2x1pogSGPtTEw03prDLEEy3wIjBLGsZ6mJkqWCckFUzNnn1ry9Yz7lkon1Nk0rdkTTRgTJ3NoIchJz9rk1b+R9Jm53Qaoavacg1vVuJ0hFY1c2nicPT2xVrhV59BIkupZ1rLenLOMilApiick0TeYgrDlkBam8DDIxqwpi3eetBfHMq55599h6t6Mg2UbJ1sCzlmdsJGfvXiwgiOOgLbemJ9+sRBWNMlIQz7leQpAH3qaKzJlJ2lPInQRprRFd31OD6jyye/fux0LJb/NGb0BLfDbZqlvLsi/Pvj15RS6M1QSpvKhe4zxrRRj249WezVbJcZxLPVPPz97NEiRzW1tiIjfzLEG8a0VY8tfdq+Q4znX2WcV657E2sje3yIURFbSHIN45EcRAD0EqD3KkIJExuwpSce63EORBRYIVglhvuZ6C/I7zxEbX997q2Vw9Z2ThNoJU4Cl8RhDrTVh5eIqRgqj3CLI4nqJ7GsMiRKTRqqhq2OgY67hjHIJMwFMwT3O0DjbSaFXsLkiGyjr/A29cvGNCYjjnAAAAAElFTkSuQmCC',
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADDElEQVR4nO3cS27jMBRE0SwlC8masv+ZAw8CGIZdep+iSFP3AD1oWx+S4lUHPcjXDcBbX7MHAKyMQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQDb0/fM7ewjbaAXCg1jP/Zn8/0FfORAexHoenwnPxYNANkIgfgSyEQLx+5hAeODHCMTvIwLhoR97jmOHtVphDssHsttDH2W3QFaZB4FsYqdAVprHpQKZvdiP3GMZEcisDUoghXt077XKgo8Yy6t1crxMZqzZav8STg9Ene9arJUWvDqW7Dq5XiaOa826t8PUQI6u4VisUT96dM7NjqWyTq6XietaZ9/bZVogkUXoLtboHz2OjouMKXO/0YE8n+t8MVXOuWwgkUVwLNboHz0ix1WvET3etalfnedc9+z9LxtIdNN2N7d7waNjUcdk55Ndp+o8I+PNIJCb50GMCsT5NsyOZXYg2blmr5253qUDues+CALp/89UZ66ZuURUN7n7eTmdEkhkw6jPHW/E6oJnxnK0od2BdObqOkYdTyDNRXYHUrlX9npnBBKdfzUQx3pGju3sj0sEUv2+EohrU2TH9u47tVlmBtLd9JljCaT5IDKLMypGx9ieP181ENcaRI/rPJOtA+ks7Ki3ouvNOTqQ6Jo4rtFZh+o4nN+fwR5IdyOOeiu6jvvEQKobjUDMgWQnRCD1OUY3ZmeTjdzg3fjOYgukMpluII4gM99HxxF5cYycuyOO7H3c50aPGc0eSPX8V3+vHhu9X/S7o+Mcgbjn7tpcmWid52aOG6n9q0e7k3gVWfSt2A2yMocZgVTn79hYkbGPOn+LQO46E/i0QCJjWSUQB3cg3bjONv2XV3cC6dxLfeYYcyaiyBhWCaTzMsmev0IgfwzI8bQZ3NjVAAAAAElFTkSuQmCC',
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADmklEQVR4nO2dS24bMRAFfZQcJGfK/XcOtDBgCDOP/SPZHFUBWWiGn0eyi9LK+foGgFu+dgcA6AyCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIHAcf/7+WzYXgjyElUWzk9c6f/6tAEFuOKngVhfNLn6v85GCnHKAJxXcjqLZxaMF6XSIKsNJBfeetXveLI8VpNMhjnJ0yjriFEEqcu1a60cJYsnRJeuIq4LpmLcq25GCWEJ2OsRRjk5ZR5wgSGW24wSxBu1yiJYcXbKOeM/XNa9nL7vWEYI421TmyfR9kiDen72PEaTTz4BOgmTGv+q7e2+vsO5lpA2CFGPJsSprdvwOgljmQZCNgnjHmSFIdB2ZvbBkn411LgRxLMrSPjKv9yZTOTyHUFHgJwriuTwsa/W2ufo8m6MEiRRYtSBVBe7t7ymiWSCIg9WCeG54bw5P1ooC9/b37vUMPNkR5Nt/o2UWFt0kaw7r+FXfALsFyZ5BxcVo2Q/v8xm0FyQzVhdBMrdgZq2Zdnd9EMTICkEyG+TpG3l2oiCR7Ff9EMRAJHxVYVQKEmmXXUdl0VvbrpA7evkgiOGdp11GkPd3nyBINPvVuKsEqaijCtoJUtEmcpuqdXiKxJKjah8ic82UO5rhYwSpLFzv3NH3TxYkckaRMUfjjvb7kYK88BZO1aKz44zkuGvjESSTMVIA1oyz5EaQC6oEqbgtPWNFBYnO4c2YFaSiuFYK4snvWUMFZYJEi6bitrS+U7k9bSoOsOqy8Kwpm+3unWfOjESeNVSxVZCKYrA8t+QetfHMs/KysOStyJbJXS2IdR0VbBOkqhgsz0c5vG28BWRdQ/bQVwhy9X6WICNmy/GiXJDK9taxrj57cljnsLyLClJ1I0bE9Lx/bxNpbx2zA0sFee9TNbd3XK/UlvkzGbx9MyCIj+WC/PTLki2w7EFUCrKyKCLfiqodggh2LqiiwDKZKwV9giCZea/G7MJHC1I1/9VnT//d2e+eWfpX/XJ4pCAvOgmye35Phk8UxDNmF0r+Nu+OBT1NkJVUf/vNytWBY/8DnY6CZMZYSVdBfsbuxH8/EXA/LlIoNwAAAABJRU5ErkJggg==',
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADcklEQVR4nO2bQW7dMAwFc5QepGfq/Xct/iJA4DrPeiQl6kczQDa2LFIUR/qbfPwFgG/56E4AYGcQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIACCowX59ftPdwqwOccK8pLj8687D9iXIwX5Kkdng+6QA2gQpKk53Rx2l2j3/KIgSMPGXuM/5dAt8xO755fhOEHc5uzOoTvXJ3bPLwuCLN7Uu/gIMh5rNQgSLHrmu9EcumV+ojq/0YNiJUcJ4p7eI/NkvkOQ+7me4qwEQRJNfrIgVYfN3Vzu+5kgiFHwqm/Vs6pcZzPjNj5ekM4Ndk9v9T2CzLmNjxake5M7Bflu/E6CZGSfKUj3IbFEkB1OwcymVsoVeT67dtn1VNyoCNIoiPvzpurbp7E7COLuTbYe7hwIsji+ejby3ei3I2NnC+LmhyD/M12Q7gVecxh5nv0uM39FA0ZzXCGIU9O73kGQyTmMPM+8c8eN3BaZE3o0dmY9FfVAkKYFRho9erO4Y+7GVZ7QOwkSqenbC+IUFEGex2VvLbfe0bGr3u/QP2FBZmxYJH4mz+hpXSHQ3diMINf3zvjZa47OjyAFsSs3NXLqR96rtUSaLCL6KkGiNY3uTTXTBJm1wFmbGm1qN2Z0PW4DVq49U+sqQZy5KnkrQWaeepnGdmKO5FARz5F4liAVtUCQYLzqTXVzq9rAjCCOBOpddJ7onCNzIEgy1gxBZueUyaHygJgtSEVN777/MYJU2h8tVvTki+ZV1RSj41yh1POKhkSQC5FTx11g9GSLxHGpEmT0W7f5dhDEBUECmxu5IVYUsuLEvM7nxHPyiz7PCBLhCEGyjTta6J8miBszMtapWWRN1YJUzx9hK0GcZus+ZVbL8TXu6LjVgjj5PeWMIMa7qviVdAni4DR9x434lIN6v4pSQZwbYuS5Gz86V4Td5XjhNP07CHIds4J2QTJXeacgq2NFeDdBrnmoMatoFSSzEZWyZdhVjhdZQbrYqabp/wdxGr7ylNpFkJ1xar2TIDvxDyTDFGrQjRB2AAAAAElFTkSuQmCC',
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADYElEQVR4nO2cSW7jQAxFc5QcpM/U99+lYTQC24L8i1NN0ntAFpZYA1l85az89QMAH/mavQGAlUEQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECQEuT7z9+qfQCYGdl3YUEem/z9a8UBVGHtuyq6CjI6Gbg2r/20vSAzkoFrgyAvY+EJ9fgPghjmvRvU48llBDkmYk2Gf8veoR5Poj2VBUEWhno8ub0gvQqwa2PNaohVuYwgZ4nMEmTn5kKQd24tSFQqz5w70aMeO+OtR2WtLinI7s2FIO946lFdr+mCHGOyCV6hua6QQyXWevSoV6kgkWavFKRathlcIYdqbiuIZY7K/ewAgrxjrUevb1wEWYhVchhdr4r/MJYT5NOmrIdrSTSyj+xcM1lBkMwF1WM9a022FOQYk3lu2YPn3Qh2kzzaYBXf+hlBLH0YZYogVU0dKa5lzorYKtFXFyTTlK2x1pogSGPtTEw03prDLEEy3wIjBLGsZ6mJkqWCckFUzNnn1ry9Yz7lkon1Nk0rdkTTRgTJ3NoIchJz9rk1b+R9Jm53Qaoavacg1vVuJ0hFY1c2nieP zLxVrhV59BIkupZ1rLenLOMilApiick0TeYgrDlkBam8DDIxqwpi3eetBfHMq55599h6t6Mg2UbJ1sCzlmdsJGfvXiwgiOOgLbemJ9+sRBWNMlIQz7leQpAH3qaKzJlJ2lPInQRprRFd31OD6jyye/fux0LJb/NGb0BLfDbZqlvLsi/Pvj15RS6M1QSpvKhe4zxrRRj249WezVbJcZxLPVPPz97NEiRzW1tiIjfzLEG8a0VY8tfdq+Q4znX2WcV657E2sje3yIURFbSHIN45EcRAD0EqD3KkIJExuwpSce63EORBRYIVglhvuZ6C/I7zxEbX997q2Vw9Z2ThNoJU4Cl8RhDrTVh5eIqRgqj3CLI4nqJ7GsMiRKTRqqhq2OgY67hjHIJMwFMwT3O0DjbSaFXsLkiGyjr/A29cvGNCYjjnAAAAAElFTkSuQmCC',
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADDElEQVR4nO3cS27jMBRE0SwlC8masv+ZAw8CGIZdep+iSFP3AD1oWx+S4lUHPcjXDcBbX7MHAKyMQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQACBQAAfB5I8bQZ3NjVAAAAAElFTkSuQmCC',
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADmklEQVR4nO2dS24bMRAFfZQcJGfK/XcOtDBgCDOP/SPZHFUBWWiGn0eyi9LK+foGgFu+dgcA6AyCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIHAcf/7+WzYXgjyElUWzk9c6f/6tAEFuOKngVhfNLn6v85GCnHKAJxXcjqLZxaMF6XSIKsNJBfeetXveLI8VpNMhjnJ0yjriFEEqcu1a60cJYsnRJeuIq4LpmLcq25GCWEJ2OsRRjk5ZR5wgSGW24wSxBu1yiJYcXbKOeM/XNa9nL7vWEYI421TmyfR9kiDen72PEaTTz4BOgmTGv+q7e2+vsO5lpA2CFGPJsSprdvwOgljmQZCNgnjHmSFIdB2ZvbBkn411LgRxLMrSPjKv9yZTOTyHUFHgJwriuTwsa/W2ufo8m6MEiRRYtSBVBe7t7ymiWSCIg9WCeG54bw5P1ooC9/b37vUMPNkR5Nt/o2UWFt0kaw7r+FXfALsFyZ5BxcVo2Q/v8xm0FyQzVhdBMrdgZq2Zdnd9EMRAJHxVYVQKEmmXXUdl0VvbrpA7evkgiOGdp11GkPd3nyBINPvVuKsEqaijCtoJUtEmcpuqdXiKxJKjah8ic82UO5rhYwSpLFzv3NH3TxYkckaRMUfjjvb7kYK88BZO1aKz44zkuGvjESSTMVIA1oyz5EaQC6oEqbgtPWNFBYnO4c2YFaSiuFYK4snvWUMFZYJEi6bitrS+U7k9bSoOsOqysOStyJbJXS2IdR0VbBOkqhgsz0c5vG28BWRdQ/bQVwhy9X6WICNmy/GiXJDK9taxrj57cljnsLyLClJ1I0bE9Lx/bxNpbx2zA0sFee9TNbd3XK/UlvkzGbx9MyCIj+WC/PTLki2w7EFUCrKyKCLfiqodggh2LqiiwDKZKwV9giCZea/G7MJHC1I1/9VnT//d2e+eWfpX/XJ4pCAvOgmye35Phk8UxDNmF0r+Nu+OBT1NkJVUf/vNytWBY/8DnY6CZMZYSVdBfsbuxH8/EXA/LlIoNwAAAABJRU5ErkJggg==',
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAADcklEQVR4nO2bQW7dMAwFc5QepGfq/Xct/iJA4DrPeiQl6kczQDa2LFIUR/qbfPwFgG/56E4AYGcQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIAACBAEQIAiAAEEABAgCIEAQAAGCAAgQBECAIACCowX59ftPdwqwOccK8pLj8687D9iXIwX5Kkdng+6QA2gQpKk53Rx2l2j3/KIgSMPGXuM/5dAt8xO755fhOEHc5uzOoTvXJ3bPLwuCLN7Uu/gIMh5rNQgSLHrmu9EcumV+ojq/0YNiJUcJ4p7eI/NkvkOQ+7me4qwEQRJNfrIgVYfN3Vzu+5kgiFHwqm/Vs6pcZzPjNj5ekM4Ndk9v9T2CzLmNjxake5M7Bflu/E6CZGSfKUj3IbFEkB1OwcymVsoVeT67dtn1VNyoCNIoiPvzperbp7E7COLuTbYe7hwIsji+ejby3ei3I2NnC+LmhyD/M12Q7gVecxh5nv0uM39FA0ZzXCGIU9O73kGQyTmMPM+8c8eN3BaZE3o0dmY9FfVAkKYFRho9erO4Y+7GVZ7QOwkSqenbC+IUFEGex2VvLbfe0bGr3u/QP2FBZmxYJH4mz+hpXSHQ3diMINf3zvjZa47OjyAFsSs3NXLqR96rtUSaLCL6KkGiNY3uTTXTBJm1wFmbGm1qN2Z0PW4DVq49U+sqQZy5KnkrQWaeepnGdmKO5FARz5F4liAVtUCQYLzqTXVzq9rAjCCOBOpddJ7onCNzIEgy1gxBZueUyaHygJgtSEVN777/MYJU2h8tVvTki+ZV1RSj41yh1POKhkSQC5FTx11g9GSLxHGpEmT0W7f5dhDEBUECmxu5IVYUsuLEvM7nxHPyiz7PCBLhCEGyjTta6J8miBszMtapWWRN1YJUzx9hK0GcZus+ZVbL8TXu6LjVgjj5PeWMIMa7qviVdAni4DR9x434lIN6v4pSQZwbYuS5Gz86V4Td5XjhNP07CHIds4J2QTJXeacgq2NFeDdBrnmoMatoFSSzEZWyZdhVjhdZQbrYqabp/wdxGr7ylNpFkJ1xar2TIDvxDyTDFGrQjRB2AAAAAElFTkSuQmCC',
 
   ];
 
-  // 3 historical talks with full content
+  // 8 historical talks with full content (Substitution 2)
   var topics = [
     {
-      title: 'Manual Handling',
-      version: 'TBT-MH-2026-03',
+      title: 'Edge Protection Refresher',
+      version: 'TBT-EP-2026-04',
+      dateStr: '28/04/2026',
+      presenter: 'Eoin',
+      site: 'Parramatta',
       sections: [
         { heading: 'Why this matters', points: [
-          'Sprains and strains are the single largest category of construction injuries.',
-          'Most manual handling injuries are preventable with proper technique and planning.'
+          'Falls from height remain the leading cause of fatalities in construction.',
+          'Edge protection is your primary control when working above 2 metres.'
         ]},
-        { heading: 'Safe lifting practice', points: [
-          'Plan the lift \u2014 check weight, route, destination before lifting.',
-          'Bend at the knees, keep the back straight, hold the load close.',
-          'If a load is over 23 kg or awkward, use a mechanical aid or get help.'
+        { heading: 'Key requirements', points: [
+          'Top rail at 900-1100mm, mid rail, and toe board required.',
+          'Inspect edge protection before each shift \u2014 check for damage, displacement, or gaps.',
+          'Never remove or alter edge protection without supervisor approval and alternative controls.'
         ]}
       ],
       debrief: {
         attendance: 12,
-        hazards: 'Heavy precast panels (~40kg) being unloaded near the eastern boundary. Crew identified pinch points between panels and the boundary fence as a specific concern.',
-        questions: 'Conor asked about the correct technique for two-person lifts of awkward shapes. We demonstrated using the load chart on the wall as a quick reference. Pat raised a concern about back belts being mandated by his previous employer \u2014 confirmed they are not required and not effective.',
-        actions: 'Order another set of trolley jacks for the south compound by Friday \u2014 Eoin. Update the manual handling SWMS to call out the precast panel pinch points specifically \u2014 Pat by Wed. Toolbox photo taken and filed.'
+        hazards: 'Level 3 slab edge protection on western side compromised by crane lift yesterday \u2014 rebuilt this morning before access allowed. Eastern edge adjacent to plant laydown identified as high-traffic zone.',
+        questions: 'Lee asked about temporary removal during crane lifts \u2014 confirmed: barricade + spotter required, re-install immediately after lift. Jake raised concern about toe board gaps near stairwell; inspected and found compliant but added extra securing.',
+        actions: 'Add weekly edge protection inspection to pre-start checklist \u2014 Eoin. Order additional star pickets for eastern edge reinforcement \u2014 Pat by Wed. Toolbox photo taken and filed.'
       }
     },
     {
-      title: 'Hand and Power Tools',
-      version: 'TBT-HPT-2026-02',
+      title: 'Welding Permit Walk-through',
+      version: 'TBT-WP-2026-04',
+      dateStr: '27/04/2026',
+      presenter: 'Eoin',
+      site: 'Blacktown',
       sections: [
         { heading: 'Why this matters', points: [
-          'Power-tool injuries are common and often preventable.',
-          'Most incidents come from skipped pre-use checks or wrong tool for the job.'
+          'Hot works create fire risk, fume exposure, and burn hazards.',
+          'Permit system ensures controls are in place before work starts.'
         ]},
-        { heading: 'Before you start', points: [
-          'Inspect the tool \u2014 cords, guards, switches, casings.',
-          'Confirm the tool is correctly tagged and within its test date.',
-          'Wear the right PPE \u2014 eye protection, hearing, gloves where appropriate.'
+        { heading: 'Before you weld', points: [
+          'Complete hot works permit \u2014 no exceptions, even for quick repairs.',
+          'Fire watch required during and for 60 minutes after work.',
+          'Clear combustibles within 10 metres, have extinguisher and fire blanket on hand.'
         ]}
       ],
       debrief: {
-        attendance: 14,
-        hazards: 'Dust hazard from cutting fibre cement boards in the carpark area. Crew confirmed they will only cut in the designated bay with on-tool extraction running.',
-        questions: 'Mark asked when angle grinder guards can be removed \u2014 confirmed: never. Brendan flagged that one of the kango hammers had been making a strange noise; pulled it from service and tagged for repair.',
-        actions: 'Send the kango hammer for service \u2014 Eoin (lodged with supplier same day). Replace torn dust extraction hose \u2014 Pat by Tuesday. Inspect all 110V transformers for cable damage during next pre-start \u2014 Eoin.'
+        attendance: 8,
+        hazards: 'Welding planned near timber formwork storage this week \u2014 identified as high-risk area. Steel fabrication bay confirmed as preferred location for all non-essential welding.',
+        questions: 'Mark asked about fire watch timer on the app \u2014 demonstrated how to use it. Wayne confirmed fume extraction required for enclosed welding; portable extractor booked for Thursday.',
+        actions: 'Relocate timber formwork to southern compound away from weld bay \u2014 Mark by tomorrow. Test portable fume extractor before Thursday work \u2014 Wayne. Update hot works permit to reference timber exclusion zone \u2014 Eoin.'
       }
     },
     {
-      title: 'Electrical Safety',
-      version: 'TBT-ES-2026-01',
+      title: 'Precast Panel Lift Brief',
+      version: 'TBT-PP-2026-04',
+      dateStr: '24/04/2026',
+      presenter: 'Pat',
+      site: 'Liverpool',
       sections: [
         { heading: 'Why this matters', points: [
-          'Electrical incidents on construction sites are typically severe \u2014 burns, cardiac arrest, falls.',
-          'Underground and overhead services cause many of these incidents.'
+          'Precast panel lifts are high-risk: heavy loads, tight tolerances, multiple workers.',
+          'Communication breakdown during lifts causes most incidents.'
         ]},
-        { heading: 'Key controls', points: [
-          'Test before you touch \u2014 always treat circuits as live until proven dead.',
-          'Lock out and tag out before any work on isolated equipment.',
-          'Maintain safe approach distances to overhead lines per the regulator\u2019s code.'
+        { heading: 'Lift protocol', points: [
+          'Designated lift supervisor calls every lift \u2014 use radio and hand signals.',
+          'Exclusion zone: minimum 5 metres from crane, no workers under suspended loads.',
+          'Inspect rigging before each lift \u2014 check slings, shackles, and lift points.'
+        ]}
+      ],
+      debrief: {
+        attendance: 6,
+        hazards: 'Six wall panels arriving Tuesday, each 3.2 tonnes. Unloading zone on western boundary close to overhead power lines \u2014 3m clearance confirmed acceptable but flagged as watch point.',
+        questions: 'Brendan asked about wind limits for panel lifts \u2014 confirmed: 40 km/h max, check forecast before each lift. Tom asked about tagline procedure; demonstrated and confirmed mandatory for all panels.',
+        actions: 'Mark exclusion zone around unloading area Monday afternoon \u2014 Pat. Confirm crane operator has current HRWL and panel lift experience \u2014 Brendan (verified same day). Brief all crew on tagline use Tuesday 6:45am \u2014 Pat.'
+      }
+    },
+    {
+      title: 'Damaged Lead Near-Miss',
+      version: 'TBT-DL-2026-04',
+      dateStr: '21/04/2026',
+      presenter: 'Eoin',
+      site: 'Parramatta',
+      sections: [
+        { heading: 'What happened', points: [
+          'Excavator struck buried 240V submain Wednesday morning \u2014 cable nicked but not severed.',
+          'No injury, no power loss, but cable now requires replacement.',
+          'Incident occurred 1.5m from marked location \u2014 cable plan was inaccurate.'
+        ]},
+        { heading: 'Lessons', points: [
+          'Always treat DBYD plans as approximate \u2014 scan and hand-dig to confirm.',
+          'Stop work immediately if you hit unexpected resistance or see cable markers.',
+          'Report near-misses \u2014 this one prevents someone getting shocked next time.'
         ]}
       ],
       debrief: {
         attendance: 11,
-        hazards: 'Overhead 11kV line on the eastern boundary remains a permanent exclusion concern \u2014 6m exclusion zone re-marked. Temporary submains running across loading bay flagged for relocation.',
-        questions: 'Wayne asked about double-isolation on the new switchboard \u2014 confirmed required for any work, even a re-fuse. Tom raised that one of the temporary RCDs had been tripping intermittently; pulled from service and replaced.',
-        actions: 'Relocate temporary submains under the gantry by end of week \u2014 Wayne. Update the LOTO register with two new isolation points \u2014 Eoin. Order replacement RCDs (3 spares) \u2014 Pat.'
+        hazards: 'Remaining unmarked services likely present across site \u2014 eastern boundary particularly suspect. All excavation over 300mm depth now requires scan + hand dig for first metre.',
+        questions: 'Mick asked if excavator should have had cable avoidance training \u2014 confirmed yes, scheduled for all operators next Monday. Wayne asked about replacement cable routing; confirmed will be above-ground temporary until permanent conduit installed.',
+        actions: 'Book cable locator for full site scan next week \u2014 Eoin. Mandatory cable avoidance training for all plant operators Monday 3pm \u2014 Pat (external trainer booked). Replace damaged submain and re-route overhead \u2014 Wayne by Friday. Update site plan with actual-as-found service locations \u2014 Eoin ongoing.'
+      }
+    },
+    {
+      title: 'Kango Hammer Review',
+      version: 'TBT-KH-2026-04',
+      dateStr: '17/04/2026',
+      presenter: 'Eoin',
+      site: 'Liverpool',
+      sections: [
+        { heading: 'Why this matters', points: [
+          'Kango hammers cause vibration injuries (HAVS) and noise exposure.',
+          'Concrete dust creates silica hazard \u2014 lung disease risk.'
+        ]},
+        { heading: 'Safe use', points: [
+          'Limit continuous use to 15-minute blocks, then 15-minute break.',
+          'Wet suppression or on-tool extraction mandatory \u2014 no dry cutting.',
+          'Wear hearing protection, safety glasses, and dust mask rated P2 minimum.'
+        ]}
+      ],
+      debrief: {
+        attendance: 14,
+        hazards: 'Heavy kango work planned for internal walls this week \u2014 silica risk high. Confirmed water supply to all work areas and on-tool extraction available.',
+        questions: 'Sam asked about vibration gloves \u2014 confirmed: helpful but don\'t replace time limits. Lee raised that one kango had been vibrating excessively; pulled from service and sent for repair.',
+        actions: 'Send faulty kango for service \u2014 Eoin (lodged same day). Set up water point near internal wall work area \u2014 Sam by tomorrow. Silica monitoring scheduled for Wednesday \u2014 Pat (contractor confirmed).'
+      }
+    },
+    {
+      title: '36°C Friday Brief',
+      version: 'TBT-HW-2026-04',
+      dateStr: '14/04/2026',
+      presenter: 'Pat',
+      site: 'Parramatta',
+      sections: [
+        { heading: 'Why this matters', points: [
+          'Forecast: 36°C Friday, little wind, full sun exposure on upper levels.',
+          'Heat stress can cause collapse, heat stroke, and poor decision-making.'
+        ]},
+        { heading: 'Controls for Friday', points: [
+          'Start time brought forward to 6:00am \u2014 finish by 2:30pm.',
+          'Mandatory 10-minute breaks every hour in shade with water.',
+          'Buddy system: watch your mates for signs of heat stress \u2014 dizziness, confusion, nausea.'
+        ]}
+      ],
+      debrief: {
+        attendance: 9,
+        hazards: 'Upper slab exposed to full sun \u2014 no shade available. Confirmed additional water stations and ice vests ordered.',
+        questions: 'Mark asked if work could be rescheduled \u2014 confirmed: client deadline non-negotiable, early start and breaks are the mitigation. Wayne asked about electrolyte drinks; confirmed: available in site fridge, encouraged.',
+        actions: 'Deliver 3 additional water coolers to upper level Thursday \u2014 Pat. Order ice vests (6 units) for Friday \u2014 Eoin (arrived Thursday). Pre-start Friday 5:45am for final heat-stress brief \u2014 Pat.'
+      }
+    },
+    {
+      title: 'Blacktown Trench Brief',
+      version: 'TBT-BT-2026-04',
+      dateStr: '10/04/2026',
+      presenter: 'Eoin',
+      site: 'Blacktown',
+      sections: [
+        { heading: 'Why this matters', points: [
+          'Trench work starting Monday \u2014 2.1m deep, 15m long, running parallel to boundary.',
+          'Trench collapse is immediately fatal \u2014 no second chances.'
+        ]},
+        { heading: 'Key controls', points: [
+          'Benching required over 1.5m depth \u2014 engineer\'s design to be followed exactly.',
+          'Spoil heap minimum 1.5m back from edge \u2014 no exceptions.',
+          'Competent person (Mick) inspects trench every morning before entry.'
+        ]}
+      ],
+      debrief: {
+        attendance: 5,
+        hazards: 'Trench runs close to boundary fence \u2014 fence load could destabilise trench wall if spoil heaped against it. Confirmed spoil to be placed on northern side only.',
+        questions: 'Mick asked about shoring as alternative to benching \u2014 confirmed: benching is the design, shoring not approved. Tom asked about entry/exit points; confirmed: ladder every 8 metres maximum.',
+        actions: 'Mark spoil placement zone (northern side only) Monday morning \u2014 Mick. Deliver trench ladders (2 units) Monday 7am \u2014 Pat (confirmed with supplier). Mick to photograph trench daily for records \u2014 Mick ongoing.'
+      }
+    },
+    {
+      title: 'Mental Health Stand-Down',
+      version: 'TBT-MH-2026-04',
+      dateStr: '07/04/2026',
+      presenter: 'Pat',
+      site: 'All Sites',
+      sections: [
+        { heading: 'Why this matters', points: [
+          'Construction workers are 6 times more likely to die by suicide than a workplace accident.',
+          'Talking about mental health at work reduces stigma and saves lives.'
+        ]},
+        { heading: 'What you can do', points: [
+          'Check in with your mates \u2014 "You good?" is a conversation starter.',
+          'If someone\'s struggling: listen without judgment, encourage them to talk to someone.',
+          'Resources: Mates in Construction 1300 642 111, Beyond Blue 1300 224 636, Lifeline 13 11 14.'
+        ]}
+      ],
+      debrief: {
+        attendance: 10,
+        hazards: 'None specific to today, but reminder that fatigue, isolation, and financial stress are ongoing risks across the industry.',
+        questions: 'Multiple crew members shared personal stories \u2014 discussion ran 25 minutes. General sentiment: more of these conversations needed. Brendan asked about EAP access; confirmed: available to all Murphy Civil staff and provided contact details.',
+        actions: 'Print mental health resource cards and place in crib rooms at all sites \u2014 Pat by Wed. Schedule quarterly mental health stand-downs \u2014 Pat (added to calendar). Share EAP contact details in next site notice \u2014 Eoin.'
       }
     }
   ];
 
-  // Worker roster — diverse mix of names/companies/roles for realistic demo
+  // Worker roster \u2014 diverse mix of names/companies/roles for realistic demo (Substitution 3: 8 \u2192 15 workers)
   var workers = [
     { name: 'Jake Ryan',       company: 'Murphy Civil Construction', role: 'Carpenter' },
     { name: 'Mark Flynn',      company: 'Murphy Civil Construction', role: 'Labourer' },
@@ -35805,7 +35983,14 @@ function tbtSeedDemoSupervisorRosters(silent) {
     { name: 'Wayne Slattery',  company: 'Sparks Electrical',         role: 'Electrician' },
     { name: 'Tom Burke',       company: 'Murphy Civil Construction', role: 'Apprentice' },
     { name: 'Mick Doyle',      company: 'Doyle Earthworks',          role: 'Excavator Operator' },
-    { name: 'Sam Carroll',     company: 'Murphy Civil Construction', role: 'Concreter' }
+    { name: 'Sam Carroll',     company: 'Murphy Civil Construction', role: 'Concreter' },
+    { name: 'Conor Walsh',     company: 'Murphy Civil Construction', role: 'Formworker' },
+    { name: 'Liam Connolly',   company: 'Sparks Electrical',         role: 'Electrician' },
+    { name: 'Ronan Daly',      company: 'Murphy Civil Construction', role: 'Steel Fixer' },
+    { name: 'Aoife McGrath',   company: 'Crane Hire QLD',            role: 'Dogger' },
+    { name: 'Ciaran Power',    company: 'Murphy Civil Construction', role: 'Plant Operator' },
+    { name: 'Niall Sweeney',   company: 'Doyle Earthworks',          role: 'Labourer' },
+    { name: 'Dean Phelan',     company: 'Murphy Civil Construction', role: 'Concretor' }
   ];
 
   var key = 'slan_tbt_records_v1';
@@ -35819,16 +36004,17 @@ function tbtSeedDemoSupervisorRosters(silent) {
   var addedWrapups = 0;
 
   topics.forEach(function(t, tIdx) {
-    // Date — 1, 2, 3 months ago
-    var d = new Date();
-    d.setMonth(d.getMonth() - (tIdx + 1));
-    var dateStr = d.toLocaleDateString('en-AU');
-    var baseTime = new Date(d);
+    // Substitution 4: Date from dateStr (DD/MM/YYYY format)
+    var parts = t.dateStr.split('/');
+    var date = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+    var dateStr = date.toLocaleDateString('en-AU');
+    var baseTime = new Date(date);
     baseTime.setHours(7, 30, 0, 0);
 
-    // 6 workers signed each talk (rotates through the workers list)
-    for (var i = 0; i < 6; i++) {
-      var w = workers[(i + tIdx) % workers.length];
+    // Substitution 5: Loop bound uses actual attendance count from debrief
+    var attendees = t.debrief.attendance;
+    for (var i = 0; i < attendees; i++) {
+      var w = workers[i % workers.length];
       // Stagger sign-times by 1-2 minutes
       var signTime = new Date(baseTime.getTime() + i * 90 * 1000);
       var timeStr = signTime.toLocaleTimeString('en-AU', { hour:'2-digit', minute:'2-digit', hour12:true });
@@ -35843,7 +36029,7 @@ function tbtSeedDemoSupervisorRosters(silent) {
         site: typeof SITE !== 'undefined' ? SITE : 'Demo Site',
         talk_id: t.version,
         talk_title: t.title,
-        presenter: 'Site Supervisor',
+        presenter: t.presenter,
         sections_snapshot: t.sections,
         date: dateStr,
         time: timeStr,
@@ -35866,7 +36052,7 @@ function tbtSeedDemoSupervisorRosters(silent) {
         site: typeof SITE !== 'undefined' ? SITE : 'Demo Site',
         talk_id: t.version,
         talk_title: t.title,
-        presenter: 'Site Supervisor',
+        presenter: t.presenter,
         sections_snapshot: t.sections,
         date: dateStr,
         time: supTimeStr,
@@ -35876,7 +36062,7 @@ function tbtSeedDemoSupervisorRosters(silent) {
       addedRecs++;
     }
 
-    // Save the supervisor debrief for this talk
+    // Substitution 6: Save the supervisor debrief with site field
     var wuKey = t.version + '|' + dateStr;
     if (!allWrapups[wuKey]) {
       allWrapups[wuKey] = {
@@ -35887,6 +36073,7 @@ function tbtSeedDemoSupervisorRosters(silent) {
         questions: t.debrief.questions,
         actions: t.debrief.actions,
         supervisor_name: p.name || 'Site Supervisor',
+        site: t.site || (typeof SITE !== 'undefined' ? SITE : 'Demo Site'),
         saved_at: supTime.toISOString()
       };
       addedWrapups++;
@@ -37005,6 +37192,10 @@ function sdsBrowseAll() {
         '<div style="font-size:11px;color:var(--muted)">'+c.manufacturer+' · '+c.form+' · '+c.sites+'</div>' +
         '<div style="font-size:11.5px;color:var(--text);line-height:1.4">' + c.hazard + '</div>' +
         '<div style="font-size:10.5px;color:var(--muted);padding-top:6px;border-top:1px solid rgba(0,0,0,.08)">PPE: ' + c.ppe + '</div>' +
+        '<button onclick="downloadSDS(\'' + c.name.replace(/'/g, "\\'") + '\')" style="width:100%;padding:9px;border-radius:var(--rs);border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:6px">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+          'Download SDS' +
+        '</button>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -37014,20 +37205,166 @@ function sdsBrowseAll() {
 function sdsReportMissing() {
   var name = document.getElementById('sds-missing-name');
   var usage = document.getElementById('sds-missing-usage');
+  var photo = document.getElementById('sds-missing-photo');
   var confirm = document.getElementById('sds-missing-confirm');
   if (!name || !name.value.trim()) { slanAlert('Please enter the chemical name before continuing.'); return; }
   var p = getProfile();
-  var payload = {
-    form_type: 'sds_missing_report',
-    chemical_name: name.value.trim(),
-    usage: usage ? usage.value.trim() : '',
-    reported_by: p ? p.name : 'Unknown',
-    reported_at: new Date().toISOString()
-  };
-  fbInsert('sds_missing', payload);
-  if (name) name.value = '';
-  if (usage) usage.value = '';
-  if (confirm) { confirm.style.display = 'block'; setTimeout(function(){ confirm.style.display='none'; }, 4000); }
+  var photoData = null;
+  if (photo && photo.files && photo.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      photoData = e.target.result;
+      submitMissingReport();
+    };
+    reader.readAsDataURL(photo.files[0]);
+  } else {
+    submitMissingReport();
+  }
+  
+  function submitMissingReport() {
+    var payload = {
+      form_type: 'sds_missing_report',
+      chemical_name: name.value.trim(),
+      usage: usage ? usage.value.trim() : '',
+      photo: photoData || '',
+      reported_by: p ? p.name : 'Unknown',
+      reported_at: new Date().toISOString()
+    };
+    fbInsert('sds_missing', payload);
+    if (name) name.value = '';
+    if (usage) usage.value = '';
+    if (photo) photo.value = '';
+    sdsMissingPhotoRemove();
+    if (confirm) { confirm.style.display = 'block'; setTimeout(function(){ confirm.style.display='none'; }, 4000); }
+  }
+}
+
+function sdsMissingPhotoPreview(input) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var preview = document.getElementById('sds-photo-preview');
+      var img = document.getElementById('sds-photo-img');
+      var btnText = document.getElementById('sds-photo-btn-text');
+      if (img) img.src = e.target.result;
+      if (preview) preview.style.display = 'block';
+      if (btnText) btnText.textContent = 'Change photo';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function sdsMissingPhotoRemove() {
+  var preview = document.getElementById('sds-photo-preview');
+  var photo = document.getElementById('sds-missing-photo');
+  var btnText = document.getElementById('sds-photo-btn-text');
+  if (preview) preview.style.display = 'none';
+  if (photo) photo.value = '';
+  if (btnText) btnText.textContent = 'Take photo of label';
+}
+
+function downloadSDS(chemicalName) {
+  var chem = SDS_CHEMICALS.find(function(c) { return c.name === chemicalName; });
+  if (!chem) { slanAlert('Chemical not found'); return; }
+  
+  var doc = new jsPDF();
+  var yPos = 20;
+  var pageHeight = doc.internal.pageSize.height;
+  var margin = 20;
+  var lineHeight = 7;
+  
+  // Header
+  doc.setFontSize(18);
+  doc.setFont(undefined, 'bold');
+  doc.text('Safety Data Sheet', margin, yPos);
+  yPos += 10;
+  
+  doc.setFontSize(14);
+  doc.text(chem.name, margin, yPos);
+  yPos += lineHeight + 3;
+  
+  // Status banner
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'bold');
+  var statusColor = chem.status === 'expired' ? [184, 50, 50] : chem.status === 'urgent' ? [184, 50, 50] : chem.status === 'expiring' ? [139, 105, 20] : [27, 110, 58];
+  doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+  doc.text(chem.statusLabel.toUpperCase(), margin, yPos);
+  doc.setTextColor(0, 0, 0);
+  yPos += lineHeight + 5;
+  
+  // Manufacturer
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'normal');
+  doc.text('Manufacturer: ' + chem.manufacturer, margin, yPos);
+  yPos += lineHeight;
+  doc.text('Form: ' + chem.form, margin, yPos);
+  yPos += lineHeight;
+  doc.text('Sites: ' + chem.sites, margin, yPos);
+  yPos += lineHeight + 5;
+  
+  // DG Classification
+  if (chem.dg && chem.dg.indexOf('N/A') === -1 && chem.dg.indexOf('not DG') === -1) {
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(184, 50, 50);
+    doc.text('DANGEROUS GOODS', margin, yPos);
+    yPos += lineHeight;
+    doc.setFont(undefined, 'normal');
+    doc.text(chem.dg, margin, yPos);
+    doc.setTextColor(0, 0, 0);
+    yPos += lineHeight + 5;
+  }
+  
+  // Sections
+  var sections = [
+    { title: 'HAZARD IDENTIFICATION', content: chem.hazard },
+    { title: 'PPE REQUIRED', content: chem.ppe },
+    { title: 'EMERGENCY RESPONSE', content: chem.emergency },
+    { title: 'STORAGE', content: chem.storage }
+  ];
+  
+  sections.forEach(function(section) {
+    if (yPos > pageHeight - 40) {
+      doc.addPage();
+      yPos = 20;
+    }
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text(section.title, margin, yPos);
+    yPos += lineHeight;
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    var lines = doc.splitTextToSize(section.content, 170);
+    lines.forEach(function(line) {
+      if (yPos > pageHeight - 20) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.text(line, margin, yPos);
+      yPos += lineHeight;
+    });
+    yPos += 3;
+  });
+  
+  // Footer
+  yPos += 5;
+  if (yPos > pageHeight - 30) {
+    doc.addPage();
+    yPos = 20;
+  }
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text('SDS Document: ' + chem.sds, margin, yPos);
+  yPos += lineHeight;
+  doc.text('Expiry: ' + chem.expiry, margin, yPos);
+  yPos += lineHeight + 3;
+  doc.text('Downloaded: ' + new Date().toLocaleString('en-AU'), margin, yPos);
+  
+  // Save
+  var filename = 'SDS_' + chem.name.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';
+  doc.save(filename);
 }
 
 function sdsBack() {
@@ -37094,6 +37431,10 @@ function sdsSearch(query) {
         '<div style="display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--muted);margin-top:6px;padding-top:8px;border-top:1px solid rgba(0,0,0,.08)">' +
           '<span>' + c.sds + '</span><span>Expires: ' + c.expiry + '</span>' +
         '</div>' +
+        '<button onclick="downloadSDS(\'' + c.name.replace(/'/g, "\\'") + '\')" style="width:100%;padding:10px;border-radius:var(--rs);border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:6px">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+          'Download SDS PDF' +
+        '</button>' +
       '</div>' +
     '</div>';
   }).join("");
