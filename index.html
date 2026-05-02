@@ -2068,43 +2068,228 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="fhint" style="margin-bottom:6px">Optional but encouraged. What would have stopped this from happening &mdash; e.g. better housekeeping, clearer SWMS, additional barricading, swap to safer tool.</div>
           <textarea id="inc-prevention" placeholder="e.g. A bin at every work zone for off-cuts, plus a wet-weather rule to halt formwork stripping when raining." rows="3" style="font-size:14px"></textarea>
         </div>
-        <div class="fgroup">
-          <label class="flabel">Nature of injury / damage (if applicable)</label>
-          <input type="text" id="inc-injury-nature" placeholder="e.g. Laceration to right hand, fractured wrist, bruising" autocomplete="off">
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Part of body affected</label>
-          <input type="text" id="inc-body-part" placeholder="e.g. Right hand, lower back, head" autocomplete="off">
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Was first aid administered?</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <button class="ps-btn" id="inc-fa-yes" onclick="setIncField('fa','yes')">Yes</button>
-            <button class="ps-btn" id="inc-fa-no"  onclick="setIncField('fa','no')">No</button>
+      </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────
+         SECTION 5 — Type-specific details. Conditional blocks based on
+         the incident type picked in Section 1. Each block captures the
+         evidence required by the relevant regulator:
+           Injury        → SafeWork notification (nature/treatment)
+           Near Miss     → WHS Act s37 (could-have-been notifiable)
+           Dangerous     → WHS Act s37 (11 statutory categories)
+           Property      → WHS Reg 675-687 (record retention)
+           Environmental → NSW POEO Act s150 (info required to EPA)
+         ────────────────────────────────────────────────────────── -->
+    <div class="fcard">
+      <div class="fcard-hdr">5 &mdash; Type-specific details</div>
+      <div class="fcard-body">
+        <div class="fhint" id="inc-typeblock-empty" style="display:block">Pick an incident type in Section 1 to see the specific questions for that type.</div>
+
+        <!-- ─── INJURY block ─── -->
+        <div id="inc-typeblock-injury" style="display:none">
+          <div class="fgroup">
+            <label class="flabel">Nature of injury <span class="req">*</span></label>
+            <input type="text" id="inc-injury-nature" placeholder="e.g. Laceration to right hand, fractured wrist, bruising" autocomplete="off" oninput="incRecheckSubmit()">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Part of body affected <span class="req">*</span></label>
+            <input type="text" id="inc-body-part" placeholder="e.g. Right hand, lower back, head" autocomplete="off" oninput="incRecheckSubmit()">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Was first aid administered? <span class="req">*</span></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button class="ps-btn" id="inc-fa-yes" onclick="setIncField('fa','yes')">Yes</button>
+              <button class="ps-btn" id="inc-fa-no"  onclick="setIncField('fa','no')">No</button>
+            </div>
+          </div>
+          <div class="fgroup" id="inc-fa-detail-wrap" style="display:none">
+            <label class="flabel">Description of first aid given <span class="req">*</span></label>
+            <div class="fhint" style="margin-bottom:6px">What was done? e.g. wound cleaned and dressed, ice pack applied, eyewash used, etc.</div>
+            <textarea id="inc-fa-detail" placeholder="Describe the first aid that was given..." rows="3" style="font-size:14px" oninput="incRecheckSubmit()"></textarea>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Did the person seek or require medical attention? <span class="req">*</span></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button class="ps-btn" id="inc-med-yes" onclick="setIncField('med','yes')">Yes</button>
+              <button class="ps-btn" id="inc-med-no"  onclick="setIncField('med','no')">No</button>
+            </div>
+          </div>
+          <div class="fgroup" id="inc-treatment-wrap" style="display:none">
+            <label class="flabel">Where was the person taken for treatment? <span class="req">*</span></label>
+            <div class="fhint" style="margin-bottom:6px">e.g. hospital name, GP clinic, on-site first aid only. Required by the regulator for any notifiable injury.</div>
+            <input type="text" id="inc-treatment-dest" placeholder="e.g. Royal North Shore Hospital ED, or Bondi Junction GP" autocomplete="off" oninput="incRecheckSubmit()">
           </div>
         </div>
-        <div class="fgroup" id="inc-fa-detail-wrap" style="display:none">
-          <label class="flabel">Description of first aid given</label>
-          <div class="fhint" style="margin-bottom:6px">What was done? e.g. wound cleaned and dressed, ice pack applied, eyewash used, etc.</div>
-          <textarea id="inc-fa-detail" placeholder="Describe the first aid that was given..." rows="3" style="font-size:14px"></textarea>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Did the person seek or require medical attention?</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <button class="ps-btn" id="inc-med-yes" onclick="setIncField('med','yes')">Yes</button>
-            <button class="ps-btn" id="inc-med-no"  onclick="setIncField('med','no')">No</button>
+
+        <!-- ─── NEAR MISS block ─── -->
+        <div id="inc-typeblock-nearmiss" style="display:none">
+          <div class="fgroup">
+            <label class="flabel">What could have happened? <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-nm-could')">?</span></label>
+            <div id="inc-help-nm-could" class="slan-help-tip">Describe the worst credible outcome if circumstances had been slightly different. WorkSafe Vic uses the test: &ldquo;could it have resulted in death or serious injury?&rdquo;</div>
+            <textarea id="inc-nm-potential" placeholder="e.g. The brick fell from level 3 onto the public walkway. If a pedestrian had been walking past, they could have been struck on the head and seriously injured." rows="3" style="font-size:14px" oninput="incRecheckSubmit()"></textarea>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">What stopped it from happening? <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-nm-stopped')">?</span></label>
+            <div id="inc-help-nm-stopped" class="slan-help-tip">Was it a control that worked, or pure luck? This distinguishes a saved-by-control near miss from one with no controls in place.</div>
+            <textarea id="inc-nm-what-stopped" placeholder="e.g. The hoarding fence below the work zone caught the brick before it could reach pedestrians." rows="3" style="font-size:14px" oninput="incRecheckSubmit()"></textarea>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Could this have been a notifiable dangerous incident?<span class="slan-help" onclick="slanHelpToggle('inc-help-nm-notif')">?</span></label>
+            <div id="inc-help-nm-notif" class="slan-help-tip">WHS Act s37: a near miss CAN be notifiable if it exposed someone to a serious risk emanating from an immediate or imminent exposure. If yes, the supervisor needs to consider notifying SafeWork.</div>
+            <input type="hidden" id="inc-nm-notifiable" value="">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+              <button type="button" class="ps-btn" id="inc-nm-notif-yes"    onclick="setIncNmNotifiable('yes')"    style="padding:9px 4px;font-size:12px">Yes</button>
+              <button type="button" class="ps-btn" id="inc-nm-notif-no"     onclick="setIncNmNotifiable('no')"     style="padding:9px 4px;font-size:12px">No</button>
+              <button type="button" class="ps-btn" id="inc-nm-notif-unsure" onclick="setIncNmNotifiable('unsure')" style="padding:9px 4px;font-size:12px">Unsure</button>
+            </div>
           </div>
         </div>
-        <div class="fgroup" id="inc-treatment-wrap" style="display:none">
-          <label class="flabel">Where was the person taken for treatment?</label>
-          <div class="fhint" style="margin-bottom:6px">e.g. hospital name, GP clinic, on-site first aid only. Required by the regulator for any notifiable injury.</div>
-          <input type="text" id="inc-treatment-dest" placeholder="e.g. Royal North Shore Hospital ED, or Bondi Junction GP" autocomplete="off">
+
+        <!-- ─── DANGEROUS INCIDENT block ─── -->
+        <div id="inc-typeblock-dangerous" style="display:none">
+          <div class="fgroup">
+            <label class="flabel">Hazard category <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-dng-cat')">?</span></label>
+            <div id="inc-help-dng-cat" class="slan-help-tip">These 11 categories are the statutory list under WHS Act s37 \u2014 if any apply, the incident is a notifiable dangerous incident. Tap all that apply.</div>
+            <input type="hidden" id="inc-dng-categories" value="[]">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <button type="button" class="ps-btn" id="inc-dng-cat-spill"     onclick="toggleIncDngCat('substance-spill')"  style="padding:9px 8px;font-size:11.5px;text-align:left">Uncontrolled escape, spillage or leakage of a substance</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-fire"      onclick="toggleIncDngCat('implosion-explosion-fire')" style="padding:9px 8px;font-size:11.5px;text-align:left">Uncontrolled implosion, explosion or fire</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-gas"       onclick="toggleIncDngCat('gas-steam-escape')" style="padding:9px 8px;font-size:11.5px;text-align:left">Uncontrolled escape of gas or steam</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-pressure"  onclick="toggleIncDngCat('pressurised-substance')" style="padding:9px 8px;font-size:11.5px;text-align:left">Uncontrolled escape of pressurised substance</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-shock"     onclick="toggleIncDngCat('electric-shock')"   style="padding:9px 8px;font-size:11.5px;text-align:left">Electric shock (not extra-low voltage)</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-fall"      onclick="toggleIncDngCat('fall-from-height')" style="padding:9px 8px;font-size:11.5px;text-align:left">Fall or release from a height of plant, substance or thing</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-plant"     onclick="toggleIncDngCat('plant-collapse')"   style="padding:9px 8px;font-size:11.5px;text-align:left">Damage to / collapse of plant requiring authorisation</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-structure" onclick="toggleIncDngCat('structure-collapse')" style="padding:9px 8px;font-size:11.5px;text-align:left">Collapse or partial collapse of a structure</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-excav"     onclick="toggleIncDngCat('excavation-collapse')" style="padding:9px 8px;font-size:11.5px;text-align:left">Collapse or failure of excavation or shoring</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-inrush"    onclick="toggleIncDngCat('tunnel-inrush')"    style="padding:9px 8px;font-size:11.5px;text-align:left">Inrush of water, mud or gas in tunnel/excavation</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-vent"      onclick="toggleIncDngCat('tunnel-ventilation')" style="padding:9px 8px;font-size:11.5px;text-align:left">Interruption of main ventilation in tunnel/excavation</button>
+              <button type="button" class="ps-btn" id="inc-dng-cat-other"     onclick="toggleIncDngCat('other')"            style="padding:9px 8px;font-size:11.5px;text-align:left">Other &mdash; describe below</button>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Was anyone in the danger zone at the time? <span class="req">*</span></label>
+            <input type="hidden" id="inc-dng-exposed" value="">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button type="button" class="ps-btn" id="inc-dng-exposed-yes" onclick="setIncDngExposed('yes')">Yes</button>
+              <button type="button" class="ps-btn" id="inc-dng-exposed-no"  onclick="setIncDngExposed('no')">No</button>
+            </div>
+          </div>
+          <div class="fgroup" id="inc-dng-exposed-count-wrap" style="display:none">
+            <label class="flabel">How many people were exposed? <span class="req">*</span></label>
+            <input type="number" id="inc-dng-exposed-count" placeholder="e.g. 3" min="1" autocomplete="off" inputmode="numeric" oninput="incRecheckSubmit()">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Plant or equipment involved</label>
+            <div class="fhint" style="margin-bottom:6px">Specific plant, vehicle, tool or item. Optional but useful for the register.</div>
+            <input type="text" id="inc-dng-plant" placeholder="e.g. 25t mobile crane, scissor lift, demolition saw" autocomplete="off">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Substance involved</label>
+            <div class="fhint" style="margin-bottom:6px">For spills, leaks, fires &mdash; what substance. Leave blank if not applicable.</div>
+            <input type="text" id="inc-dng-substance" placeholder="e.g. Diesel, hydraulic fluid, LPG, dust" autocomplete="off">
+          </div>
         </div>
+
+        <!-- ─── PROPERTY DAMAGE block ─── -->
+        <div id="inc-typeblock-propdmg" style="display:none">
+          <div class="fgroup">
+            <label class="flabel">What was damaged? <span class="req">*</span></label>
+            <input type="text" id="inc-pd-asset" placeholder="e.g. Site office window, 25t excavator boom, fence panel" autocomplete="off" oninput="incRecheckSubmit()">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Extent of damage <span class="req">*</span></label>
+            <input type="hidden" id="inc-pd-extent" value="">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <button type="button" class="ps-btn" id="inc-pd-extent-minor"    onclick="setIncPdExtent('minor')"    style="padding:9px 4px;font-size:12px">Minor (cosmetic)</button>
+              <button type="button" class="ps-btn" id="inc-pd-extent-moderate" onclick="setIncPdExtent('moderate')" style="padding:9px 4px;font-size:12px">Moderate (repairable)</button>
+              <button type="button" class="ps-btn" id="inc-pd-extent-major"    onclick="setIncPdExtent('major')"    style="padding:9px 4px;font-size:12px">Major (replacement)</button>
+              <button type="button" class="ps-btn" id="inc-pd-extent-total"    onclick="setIncPdExtent('total')"    style="padding:9px 4px;font-size:12px">Total loss</button>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Estimated cost of damage<span class="slan-help" onclick="slanHelpToggle('inc-help-pd-cost')">?</span></label>
+            <div id="inc-help-pd-cost" class="slan-help-tip">NSW POEO Act sets a $10,000 threshold for &ldquo;material harm&rdquo; in pollution context. Useful internally to flag damage that crosses that line.</div>
+            <input type="text" id="inc-pd-cost" placeholder="e.g. $4,500 estimate" autocomplete="off">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Owner of damaged property <span class="req">*</span></label>
+            <input type="hidden" id="inc-pd-owner" value="">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <button type="button" class="ps-btn" id="inc-pd-owner-business"   onclick="setIncPdOwner('business')"   style="padding:9px 4px;font-size:12px">Your business</button>
+              <button type="button" class="ps-btn" id="inc-pd-owner-contractor" onclick="setIncPdOwner('contractor')" style="padding:9px 4px;font-size:12px">Contractor</button>
+              <button type="button" class="ps-btn" id="inc-pd-owner-client"     onclick="setIncPdOwner('client')"     style="padding:9px 4px;font-size:12px">Client / principal</button>
+              <button type="button" class="ps-btn" id="inc-pd-owner-third"      onclick="setIncPdOwner('third')"      style="padding:9px 4px;font-size:12px">Third party / public</button>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Was anyone exposed to harm by this damage? <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-pd-harm')">?</span></label>
+            <div id="inc-help-pd-harm" class="slan-help-tip">If yes, this incident may also be a notifiable Dangerous Incident under WHS Act s37. The supervisor will need to confirm during close-out.</div>
+            <input type="hidden" id="inc-pd-caused-harm" value="">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button type="button" class="ps-btn" id="inc-pd-harm-yes" onclick="setIncPdHarm('yes')">Yes</button>
+              <button type="button" class="ps-btn" id="inc-pd-harm-no"  onclick="setIncPdHarm('no')">No</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── ENVIRONMENTAL block (NSW POEO s150) ─── -->
+        <div id="inc-typeblock-environmental" style="display:none">
+          <div class="fhint" style="margin-bottom:10px;padding:8px 10px;background:#FAF6E8;border:1px solid #E8DBA5;border-radius:8px;font-size:11.5px;line-height:1.45;color:#5C4E1F">
+            <b>Legal requirement:</b> NSW POEO Act s150 (and equivalent in other states) requires this exact information to be reported to the EPA when a pollution incident causes or threatens material harm to the environment.
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Substance released <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-env-sub')">?</span></label>
+            <div id="inc-help-env-sub" class="slan-help-tip">POEO Act s150(c) &mdash; &ldquo;the nature of any pollutants involved.&rdquo;</div>
+            <input type="text" id="inc-env-substance" placeholder="e.g. Diesel, hydraulic oil, cement slurry, sediment-laden water" autocomplete="off" oninput="incRecheckSubmit()">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Estimated quantity / volume <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-env-vol')">?</span></label>
+            <div id="inc-help-env-vol" class="slan-help-tip">POEO Act s150(c) &mdash; &ldquo;the estimated quantity or volume.&rdquo; If unknown, write &ldquo;unknown&rdquo; with your best estimate.</div>
+            <input type="text" id="inc-env-volume" placeholder="e.g. 200 litres, 5 cubic metres, unknown (likely 50&ndash;100 L)" autocomplete="off" oninput="incRecheckSubmit()">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Concentration of pollutants <span style="font-weight:400;color:var(--muted);font-size:11px">(if known)</span><span class="slan-help" onclick="slanHelpToggle('inc-help-env-conc')">?</span></label>
+            <div id="inc-help-env-conc" class="slan-help-tip">POEO Act s150(c) &mdash; &ldquo;the nature, the estimated quantity or volume and the concentration of any pollutants involved, if known.&rdquo; Often not relevant for fuel/oil spills (100% of the substance). Useful for diluted chemicals, contaminated water, etc.</div>
+            <input type="text" id="inc-env-concentration" placeholder="e.g. 100% diesel, 5% caustic solution, unknown" autocomplete="off">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Where did it go? <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-env-where')">?</span></label>
+            <div id="inc-help-env-where" class="slan-help-tip">Tap all that apply. POEO Act s150(b) &mdash; &ldquo;the location of the place where pollution is occurring or is likely to occur.&rdquo;</div>
+            <input type="hidden" id="inc-env-where" value="[]">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <button type="button" class="ps-btn" id="inc-env-where-bunding"   onclick="toggleIncEnvWhere('bunding')"     style="padding:9px 8px;font-size:11.5px;text-align:left">Contained within bunding / on hardstand</button>
+              <button type="button" class="ps-btn" id="inc-env-where-soil"      onclick="toggleIncEnvWhere('soil')"        style="padding:9px 8px;font-size:11.5px;text-align:left">Soaked into soil / ground</button>
+              <button type="button" class="ps-btn" id="inc-env-where-stormwater" onclick="toggleIncEnvWhere('stormwater')" style="padding:9px 8px;font-size:11.5px;text-align:left">Entered stormwater drain</button>
+              <button type="button" class="ps-btn" id="inc-env-where-watercourse" onclick="toggleIncEnvWhere('watercourse')" style="padding:9px 8px;font-size:11.5px;text-align:left">Entered watercourse / waterway</button>
+              <button type="button" class="ps-btn" id="inc-env-where-air"       onclick="toggleIncEnvWhere('air')"         style="padding:9px 8px;font-size:11.5px;text-align:left">Released to air</button>
+              <button type="button" class="ps-btn" id="inc-env-where-other"     onclick="toggleIncEnvWhere('other')"       style="padding:9px 8px;font-size:11.5px;text-align:left">Other (describe in containment action)</button>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Authorities notified<span class="slan-help" onclick="slanHelpToggle('inc-help-env-auth')">?</span></label>
+            <div id="inc-help-env-auth" class="slan-help-tip">Tap all that have been called. POEO Act requires immediate notification of EPA, local council, Health, SafeWork, and Fire &amp; Rescue when material harm is caused or threatened.</div>
+            <input type="hidden" id="inc-env-authorities" value="[]">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <button type="button" class="ps-btn" id="inc-env-auth-none"     onclick="toggleIncEnvAuth('none')"     style="padding:9px 8px;font-size:11.5px;text-align:left">None notified yet</button>
+              <button type="button" class="ps-btn" id="inc-env-auth-epa"      onclick="toggleIncEnvAuth('epa')"      style="padding:9px 8px;font-size:11.5px;text-align:left">EPA (NSW: 131 555 / state equivalent)</button>
+              <button type="button" class="ps-btn" id="inc-env-auth-council"  onclick="toggleIncEnvAuth('council')"  style="padding:9px 8px;font-size:11.5px;text-align:left">Local council</button>
+              <button type="button" class="ps-btn" id="inc-env-auth-health"   onclick="toggleIncEnvAuth('health')"   style="padding:9px 8px;font-size:11.5px;text-align:left">Health authority</button>
+              <button type="button" class="ps-btn" id="inc-env-auth-fire"     onclick="toggleIncEnvAuth('fire')"     style="padding:9px 8px;font-size:11.5px;text-align:left">Fire &amp; Rescue (000)</button>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Action taken to contain / clean up <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-env-action')">?</span></label>
+            <div id="inc-help-env-action" class="slan-help-tip">POEO Act s150(e) &mdash; &ldquo;the action taken or proposed to be taken to deal with the incident and any resulting pollution.&rdquo;</div>
+            <textarea id="inc-env-containment-action" placeholder="e.g. Spill kit deployed, absorbent boom placed at drain inlet, contaminated soil excavated and bagged for disposal, contractor called for vacuum truck." rows="4" style="font-size:14px" oninput="incRecheckSubmit()"></textarea>
+          </div>
+        </div>
+
       </div>
     </div>
 
     <div class="fcard">
-      <div class="fcard-hdr">5 — Immediate action &amp; corrective action</div>
+      <div class="fcard-hdr">6 &mdash; Immediate action &amp; corrective action</div>
       <div class="fcard-body">
         <div class="fgroup">
           <label class="flabel">Immediate action taken at the scene</label>
@@ -2132,7 +2317,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <div class="fcard">
-      <div class="fcard-hdr">6 — Photo evidence <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">— optional</span></div>
+      <div class="fcard-hdr">7 — Photo evidence <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">— optional</span></div>
       <div class="fcard-body">
         <div class="fhint" style="margin-bottom:10px">Take photos of the scene, equipment involved, or any visible injury (with consent). Photos help assessment without visiting site. <b>You can skip this section if no photos are available.</b></div>
 
@@ -2158,7 +2343,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <div class="fcard">
-      <div class="fcard-hdr">7 — Is this notifiable to the regulator?</div>
+      <div class="fcard-hdr">8 — Is this notifiable to the regulator?</div>
       <div class="fcard-body">
         <div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:12px">Under the WHS Act, certain incidents must be notified to SafeWork / WorkSafe immediately. This includes fatalities, serious injuries requiring hospitalisation, and dangerous incidents (near miss with potential for serious harm).</div>
         <div class="fgroup">
@@ -18102,6 +18287,38 @@ function goToIncidentForm() {
   if (mechOtherWrap) mechOtherWrap.style.display = 'none';
   const mechOtherDetail = document.getElementById('inc-mech-other-detail');
   if (mechOtherDetail) mechOtherDetail.value = '';
+  // ── Section 5 type-block reset ─────────────────────────────────
+  // Hide all type-blocks; the empty-state hint shows until type is picked.
+  ['injury','nearmiss','dangerous','propdmg','environmental'].forEach(function(k) {
+    var el = document.getElementById('inc-typeblock-' + k);
+    if (el) el.style.display = 'none';
+  });
+  var emptyHint = document.getElementById('inc-typeblock-empty');
+  if (emptyHint) emptyHint.style.display = 'block';
+  // Clear all type-specific values
+  ['inc-nm-potential','inc-nm-what-stopped','inc-nm-notifiable',
+   'inc-dng-categories','inc-dng-exposed','inc-dng-exposed-count','inc-dng-plant','inc-dng-substance',
+   'inc-pd-asset','inc-pd-extent','inc-pd-cost','inc-pd-owner','inc-pd-caused-harm',
+   'inc-env-substance','inc-env-volume','inc-env-concentration','inc-env-where','inc-env-authorities','inc-env-containment-action'
+  ].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = (id === 'inc-dng-categories' || id === 'inc-env-where' || id === 'inc-env-authorities') ? '[]' : '';
+  });
+  // Reset type-block pill visual states
+  ['yes','no','unsure'].forEach(function(v){ var b=document.getElementById('inc-nm-notif-'+v); if(b){b.className='ps-btn'; b.style='';} });
+  ['inc-dng-cat-spill','inc-dng-cat-fire','inc-dng-cat-gas','inc-dng-cat-pressure','inc-dng-cat-shock',
+   'inc-dng-cat-fall','inc-dng-cat-plant','inc-dng-cat-structure','inc-dng-cat-excav',
+   'inc-dng-cat-inrush','inc-dng-cat-vent','inc-dng-cat-other'].forEach(function(id){
+    var b=document.getElementById(id); if(b){b.className='ps-btn'; b.style.padding='9px 8px'; b.style.fontSize='11.5px'; b.style.textAlign='left';}
+  });
+  ['yes','no'].forEach(function(v){ var b=document.getElementById('inc-dng-exposed-'+v); if(b){b.className='ps-btn'; b.style='';} });
+  var dngCntWrap = document.getElementById('inc-dng-exposed-count-wrap');
+  if (dngCntWrap) dngCntWrap.style.display = 'none';
+  ['minor','moderate','major','total'].forEach(function(v){ var b=document.getElementById('inc-pd-extent-'+v); if(b){b.className='ps-btn'; b.style.padding='9px 4px'; b.style.fontSize='12px';} });
+  ['business','contractor','client','third'].forEach(function(v){ var b=document.getElementById('inc-pd-owner-'+v); if(b){b.className='ps-btn'; b.style.padding='9px 4px'; b.style.fontSize='12px';} });
+  ['yes','no'].forEach(function(v){ var b=document.getElementById('inc-pd-harm-'+v); if(b){b.className='ps-btn'; b.style='';} });
+  ['bunding','soil','stormwater','watercourse','air','other'].forEach(function(v){ var b=document.getElementById('inc-env-where-'+v); if(b){b.className='ps-btn'; b.style.padding='9px 8px'; b.style.fontSize='11.5px'; b.style.textAlign='left';} });
+  ['none','epa','council','health','fire'].forEach(function(v){ var b=document.getElementById('inc-env-auth-'+v); if(b){b.className='ps-btn'; b.style.padding='9px 8px'; b.style.fontSize='11.5px'; b.style.textAlign='left';} });
   const sceneWrap = document.getElementById('inc-scene-reason-wrap');
   if (sceneWrap) sceneWrap.style.display = 'none';
   const regSel = document.getElementById('inc-reg-state');
@@ -18263,6 +18480,41 @@ function incRecheckSubmit() {
   const mechVal = v(mech);
   const mechOtherDetail = v(document.getElementById('inc-mech-other-detail'));
   const mechValid = !!mechVal && (mechVal !== 'other' || !!mechOtherDetail);
+  // Section 5 type-specific validation
+  const typeVal = v(type);
+  const t = (typeVal || '').toLowerCase();
+  let typeValid = true;
+  if (t.indexOf('injury') >= 0) {
+    typeValid = !!v(document.getElementById('inc-injury-nature'))
+             && !!v(document.getElementById('inc-body-part'))
+             && !!incFields.fa
+             && !!incFields.med;
+    // First aid Yes → description required
+    if (incFields.fa === 'yes' && !v(document.getElementById('inc-fa-detail'))) typeValid = false;
+    // Medical Yes → treatment destination required
+    if (incFields.med === 'yes' && !v(document.getElementById('inc-treatment-dest'))) typeValid = false;
+  } else if (t.indexOf('near miss') >= 0) {
+    typeValid = !!v(document.getElementById('inc-nm-potential'))
+             && !!v(document.getElementById('inc-nm-what-stopped'));
+  } else if (t.indexOf('dangerous') >= 0) {
+    let cats = [];
+    try { cats = JSON.parse((document.getElementById('inc-dng-categories') || {}).value || '[]'); } catch(e) {}
+    const exposed = v(document.getElementById('inc-dng-exposed'));
+    typeValid = cats.length > 0 && !!exposed;
+    if (exposed === 'yes' && !v(document.getElementById('inc-dng-exposed-count'))) typeValid = false;
+  } else if (t.indexOf('property') >= 0 || t.indexOf('damage') >= 0) {
+    typeValid = !!v(document.getElementById('inc-pd-asset'))
+             && !!v(document.getElementById('inc-pd-extent'))
+             && !!v(document.getElementById('inc-pd-owner'))
+             && !!v(document.getElementById('inc-pd-caused-harm'));
+  } else if (t.indexOf('environ') >= 0) {
+    let where = [];
+    try { where = JSON.parse((document.getElementById('inc-env-where') || {}).value || '[]'); } catch(e) {}
+    typeValid = !!v(document.getElementById('inc-env-substance'))
+             && !!v(document.getElementById('inc-env-volume'))
+             && where.length > 0
+             && !!v(document.getElementById('inc-env-containment-action'));
+  }
   const ok =
     !!v(type) &&
     !!incSeverity &&
@@ -18276,7 +18528,8 @@ function incRecheckSubmit() {
     !!incFields.support &&
     !!v(activity) &&
     mechValid &&
-    !!v(desc);
+    !!v(desc) &&
+    typeValid;
   if (ok) {
     btn.disabled = false;
     btn.style.setProperty('background', '#1B6E3A', 'important');
@@ -18413,8 +18666,13 @@ function setIncType(typeName) {
   Object.values(map).forEach(id => {
     const b = document.getElementById(id); if (!b) return;
     b.className = 'ps-btn' + (id === map[typeName] ? ' pass' : '');
-    b.style = '';
+    // Re-apply the inline pill styling (className wipes it)
+    b.style.padding = '9px 4px';
+    b.style.fontSize = '11px';
+    b.style.lineHeight = '1.2';
   });
+  // Reveal the matching Section 5 type-block
+  if (typeof incRevealTypeBlock === 'function') incRevealTypeBlock(typeName);
   incRecheckSubmit();
 }
 
@@ -18692,6 +18950,180 @@ function incPersonAddFromRoster(name) {
 function incSupSearch() {}
 function incSupSearchKey() {}
 function incSupAddFromRoster() {}
+
+// ─── SECTION 5 — TYPE-SPECIFIC BLOCK REVEAL ─────────────────────
+// Driven by the incident type picked in Section 1 (inc-type). When the
+// type changes, hide all blocks and show only the matching one. Called
+// from the type select handler (incRevealTypeBlock listens for changes).
+function incRevealTypeBlock(typeVal) {
+  var ids = ['injury','nearmiss','dangerous','propdmg','environmental'];
+  ids.forEach(function(k) {
+    var el = document.getElementById('inc-typeblock-' + k);
+    if (el) el.style.display = 'none';
+  });
+  var empty = document.getElementById('inc-typeblock-empty');
+  if (empty) empty.style.display = 'none';
+  var t = (typeVal || '').toLowerCase();
+  var target = null;
+  if (t.indexOf('injury') >= 0)         target = 'injury';
+  else if (t.indexOf('near miss') >= 0) target = 'nearmiss';
+  else if (t.indexOf('dangerous') >= 0) target = 'dangerous';
+  else if (t.indexOf('property') >= 0 || t.indexOf('damage') >= 0) target = 'propdmg';
+  else if (t.indexOf('environ') >= 0)   target = 'environmental';
+  if (target) {
+    var el = document.getElementById('inc-typeblock-' + target);
+    if (el) el.style.display = 'block';
+  } else if (empty) {
+    empty.style.display = 'block';
+  }
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
+}
+
+// ─── NEAR MISS — could-have-been-notifiable Y/N/Unsure ──────────
+function setIncNmNotifiable(val) {
+  var hid = document.getElementById('inc-nm-notifiable');
+  if (hid) hid.value = val;
+  ['yes','no','unsure'].forEach(function(v) {
+    var b = document.getElementById('inc-nm-notif-' + v);
+    if (b) { b.className = 'ps-btn' + (v === val ? ' pass' : ''); b.style = ''; }
+  });
+}
+
+// ─── DANGEROUS INCIDENT — multi-select hazard categories ────────
+function toggleIncDngCat(val) {
+  var hid = document.getElementById('inc-dng-categories');
+  if (!hid) return;
+  var arr = [];
+  try { arr = JSON.parse(hid.value || '[]'); } catch(e) { arr = []; }
+  var idMap = {
+    'substance-spill':       'inc-dng-cat-spill',
+    'implosion-explosion-fire': 'inc-dng-cat-fire',
+    'gas-steam-escape':      'inc-dng-cat-gas',
+    'pressurised-substance': 'inc-dng-cat-pressure',
+    'electric-shock':        'inc-dng-cat-shock',
+    'fall-from-height':      'inc-dng-cat-fall',
+    'plant-collapse':        'inc-dng-cat-plant',
+    'structure-collapse':    'inc-dng-cat-structure',
+    'excavation-collapse':   'inc-dng-cat-excav',
+    'tunnel-inrush':         'inc-dng-cat-inrush',
+    'tunnel-ventilation':    'inc-dng-cat-vent',
+    'other':                 'inc-dng-cat-other'
+  };
+  var idx = arr.indexOf(val);
+  if (idx >= 0) arr.splice(idx, 1);
+  else          arr.push(val);
+  hid.value = JSON.stringify(arr);
+  // Update visual state of all category buttons
+  Object.keys(idMap).forEach(function(v) {
+    var b = document.getElementById(idMap[v]);
+    if (b) {
+      b.className = 'ps-btn' + (arr.indexOf(v) >= 0 ? ' pass' : '');
+      // Re-apply alignment override since className wipes it
+      b.style.padding = '9px 8px';
+      b.style.fontSize = '11.5px';
+      b.style.textAlign = 'left';
+    }
+  });
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
+}
+
+// ─── DANGEROUS — anyone exposed Y/N (Yes reveals count input) ────
+function setIncDngExposed(val) {
+  var hid = document.getElementById('inc-dng-exposed');
+  if (hid) hid.value = val;
+  ['yes','no'].forEach(function(v) {
+    var b = document.getElementById('inc-dng-exposed-' + v);
+    if (b) { b.className = 'ps-btn' + (v === val ? ' pass' : ''); b.style = ''; }
+  });
+  var countWrap = document.getElementById('inc-dng-exposed-count-wrap');
+  if (countWrap) countWrap.style.display = (val === 'yes') ? 'block' : 'none';
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
+}
+
+// ─── PROPERTY DAMAGE — extent (single-select) ───────────────────
+function setIncPdExtent(val) {
+  var hid = document.getElementById('inc-pd-extent');
+  if (hid) hid.value = val;
+  ['minor','moderate','major','total'].forEach(function(v) {
+    var b = document.getElementById('inc-pd-extent-' + v);
+    if (b) {
+      b.className = 'ps-btn' + (v === val ? ' pass' : '');
+      b.style.padding = '9px 4px'; b.style.fontSize = '12px';
+    }
+  });
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
+}
+
+// ─── PROPERTY DAMAGE — owner (single-select) ────────────────────
+function setIncPdOwner(val) {
+  var hid = document.getElementById('inc-pd-owner');
+  if (hid) hid.value = val;
+  ['business','contractor','client','third'].forEach(function(v) {
+    var b = document.getElementById('inc-pd-owner-' + v);
+    if (b) {
+      b.className = 'ps-btn' + (v === val ? ' pass' : '');
+      b.style.padding = '9px 4px'; b.style.fontSize = '12px';
+    }
+  });
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
+}
+
+// ─── PROPERTY DAMAGE — caused harm Y/N ───────────────────────────
+function setIncPdHarm(val) {
+  var hid = document.getElementById('inc-pd-caused-harm');
+  if (hid) hid.value = val;
+  ['yes','no'].forEach(function(v) {
+    var b = document.getElementById('inc-pd-harm-' + v);
+    if (b) { b.className = 'ps-btn' + (v === val ? ' pass' : ''); b.style = ''; }
+  });
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
+}
+
+// ─── ENVIRONMENTAL — where did it go? (multi-select) ─────────────
+function toggleIncEnvWhere(val) {
+  var hid = document.getElementById('inc-env-where');
+  if (!hid) return;
+  var arr = [];
+  try { arr = JSON.parse(hid.value || '[]'); } catch(e) { arr = []; }
+  var ids = ['bunding','soil','stormwater','watercourse','air','other'];
+  var idx = arr.indexOf(val);
+  if (idx >= 0) arr.splice(idx, 1);
+  else          arr.push(val);
+  hid.value = JSON.stringify(arr);
+  ids.forEach(function(v) {
+    var b = document.getElementById('inc-env-where-' + v);
+    if (b) {
+      b.className = 'ps-btn' + (arr.indexOf(v) >= 0 ? ' pass' : '');
+      b.style.padding = '9px 8px'; b.style.fontSize = '11.5px'; b.style.textAlign = 'left';
+    }
+  });
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
+}
+
+// ─── ENVIRONMENTAL — authorities notified (multi-select) ─────────
+function toggleIncEnvAuth(val) {
+  var hid = document.getElementById('inc-env-authorities');
+  if (!hid) return;
+  var arr = [];
+  try { arr = JSON.parse(hid.value || '[]'); } catch(e) { arr = []; }
+  var ids = ['none','epa','council','health','fire'];
+  var idx = arr.indexOf(val);
+  if (idx >= 0) arr.splice(idx, 1);
+  else {
+    // Tapping "none" clears any specific authorities; tapping a specific one
+    // clears "none". Mutually exclusive logic.
+    if (val === 'none') arr = ['none'];
+    else                arr = arr.filter(function(x){ return x !== 'none'; }).concat([val]);
+  }
+  hid.value = JSON.stringify(arr);
+  ids.forEach(function(v) {
+    var b = document.getElementById('inc-env-auth-' + v);
+    if (b) {
+      b.className = 'ps-btn' + (arr.indexOf(v) >= 0 ? ' pass' : '');
+      b.style.padding = '9px 8px'; b.style.fontSize = '11.5px'; b.style.textAlign = 'left';
+    }
+  });
+}
 
 // Relationship of person involved — single-select pill grid. Used by
 // SafeWork regulators when a notifiable incident is reported. Optional
@@ -19448,12 +19880,70 @@ function goToIncidentDetail(ref) {
           const l = {day:'Daylight', twi:'Dawn/Dusk', flood:'Floodlit', dark:'Dark'}[r.weather_light] || '';
           return [t, c, l].filter(Boolean).join(' \u00b7 ');
         })()) +
-        fmtRow('Injury nature',      r.injury_nature) +
-        fmtRow('Body part',          r.body_part) +
-        fmtRow('First aid given',    r.first_aid) +
-        (r.first_aid === 'yes' && r.first_aid_detail ? fmtBlock('First aid description', r.first_aid_detail) : '') +
-        fmtRow('Medical attention',  r.medical_attention) +
-        fmtRow('Treatment destination', r.treatment_destination) +
+      '</div></div>' +
+      // ── SECTION 5 — Type-specific details (detail screen) ─────
+      '<div class="fcard"><div class="fcard-hdr">Type-specific details</div><div class="fcard-body">' +
+        (function(){
+          // Demo records use incident_type; runtime submit uses type. Read both.
+          var t = (r.incident_type || r.type || '').toLowerCase();
+          // INJURY
+          if (t.indexOf('injury') >= 0) {
+            return fmtRow('Injury nature',      r.injury_nature) +
+                   fmtRow('Body part',          r.body_part) +
+                   fmtRow('First aid given',    r.first_aid) +
+                   (r.first_aid === 'yes' && r.first_aid_detail ? fmtBlock('First aid description', r.first_aid_detail) : '') +
+                   fmtRow('Medical attention',  r.medical_attention) +
+                   (r.medical_attention === 'yes' && r.treatment_destination ? fmtRow('Treatment destination', r.treatment_destination) : '');
+          }
+          // NEAR MISS
+          if (t.indexOf('near miss') >= 0) {
+            var nmLbl = {yes:'Yes', no:'No', unsure:'Unsure'}[r.nm_could_be_notifiable] || '';
+            return fmtBlock('What could have happened',  r.nm_potential) +
+                   fmtBlock('What stopped it from happening', r.nm_what_stopped) +
+                   fmtRow('Could be notifiable dangerous incident', nmLbl);
+          }
+          // DANGEROUS
+          if (t.indexOf('dangerous') >= 0) {
+            var catLbl = {
+              'substance-spill': 'Uncontrolled substance spill', 'implosion-explosion-fire': 'Implosion/explosion/fire',
+              'gas-steam-escape': 'Gas/steam escape', 'pressurised-substance': 'Pressurised substance escape',
+              'electric-shock': 'Electric shock', 'fall-from-height': 'Fall from height of plant/substance',
+              'plant-collapse': 'Plant collapse/damage', 'structure-collapse': 'Structure collapse',
+              'excavation-collapse': 'Excavation/shoring collapse', 'tunnel-inrush': 'Tunnel inrush',
+              'tunnel-ventilation': 'Tunnel ventilation interruption', 'other': 'Other'
+            };
+            var cats = (Array.isArray(r.dng_categories) ? r.dng_categories : []).map(function(c){ return catLbl[c] || c; }).join(', ');
+            return fmtRow('Hazard categories (s37)', cats) +
+                   fmtRow('Anyone in danger zone', r.dng_anyone_exposed) +
+                   (r.dng_anyone_exposed === 'yes' ? fmtRow('People exposed', r.dng_exposed_count) : '') +
+                   fmtRow('Plant or equipment involved', r.dng_plant_equipment) +
+                   fmtRow('Substance involved', r.dng_substance);
+          }
+          // PROPERTY DAMAGE
+          if (t.indexOf('property') >= 0 || t.indexOf('damage') >= 0) {
+            var extLbl = {minor:'Minor (cosmetic)', moderate:'Moderate (repairable)', major:'Major (replacement)', total:'Total loss'}[r.pd_extent] || '';
+            var ownLbl = {business:'Your business', contractor:'Contractor', client:'Client / principal', third:'Third party / public'}[r.pd_owner] || '';
+            return fmtRow('Asset damaged', r.pd_what_damaged) +
+                   fmtRow('Extent of damage', extLbl) +
+                   fmtRow('Estimated cost', r.pd_estimated_cost) +
+                   fmtRow('Owner', ownLbl) +
+                   fmtRow('Caused harm to anyone', r.pd_caused_harm);
+          }
+          // ENVIRONMENTAL
+          if (t.indexOf('environ') >= 0) {
+            var whereLbl = {bunding:'Bunding/hardstand', soil:'Soil/ground', stormwater:'Stormwater drain', watercourse:'Watercourse', air:'Air', other:'Other'};
+            var authLbl  = {none:'None notified yet', epa:'EPA', council:'Local council', health:'Health authority', fire:'Fire & Rescue'};
+            var where = (Array.isArray(r.env_where) ? r.env_where : []).map(function(c){ return whereLbl[c] || c; }).join(', ');
+            var auths = (Array.isArray(r.env_authorities_notified) ? r.env_authorities_notified : []).map(function(c){ return authLbl[c] || c; }).join(', ');
+            return fmtRow('Substance released', r.env_substance) +
+                   fmtRow('Estimated volume', r.env_volume) +
+                   (r.env_concentration ? fmtRow('Concentration', r.env_concentration) : '') +
+                   fmtRow('Where it went', where) +
+                   fmtRow('Authorities notified', auths) +
+                   fmtBlock('Containment / clean-up action (POEO s150)', r.env_containment_action);
+          }
+          return '<div style="color:var(--muted);font-style:italic;font-size:12.5px">No type-specific details captured.</div>';
+        })() +
       '</div></div>' +
       '<div class="fcard"><div class="fcard-hdr">What happened</div><div class="fcard-body">' +
         fmtRow('Event mechanism',     mechLabel(r.mechanism)) +
@@ -19917,14 +20407,64 @@ function downloadIncidentPdf() {
       const l = {day:'Daylight', twi:'Dawn/Dusk', flood:'Floodlit', dark:'Dark'}[r.weather_light] || '';
       return [t, c, l].filter(Boolean).join(' \u00b7 ');
     })());
-    drawCardRow('Injury nature',      r.injury_nature);
-    drawCardRow('Body part',          r.body_part);
-    drawCardRow('First aid given',    r.first_aid);
-    if (r.first_aid === 'yes' && r.first_aid_detail) {
-      drawCardBlock('FIRST AID DESCRIPTION', r.first_aid_detail);
-    }
-    drawCardRow('Medical attention',  r.medical_attention);
-    drawCardRow('Treatment destination', r.treatment_destination);
+
+    // SECTION 5 — Type-specific details (per WHS Act / NSW POEO Act)
+    y = drawMajorBanner(y, 'TYPE-SPECIFIC DETAILS');
+    (function() {
+      // Demo records use incident_type; runtime submit uses type. Read both.
+      var t = (r.incident_type || r.type || '').toLowerCase();
+      if (t.indexOf('injury') >= 0) {
+        drawCardRow('Injury nature',      r.injury_nature);
+        drawCardRow('Body part',          r.body_part);
+        drawCardRow('First aid given',    r.first_aid);
+        if (r.first_aid === 'yes' && r.first_aid_detail) {
+          drawCardBlock('FIRST AID DESCRIPTION', r.first_aid_detail);
+        }
+        drawCardRow('Medical attention',  r.medical_attention);
+        if (r.medical_attention === 'yes' && r.treatment_destination) {
+          drawCardRow('Treatment destination', r.treatment_destination);
+        }
+      } else if (t.indexOf('near miss') >= 0) {
+        drawCardBlock('WHAT COULD HAVE HAPPENED',     r.nm_potential || '');
+        drawCardBlock('WHAT STOPPED IT FROM HAPPENING', r.nm_what_stopped || '');
+        var nmLbl = {yes:'Yes', no:'No', unsure:'Unsure'}[r.nm_could_be_notifiable] || '';
+        drawCardRow('Could be notifiable dangerous incident (s37)', nmLbl);
+      } else if (t.indexOf('dangerous') >= 0) {
+        var catLbl = {
+          'substance-spill':'Uncontrolled substance spill','implosion-explosion-fire':'Implosion/explosion/fire',
+          'gas-steam-escape':'Gas/steam escape','pressurised-substance':'Pressurised substance escape',
+          'electric-shock':'Electric shock','fall-from-height':'Fall from height of plant/substance',
+          'plant-collapse':'Plant collapse/damage','structure-collapse':'Structure collapse',
+          'excavation-collapse':'Excavation/shoring collapse','tunnel-inrush':'Tunnel inrush',
+          'tunnel-ventilation':'Tunnel ventilation interruption','other':'Other'
+        };
+        var cats = (Array.isArray(r.dng_categories) ? r.dng_categories : []).map(function(c){return catLbl[c]||c;}).join(', ');
+        drawCardRow('Hazard categories (WHS Act s37)', cats);
+        drawCardRow('Anyone in danger zone',           r.dng_anyone_exposed);
+        if (r.dng_anyone_exposed === 'yes') drawCardRow('People exposed', r.dng_exposed_count);
+        drawCardRow('Plant or equipment involved',     r.dng_plant_equipment);
+        drawCardRow('Substance involved',              r.dng_substance);
+      } else if (t.indexOf('property') >= 0 || t.indexOf('damage') >= 0) {
+        var extLbl = {minor:'Minor (cosmetic)',moderate:'Moderate (repairable)',major:'Major (replacement)',total:'Total loss'}[r.pd_extent] || '';
+        var ownLbl = {business:'Your business',contractor:'Contractor',client:'Client / principal',third:'Third party / public'}[r.pd_owner] || '';
+        drawCardRow('Asset damaged',     r.pd_what_damaged);
+        drawCardRow('Extent of damage',  extLbl);
+        drawCardRow('Estimated cost',    r.pd_estimated_cost);
+        drawCardRow('Owner',             ownLbl);
+        drawCardRow('Caused harm to anyone', r.pd_caused_harm);
+      } else if (t.indexOf('environ') >= 0) {
+        var whereLbl = {bunding:'Bunding/hardstand',soil:'Soil/ground',stormwater:'Stormwater drain',watercourse:'Watercourse',air:'Air',other:'Other'};
+        var authLbl  = {none:'None notified yet',epa:'EPA',council:'Local council',health:'Health authority',fire:'Fire & Rescue'};
+        var where = (Array.isArray(r.env_where) ? r.env_where : []).map(function(c){return whereLbl[c]||c;}).join(', ');
+        var auths = (Array.isArray(r.env_authorities_notified) ? r.env_authorities_notified : []).map(function(c){return authLbl[c]||c;}).join(', ');
+        drawCardRow('Substance released',       r.env_substance);
+        drawCardRow('Estimated volume',         r.env_volume);
+        if (r.env_concentration) drawCardRow('Concentration', r.env_concentration);
+        drawCardRow('Where it went',            where);
+        drawCardRow('Authorities notified',     auths);
+        drawCardBlock('CONTAINMENT / CLEAN-UP ACTION (POEO s150)', r.env_containment_action || '');
+      }
+    })();
 
     // SECTION 4 — What happened
     y = drawMajorBanner(y, 'WHAT HAPPENED');
@@ -20182,6 +20722,39 @@ async function submitIncident() {
     first_aid_detail: ((document.getElementById('inc-fa-detail') || {}).value || '').trim(),
     medical_attention: incFields.med,
     treatment_destination: ((document.getElementById('inc-treatment-dest') || {}).value || '').trim(),
+    // ── Section 5 type-specific fields ─────────────────────────────
+    // Near Miss
+    nm_potential:        ((document.getElementById('inc-nm-potential')      || {}).value || '').trim(),
+    nm_what_stopped:     ((document.getElementById('inc-nm-what-stopped')   || {}).value || '').trim(),
+    nm_could_be_notifiable: ((document.getElementById('inc-nm-notifiable') || {}).value || ''),
+    // Dangerous incident
+    dng_categories:      (function(){
+                           try { return JSON.parse((document.getElementById('inc-dng-categories') || {}).value || '[]'); }
+                           catch(e) { return []; }
+                         })(),
+    dng_anyone_exposed:  ((document.getElementById('inc-dng-exposed')        || {}).value || ''),
+    dng_exposed_count:   ((document.getElementById('inc-dng-exposed-count')  || {}).value || ''),
+    dng_plant_equipment: ((document.getElementById('inc-dng-plant')          || {}).value || '').trim(),
+    dng_substance:       ((document.getElementById('inc-dng-substance')      || {}).value || '').trim(),
+    // Property damage
+    pd_what_damaged:     ((document.getElementById('inc-pd-asset')   || {}).value || '').trim(),
+    pd_extent:           ((document.getElementById('inc-pd-extent')  || {}).value || ''),
+    pd_estimated_cost:   ((document.getElementById('inc-pd-cost')    || {}).value || '').trim(),
+    pd_owner:            ((document.getElementById('inc-pd-owner')   || {}).value || ''),
+    pd_caused_harm:      ((document.getElementById('inc-pd-caused-harm') || {}).value || ''),
+    // Environmental (NSW POEO Act s150 fields)
+    env_substance:       ((document.getElementById('inc-env-substance')           || {}).value || '').trim(),
+    env_volume:          ((document.getElementById('inc-env-volume')              || {}).value || '').trim(),
+    env_concentration:   ((document.getElementById('inc-env-concentration')       || {}).value || '').trim(),
+    env_where:           (function(){
+                           try { return JSON.parse((document.getElementById('inc-env-where') || {}).value || '[]'); }
+                           catch(e) { return []; }
+                         })(),
+    env_authorities_notified: (function(){
+                           try { return JSON.parse((document.getElementById('inc-env-authorities') || {}).value || '[]'); }
+                           catch(e) { return []; }
+                         })(),
+    env_containment_action: ((document.getElementById('inc-env-containment-action') || {}).value || '').trim(),
     immediate_action: document.getElementById('inc-immediate-action').value.trim(),
     corrective_actions: document.getElementById('inc-corrective').value.trim(),
     swms_update_required: incFields.swms,
@@ -33744,6 +34317,7 @@ function tbtSaveWrapup() {
     var entry = {
       talk_id: talkId,
       date: todayDate,
+      site: typeof SITE !== 'undefined' ? SITE : '',
       attendance: att,
       hazards: (document.getElementById('wu-hazards') || {}).value || '',
       questions: (document.getElementById('wu-questions') || {}).value || '',
@@ -35301,7 +35875,9 @@ function incSeedDemoIncidents(silent) {
       injury_nature: 'Suspected fracture and bruising',
       body_part: 'Right wrist and ribs',
       first_aid: 'yes',
+      first_aid_detail: 'Right arm immobilised with sling, pressure applied to grazes on right hand and forearm. Worker kept still, conscious and reassured until ambulance arrival. Vital signs monitored.',
       medical_attention: 'yes',
+      treatment_destination: 'Northshore Hospital ED (transported by ambulance, conscious on arrival)',
       immediate_action: 'Area cordoned off, ambulance called, first aid administered (immobilised arm and applied pressure to grazes). Supervisor notified by phone. Plywood off-cuts cleared from the deck.',
       corrective_actions: 'Toolbox to be delivered tomorrow morning on housekeeping standards on level 3. Site walk-down each shift end. Dedicated bins to be installed for off-cuts.',
       swms_update_required: 'yes',
@@ -35379,6 +35955,9 @@ function incSeedDemoIncidents(silent) {
       witnesses: [{ name: "Brendan Kelly", phone: "0411 111 009", company: "Kelly Crane Services", source: 'roster' }],
       supervisor_phone: '0432 778 901',
       supervisor_company: 'Murphy Civil Construction',
+      nm_potential: 'A 25t mobile crane lifted a steel beam in a sudden 60 km/h wind gust. The load swung approximately 1.5m off track and could have struck the dogman or pulled the crane unstable, potentially leading to serious injury or a load drop.',
+      nm_what_stopped: 'The dogman stepped back to a safe distance when he felt the gust starting and the operator immediately lowered the load to ground. Quick reactions and good positioning prevented anyone being struck.',
+      nm_could_be_notifiable: 'yes',
       register_target: 'SLS-REG-006'
     },
     // 3) Minor injury — already closed by supervisor
@@ -35405,6 +35984,7 @@ function incSeedDemoIncidents(silent) {
       injury_nature: 'Minor laceration',
       body_part: 'Left index finger',
       first_aid: 'yes',
+      first_aid_detail: 'Wound cleaned with antiseptic wipe, pressure applied briefly to stop bleeding, dressed with adhesive bandage from the site first-aid kit.',
       medical_attention: 'no',
       immediate_action: 'Cleaned, dressed with band-aid from first aid kit. Logged in first aid book.',
       corrective_actions: 'No structural cause \u2014 user error. Reminder to staff about kitchen knife handling posted in tea room.',
@@ -35501,6 +36081,11 @@ function incSeedDemoIncidents(silent) {
       witnesses: [{ name: "Mick Doyle", phone: "0411 111 010", company: "Burke Civil Contractors", source: 'roster' }],
       supervisor_phone: '0432 778 901',
       supervisor_company: 'Murphy Civil Construction',
+      pd_what_damaged: 'Site perimeter chain-link fence panel and one steel fence post (approx 6m of fence)',
+      pd_extent: 'moderate',
+      pd_estimated_cost: '$850 estimate (replacement panel + labour)',
+      pd_owner: 'business',
+      pd_caused_harm: 'no',
       register_target: 'SLS-REG-006'
     },
     // 5) Environmental spill — moderate, closed
@@ -35571,6 +36156,11 @@ function incSeedDemoIncidents(silent) {
       witnesses: [{ name: "Gary Tully", phone: "0411 111 013", company: "Tully Plumbing", source: 'roster' }],
       supervisor_phone: '0432 778 901',
       supervisor_company: 'Murphy Civil Construction',
+      env_substance: 'Diesel fuel',
+      env_volume: 'Approximately 40 litres',
+      env_where: ['soil','stormwater'],
+      env_authorities_notified: ['epa','council'],
+      env_containment_action: 'Spill kit deployed within 5 minutes. Absorbent boom placed at the stormwater inlet to prevent further migration. Contaminated soil excavated to ~200mm depth and bagged for licensed disposal. Vacuum truck contractor called and on-site within 90 minutes. Site supervisor notified EPA Environment Line (131 555) and the local council within 30 minutes.',
       register_target: 'SLS-REG-006'
     }
   ];
