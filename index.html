@@ -2144,6 +2144,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <button type="button" class="ps-btn" id="inc-nm-notif-unsure" onclick="setIncNmNotifiable('unsure')" style="padding:9px 4px;font-size:12px">Unsure</button>
             </div>
           </div>
+          <div class="fgroup" style="position:relative">
+            <label class="flabel">Plant or equipment involved <span style="font-weight:400;color:var(--muted);font-size:11px">(if any)</span></label>
+            <div class="fhint" style="margin-bottom:6px">Type to search the on-site plant list. Optional \u2014 leave blank if no plant was involved.</div>
+            <input type="text" id="inc-nm-plant" placeholder="e.g. crane, scissor lift, generator..." autocomplete="off" oninput="incPlantSearch('nm')" onkeydown="incPlantSearchKey(event,'nm')">
+            <div id="inc-nm-plant-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% - 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:50"></div>
+          </div>
+          <div class="fgroup" id="inc-nm-plant-other-wrap" style="display:none">
+            <label class="flabel">Describe the &ldquo;other&rdquo; plant / equipment</label>
+            <input type="text" id="inc-nm-plant-other" placeholder="Describe the item not on the list" autocomplete="off">
+          </div>
         </div>
 
         <!-- ─── DANGEROUS INCIDENT block ─── -->
@@ -2177,12 +2187,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
           <div class="fgroup" id="inc-dng-exposed-count-wrap" style="display:none">
             <label class="flabel">How many people were exposed? <span class="req">*</span></label>
-            <input type="number" id="inc-dng-exposed-count" placeholder="e.g. 3" min="1" autocomplete="off" inputmode="numeric" oninput="incRecheckSubmit()">
+            <div style="position:relative">
+              <input type="number" id="inc-dng-exposed-count" placeholder="e.g. 3" min="1" autocomplete="off" inputmode="numeric" oninput="incRecheckSubmit()" style="padding-right:60px">
+              <span style="position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none">people</span>
+            </div>
           </div>
-          <div class="fgroup">
+          <div class="fgroup" style="position:relative">
             <label class="flabel">Plant or equipment involved</label>
-            <div class="fhint" style="margin-bottom:6px">Specific plant, vehicle, tool or item. Optional but useful for the register.</div>
-            <input type="text" id="inc-dng-plant" placeholder="e.g. 25t mobile crane, scissor lift, demolition saw" autocomplete="off">
+            <div class="fhint" style="margin-bottom:6px">Type to search the on-site plant list. Tap a match to fill in. For items not on the list, type the description and tap <b>Other</b>.</div>
+            <input type="text" id="inc-dng-plant" placeholder="e.g. crane, scissor lift, generator..." autocomplete="off" oninput="incPlantSearch('dng')" onkeydown="incPlantSearchKey(event,'dng')">
+            <div id="inc-dng-plant-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% - 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:50"></div>
+          </div>
+          <div class="fgroup" id="inc-dng-plant-other-wrap" style="display:none">
+            <label class="flabel">Describe the &ldquo;other&rdquo; plant / equipment</label>
+            <input type="text" id="inc-dng-plant-other" placeholder="Describe the item not on the list" autocomplete="off">
           </div>
           <div class="fgroup">
             <label class="flabel">Substance involved</label>
@@ -2216,7 +2234,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <label class="flabel">Owner of damaged property <span class="req">*</span></label>
             <input type="hidden" id="inc-pd-owner" value="">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-              <button type="button" class="ps-btn" id="inc-pd-owner-business"   onclick="setIncPdOwner('business')"   style="padding:9px 4px;font-size:12px">Your business</button>
+              <button type="button" class="ps-btn" id="inc-pd-owner-business"   onclick="setIncPdOwner('business')"   style="padding:9px 4px;font-size:12px">Your employer / company</button>
               <button type="button" class="ps-btn" id="inc-pd-owner-contractor" onclick="setIncPdOwner('contractor')" style="padding:9px 4px;font-size:12px">Contractor</button>
               <button type="button" class="ps-btn" id="inc-pd-owner-client"     onclick="setIncPdOwner('client')"     style="padding:9px 4px;font-size:12px">Client / principal</button>
               <button type="button" class="ps-btn" id="inc-pd-owner-third"      onclick="setIncPdOwner('third')"      style="padding:9px 4px;font-size:12px">Third party / public</button>
@@ -2230,6 +2248,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <button type="button" class="ps-btn" id="inc-pd-harm-yes" onclick="setIncPdHarm('yes')">Yes</button>
               <button type="button" class="ps-btn" id="inc-pd-harm-no"  onclick="setIncPdHarm('no')">No</button>
             </div>
+          </div>
+          <div class="fgroup" id="inc-pd-harm-detail-wrap" style="display:none">
+            <label class="flabel">Describe how someone was exposed to harm <span class="req">*</span></label>
+            <div class="fhint" style="margin-bottom:6px">Who was exposed, how, and to what degree of risk? This is critical for assessing whether the incident also needs to be reported as a Dangerous Incident.</div>
+            <textarea id="inc-pd-harm-detail" placeholder="e.g. A passing pedestrian was 2m away when the fence panel fell. They were not struck but could have been seriously injured." rows="3" style="font-size:14px" oninput="incRecheckSubmit()"></textarea>
           </div>
         </div>
 
@@ -2245,8 +2268,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
           <div class="fgroup">
             <label class="flabel">Estimated quantity / volume <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-env-vol')">?</span></label>
-            <div id="inc-help-env-vol" class="slan-help-tip">POEO Act s150(c) &mdash; &ldquo;the estimated quantity or volume.&rdquo; If unknown, write &ldquo;unknown&rdquo; with your best estimate.</div>
-            <input type="text" id="inc-env-volume" placeholder="e.g. 200 litres, 5 cubic metres, unknown (likely 50&ndash;100 L)" autocomplete="off" oninput="incRecheckSubmit()">
+            <div id="inc-help-env-vol" class="slan-help-tip">POEO Act s150(c) &mdash; &ldquo;the estimated quantity or volume.&rdquo; Type the number plus the unit (L for litres, m\u00b3 for cubic metres, kg for solids).</div>
+            <input type="text" id="inc-env-volume" placeholder="e.g. 200 L, 5 m\u00b3, unknown (likely 50\u2013100 L)" autocomplete="off" oninput="incRecheckSubmit()">
           </div>
           <div class="fgroup">
             <label class="flabel">Concentration of pollutants <span style="font-weight:400;color:var(--muted);font-size:11px">(if known)</span><span class="slan-help" onclick="slanHelpToggle('inc-help-env-conc')">?</span></label>
@@ -18296,13 +18319,20 @@ function goToIncidentForm() {
   var emptyHint = document.getElementById('inc-typeblock-empty');
   if (emptyHint) emptyHint.style.display = 'block';
   // Clear all type-specific values
-  ['inc-nm-potential','inc-nm-what-stopped','inc-nm-notifiable',
-   'inc-dng-categories','inc-dng-exposed','inc-dng-exposed-count','inc-dng-plant','inc-dng-substance',
-   'inc-pd-asset','inc-pd-extent','inc-pd-cost','inc-pd-owner','inc-pd-caused-harm',
+  ['inc-nm-potential','inc-nm-what-stopped','inc-nm-notifiable','inc-nm-plant','inc-nm-plant-other',
+   'inc-dng-categories','inc-dng-exposed','inc-dng-exposed-count','inc-dng-plant','inc-dng-plant-other','inc-dng-substance',
+   'inc-pd-asset','inc-pd-extent','inc-pd-cost','inc-pd-owner','inc-pd-caused-harm','inc-pd-harm-detail',
    'inc-env-substance','inc-env-volume','inc-env-concentration','inc-env-where','inc-env-authorities','inc-env-containment-action'
   ].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = (id === 'inc-dng-categories' || id === 'inc-env-where' || id === 'inc-env-authorities') ? '[]' : '';
+  });
+  // Hide plant "other" reveals + suggestion dropdowns + harm detail reveal
+  ['inc-nm-plant-other-wrap','inc-dng-plant-other-wrap','inc-pd-harm-detail-wrap'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  ['inc-nm-plant-suggestions','inc-dng-plant-suggestions'].forEach(function(id){
+    var el = document.getElementById(id); if (el) { el.style.display = 'none'; el.innerHTML = ''; }
   });
   // Reset type-block pill visual states
   ['yes','no','unsure'].forEach(function(v){ var b=document.getElementById('inc-nm-notif-'+v); if(b){b.className='ps-btn'; b.style='';} });
@@ -18507,6 +18537,9 @@ function incRecheckSubmit() {
              && !!v(document.getElementById('inc-pd-extent'))
              && !!v(document.getElementById('inc-pd-owner'))
              && !!v(document.getElementById('inc-pd-caused-harm'));
+    // If harm = yes, the description is required
+    if (((document.getElementById('inc-pd-caused-harm') || {}).value || '') === 'yes'
+        && !v(document.getElementById('inc-pd-harm-detail'))) typeValid = false;
   } else if (t.indexOf('environ') >= 0) {
     let where = [];
     try { where = JSON.parse((document.getElementById('inc-env-where') || {}).value || '[]'); } catch(e) {}
@@ -18625,6 +18658,50 @@ function setIncField(field, val) {
 
 // State → regulator name + 24/7 notification phone. Sourced from
 // SafeWork Australia's incident notification fact sheet (2022).
+// ─── ON-SITE PLANT LIST ──────────────────────────────────────────
+// Master list of construction plant + equipment for the incident
+// "Plant or equipment involved" picker. Common categories of plant
+// found on Australian construction sites. Reporter searches by typing
+// a name; if not in the list they tap "Other" for free text.
+const ON_SITE_PLANT = [
+  // Earthmoving / excavation
+  'Excavator (mini, 1\u20133t)', 'Excavator (3\u201310t)', 'Excavator (10t+)',
+  'Bulldozer / Dozer', 'Skid-steer loader (Bobcat)', 'Wheel loader',
+  'Backhoe loader', 'Grader', 'Compactor / roller', 'Trencher',
+  // Material handling / lifting
+  'Mobile crane (city / pick-and-carry)', 'Mobile crane (slewing)',
+  'Tower crane', 'Crawler crane',
+  'Telehandler', 'Forklift (counterbalance)', 'Forklift (reach)',
+  'Pallet jack (electric)', 'Pallet jack (manual)',
+  'Concrete pump (line / boom)', 'Concrete agitator truck',
+  // Access / EWP
+  'Scissor lift (electric)', 'Scissor lift (rough terrain)',
+  'Boom lift / cherry picker (knuckle / straight)',
+  'Vertical mast lift', 'Trailer-mounted boom lift',
+  // Vehicles
+  'Dump truck / tipper', 'Tilt-tray truck', 'Flatbed truck',
+  'Water cart / water truck', 'Vacuum truck',
+  'Light vehicle (ute / van)',
+  // Power tools / saws
+  'Demolition saw / quickcut', 'Concrete cutter',
+  'Core drill', 'Hammer drill', 'Rotary hammer', 'Jackhammer',
+  'Angle grinder', 'Circular saw', 'Reciprocating saw',
+  'Nail gun', 'Welder',
+  // Site services / temporary
+  'Lighting tower (diesel)', 'Lighting tower (battery / hybrid)',
+  'Generator (small portable)', 'Generator (trailer / large)',
+  'Air compressor', 'Pressure washer', 'Dewatering pump',
+  'Site shed / portable office', 'Hoarding / fence panel',
+  // Specialised
+  'Pile driver / piling rig', 'Drilling rig',
+  'Asphalt paver', 'Road sweeper',
+  'Scaffold (mobile tower)', 'Scaffold (tube and clamp)',
+  'Hoist / passenger lift', 'Material hoist',
+  'Tower lift / mast climber',
+  // Other
+  'Other (specify)'
+];
+
 const SLAN_REGULATORS = {
   NSW: { name: 'SafeWork NSW',          phone: '13 10 50',     web: 'safework.nsw.gov.au' },
   VIC: { name: 'WorkSafe Victoria',     phone: '13 23 60',     web: 'worksafe.vic.gov.au' },
@@ -18951,6 +19028,55 @@ function incSupSearch() {}
 function incSupSearchKey() {}
 function incSupAddFromRoster() {}
 
+// ─── PLANT / EQUIPMENT PICKER (Dangerous + Near Miss) ──────────
+// Search the on-site plant list. prefix = 'dng' or 'nm' (which type-block
+// the picker lives in). Same pattern as incPersonSearch.
+function incPlantSearch(prefix) {
+  const inp = document.getElementById('inc-' + prefix + '-plant');
+  const dd  = document.getElementById('inc-' + prefix + '-plant-suggestions');
+  const otherWrap = document.getElementById('inc-' + prefix + '-plant-other-wrap');
+  if (!inp || !dd) return;
+  const q = (inp.value || '').trim().toLowerCase();
+  // If the typed value exactly matches a list item, hide the dropdown
+  // (user has already picked it) and hide the "other" reveal.
+  if (q.length === 0) {
+    dd.style.display = 'none'; dd.innerHTML = '';
+    if (otherWrap) otherWrap.style.display = 'none';
+    return;
+  }
+  const matches = ON_SITE_PLANT.filter(p => p.toLowerCase().includes(q)).slice(0, 8);
+  if (matches.length === 1 && matches[0].toLowerCase() === q) {
+    dd.style.display = 'none'; dd.innerHTML = '';
+    // Show "other" reveal if the picked item is the Other entry
+    if (otherWrap) otherWrap.style.display = matches[0].toLowerCase().indexOf('other') >= 0 ? 'block' : 'none';
+    return;
+  }
+  let html = '';
+  matches.forEach(p => {
+    html += '<div onclick="incPlantPick(\'' + prefix + '\',\'' + p.replace(/'/g,"\\'") + '\')" '
+         + 'style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;background:#fff">'
+         + p.replace(/</g,'&lt;') + '</div>';
+  });
+  dd.innerHTML = html || '<div style="padding:10px 12px;color:var(--muted);font-size:12.5px;background:#fff">No matches \u2014 keep typing or pick &ldquo;Other&rdquo; below to describe.</div>';
+  dd.style.display = 'block';
+}
+function incPlantSearchKey(ev, prefix) {
+  if (ev.key === 'Escape') {
+    const dd = document.getElementById('inc-' + prefix + '-plant-suggestions');
+    if (dd) dd.style.display = 'none';
+  }
+}
+function incPlantPick(prefix, plantName) {
+  const inp = document.getElementById('inc-' + prefix + '-plant');
+  const dd  = document.getElementById('inc-' + prefix + '-plant-suggestions');
+  const otherWrap = document.getElementById('inc-' + prefix + '-plant-other-wrap');
+  if (inp) inp.value = plantName;
+  if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
+  // Show "other" reveal if user picked the Other entry
+  if (otherWrap) otherWrap.style.display = plantName.toLowerCase().indexOf('other') >= 0 ? 'block' : 'none';
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
+}
+
 // ─── SECTION 5 — TYPE-SPECIFIC BLOCK REVEAL ─────────────────────
 // Driven by the incident type picked in Section 1 (inc-type). When the
 // type changes, hide all blocks and show only the matching one. Called
@@ -19076,6 +19202,9 @@ function setIncPdHarm(val) {
     var b = document.getElementById('inc-pd-harm-' + v);
     if (b) { b.className = 'ps-btn' + (v === val ? ' pass' : ''); b.style = ''; }
   });
+  // Yes → reveal description textarea (required to explain how exposure occurred)
+  var detailWrap = document.getElementById('inc-pd-harm-detail-wrap');
+  if (detailWrap) detailWrap.style.display = (val === 'yes') ? 'block' : 'none';
   if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
 }
 
@@ -19898,9 +20027,14 @@ function goToIncidentDetail(ref) {
           // NEAR MISS
           if (t.indexOf('near miss') >= 0) {
             var nmLbl = {yes:'Yes', no:'No', unsure:'Unsure'}[r.nm_could_be_notifiable] || '';
+            var nmPlant = r.nm_plant_equipment || '';
+            if (nmPlant && nmPlant.toLowerCase().indexOf('other') >= 0 && r.nm_plant_other) {
+              nmPlant = nmPlant + ' \u2014 ' + r.nm_plant_other;
+            }
             return fmtBlock('What could have happened',  r.nm_potential) +
                    fmtBlock('What stopped it from happening', r.nm_what_stopped) +
-                   fmtRow('Could be notifiable dangerous incident', nmLbl);
+                   fmtRow('Could be notifiable dangerous incident', nmLbl) +
+                   (nmPlant ? fmtRow('Plant or equipment involved', nmPlant) : '');
           }
           // DANGEROUS
           if (t.indexOf('dangerous') >= 0) {
@@ -19913,21 +20047,26 @@ function goToIncidentDetail(ref) {
               'tunnel-ventilation': 'Tunnel ventilation interruption', 'other': 'Other'
             };
             var cats = (Array.isArray(r.dng_categories) ? r.dng_categories : []).map(function(c){ return catLbl[c] || c; }).join(', ');
+            var dngPlant = r.dng_plant_equipment || '';
+            if (dngPlant && dngPlant.toLowerCase().indexOf('other') >= 0 && r.dng_plant_other) {
+              dngPlant = dngPlant + ' \u2014 ' + r.dng_plant_other;
+            }
             return fmtRow('Hazard categories (s37)', cats) +
                    fmtRow('Anyone in danger zone', r.dng_anyone_exposed) +
                    (r.dng_anyone_exposed === 'yes' ? fmtRow('People exposed', r.dng_exposed_count) : '') +
-                   fmtRow('Plant or equipment involved', r.dng_plant_equipment) +
+                   fmtRow('Plant or equipment involved', dngPlant) +
                    fmtRow('Substance involved', r.dng_substance);
           }
           // PROPERTY DAMAGE
           if (t.indexOf('property') >= 0 || t.indexOf('damage') >= 0) {
             var extLbl = {minor:'Minor (cosmetic)', moderate:'Moderate (repairable)', major:'Major (replacement)', total:'Total loss'}[r.pd_extent] || '';
-            var ownLbl = {business:'Your business', contractor:'Contractor', client:'Client / principal', third:'Third party / public'}[r.pd_owner] || '';
+            var ownLbl = {business:'Your employer / company', contractor:'Contractor', client:'Client / principal', third:'Third party / public'}[r.pd_owner] || '';
             return fmtRow('Asset damaged', r.pd_what_damaged) +
                    fmtRow('Extent of damage', extLbl) +
                    fmtRow('Estimated cost', r.pd_estimated_cost) +
                    fmtRow('Owner', ownLbl) +
-                   fmtRow('Caused harm to anyone', r.pd_caused_harm);
+                   fmtRow('Caused harm to anyone', r.pd_caused_harm) +
+                   (r.pd_caused_harm === 'yes' && r.pd_harm_detail ? fmtBlock('How exposure occurred', r.pd_harm_detail) : '');
           }
           // ENVIRONMENTAL
           if (t.indexOf('environ') >= 0) {
@@ -20429,6 +20568,11 @@ function downloadIncidentPdf() {
         drawCardBlock('WHAT STOPPED IT FROM HAPPENING', r.nm_what_stopped || '');
         var nmLbl = {yes:'Yes', no:'No', unsure:'Unsure'}[r.nm_could_be_notifiable] || '';
         drawCardRow('Could be notifiable dangerous incident (s37)', nmLbl);
+        var nmPlant = r.nm_plant_equipment || '';
+        if (nmPlant && nmPlant.toLowerCase().indexOf('other') >= 0 && r.nm_plant_other) {
+          nmPlant = nmPlant + ' \u2014 ' + r.nm_plant_other;
+        }
+        if (nmPlant) drawCardRow('Plant or equipment involved', nmPlant);
       } else if (t.indexOf('dangerous') >= 0) {
         var catLbl = {
           'substance-spill':'Uncontrolled substance spill','implosion-explosion-fire':'Implosion/explosion/fire',
@@ -20442,16 +20586,23 @@ function downloadIncidentPdf() {
         drawCardRow('Hazard categories (WHS Act s37)', cats);
         drawCardRow('Anyone in danger zone',           r.dng_anyone_exposed);
         if (r.dng_anyone_exposed === 'yes') drawCardRow('People exposed', r.dng_exposed_count);
-        drawCardRow('Plant or equipment involved',     r.dng_plant_equipment);
+        var dngPlant = r.dng_plant_equipment || '';
+        if (dngPlant && dngPlant.toLowerCase().indexOf('other') >= 0 && r.dng_plant_other) {
+          dngPlant = dngPlant + ' \u2014 ' + r.dng_plant_other;
+        }
+        drawCardRow('Plant or equipment involved',     dngPlant);
         drawCardRow('Substance involved',              r.dng_substance);
       } else if (t.indexOf('property') >= 0 || t.indexOf('damage') >= 0) {
         var extLbl = {minor:'Minor (cosmetic)',moderate:'Moderate (repairable)',major:'Major (replacement)',total:'Total loss'}[r.pd_extent] || '';
-        var ownLbl = {business:'Your business',contractor:'Contractor',client:'Client / principal',third:'Third party / public'}[r.pd_owner] || '';
+        var ownLbl = {business:'Your employer / company',contractor:'Contractor',client:'Client / principal',third:'Third party / public'}[r.pd_owner] || '';
         drawCardRow('Asset damaged',     r.pd_what_damaged);
         drawCardRow('Extent of damage',  extLbl);
         drawCardRow('Estimated cost',    r.pd_estimated_cost);
         drawCardRow('Owner',             ownLbl);
         drawCardRow('Caused harm to anyone', r.pd_caused_harm);
+        if (r.pd_caused_harm === 'yes' && r.pd_harm_detail) {
+          drawCardBlock('HOW EXPOSURE OCCURRED', r.pd_harm_detail);
+        }
       } else if (t.indexOf('environ') >= 0) {
         var whereLbl = {bunding:'Bunding/hardstand',soil:'Soil/ground',stormwater:'Stormwater drain',watercourse:'Watercourse',air:'Air',other:'Other'};
         var authLbl  = {none:'None notified yet',epa:'EPA',council:'Local council',health:'Health authority',fire:'Fire & Rescue'};
@@ -20727,6 +20878,8 @@ async function submitIncident() {
     nm_potential:        ((document.getElementById('inc-nm-potential')      || {}).value || '').trim(),
     nm_what_stopped:     ((document.getElementById('inc-nm-what-stopped')   || {}).value || '').trim(),
     nm_could_be_notifiable: ((document.getElementById('inc-nm-notifiable') || {}).value || ''),
+    nm_plant_equipment: ((document.getElementById('inc-nm-plant')  || {}).value || '').trim(),
+    nm_plant_other:     ((document.getElementById('inc-nm-plant-other') || {}).value || '').trim(),
     // Dangerous incident
     dng_categories:      (function(){
                            try { return JSON.parse((document.getElementById('inc-dng-categories') || {}).value || '[]'); }
@@ -20735,6 +20888,7 @@ async function submitIncident() {
     dng_anyone_exposed:  ((document.getElementById('inc-dng-exposed')        || {}).value || ''),
     dng_exposed_count:   ((document.getElementById('inc-dng-exposed-count')  || {}).value || ''),
     dng_plant_equipment: ((document.getElementById('inc-dng-plant')          || {}).value || '').trim(),
+    dng_plant_other:     ((document.getElementById('inc-dng-plant-other')    || {}).value || '').trim(),
     dng_substance:       ((document.getElementById('inc-dng-substance')      || {}).value || '').trim(),
     // Property damage
     pd_what_damaged:     ((document.getElementById('inc-pd-asset')   || {}).value || '').trim(),
@@ -20742,6 +20896,7 @@ async function submitIncident() {
     pd_estimated_cost:   ((document.getElementById('inc-pd-cost')    || {}).value || '').trim(),
     pd_owner:            ((document.getElementById('inc-pd-owner')   || {}).value || ''),
     pd_caused_harm:      ((document.getElementById('inc-pd-caused-harm') || {}).value || ''),
+    pd_harm_detail:      ((document.getElementById('inc-pd-harm-detail') || {}).value || '').trim(),
     // Environmental (NSW POEO Act s150 fields)
     env_substance:       ((document.getElementById('inc-env-substance')           || {}).value || '').trim(),
     env_volume:          ((document.getElementById('inc-env-volume')              || {}).value || '').trim(),
