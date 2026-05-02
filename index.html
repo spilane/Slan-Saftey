@@ -2081,8 +2081,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
            Property      → WHS Reg 675-687 (record retention)
            Environmental → NSW POEO Act s150 (info required to EPA)
          ────────────────────────────────────────────────────────── -->
-    <div class="fcard">
-      <div class="fcard-hdr">5 &mdash; Type-specific details</div>
+    <div class="fcard" style="overflow:visible">
+      <div class="fcard-hdr" style="border-radius:var(--r) var(--r) 0 0">5 &mdash; Type-specific details</div>
       <div class="fcard-body">
         <div class="fhint" id="inc-typeblock-empty" style="display:block">Pick an incident type in Section 1 to see the specific questions for that type.</div>
 
@@ -2176,6 +2176,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <button type="button" class="ps-btn" id="inc-dng-cat-vent"      onclick="toggleIncDngCat('tunnel-ventilation')" style="padding:9px 8px;font-size:11.5px;text-align:left">Interruption of main ventilation in tunnel/excavation</button>
               <button type="button" class="ps-btn" id="inc-dng-cat-other"     onclick="toggleIncDngCat('other')"            style="padding:9px 8px;font-size:11.5px;text-align:left">Other &mdash; describe below</button>
             </div>
+          </div>
+          <div class="fgroup" id="inc-dng-cat-other-wrap" style="display:none">
+            <label class="flabel">Describe the &ldquo;other&rdquo; hazard <span class="req">*</span></label>
+            <div class="fhint" style="margin-bottom:6px">In your own words \u2014 what was the dangerous incident? This helps the regulator decide if it falls under s37 or another section of the WHS Act.</div>
+            <textarea id="inc-dng-cat-other-detail" placeholder="e.g. Uncontrolled release of asbestos fibres during a demolition, exposing workers and adjoining residents." rows="3" style="font-size:14px" oninput="incRecheckSubmit()"></textarea>
           </div>
           <div class="fgroup">
             <label class="flabel">Was anyone in the danger zone at the time? <span class="req">*</span></label>
@@ -18320,15 +18325,15 @@ function goToIncidentForm() {
   if (emptyHint) emptyHint.style.display = 'block';
   // Clear all type-specific values
   ['inc-nm-potential','inc-nm-what-stopped','inc-nm-notifiable','inc-nm-plant','inc-nm-plant-other',
-   'inc-dng-categories','inc-dng-exposed','inc-dng-exposed-count','inc-dng-plant','inc-dng-plant-other','inc-dng-substance',
+   'inc-dng-categories','inc-dng-cat-other-detail','inc-dng-exposed','inc-dng-exposed-count','inc-dng-plant','inc-dng-plant-other','inc-dng-substance',
    'inc-pd-asset','inc-pd-extent','inc-pd-cost','inc-pd-owner','inc-pd-caused-harm','inc-pd-harm-detail',
    'inc-env-substance','inc-env-volume','inc-env-concentration','inc-env-where','inc-env-authorities','inc-env-containment-action'
   ].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = (id === 'inc-dng-categories' || id === 'inc-env-where' || id === 'inc-env-authorities') ? '[]' : '';
   });
-  // Hide plant "other" reveals + suggestion dropdowns + harm detail reveal
-  ['inc-nm-plant-other-wrap','inc-dng-plant-other-wrap','inc-pd-harm-detail-wrap'].forEach(function(id){
+  // Hide plant "other" reveals + suggestion dropdowns + harm detail reveal + dng cat other reveal
+  ['inc-nm-plant-other-wrap','inc-dng-plant-other-wrap','inc-dng-cat-other-wrap','inc-pd-harm-detail-wrap'].forEach(function(id){
     var el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   ['inc-nm-plant-suggestions','inc-dng-plant-suggestions'].forEach(function(id){
@@ -18532,6 +18537,8 @@ function incRecheckSubmit() {
     const exposed = v(document.getElementById('inc-dng-exposed'));
     typeValid = cats.length > 0 && !!exposed;
     if (exposed === 'yes' && !v(document.getElementById('inc-dng-exposed-count'))) typeValid = false;
+    // If 'other' hazard category is picked, the describe textarea is required
+    if (cats.indexOf('other') >= 0 && !v(document.getElementById('inc-dng-cat-other-detail'))) typeValid = false;
   } else if (t.indexOf('property') >= 0 || t.indexOf('damage') >= 0) {
     typeValid = !!v(document.getElementById('inc-pd-asset'))
              && !!v(document.getElementById('inc-pd-extent'))
@@ -19150,6 +19157,9 @@ function toggleIncDngCat(val) {
       b.style.textAlign = 'left';
     }
   });
+  // Reveal describe-other textarea when 'other' is selected
+  var otherWrap = document.getElementById('inc-dng-cat-other-wrap');
+  if (otherWrap) otherWrap.style.display = (arr.indexOf('other') >= 0) ? 'block' : 'none';
   if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
 }
 
@@ -20052,6 +20062,7 @@ function goToIncidentDetail(ref) {
               dngPlant = dngPlant + ' \u2014 ' + r.dng_plant_other;
             }
             return fmtRow('Hazard categories (s37)', cats) +
+                   (Array.isArray(r.dng_categories) && r.dng_categories.indexOf('other') >= 0 && r.dng_category_other_detail ? fmtBlock('Other hazard description', r.dng_category_other_detail) : '') +
                    fmtRow('Anyone in danger zone', r.dng_anyone_exposed) +
                    (r.dng_anyone_exposed === 'yes' ? fmtRow('People exposed', r.dng_exposed_count) : '') +
                    fmtRow('Plant or equipment involved', dngPlant) +
@@ -20584,6 +20595,9 @@ function downloadIncidentPdf() {
         };
         var cats = (Array.isArray(r.dng_categories) ? r.dng_categories : []).map(function(c){return catLbl[c]||c;}).join(', ');
         drawCardRow('Hazard categories (WHS Act s37)', cats);
+        if (Array.isArray(r.dng_categories) && r.dng_categories.indexOf('other') >= 0 && r.dng_category_other_detail) {
+          drawCardBlock('OTHER HAZARD DESCRIPTION', r.dng_category_other_detail);
+        }
         drawCardRow('Anyone in danger zone',           r.dng_anyone_exposed);
         if (r.dng_anyone_exposed === 'yes') drawCardRow('People exposed', r.dng_exposed_count);
         var dngPlant = r.dng_plant_equipment || '';
@@ -20885,6 +20899,7 @@ async function submitIncident() {
                            try { return JSON.parse((document.getElementById('inc-dng-categories') || {}).value || '[]'); }
                            catch(e) { return []; }
                          })(),
+    dng_category_other_detail: ((document.getElementById('inc-dng-cat-other-detail') || {}).value || '').trim(),
     dng_anyone_exposed:  ((document.getElementById('inc-dng-exposed')        || {}).value || ''),
     dng_exposed_count:   ((document.getElementById('inc-dng-exposed-count')  || {}).value || ''),
     dng_plant_equipment: ((document.getElementById('inc-dng-plant')          || {}).value || '').trim(),
