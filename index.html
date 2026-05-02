@@ -1823,43 +1823,40 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button class="ps-btn" id="inc-role-Behalf"  onclick="setIncRole('Reporting on behalf of another')" style="padding:9px 4px;font-size:11px;line-height:1.2">On&nbsp;behalf</button>
           </div>
         </div>
-        <!-- Person involved — smart picker. Type the name, see matches from
-             the on-site personnel list (preferred: signed-in today). Pick to
-             auto-fill name + phone + company from the personnel record.
-             For off-roster persons (visitors, members of public) tap "Add
-             manually" and the fields become editable. -->
+        <!-- Person involved — search the on-site personnel list to auto-fill
+             the fields below. Plain fields stay visible/editable so the user
+             can adjust if needed. -->
+        <div class="fgroup">
+          <label class="flabel" id="inc-person-search-label">Search the on-site personnel list <span style="font-weight:400;color:var(--muted);font-size:11px">(auto-fills name, phone &amp; company)</span></label>
+          <div class="fhint" style="margin-bottom:6px">Start typing a name. Tap a match to fill the fields below. For visitors / off-roster persons, just type their details into the boxes.</div>
+          <div style="position:relative">
+            <input type="text" id="inc-person-search" placeholder="Type a name (e.g. Steve)..." autocomplete="off" oninput="incPersonSearch()" onkeydown="incPersonSearchKey(event)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
+            <div id="inc-person-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:50"></div>
+          </div>
+        </div>
         <div class="fgroup">
           <label class="flabel">Name of person involved <span style="font-weight:400;color:var(--muted);font-size:11px" id="inc-name-helper">(leave blank if you are the person involved)</span></label>
-          <div class="fhint" style="margin-bottom:6px">Type a name to search the on-site personnel list. Tap a match to auto-fill phone and company from the personnel register. For off-list persons (visitors, members of the public), tap <b>Add manually</b>.</div>
-          <input type="hidden" id="inc-person-name" value="">
-          <input type="hidden" id="inc-person-company" value="">
-          <input type="hidden" id="inc-person-phone" value="">
-          <!-- Display chip when a person is locked in -->
-          <div id="inc-person-chip" style="display:none;margin-bottom:8px"></div>
-          <!-- Search input + dropdown (same pattern as witness picker) -->
-          <div id="inc-person-search-wrap" style="position:relative">
-            <input type="text" id="inc-person-search" placeholder="Type a name (e.g. Steve)..." autocomplete="off" oninput="incPersonSearch()" onkeydown="incPersonSearchKey(event)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
-            <div id="inc-person-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:5"></div>
-          </div>
-          <!-- Manual entry block, hidden until "Add manually" is tapped -->
-          <div id="inc-person-manual-wrap" style="display:none;margin-top:8px;padding:10px;background:#FAFAF7;border:1px dashed var(--border);border-radius:8px">
-            <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">Off-roster person \u2014 enter details manually.</div>
-            <input type="text" id="inc-person-manual-name" placeholder="Full name" autocomplete="off" oninput="incPersonManualSync()" style="padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:100%;outline:none;box-sizing:border-box;margin-bottom:6px">
-            <input type="text" id="inc-person-manual-company" placeholder="Company / employer (optional)" autocomplete="off" oninput="incPersonManualSync()" style="padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:100%;outline:none;box-sizing:border-box;margin-bottom:6px">
-            <input type="tel" id="inc-person-manual-phone" placeholder="Mobile phone (optional)" autocomplete="off" inputmode="tel" oninput="incPersonManualSync()" style="padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:100%;outline:none;box-sizing:border-box;margin-bottom:6px">
-            <button type="button" onclick="incPersonClearManual()" style="font-size:11px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:0;text-decoration:underline">\u2190 Back to roster search</button>
-          </div>
+          <input type="text" id="inc-person-name" placeholder="Will fill from the search above, or type manually" autocomplete="off" oninput="incRecheckSubmit()">
         </div>
         <div class="fgroup">
-          <label class="flabel">Date of birth <span style="font-weight:400;color:var(--muted);font-size:11px">(required by regulator for notifiable incidents)</span></label>
+          <label class="flabel">Company / employer of person involved</label>
+          <input type="text" id="inc-person-company" placeholder="e.g. Murphy Concreting Pty Ltd" autocomplete="off">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Mobile phone of person involved</label>
+          <input type="tel" id="inc-person-phone" placeholder="e.g. 0412 345 678" autocomplete="off" inputmode="tel">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Date of birth <span style="font-weight:400;color:var(--muted);font-size:11px">(required by regulator for notifiable injuries)</span></label>
           <input type="date" id="inc-person-dob" autocomplete="off" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box">
-          <div class="fhint">DOB isn't on every personnel record \u2014 fill in if known.</div>
+          <div class="fhint">Auto-filled from the personnel register where on file.</div>
         </div>
-        <!-- Relationship to PCBU — SafeWork NSW asks for this when the call
-             is made for a notifiable incident. 6 canonical categories. -->
+        <!-- Type of person — required by SafeWork regulators when calling in
+             a notifiable incident. Auto-set when picked from the roster
+             (worker / contractor based on company). -->
         <div class="fgroup">
-          <label class="flabel">Relationship of person involved to your business<span class="slan-help" onclick="slanHelpToggle('inc-help-relationship')">?</span></label>
-          <div id="inc-help-relationship" class="slan-help-tip">SafeWork regulators ask for this when a notifiable incident is called in. Pick the option that best describes how the person involved relates to the entity running the workplace.</div>
+          <label class="flabel">Type of person<span class="slan-help" onclick="slanHelpToggle('inc-help-relationship')">?</span></label>
+          <div id="inc-help-relationship" class="slan-help-tip">SafeWork regulators ask for this when a notifiable incident is reported \u2014 it tells them the person\u2019s relationship to the site (employee / contractor / visitor / etc.). Auto-set when you pick a name from the roster.</div>
           <input type="hidden" id="inc-relationship" value="">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
             <button type="button" class="ps-btn" id="inc-rel-worker"        onclick="setIncRelationship('worker')"        style="padding:9px 4px;font-size:12px">Worker / employee</button>
@@ -1870,25 +1867,27 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button type="button" class="ps-btn" id="inc-rel-public"        onclick="setIncRelationship('public')"        style="padding:9px 4px;font-size:12px">Member of public</button>
           </div>
         </div>
-        <!-- Supervisor — also picker-driven. Same source list, defaults to
-             site supervisor (Eoin in demo). Captures name + phone + company. -->
+        <!-- Supervisor — also picker-driven. Plain visible fields. Defaults
+             to the site supervisor (Eoin in demo). -->
         <div class="fgroup">
-          <label class="flabel">Supervisor responsible for this work <span class="req">*</span></label>
-          <div class="fhint" style="margin-bottom:6px">Type a name to search the on-site personnel list, then tap to auto-fill phone and company.</div>
-          <input type="hidden" id="inc-supervisor-name" value="">
-          <input type="hidden" id="inc-supervisor-company" value="">
-          <input type="hidden" id="inc-supervisor-phone" value="">
-          <div id="inc-sup-chip" style="display:none;margin-bottom:8px"></div>
-          <div id="inc-sup-search-wrap" style="position:relative">
+          <label class="flabel">Search for supervisor <span style="font-weight:400;color:var(--muted);font-size:11px">(auto-fills name, phone &amp; company)</span></label>
+          <div class="fhint" style="margin-bottom:6px">Defaults to your site supervisor. Tap to change.</div>
+          <div style="position:relative">
             <input type="text" id="inc-sup-search" placeholder="Type a name..." autocomplete="off" oninput="incSupSearch()" onkeydown="incSupSearchKey(event)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
-            <div id="inc-sup-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:5"></div>
+            <div id="inc-sup-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:50"></div>
           </div>
-          <div id="inc-sup-manual-wrap" style="display:none;margin-top:8px;padding:10px;background:#FAFAF7;border:1px dashed var(--border);border-radius:8px">
-            <input type="text" id="inc-sup-manual-name" placeholder="Supervisor full name" autocomplete="off" oninput="incSupManualSync()" style="padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:100%;outline:none;box-sizing:border-box;margin-bottom:6px">
-            <input type="text" id="inc-sup-manual-company" placeholder="Company (optional)" autocomplete="off" oninput="incSupManualSync()" style="padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:100%;outline:none;box-sizing:border-box;margin-bottom:6px">
-            <input type="tel" id="inc-sup-manual-phone" placeholder="Mobile phone (optional)" autocomplete="off" inputmode="tel" oninput="incSupManualSync()" style="padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;width:100%;outline:none;box-sizing:border-box;margin-bottom:6px">
-            <button type="button" onclick="incSupClearManual()" style="font-size:11px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:0;text-decoration:underline">\u2190 Back to roster search</button>
-          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Supervisor name <span class="req">*</span></label>
+          <input type="text" id="inc-supervisor-name" placeholder="Name of the responsible supervisor" autocomplete="off" oninput="incRecheckSubmit()">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Supervisor phone</label>
+          <input type="tel" id="inc-supervisor-phone" placeholder="e.g. 0432 778 901" autocomplete="off" inputmode="tel">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Supervisor company</label>
+          <input type="text" id="inc-supervisor-company" placeholder="e.g. Murphy Civil Construction" autocomplete="off">
         </div>
         <div class="fgroup">
           <label class="flabel">Was a supervisor present at the event? <span class="req">*</span></label>
@@ -1925,7 +1924,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <!-- Search input + dropdown -->
           <div style="position:relative">
             <input type="text" id="inc-witness-search" placeholder="Type a name (e.g. Steve)..." autocomplete="off" oninput="incWitnessSearch()" onkeydown="incWitnessSearchKey(event)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
-            <div id="inc-witness-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:5"></div>
+            <div id="inc-witness-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:50"></div>
           </div>
         </div>
       </div>
@@ -10560,26 +10559,26 @@ if (typeof localStorage !== 'undefined' && localStorage.getItem('slan_demo') ===
 
 // ── 20-person civil construction site demo data ──────────────────
 var DEMO_WORKERS = [
-  { name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',         pts:912, tier:'gold',   phone:'0411 111 001', inducted:true,  onsite:true,  signin:'06:55', licences:{ whitecard:{expiry:'2027-03-10',ok:true}, hrwl:{type:'Dogging DG',expiry:'2026-07-15',ok:true}, driver:{expiry:'2027-08-22',ok:true}, firstaid:{expiry:'2025-11-30',ok:false} } },
-  { name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',         pts:724, tier:'gold',   phone:'0411 111 002', inducted:true,  onsite:true,  signin:'07:02', licences:{ whitecard:{expiry:'2027-06-20',ok:true}, driver:{expiry:'2026-04-10',ok:true} } },
-  { name:'Sam Carroll',     company:'Burke Civil Contractors',   role:'Concretor',          pts:681, tier:'gold',   phone:'0411 111 003', inducted:true,  onsite:true,  signin:'07:05', licences:{ whitecard:{expiry:'2026-09-15',ok:true}, driver:{expiry:'2026-12-01',ok:true} } },
-  { name:'Tom Burke',       company:'Burke Civil Contractors',   role:'Labourer',           pts:541, tier:'silver', phone:'0411 111 004', inducted:true,  onsite:true,  signin:'07:10', licences:{ whitecard:{expiry:'2027-01-08',ok:true} } },
-  { name:'Chris Walsh',     company:'Smith Formwork Pty Ltd',    role:'Formworker',         pts:490, tier:'silver', phone:'0411 111 005', inducted:true,  onsite:true,  signin:'07:08', licences:{ whitecard:{expiry:'2026-11-25',ok:true}, driver:{expiry:'2026-05-14',ok:true} } },
-  { name:'Dave Murphy',     company:'Smith Formwork Pty Ltd',    role:'Carpenter',          pts:388, tier:'silver', phone:'0411 111 006', inducted:true,  onsite:true,  signin:'07:12', licences:{ whitecard:{expiry:'2026-08-30',ok:true} } },
-  { name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',             pts:312, tier:'silver', phone:'0411 111 007', inducted:true,  onsite:true,  signin:'07:00', licences:{ whitecard:{expiry:'2027-04-18',ok:true}, hrwl:{type:'Rigging RI',expiry:'2026-09-20',ok:true} } },
-  { name:'Pat Healy',       company:'Murphy Civil Construction', role:'Labourer',           pts:285, tier:'bronze', phone:'0411 111 008', inducted:true,  onsite:true,  signin:'07:15', licences:{ whitecard:{expiry:'2026-07-05',ok:true} } },
-  { name:'Brendan Kelly',   company:'Kelly Crane Services',      role:'Crane Operator',     pts:260, tier:'bronze', phone:'0411 111 009', inducted:true,  onsite:true,  signin:'07:00', licences:{ whitecard:{expiry:'2027-02-14',ok:true}, hrwl:{type:'Slewing Crane SC',expiry:'2026-06-30',ok:false} } },
-  { name:'Mick Doyle',      company:'Burke Civil Contractors',   role:'Excavator Operator', pts:241, tier:'bronze', phone:'0411 111 010', inducted:true,  onsite:true,  signin:'07:05', licences:{ whitecard:{expiry:'2026-10-22',ok:true}, hrwl:{type:'Earthmoving ME',expiry:'2027-01-15',ok:true} } },
-  { name:'Shane Connolly',  company:'Murphy Civil Construction', role:'Steelfixer',         pts:198, tier:'bronze', phone:'0411 111 011', inducted:true,  onsite:true,  signin:'07:20', licences:{ whitecard:{expiry:'2026-12-10',ok:true} } },
-  { name:'Aaron Farrell',   company:'Smith Formwork Pty Ltd',    role:'Formworker',         pts:175, tier:'bronze', phone:'0411 111 012', inducted:true,  onsite:false, signin:null,    licences:{ whitecard:{expiry:'2026-09-08',ok:true} } },
-  { name:'Gary Tully',      company:'Tully Plumbing',            role:'Plumber',            pts:154, tier:'bronze', phone:'0411 111 013', inducted:true,  onsite:true,  signin:'07:30', licences:{ whitecard:{expiry:'2027-05-20',ok:true}, driver:{expiry:'2026-11-30',ok:true} } },
-  { name:'Wayne Slattery',  company:'Slattery Electrical',       role:'Electrician',        pts:138, tier:'bronze', phone:'0411 111 014', inducted:true,  onsite:true,  signin:'07:25', licences:{ whitecard:{expiry:'2026-08-15',ok:true}, hrwl:{type:'Electrical EE',expiry:'2026-03-01',ok:false} } },
-  { name:'James Riordan',   company:'Murphy Civil Construction', role:'Labourer',           pts:112, tier:'bronze', phone:'0411 111 015', inducted:false, onsite:false, signin:null,    licences:{ whitecard:{expiry:'2025-06-30',ok:false} } },
-  { name:'Kevin Nash',      company:'Burke Civil Contractors',   role:'Traffic Controller',  pts:98, tier:'bronze', phone:'0411 111 016', inducted:true,  onsite:true,  signin:'07:45', licences:{ whitecard:{expiry:'2026-10-01',ok:true}, hrwl:{type:'Traffic Control TC',expiry:'2027-03-10',ok:true} } },
-  { name:'Paul Sheridan',   company:'Murphy Civil Construction', role:'Concretor',          pts:87,  tier:'bronze', phone:'0411 111 017', inducted:true,  onsite:true,  signin:'07:50', licences:{ whitecard:{expiry:'2026-06-15',ok:true} } },
-  { name:'Dean Mc Grath',   company:'Smith Formwork Pty Ltd',    role:'Carpenter',          pts:72,  tier:'bronze', phone:'0411 111 018', inducted:true,  onsite:false, signin:null,    licences:{ whitecard:{expiry:'2027-01-22',ok:true} } },
-  { name:'Liam Brennan',    company:'Murphy Civil Construction', role:'Labourer',           pts:55,  tier:'bronze', phone:'0411 111 019', inducted:true,  onsite:true,  signin:'08:00', licences:{ whitecard:{expiry:'2026-11-10',ok:true} } },
-  { name:'Niall Costello',  company:'Burke Civil Contractors',   role:'Labourer',           pts:40,  tier:'bronze', phone:'0411 111 020', inducted:true,  onsite:true,  signin:'08:05', licences:{ whitecard:{expiry:'2026-07-28',ok:true} } }
+  { name:'Jake Ryan',       dob:'1992-06-14', company:'Murphy Civil Construction', role:'Concretor',         pts:912, tier:'gold',   phone:'0411 111 001', inducted:true,  onsite:true,  signin:'06:55', licences:{ whitecard:{expiry:'2027-03-10',ok:true}, hrwl:{type:'Dogging DG',expiry:'2026-07-15',ok:true}, driver:{expiry:'2027-08-22',ok:true}, firstaid:{expiry:'2025-11-30',ok:false} } },
+  { name:'Mark Flynn',      dob:'1988-03-22', company:'Murphy Civil Construction', role:'Formworker',         pts:724, tier:'gold',   phone:'0411 111 002', inducted:true,  onsite:true,  signin:'07:02', licences:{ whitecard:{expiry:'2027-06-20',ok:true}, driver:{expiry:'2026-04-10',ok:true} } },
+  { name:'Sam Carroll',     dob:'1991-09-08', company:'Burke Civil Contractors',   role:'Concretor',          pts:681, tier:'gold',   phone:'0411 111 003', inducted:true,  onsite:true,  signin:'07:05', licences:{ whitecard:{expiry:'2026-09-15',ok:true}, driver:{expiry:'2026-12-01',ok:true} } },
+  { name:'Tom Burke',       dob:'1995-01-15', company:'Burke Civil Contractors',   role:'Labourer',           pts:541, tier:'silver', phone:'0411 111 004', inducted:true,  onsite:true,  signin:'07:10', licences:{ whitecard:{expiry:'2027-01-08',ok:true} } },
+  { name:'Chris Walsh',     dob:'1987-11-30', company:'Smith Formwork Pty Ltd',    role:'Formworker',         pts:490, tier:'silver', phone:'0411 111 005', inducted:true,  onsite:true,  signin:'07:08', licences:{ whitecard:{expiry:'2026-11-25',ok:true}, driver:{expiry:'2026-05-14',ok:true} } },
+  { name:'Dave Murphy',     dob:'1990-04-18', company:'Smith Formwork Pty Ltd',    role:'Carpenter',          pts:388, tier:'silver', phone:'0411 111 006', inducted:true,  onsite:true,  signin:'07:12', licences:{ whitecard:{expiry:'2026-08-30',ok:true} } },
+  { name:"Lee O'Brien",     dob:'1993-07-25', company:'Murphy Civil Construction', role:'Rigger',             pts:312, tier:'silver', phone:'0411 111 007', inducted:true,  onsite:true,  signin:'07:00', licences:{ whitecard:{expiry:'2027-04-18',ok:true}, hrwl:{type:'Rigging RI',expiry:'2026-09-20',ok:true} } },
+  { name:'Pat Healy',       dob:'1985-12-04', company:'Murphy Civil Construction', role:'Labourer',           pts:285, tier:'bronze', phone:'0411 111 008', inducted:true,  onsite:true,  signin:'07:15', licences:{ whitecard:{expiry:'2026-07-05',ok:true} } },
+  { name:'Brendan Kelly',   dob:'1980-08-12', company:'Kelly Crane Services',      role:'Crane Operator',     pts:260, tier:'bronze', phone:'0411 111 009', inducted:true,  onsite:true,  signin:'07:00', licences:{ whitecard:{expiry:'2027-02-14',ok:true}, hrwl:{type:'Slewing Crane SC',expiry:'2026-06-30',ok:false} } },
+  { name:'Mick Doyle',      dob:'1983-05-19', company:'Burke Civil Contractors',   role:'Excavator Operator', pts:241, tier:'bronze', phone:'0411 111 010', inducted:true,  onsite:true,  signin:'07:05', licences:{ whitecard:{expiry:'2026-10-22',ok:true}, hrwl:{type:'Earthmoving ME',expiry:'2027-01-15',ok:true} } },
+  { name:'Shane Connolly',  dob:'1989-10-27', company:'Murphy Civil Construction', role:'Steelfixer',         pts:198, tier:'bronze', phone:'0411 111 011', inducted:true,  onsite:true,  signin:'07:20', licences:{ whitecard:{expiry:'2026-12-10',ok:true} } },
+  { name:'Aaron Farrell',   dob:'1996-02-09', company:'Smith Formwork Pty Ltd',    role:'Formworker',         pts:175, tier:'bronze', phone:'0411 111 012', inducted:true,  onsite:false, signin:null,    licences:{ whitecard:{expiry:'2026-09-08',ok:true} } },
+  { name:'Gary Tully',      dob:'1986-06-21', company:'Tully Plumbing',            role:'Plumber',            pts:154, tier:'bronze', phone:'0411 111 013', inducted:true,  onsite:true,  signin:'07:30', licences:{ whitecard:{expiry:'2027-05-20',ok:true}, driver:{expiry:'2026-11-30',ok:true} } },
+  { name:'Wayne Slattery',  dob:'1984-09-14', company:'Slattery Electrical',       role:'Electrician',        pts:138, tier:'bronze', phone:'0411 111 014', inducted:true,  onsite:true,  signin:'07:25', licences:{ whitecard:{expiry:'2026-08-15',ok:true}, hrwl:{type:'Electrical EE',expiry:'2026-03-01',ok:false} } },
+  { name:'James Riordan',   dob:'1998-04-03', company:'Murphy Civil Construction', role:'Labourer',           pts:112, tier:'bronze', phone:'0411 111 015', inducted:false, onsite:false, signin:null,    licences:{ whitecard:{expiry:'2025-06-30',ok:false} } },
+  { name:'Kevin Nash',      dob:'1992-11-11', company:'Burke Civil Contractors',   role:'Traffic Controller',  pts:98, tier:'bronze', phone:'0411 111 016', inducted:true,  onsite:true,  signin:'07:45', licences:{ whitecard:{expiry:'2026-10-01',ok:true}, hrwl:{type:'Traffic Control TC',expiry:'2027-03-10',ok:true} } },
+  { name:'Paul Sheridan',   dob:'1991-08-08', company:'Murphy Civil Construction', role:'Concretor',          pts:87,  tier:'bronze', phone:'0411 111 017', inducted:true,  onsite:true,  signin:'07:50', licences:{ whitecard:{expiry:'2026-06-15',ok:true} } },
+  { name:'Dean Mc Grath',   dob:'1994-03-30', company:'Smith Formwork Pty Ltd',    role:'Carpenter',          pts:72,  tier:'bronze', phone:'0411 111 018', inducted:true,  onsite:false, signin:null,    licences:{ whitecard:{expiry:'2027-01-22',ok:true} } },
+  { name:'Liam Brennan',    dob:'1997-07-17', company:'Murphy Civil Construction', role:'Labourer',           pts:55,  tier:'bronze', phone:'0411 111 019', inducted:true,  onsite:true,  signin:'08:00', licences:{ whitecard:{expiry:'2026-11-10',ok:true} } },
+  { name:'Niall Costello',  dob:'1999-12-02', company:'Burke Civil Contractors',   role:'Labourer',           pts:40,  tier:'bronze', phone:'0411 111 020', inducted:true,  onsite:true,  signin:'08:05', licences:{ whitecard:{expiry:'2026-07-28',ok:true} } }
 ];
 
 // ── Sign-ins (20 workers signed in today) ────────────────────
@@ -13482,7 +13481,7 @@ function saveProfile(){
 
 // Site contacts — provider updates these per client
 const SITE_CONTACTS = {
-  supervisor: { name: 'Eoin Burke', phone: '0432 778 901' },
+  supervisor: { name: 'Eoin Burke', phone: '0432 778 901', company: 'Murphy Civil Construction' },
   safety:     { name: 'Slán Safety',     phone: '0800000000' }
 };
 
@@ -18050,37 +18049,25 @@ function goToIncidentForm() {
   if (witSearch) witSearch.value = '';
   const witDd = document.getElementById('inc-witness-suggestions');
   if (witDd) { witDd.style.display = 'none'; witDd.innerHTML = ''; }
-  // Reset person-involved picker state
-  ['inc-person-manual-name','inc-person-manual-company','inc-person-manual-phone','inc-person-search'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  if (typeof incPersonRenderChip === 'function') incPersonRenderChip();
-  const personSW = document.getElementById('inc-person-search-wrap'); if (personSW) personSW.style.display = 'block';
-  const personMW = document.getElementById('inc-person-manual-wrap'); if (personMW) personMW.style.display = 'none';
-  const personDD = document.getElementById('inc-person-suggestions'); if (personDD) { personDD.style.display = 'none'; personDD.innerHTML = ''; }
-  // Reset supervisor picker state and DEFAULT to the site supervisor.
-  ['inc-sup-manual-name','inc-sup-manual-company','inc-sup-manual-phone','inc-sup-search'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  // Default values for the supervisor — pull from SITE_CONTACTS (Eoin in
-  // demo) so the form opens with the chip already populated. Reporter can
-  // tap × to change.
+  // Reset person + supervisor pickers (plain visible fields)
+  const personSearch = document.getElementById('inc-person-search');
+  if (personSearch) personSearch.value = '';
+  const personDD = document.getElementById('inc-person-suggestions');
+  if (personDD) { personDD.style.display = 'none'; personDD.innerHTML = ''; }
+  const supSearch = document.getElementById('inc-sup-search');
+  if (supSearch) supSearch.value = '';
+  const supDD = document.getElementById('inc-sup-suggestions');
+  if (supDD) { supDD.style.display = 'none'; supDD.innerHTML = ''; }
+  // Default supervisor — pre-fill the plain visible fields with the site
+  // supervisor (Eoin in demo). Reporter can search to change.
   if (typeof SITE_CONTACTS !== 'undefined' && SITE_CONTACTS.supervisor && SITE_CONTACTS.supervisor.name) {
-    const supEl = document.getElementById('inc-supervisor-name');
-    const supCo = document.getElementById('inc-supervisor-company');
-    const supPh = document.getElementById('inc-supervisor-phone');
-    if (supEl) supEl.value = SITE_CONTACTS.supervisor.name || '';
-    if (supCo) supCo.value = SITE_CONTACTS.supervisor.company || '';
-    if (supPh) supPh.value = SITE_CONTACTS.supervisor.phone || '';
+    const supName = document.getElementById('inc-supervisor-name');
+    const supCo   = document.getElementById('inc-supervisor-company');
+    const supPh   = document.getElementById('inc-supervisor-phone');
+    if (supName) supName.value = SITE_CONTACTS.supervisor.name || '';
+    if (supCo)   supCo.value   = SITE_CONTACTS.supervisor.company || '';
+    if (supPh)   supPh.value   = SITE_CONTACTS.supervisor.phone || '';
   }
-  if (typeof incSupRenderChip === 'function') incSupRenderChip();
-  // Hide search wrap if chip is showing (i.e. supervisor is locked in)
-  const supName = ((document.getElementById('inc-supervisor-name') || {}).value || '').trim();
-  const supSW = document.getElementById('inc-sup-search-wrap');
-  const supMW = document.getElementById('inc-sup-manual-wrap');
-  if (supSW) supSW.style.display = supName ? 'none' : 'block';
-  if (supMW) supMW.style.display = 'none';
-  const supDD = document.getElementById('inc-sup-suggestions'); if (supDD) { supDD.style.display = 'none'; supDD.innerHTML = ''; }
   // Reset all new Pass-1 pill rows visually
   ['cold','cool','mild','warm','hot'].forEach(v => { const b=document.getElementById('inc-weather-temp-'+v); if(b){b.className='ps-btn'; b.style='';} });
   ['clear','cloudy','rain','windy','storm','fog','dusty','humid','indoors'].forEach(v => { const b=document.getElementById('inc-weather-cond-'+v); if(b){b.className='ps-btn'; b.style='';} });
@@ -18153,9 +18140,7 @@ function goToIncidentForm() {
   if (typeHidden) typeHidden.value = '';
   // ── AUTOFILL FROM PROFILE ─────────────────────────────────────
   // If the reporter IS the site supervisor, override the default site
-  // contact with their own identity. The form-open block above already
-  // pre-populated SITE_CONTACTS.supervisor — this only kicks in when the
-  // logged-in user is themselves a Site Supervisor.
+  // contact with their own identity.
   if (p && p.role === 'Site Supervisor' && p.name) {
     const supEl = document.getElementById('inc-supervisor-name');
     const supCo = document.getElementById('inc-supervisor-company');
@@ -18163,9 +18148,6 @@ function goToIncidentForm() {
     if (supEl) supEl.value = p.name;
     if (supCo) supCo.value = p.company || '';
     if (supPh) supPh.value = p.phone || '';
-    if (typeof incSupRenderChip === 'function') incSupRenderChip();
-    // Hide the search wrap since we have a chip
-    const sw = document.getElementById('inc-sup-search-wrap'); if (sw) sw.style.display = 'none';
   }
   // Regulator state — pre-pick from profile so the worker doesn't have to
   // re-enter their state if they say notifiable=yes.
@@ -18204,6 +18186,53 @@ function goToIncidentForm() {
   if (typeof setIncExperience === 'function' && p.experience) {
     setIncExperience(p.experience);
   }
+  // ── Auto-fill: days worked since last day off ────────────────
+  // Count distinct sign-in dates over the last 14 days for this worker.
+  // First time we hit a date with NO sign-in, stop counting → that's the
+  // last day off.
+  try {
+    if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS) && p.name) {
+      const myDates = new Set();
+      DEMO_SIGNINS.forEach(s => {
+        if (s.worker_name === p.name && s.type === 'Sign In' && s.date) {
+          myDates.add(s.date);
+        }
+      });
+      // Walk back from today, count consecutive days with sign-ins
+      let consecutive = 0;
+      const today = new Date();
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(today.getTime() - i * 86400000);
+        const dStr = d.toLocaleDateString('en-AU');
+        if (myDates.has(dStr)) consecutive++;
+        else break;
+      }
+      const dwEl = document.getElementById('inc-days-worked');
+      if (dwEl && consecutive > 0) dwEl.value = String(consecutive);
+    }
+  } catch(e) {}
+  // ── Auto-fill: activity at the time ──────────────────────────
+  // Pull from today's site pre-start tasks_today if available; otherwise
+  // fall back to the worker's role from sign-in (e.g. "Concretor work").
+  try {
+    const actEl = document.getElementById('inc-activity');
+    if (actEl && !actEl.value) {
+      // Try today's prestart tasks first
+      let activity = '';
+      if (typeof DEMO_PRESTARTS !== 'undefined' && Array.isArray(DEMO_PRESTARTS)) {
+        const todayStr = new Date().toLocaleDateString('en-AU');
+        const sitePs = DEMO_PRESTARTS.find(ps => ps.is_site_prestart && ps.date === todayStr && ps.tasks_today);
+        if (sitePs && sitePs.tasks_today) activity = sitePs.tasks_today;
+      }
+      // Fallback to worker's signed-in role
+      if (!activity && typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS) && p.name) {
+        const todayStr = new Date().toLocaleDateString('en-AU');
+        const myToday = DEMO_SIGNINS.find(s => s.worker_name === p.name && s.type === 'Sign In' && s.date === todayStr);
+        if (myToday && myToday.role) activity = myToday.role + ' work';
+      }
+      if (activity) actEl.value = activity;
+    }
+  } catch(e) {}
   // Reset photo slots
   if (typeof resetIncidentPhotos === 'function') resetIncidentPhotos();
   // Reset submit button to disabled state (no required fields filled yet)
@@ -18592,9 +18621,9 @@ function incApplyWeatherFromMeteo(c, sourceLabel) {
 }
 
 // ─── PERSON-INVOLVED PICKER ─────────────────────────────────────
-// Single-select roster picker. Type a name → matches from on-site
-// personnel. Tap to lock in name + phone + company. "Add manually" for
-// off-roster persons (visitors, members of public).
+// Search the on-site personnel list to auto-fill name + phone + company +
+// DOB into plain visible fields below. Also auto-sets Type of person
+// (Worker if same company as reporter, Subcontractor if different).
 function incPersonSearch() {
   const inp = document.getElementById('inc-person-search');
   const dd  = document.getElementById('inc-person-suggestions');
@@ -18612,115 +18641,50 @@ function incPersonSearch() {
       .filter(Boolean).join(' ');
     html += '<div onclick="incPersonAddFromRoster(\''
       + (w.name || '').replace(/'/g, "\\'") + '\')" '
-      + 'style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px">'
+      + 'style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;background:#fff">'
       + '<div style="font-weight:600;color:var(--text)">' + (w.name || '').replace(/</g,'&lt;') + '</div>'
       + '<div style="font-size:11.5px;color:var(--muted);margin-top:1px">' + subline.replace(/</g,'&lt;') + '</div>'
       + '</div>';
   });
-  if (q.length >= 2) {
-    const addLbl = matches.length === 0
-      ? 'No match \u2014 add &ldquo;' + inp.value.replace(/</g,'&lt;') + '&rdquo; manually'
-      : 'Not on the list? Add manually';
-    html += '<div onclick="incPersonOpenManual()" style="padding:10px 12px;cursor:pointer;background:#FAFAF7;font-size:12.5px;color:#1B6E3A;font-weight:600;display:flex;align-items:center;gap:6px">'
-      + '<span style="font-size:14px">+</span> ' + addLbl
-      + '</div>';
-  }
-  dd.innerHTML = html || '<div style="padding:10px 12px;color:var(--muted);font-size:12.5px">No matches.</div>';
+  dd.innerHTML = html || '<div style="padding:10px 12px;color:var(--muted);font-size:12.5px;background:#fff">No matches \u2014 type the name into the boxes below.</div>';
   dd.style.display = 'block';
 }
 function incPersonSearchKey(ev) {
   if (ev.key === 'Escape') {
     const dd = document.getElementById('inc-person-suggestions'); if (dd) dd.style.display = 'none';
-  } else if (ev.key === 'Enter') {
-    ev.preventDefault();
-    incPersonOpenManual();
   }
 }
 function incPersonAddFromRoster(name) {
   const roster = (typeof DEMO_WORKERS !== 'undefined' && DEMO_WORKERS) || [];
   const w = roster.find(x => x.name === name);
   if (!w) return;
-  // Lock the person via hidden inputs
-  const hidName = document.getElementById('inc-person-name');
-  const hidCo   = document.getElementById('inc-person-company');
-  const hidPh   = document.getElementById('inc-person-phone');
-  if (hidName) hidName.value = w.name || '';
-  if (hidCo)   hidCo.value   = w.company || '';
-  if (hidPh)   hidPh.value   = w.phone || '';
-  incPersonRenderChip();
-  // Hide search UI, hide manual block
-  document.getElementById('inc-person-search-wrap').style.display = 'none';
-  document.getElementById('inc-person-manual-wrap').style.display = 'none';
-  const dd = document.getElementById('inc-person-suggestions'); if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
+  // Fill the plain visible fields directly
+  const nameEl = document.getElementById('inc-person-name');
+  const coEl   = document.getElementById('inc-person-company');
+  const phEl   = document.getElementById('inc-person-phone');
+  const dobEl  = document.getElementById('inc-person-dob');
+  if (nameEl) nameEl.value = w.name || '';
+  if (coEl)   coEl.value   = w.company || '';
+  if (phEl)   phEl.value   = w.phone || '';
+  if (dobEl && w.dob && !dobEl.value) dobEl.value = w.dob;
+  // Auto-set Type of person — Worker if same company as reporter; otherwise Subcontractor
+  const me = (typeof getProfile === 'function') ? getProfile() : null;
+  if (me && me.company && w.company) {
+    const sameCompany = (w.company || '').trim().toLowerCase() === (me.company || '').trim().toLowerCase();
+    if (typeof setIncRelationship === 'function') {
+      setIncRelationship(sameCompany ? 'worker' : 'subcontractor');
+    }
+  }
+  // Clear the search input + close dropdown
+  const inp = document.getElementById('inc-person-search');
+  if (inp) inp.value = '';
+  const dd = document.getElementById('inc-person-suggestions');
+  if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
   if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
-}
-function incPersonOpenManual() {
-  // Pre-seed manual name with whatever's in the search box
-  const search = document.getElementById('inc-person-search');
-  const manualName = document.getElementById('inc-person-manual-name');
-  if (manualName && search && search.value) manualName.value = search.value.trim();
-  document.getElementById('inc-person-search-wrap').style.display = 'none';
-  document.getElementById('inc-person-manual-wrap').style.display = 'block';
-  const dd = document.getElementById('inc-person-suggestions'); if (dd) dd.style.display = 'none';
-  if (manualName) manualName.focus();
-  incPersonManualSync();
-}
-function incPersonManualSync() {
-  // Mirror manual fields into the canonical hidden inputs
-  const m  = document.getElementById('inc-person-manual-name');
-  const mc = document.getElementById('inc-person-manual-company');
-  const mp = document.getElementById('inc-person-manual-phone');
-  const hidName = document.getElementById('inc-person-name');
-  const hidCo   = document.getElementById('inc-person-company');
-  const hidPh   = document.getElementById('inc-person-phone');
-  if (hidName) hidName.value = (m && m.value || '').trim();
-  if (hidCo)   hidCo.value   = (mc && mc.value || '').trim();
-  if (hidPh)   hidPh.value   = (mp && mp.value || '').trim();
-  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
-}
-function incPersonClearManual() {
-  ['inc-person-manual-name','inc-person-manual-company','inc-person-manual-phone'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  ['inc-person-name','inc-person-company','inc-person-phone'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  document.getElementById('inc-person-manual-wrap').style.display = 'none';
-  document.getElementById('inc-person-search-wrap').style.display = 'block';
-  const search = document.getElementById('inc-person-search'); if (search) { search.value = ''; search.focus(); }
-  incPersonRenderChip();
-  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
-}
-function incPersonClearChip() {
-  ['inc-person-name','inc-person-company','inc-person-phone'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  incPersonRenderChip();
-  document.getElementById('inc-person-search-wrap').style.display = 'block';
-  document.getElementById('inc-person-manual-wrap').style.display = 'none';
-  const search = document.getElementById('inc-person-search'); if (search) search.value = '';
-  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
-}
-function incPersonRenderChip() {
-  const chip = document.getElementById('inc-person-chip');
-  const name = ((document.getElementById('inc-person-name') || {}).value || '').trim();
-  const co   = ((document.getElementById('inc-person-company') || {}).value || '').trim();
-  const ph   = ((document.getElementById('inc-person-phone') || {}).value || '').trim();
-  if (!chip) return;
-  if (!name) { chip.style.display = 'none'; chip.innerHTML = ''; return; }
-  const sub = [ph, co].filter(Boolean).join(' \u00b7 ');
-  chip.style.display = 'block';
-  chip.innerHTML = '<div style="display:inline-flex;align-items:center;gap:8px;padding:9px 10px 9px 13px;background:#EAF1ED;border:1px solid #C8DBCE;border-radius:18px;font-size:13px;color:#1B3A2D">'
-    + '<div><div style="font-weight:600">' + name.replace(/</g,'&lt;') + '</div>'
-    + (sub ? '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + sub.replace(/</g,'&lt;') + '</div>' : '')
-    + '</div>'
-    + '<button type="button" onclick="incPersonClearChip()" aria-label="Change" style="background:transparent;border:none;cursor:pointer;color:#1B3A2D;font-size:16px;line-height:1;padding:2px 4px;font-weight:700">\u00d7</button>'
-    + '</div>';
 }
 
 // ─── SUPERVISOR PICKER ──────────────────────────────────────────
-// Same pattern as person-involved. Single-select. Defaults to the site
-// supervisor on form open if nothing already chosen.
+// Same as person picker. Fills plain visible fields.
 function incSupSearch() {
   const inp = document.getElementById('inc-sup-search');
   const dd  = document.getElementById('inc-sup-suggestions');
@@ -18728,7 +18692,21 @@ function incSupSearch() {
   const q = (inp.value || '').trim().toLowerCase();
   if (q.length < 1) { dd.style.display = 'none'; dd.innerHTML = ''; return; }
   const roster = (typeof DEMO_WORKERS !== 'undefined' && Array.isArray(DEMO_WORKERS)) ? DEMO_WORKERS : [];
-  const matches = roster
+  // Also offer the recorded site supervisor (often not in DEMO_WORKERS)
+  const extras = [];
+  if (typeof SITE_CONTACTS !== 'undefined' && SITE_CONTACTS.supervisor && SITE_CONTACTS.supervisor.name) {
+    if (!roster.find(w => w.name === SITE_CONTACTS.supervisor.name)) {
+      extras.push({
+        name:    SITE_CONTACTS.supervisor.name,
+        phone:   SITE_CONTACTS.supervisor.phone || '',
+        company: SITE_CONTACTS.supervisor.company || '',
+        role:    'Site Supervisor',
+        onsite:  true
+      });
+    }
+  }
+  const all = extras.concat(roster);
+  const matches = all
     .filter(w => (w.name || '').toLowerCase().includes(q))
     .sort((a, b) => (b.onsite ? 1 : 0) - (a.onsite ? 1 : 0))
     .slice(0, 8);
@@ -18738,107 +18716,40 @@ function incSupSearch() {
       .filter(Boolean).join(' ');
     html += '<div onclick="incSupAddFromRoster(\''
       + (w.name || '').replace(/'/g, "\\'") + '\')" '
-      + 'style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px">'
+      + 'style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;background:#fff">'
       + '<div style="font-weight:600;color:var(--text)">' + (w.name || '').replace(/</g,'&lt;') + '</div>'
       + '<div style="font-size:11.5px;color:var(--muted);margin-top:1px">' + subline.replace(/</g,'&lt;') + '</div>'
       + '</div>';
   });
-  if (q.length >= 2) {
-    html += '<div onclick="incSupOpenManual()" style="padding:10px 12px;cursor:pointer;background:#FAFAF7;font-size:12.5px;color:#1B6E3A;font-weight:600">'
-      + '+ Not on the list? Add manually'
-      + '</div>';
-  }
-  dd.innerHTML = html || '<div style="padding:10px 12px;color:var(--muted);font-size:12.5px">No matches.</div>';
+  dd.innerHTML = html || '<div style="padding:10px 12px;color:var(--muted);font-size:12.5px;background:#fff">No matches \u2014 type the name into the boxes below.</div>';
   dd.style.display = 'block';
 }
 function incSupSearchKey(ev) {
   if (ev.key === 'Escape') {
     const dd = document.getElementById('inc-sup-suggestions'); if (dd) dd.style.display = 'none';
-  } else if (ev.key === 'Enter') {
-    ev.preventDefault();
-    incSupOpenManual();
   }
 }
 function incSupAddFromRoster(name) {
   const roster = (typeof DEMO_WORKERS !== 'undefined' && DEMO_WORKERS) || [];
   let w = roster.find(x => x.name === name);
-  // Site supervisor (Eoin) might not be in DEMO_WORKERS — fall back to SITE_CONTACTS
   if (!w && typeof SITE_CONTACTS !== 'undefined' && SITE_CONTACTS.supervisor && SITE_CONTACTS.supervisor.name === name) {
-    w = { name: SITE_CONTACTS.supervisor.name, phone: SITE_CONTACTS.supervisor.phone || '', company: SITE_CONTACTS.supervisor.company || '' };
+    w = {
+      name:    SITE_CONTACTS.supervisor.name,
+      phone:   SITE_CONTACTS.supervisor.phone || '',
+      company: SITE_CONTACTS.supervisor.company || ''
+    };
   }
   if (!w) return;
-  const hidName = document.getElementById('inc-supervisor-name');
-  const hidCo   = document.getElementById('inc-supervisor-company');
-  const hidPh   = document.getElementById('inc-supervisor-phone');
-  if (hidName) hidName.value = w.name || '';
-  if (hidCo)   hidCo.value   = w.company || '';
-  if (hidPh)   hidPh.value   = w.phone || '';
-  incSupRenderChip();
-  document.getElementById('inc-sup-search-wrap').style.display = 'none';
-  document.getElementById('inc-sup-manual-wrap').style.display = 'none';
-  const dd = document.getElementById('inc-sup-suggestions'); if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
+  const nameEl = document.getElementById('inc-supervisor-name');
+  const coEl   = document.getElementById('inc-supervisor-company');
+  const phEl   = document.getElementById('inc-supervisor-phone');
+  if (nameEl) nameEl.value = w.name || '';
+  if (coEl)   coEl.value   = w.company || '';
+  if (phEl)   phEl.value   = w.phone || '';
+  const inp = document.getElementById('inc-sup-search'); if (inp) inp.value = '';
+  const dd = document.getElementById('inc-sup-suggestions');
+  if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
   if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
-}
-function incSupOpenManual() {
-  const search = document.getElementById('inc-sup-search');
-  const manualName = document.getElementById('inc-sup-manual-name');
-  if (manualName && search && search.value) manualName.value = search.value.trim();
-  document.getElementById('inc-sup-search-wrap').style.display = 'none';
-  document.getElementById('inc-sup-manual-wrap').style.display = 'block';
-  const dd = document.getElementById('inc-sup-suggestions'); if (dd) dd.style.display = 'none';
-  if (manualName) manualName.focus();
-  incSupManualSync();
-}
-function incSupManualSync() {
-  const m  = document.getElementById('inc-sup-manual-name');
-  const mc = document.getElementById('inc-sup-manual-company');
-  const mp = document.getElementById('inc-sup-manual-phone');
-  const hidName = document.getElementById('inc-supervisor-name');
-  const hidCo   = document.getElementById('inc-supervisor-company');
-  const hidPh   = document.getElementById('inc-supervisor-phone');
-  if (hidName) hidName.value = (m && m.value || '').trim();
-  if (hidCo)   hidCo.value   = (mc && mc.value || '').trim();
-  if (hidPh)   hidPh.value   = (mp && mp.value || '').trim();
-  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
-}
-function incSupClearManual() {
-  ['inc-sup-manual-name','inc-sup-manual-company','inc-sup-manual-phone'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  ['inc-supervisor-name','inc-supervisor-company','inc-supervisor-phone'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  document.getElementById('inc-sup-manual-wrap').style.display = 'none';
-  document.getElementById('inc-sup-search-wrap').style.display = 'block';
-  const search = document.getElementById('inc-sup-search'); if (search) { search.value = ''; search.focus(); }
-  incSupRenderChip();
-  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
-}
-function incSupClearChip() {
-  ['inc-supervisor-name','inc-supervisor-company','inc-supervisor-phone'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  incSupRenderChip();
-  document.getElementById('inc-sup-search-wrap').style.display = 'block';
-  document.getElementById('inc-sup-manual-wrap').style.display = 'none';
-  const search = document.getElementById('inc-sup-search'); if (search) search.value = '';
-  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
-}
-function incSupRenderChip() {
-  const chip = document.getElementById('inc-sup-chip');
-  const name = ((document.getElementById('inc-supervisor-name') || {}).value || '').trim();
-  const co   = ((document.getElementById('inc-supervisor-company') || {}).value || '').trim();
-  const ph   = ((document.getElementById('inc-supervisor-phone') || {}).value || '').trim();
-  if (!chip) return;
-  if (!name) { chip.style.display = 'none'; chip.innerHTML = ''; return; }
-  const sub = [ph, co].filter(Boolean).join(' \u00b7 ');
-  chip.style.display = 'block';
-  chip.innerHTML = '<div style="display:inline-flex;align-items:center;gap:8px;padding:9px 10px 9px 13px;background:#EAF1ED;border:1px solid #C8DBCE;border-radius:18px;font-size:13px;color:#1B3A2D">'
-    + '<div><div style="font-weight:600">' + name.replace(/</g,'&lt;') + '</div>'
-    + (sub ? '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + sub.replace(/</g,'&lt;') + '</div>' : '')
-    + '</div>'
-    + '<button type="button" onclick="incSupClearChip()" aria-label="Change" style="background:transparent;border:none;cursor:pointer;color:#1B3A2D;font-size:16px;line-height:1;padding:2px 4px;font-weight:700">\u00d7</button>'
-    + '</div>';
 }
 
 // Relationship of person involved — single-select pill grid. Used by
@@ -18890,7 +18801,7 @@ function incWitnessSearch() {
       .filter(Boolean).join(' ');
     html += '<div class="inc-witness-row" onclick="incWitnessAddFromRoster(\''
       + (w.name || '').replace(/'/g, "\\'") + '\')" '
-      + 'style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px">'
+      + 'style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;background:#fff">'
       + '<div style="font-weight:600;color:var(--text)">' + (w.name || '').replace(/</g,'&lt;') + '</div>'
       + '<div style="font-size:11.5px;color:var(--muted);margin-top:1px">' + subline.replace(/</g,'&lt;') + '</div>'
       + '</div>';
@@ -19038,44 +18949,29 @@ function setIncRole(role) {
     b.className = 'ps-btn' + (id === map[role] ? ' pass' : '');
     b.style = '';
   });
-  const helperEl = document.getElementById('inc-name-helper');
+  const helperEl  = document.getElementById('inc-name-helper');
+  const nameEl    = document.getElementById('inc-person-name');
+  const companyEl = document.getElementById('inc-person-company');
+  const phoneEl   = document.getElementById('inc-person-phone');
+  const dobEl     = document.getElementById('inc-person-dob');
   const p = (typeof getProfile === 'function') ? getProfile() : null;
   if (role === 'Person Involved / Injured') {
-    // The reporter IS the person involved — auto-lock their identity in
-    // the picker, showing the green chip and hiding the search.
-    const hidName = document.getElementById('inc-person-name');
-    const hidCo   = document.getElementById('inc-person-company');
-    const hidPh   = document.getElementById('inc-person-phone');
-    const dobEl   = document.getElementById('inc-person-dob');
-    if (hidName) hidName.value = (p && p.name)    || '';
-    if (hidCo)   hidCo.value   = (p && p.company) || '';
-    if (hidPh)   hidPh.value   = (p && p.phone)   || '';
-    if (dobEl    && p && p.dob && !dobEl.value) dobEl.value = p.dob;
-    if (typeof incPersonRenderChip === 'function') incPersonRenderChip();
-    const sw = document.getElementById('inc-person-search-wrap'); if (sw) sw.style.display = 'none';
-    const mw = document.getElementById('inc-person-manual-wrap'); if (mw) mw.style.display = 'none';
-    if (helperEl) helperEl.textContent = '(auto-filled \u2014 you are the person involved)';
+    // Auto-fill plain visible fields with the reporter's own profile
+    if (nameEl    && p && p.name)    nameEl.value    = p.name;
+    if (companyEl && p && p.company) companyEl.value = p.company;
+    if (phoneEl   && p && p.phone)   phoneEl.value   = p.phone;
+    if (dobEl     && p && p.dob)     dobEl.value     = p.dob;
+    // Auto-set Type of person — the reporter is a Worker (their own employer)
+    if (typeof setIncRelationship === 'function') setIncRelationship('worker');
+    if (helperEl) helperEl.textContent = '(auto-filled \u2014 you are the person involved; edit if needed)';
   } else {
-    // Toggling AWAY from "Person Involved" → clear the locked-in identity
-    // ONLY if it was the reporter's own profile (don't wipe a deliberately
-    // typed witness name).
-    const hidName = document.getElementById('inc-person-name');
-    const hidCo   = document.getElementById('inc-person-company');
-    const hidPh   = document.getElementById('inc-person-phone');
-    const isSelf = !!(p && hidName && hidName.value === p.name);
-    if (isSelf) {
-      if (hidName) hidName.value = '';
-      if (hidCo)   hidCo.value   = '';
-      if (hidPh)   hidPh.value   = '';
-      if (typeof incPersonRenderChip === 'function') incPersonRenderChip();
-      const sw = document.getElementById('inc-person-search-wrap');
-      const mw = document.getElementById('inc-person-manual-wrap');
-      if (sw) sw.style.display = 'block';
-      if (mw) mw.style.display = 'none';
-      const search = document.getElementById('inc-person-search');
-      if (search) search.value = '';
-    }
-    if (helperEl) helperEl.textContent = '(search the personnel list, or add manually)';
+    // Toggling AWAY from "Person Involved" → clear the auto-fill ONLY if the
+    // values match the reporter's profile (don't wipe deliberate typing).
+    if (nameEl    && p && p.name    && nameEl.value.trim()    === p.name)    nameEl.value    = '';
+    if (companyEl && p && p.company && companyEl.value.trim() === p.company) companyEl.value = '';
+    if (phoneEl   && p && p.phone   && phoneEl.value.trim()   === p.phone)   phoneEl.value   = '';
+    if (dobEl     && p && p.dob     && dobEl.value           === p.dob)     dobEl.value     = '';
+    if (helperEl) helperEl.textContent = '(search the personnel list above, or type the name here)';
   }
   incRecheckSubmit();
 }
@@ -33441,7 +33337,7 @@ function startDemoAs(role) {
   localStorage.setItem('slan_demo', 'true');
   var today = new Date().toLocaleDateString('en-AU').replace(/\//g, '-');
   var profiles = {
-    worker:     { name:'Jake Ryan',      company:'Murphy Civil Construction', role:'Worker',           safetyPoints:912, phone:'0412 345 678', dob:'1992-06-14', state:'NSW', experience:'6-10', licences:{ whitecard:{expiry:'2027-03-10'}, driver:{expiry:'2027-08-22'}, hrwl:{expiry:'2026-07-15'} } },
+    worker:     { name:'Jake Ryan',      dob:'1992-06-14', company:'Murphy Civil Construction', role:'Worker',           safetyPoints:912, phone:'0412 345 678', dob:'1992-06-14', state:'NSW', experience:'6-10', licences:{ whitecard:{expiry:'2027-03-10'}, driver:{expiry:'2027-08-22'}, hrwl:{expiry:'2026-07-15'} } },
     supervisor: { name:'Eoin Burke',     company:'Murphy Civil Construction', role:'Site Supervisor',  safetyPoints:0,   phone:'0432 778 901', dob:'1985-11-22', state:'NSW', experience:'10+',  licences:{ whitecard:{expiry:'2027-06-15'}, hrwl:{expiry:'2026-09-20'}, firstaid:{expiry:'2026-11-30'} } },
     director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   phone:'0419 222 333', dob:'1972-03-08', state:'NSW', experience:'10+',  licences:{} }
   };
@@ -33624,9 +33520,9 @@ function anPopulateDemoMetrics() {
   // Stars
   if (!AN_STARS || AN_STARS.length === 0) {
     AN_STARS = [
-      { name:'Jake Ryan', company:'Murphy Civil Construction', pts:912 },
-      { name:'Mark Flynn', company:'Murphy Civil Construction', pts:724 },
-      { name:'Sam Carroll', company:'Burke Civil Contractors', pts:681 }
+      { name:'Jake Ryan', dob:'1992-06-14', company:'Murphy Civil Construction', pts:912 },
+      { name:'Mark Flynn', dob:'1988-03-22', company:'Murphy Civil Construction', pts:724 },
+      { name:'Sam Carroll', dob:'1991-09-08', company:'Burke Civil Contractors', pts:681 }
     ];
     if (typeof anRenderStars === 'function') anRenderStars();
   }
