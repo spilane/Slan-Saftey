@@ -145,7 +145,7 @@ input[type="time"] {
 .fhint{font-size:11.5px;color:var(--muted);margin-top:-4px}
 .fgroup{display:flex;flex-direction:column;gap:5px}
 
-input[type=text],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);background:#fff;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+input[type=text],input[type=tel],input[type=email],input[type=number],input[type=search],input[type=url],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);background:#fff;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
 input:focus,select:focus,textarea:focus{border-color:var(--mid);box-shadow:0 0 0 3px rgba(45,106,69,.1)}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235C6B62' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
 
@@ -1804,8 +1804,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <div class="fcard">
-      <div class="fcard-hdr">2 — Person(s) involved</div>
+    <div class="fcard" style="overflow:visible">
+      <div class="fcard-hdr" style="border-radius:var(--r) var(--r) 0 0">2 — Person(s) involved</div>
       <div class="fcard-body">
         <div class="fgroup">
           <label class="flabel">Role in event <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-role')">?</span></label>
@@ -1823,20 +1823,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button class="ps-btn" id="inc-role-Behalf"  onclick="setIncRole('Reporting on behalf of another')" style="padding:9px 4px;font-size:11px;line-height:1.2">On&nbsp;behalf</button>
           </div>
         </div>
-        <!-- Person involved — search the on-site personnel list to auto-fill
-             the fields below. Plain fields stay visible/editable so the user
-             can adjust if needed. -->
-        <div class="fgroup">
-          <label class="flabel" id="inc-person-search-label">Search the on-site personnel list <span style="font-weight:400;color:var(--muted);font-size:11px">(auto-fills name, phone &amp; company)</span></label>
-          <div class="fhint" style="margin-bottom:6px">Start typing a name. Tap a match to fill the fields below. For visitors / off-roster persons, just type their details into the boxes.</div>
-          <div style="position:relative">
-            <input type="text" id="inc-person-search" placeholder="Type a name (e.g. Steve)..." autocomplete="off" oninput="incPersonSearch()" onkeydown="incPersonSearchKey(event)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
-            <div id="inc-person-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:50"></div>
-          </div>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Name of person involved <span style="font-weight:400;color:var(--muted);font-size:11px" id="inc-name-helper">(leave blank if you are the person involved)</span></label>
-          <input type="text" id="inc-person-name" placeholder="Will fill from the search above, or type manually" autocomplete="off" oninput="incRecheckSubmit()">
+        <!-- Person involved — the name field IS the search-as-you-type.
+             Type a name → dropdown appears with on-site personnel matches.
+             Tap a match → name+company+phone+DOB auto-fill.
+             For off-roster persons, just keep typing the name (no dropdown
+             match needed). -->
+        <div class="fgroup" style="position:relative">
+          <label class="flabel">Name of person involved <span style="font-weight:400;color:var(--muted);font-size:11px" id="inc-name-helper">(start typing \u2014 the on-site personnel list will suggest matches)</span></label>
+          <input type="text" id="inc-person-name" placeholder="Type a name..." autocomplete="off" oninput="incPersonSearch();incRecheckSubmit()" onkeydown="incPersonSearchKey(event)">
+          <div id="inc-person-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% - 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:50"></div>
         </div>
         <div class="fgroup">
           <label class="flabel">Company / employer of person involved</label>
@@ -1848,15 +1843,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="fgroup">
           <label class="flabel">Date of birth <span style="font-weight:400;color:var(--muted);font-size:11px">(required by regulator for notifiable injuries)</span></label>
-          <input type="date" id="inc-person-dob" autocomplete="off" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box">
+          <input type="date" id="inc-person-dob" autocomplete="off">
           <div class="fhint">Auto-filled from the personnel register where on file.</div>
         </div>
         <!-- Type of person — required by SafeWork regulators when calling in
              a notifiable incident. Auto-set when picked from the roster
-             (worker / contractor based on company). -->
+             (worker / subcontractor based on company). -->
         <div class="fgroup">
           <label class="flabel">Type of person<span class="slan-help" onclick="slanHelpToggle('inc-help-relationship')">?</span></label>
-          <div id="inc-help-relationship" class="slan-help-tip">SafeWork regulators ask for this when a notifiable incident is reported \u2014 it tells them the person\u2019s relationship to the site (employee / contractor / visitor / etc.). Auto-set when you pick a name from the roster.</div>
+          <div id="inc-help-relationship" class="slan-help-tip">SafeWork regulators ask for this when a notifiable incident is reported \u2014 it tells them the person\u2019s relationship to the site (employee / contractor / visitor / etc.). Auto-set when you pick a name from the personnel list.</div>
           <input type="hidden" id="inc-relationship" value="">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
             <button type="button" class="ps-btn" id="inc-rel-worker"        onclick="setIncRelationship('worker')"        style="padding:9px 4px;font-size:12px">Worker / employee</button>
@@ -1867,16 +1862,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button type="button" class="ps-btn" id="inc-rel-public"        onclick="setIncRelationship('public')"        style="padding:9px 4px;font-size:12px">Member of public</button>
           </div>
         </div>
-        <!-- Supervisor — also picker-driven. Plain visible fields. Defaults
-             to the site supervisor (Eoin in demo). -->
-        <div class="fgroup">
-          <label class="flabel">Search for supervisor <span style="font-weight:400;color:var(--muted);font-size:11px">(auto-fills name, phone &amp; company)</span></label>
-          <div class="fhint" style="margin-bottom:6px">Defaults to your site supervisor. Tap to change.</div>
-          <div style="position:relative">
-            <input type="text" id="inc-sup-search" placeholder="Type a name..." autocomplete="off" oninput="incSupSearch()" onkeydown="incSupSearchKey(event)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
-            <div id="inc-sup-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:50"></div>
-          </div>
-        </div>
+        <!-- Supervisor — pre-filled from SITE_CONTACTS (Eoin in demo). Plain
+             pill-shaped inputs. Type to change. No separate search. -->
         <div class="fgroup">
           <label class="flabel">Supervisor name <span class="req">*</span></label>
           <input type="text" id="inc-supervisor-name" placeholder="Name of the responsible supervisor" autocomplete="off" oninput="incRecheckSubmit()">
@@ -2090,6 +2077,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button class="ps-btn" id="inc-fa-yes" onclick="setIncField('fa','yes')">Yes</button>
             <button class="ps-btn" id="inc-fa-no"  onclick="setIncField('fa','no')">No</button>
           </div>
+        </div>
+        <div class="fgroup" id="inc-fa-detail-wrap" style="display:none">
+          <label class="flabel">Description of first aid given</label>
+          <div class="fhint" style="margin-bottom:6px">What was done? e.g. wound cleaned and dressed, ice pack applied, eyewash used, etc.</div>
+          <textarea id="inc-fa-detail" placeholder="Describe the first aid that was given..." rows="3" style="font-size:14px"></textarea>
         </div>
         <div class="fgroup">
           <label class="flabel">Did the person seek or require medical attention?</label>
@@ -18049,17 +18041,11 @@ function goToIncidentForm() {
   if (witSearch) witSearch.value = '';
   const witDd = document.getElementById('inc-witness-suggestions');
   if (witDd) { witDd.style.display = 'none'; witDd.innerHTML = ''; }
-  // Reset person + supervisor pickers (plain visible fields)
-  const personSearch = document.getElementById('inc-person-search');
-  if (personSearch) personSearch.value = '';
+  // Reset person picker dropdown (the name field IS the search input now)
   const personDD = document.getElementById('inc-person-suggestions');
   if (personDD) { personDD.style.display = 'none'; personDD.innerHTML = ''; }
-  const supSearch = document.getElementById('inc-sup-search');
-  if (supSearch) supSearch.value = '';
-  const supDD = document.getElementById('inc-sup-suggestions');
-  if (supDD) { supDD.style.display = 'none'; supDD.innerHTML = ''; }
   // Default supervisor — pre-fill the plain visible fields with the site
-  // supervisor (Eoin in demo). Reporter can search to change.
+  // supervisor (Eoin in demo). Reporter can edit directly.
   if (typeof SITE_CONTACTS !== 'undefined' && SITE_CONTACTS.supervisor && SITE_CONTACTS.supervisor.name) {
     const supName = document.getElementById('inc-supervisor-name');
     const supCo   = document.getElementById('inc-supervisor-company');
@@ -18102,6 +18088,10 @@ function goToIncidentForm() {
   if (regBlock) regBlock.style.display = 'none';
   const tWrap = document.getElementById('inc-treatment-wrap');
   if (tWrap) tWrap.style.display = 'none';
+  const faWrap = document.getElementById('inc-fa-detail-wrap');
+  if (faWrap) faWrap.style.display = 'none';
+  const faDetail = document.getElementById('inc-fa-detail');
+  if (faDetail) faDetail.value = '';
   const sceneWrap = document.getElementById('inc-scene-reason-wrap');
   if (sceneWrap) sceneWrap.style.display = 'none';
   const regSel = document.getElementById('inc-reg-state');
@@ -18366,6 +18356,11 @@ function setIncField(field, val) {
       }
     }
   }
+  if (field === 'fa') {
+    // Show "Description of first aid given" textarea only when Yes
+    const fw = document.getElementById('inc-fa-detail-wrap');
+    if (fw) fw.style.display = (val === 'yes') ? 'block' : 'none';
+  }
   if (field === 'med') {
     // Show "where was the person taken for treatment" only if medical was sought
     const tw = document.getElementById('inc-treatment-wrap');
@@ -18621,11 +18616,12 @@ function incApplyWeatherFromMeteo(c, sourceLabel) {
 }
 
 // ─── PERSON-INVOLVED PICKER ─────────────────────────────────────
-// Search the on-site personnel list to auto-fill name + phone + company +
-// DOB into plain visible fields below. Also auto-sets Type of person
-// (Worker if same company as reporter, Subcontractor if different).
+// The "Name of person involved" input doubles as the search-as-you-type.
+// Type → dropdown shows on-site personnel matches → tap to auto-fill phone,
+// company and DOB. For off-roster persons, just keep typing — no dropdown
+// match required.
 function incPersonSearch() {
-  const inp = document.getElementById('inc-person-search');
+  const inp = document.getElementById('inc-person-name');
   const dd  = document.getElementById('inc-person-suggestions');
   if (!inp || !dd) return;
   const q = (inp.value || '').trim().toLowerCase();
@@ -18635,6 +18631,12 @@ function incPersonSearch() {
     .filter(w => (w.name || '').toLowerCase().includes(q))
     .sort((a, b) => (b.onsite ? 1 : 0) - (a.onsite ? 1 : 0))
     .slice(0, 8);
+  // Don't show dropdown if user has already typed a value matching a roster
+  // entry exactly (e.g. they tapped a match) — avoids the dropdown reopening
+  // immediately after selection.
+  if (matches.length === 1 && matches[0].name.toLowerCase() === q) {
+    dd.style.display = 'none'; dd.innerHTML = ''; return;
+  }
   let html = '';
   matches.forEach(w => {
     const subline = [w.role || w.company || '', w.onsite ? '\u00b7 on site today' : '\u00b7 not signed in']
@@ -18646,8 +18648,14 @@ function incPersonSearch() {
       + '<div style="font-size:11.5px;color:var(--muted);margin-top:1px">' + subline.replace(/</g,'&lt;') + '</div>'
       + '</div>';
   });
-  dd.innerHTML = html || '<div style="padding:10px 12px;color:var(--muted);font-size:12.5px;background:#fff">No matches \u2014 type the name into the boxes below.</div>';
-  dd.style.display = 'block';
+  if (html) {
+    dd.innerHTML = html;
+    dd.style.display = 'block';
+  } else {
+    // No match — hide the dropdown silently. The user is just typing a name
+    // that's not on the roster (visitor, member of public, etc.) and that's fine.
+    dd.style.display = 'none'; dd.innerHTML = '';
+  }
 }
 function incPersonSearchKey(ev) {
   if (ev.key === 'Escape') {
@@ -18666,7 +18674,7 @@ function incPersonAddFromRoster(name) {
   if (nameEl) nameEl.value = w.name || '';
   if (coEl)   coEl.value   = w.company || '';
   if (phEl)   phEl.value   = w.phone || '';
-  if (dobEl && w.dob && !dobEl.value) dobEl.value = w.dob;
+  if (dobEl && w.dob) dobEl.value = w.dob;
   // Auto-set Type of person — Worker if same company as reporter; otherwise Subcontractor
   const me = (typeof getProfile === 'function') ? getProfile() : null;
   if (me && me.company && w.company) {
@@ -18675,82 +18683,19 @@ function incPersonAddFromRoster(name) {
       setIncRelationship(sameCompany ? 'worker' : 'subcontractor');
     }
   }
-  // Clear the search input + close dropdown
-  const inp = document.getElementById('inc-person-search');
-  if (inp) inp.value = '';
+  // Close dropdown
   const dd = document.getElementById('inc-person-suggestions');
   if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
   if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
 }
 
-// ─── SUPERVISOR PICKER ──────────────────────────────────────────
-// Same as person picker. Fills plain visible fields.
-function incSupSearch() {
-  const inp = document.getElementById('inc-sup-search');
-  const dd  = document.getElementById('inc-sup-suggestions');
-  if (!inp || !dd) return;
-  const q = (inp.value || '').trim().toLowerCase();
-  if (q.length < 1) { dd.style.display = 'none'; dd.innerHTML = ''; return; }
-  const roster = (typeof DEMO_WORKERS !== 'undefined' && Array.isArray(DEMO_WORKERS)) ? DEMO_WORKERS : [];
-  // Also offer the recorded site supervisor (often not in DEMO_WORKERS)
-  const extras = [];
-  if (typeof SITE_CONTACTS !== 'undefined' && SITE_CONTACTS.supervisor && SITE_CONTACTS.supervisor.name) {
-    if (!roster.find(w => w.name === SITE_CONTACTS.supervisor.name)) {
-      extras.push({
-        name:    SITE_CONTACTS.supervisor.name,
-        phone:   SITE_CONTACTS.supervisor.phone || '',
-        company: SITE_CONTACTS.supervisor.company || '',
-        role:    'Site Supervisor',
-        onsite:  true
-      });
-    }
-  }
-  const all = extras.concat(roster);
-  const matches = all
-    .filter(w => (w.name || '').toLowerCase().includes(q))
-    .sort((a, b) => (b.onsite ? 1 : 0) - (a.onsite ? 1 : 0))
-    .slice(0, 8);
-  let html = '';
-  matches.forEach(w => {
-    const subline = [w.role || w.company || '', w.onsite ? '\u00b7 on site today' : '\u00b7 not signed in']
-      .filter(Boolean).join(' ');
-    html += '<div onclick="incSupAddFromRoster(\''
-      + (w.name || '').replace(/'/g, "\\'") + '\')" '
-      + 'style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;background:#fff">'
-      + '<div style="font-weight:600;color:var(--text)">' + (w.name || '').replace(/</g,'&lt;') + '</div>'
-      + '<div style="font-size:11.5px;color:var(--muted);margin-top:1px">' + subline.replace(/</g,'&lt;') + '</div>'
-      + '</div>';
-  });
-  dd.innerHTML = html || '<div style="padding:10px 12px;color:var(--muted);font-size:12.5px;background:#fff">No matches \u2014 type the name into the boxes below.</div>';
-  dd.style.display = 'block';
-}
-function incSupSearchKey(ev) {
-  if (ev.key === 'Escape') {
-    const dd = document.getElementById('inc-sup-suggestions'); if (dd) dd.style.display = 'none';
-  }
-}
-function incSupAddFromRoster(name) {
-  const roster = (typeof DEMO_WORKERS !== 'undefined' && DEMO_WORKERS) || [];
-  let w = roster.find(x => x.name === name);
-  if (!w && typeof SITE_CONTACTS !== 'undefined' && SITE_CONTACTS.supervisor && SITE_CONTACTS.supervisor.name === name) {
-    w = {
-      name:    SITE_CONTACTS.supervisor.name,
-      phone:   SITE_CONTACTS.supervisor.phone || '',
-      company: SITE_CONTACTS.supervisor.company || ''
-    };
-  }
-  if (!w) return;
-  const nameEl = document.getElementById('inc-supervisor-name');
-  const coEl   = document.getElementById('inc-supervisor-company');
-  const phEl   = document.getElementById('inc-supervisor-phone');
-  if (nameEl) nameEl.value = w.name || '';
-  if (coEl)   coEl.value   = w.company || '';
-  if (phEl)   phEl.value   = w.phone || '';
-  const inp = document.getElementById('inc-sup-search'); if (inp) inp.value = '';
-  const dd = document.getElementById('inc-sup-suggestions');
-  if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
-  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
-}
+// Supervisor picker functions — kept for backward compatibility but unused
+// now that the supervisor search input has been removed. Defaults are
+// pre-filled from SITE_CONTACTS in goToIncidentForm() and the user types
+// directly into the plain visible fields to change.
+function incSupSearch() {}
+function incSupSearchKey() {}
+function incSupAddFromRoster() {}
 
 // Relationship of person involved — single-select pill grid. Used by
 // SafeWork regulators when a notifiable incident is reported. Optional
@@ -19507,6 +19452,7 @@ function goToIncidentDetail(ref) {
         fmtRow('Injury nature',      r.injury_nature) +
         fmtRow('Body part',          r.body_part) +
         fmtRow('First aid given',    r.first_aid) +
+        (r.first_aid === 'yes' && r.first_aid_detail ? fmtBlock('First aid description', r.first_aid_detail) : '') +
         fmtRow('Medical attention',  r.medical_attention) +
         fmtRow('Treatment destination', r.treatment_destination) +
       '</div></div>' +
@@ -19974,6 +19920,9 @@ function downloadIncidentPdf() {
     drawCardRow('Injury nature',      r.injury_nature);
     drawCardRow('Body part',          r.body_part);
     drawCardRow('First aid given',    r.first_aid);
+    if (r.first_aid === 'yes' && r.first_aid_detail) {
+      drawCardBlock('FIRST AID DESCRIPTION', r.first_aid_detail);
+    }
     drawCardRow('Medical attention',  r.medical_attention);
     drawCardRow('Treatment destination', r.treatment_destination);
 
@@ -20226,6 +20175,7 @@ async function submitIncident() {
     injury_nature: document.getElementById('inc-injury-nature').value.trim(),
     body_part: document.getElementById('inc-body-part').value.trim(),
     first_aid: incFields.fa,
+    first_aid_detail: ((document.getElementById('inc-fa-detail') || {}).value || '').trim(),
     medical_attention: incFields.med,
     treatment_destination: ((document.getElementById('inc-treatment-dest') || {}).value || '').trim(),
     immediate_action: document.getElementById('inc-immediate-action').value.trim(),
