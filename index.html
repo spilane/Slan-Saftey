@@ -2291,8 +2291,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <button type="button" class="ps-btn" id="inc-env-where-stormwater" onclick="toggleIncEnvWhere('stormwater')" style="padding:9px 8px;font-size:11.5px;text-align:left">Entered stormwater drain</button>
               <button type="button" class="ps-btn" id="inc-env-where-watercourse" onclick="toggleIncEnvWhere('watercourse')" style="padding:9px 8px;font-size:11.5px;text-align:left">Entered watercourse / waterway</button>
               <button type="button" class="ps-btn" id="inc-env-where-air"       onclick="toggleIncEnvWhere('air')"         style="padding:9px 8px;font-size:11.5px;text-align:left">Released to air</button>
-              <button type="button" class="ps-btn" id="inc-env-where-other"     onclick="toggleIncEnvWhere('other')"       style="padding:9px 8px;font-size:11.5px;text-align:left">Other (describe in containment action)</button>
+              <button type="button" class="ps-btn" id="inc-env-where-other"     onclick="toggleIncEnvWhere('other')"       style="padding:9px 8px;font-size:11.5px;text-align:left">Other &mdash; describe below</button>
             </div>
+          </div>
+          <div class="fgroup" id="inc-env-where-other-wrap" style="display:none">
+            <label class="flabel">Describe where it went <span class="req">*</span></label>
+            <div class="fhint" style="margin-bottom:6px">Where did the substance end up? e.g. roof gutter, storage shed floor, neighbouring property.</div>
+            <input type="text" id="inc-env-where-other-detail" placeholder="Describe the location not on the list" autocomplete="off" oninput="incRecheckSubmit()">
           </div>
           <div class="fgroup">
             <label class="flabel">Authorities notified<span class="slan-help" onclick="slanHelpToggle('inc-help-env-auth')">?</span></label>
@@ -18327,13 +18332,13 @@ function goToIncidentForm() {
   ['inc-nm-potential','inc-nm-what-stopped','inc-nm-notifiable','inc-nm-plant','inc-nm-plant-other',
    'inc-dng-categories','inc-dng-cat-other-detail','inc-dng-exposed','inc-dng-exposed-count','inc-dng-plant','inc-dng-plant-other','inc-dng-substance',
    'inc-pd-asset','inc-pd-extent','inc-pd-cost','inc-pd-owner','inc-pd-caused-harm','inc-pd-harm-detail',
-   'inc-env-substance','inc-env-volume','inc-env-concentration','inc-env-where','inc-env-authorities','inc-env-containment-action'
+   'inc-env-substance','inc-env-volume','inc-env-concentration','inc-env-where','inc-env-where-other-detail','inc-env-authorities','inc-env-containment-action'
   ].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = (id === 'inc-dng-categories' || id === 'inc-env-where' || id === 'inc-env-authorities') ? '[]' : '';
   });
-  // Hide plant "other" reveals + suggestion dropdowns + harm detail reveal + dng cat other reveal
-  ['inc-nm-plant-other-wrap','inc-dng-plant-other-wrap','inc-dng-cat-other-wrap','inc-pd-harm-detail-wrap'].forEach(function(id){
+  // Hide plant "other" reveals + suggestion dropdowns + harm detail reveal + dng cat other reveal + env where other reveal
+  ['inc-nm-plant-other-wrap','inc-dng-plant-other-wrap','inc-dng-cat-other-wrap','inc-pd-harm-detail-wrap','inc-env-where-other-wrap'].forEach(function(id){
     var el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   ['inc-nm-plant-suggestions','inc-dng-plant-suggestions'].forEach(function(id){
@@ -18554,6 +18559,8 @@ function incRecheckSubmit() {
              && !!v(document.getElementById('inc-env-volume'))
              && where.length > 0
              && !!v(document.getElementById('inc-env-containment-action'));
+    // If 'other' location is picked, the describe field is required
+    if (where.indexOf('other') >= 0 && !v(document.getElementById('inc-env-where-other-detail'))) typeValid = false;
   }
   const ok =
     !!v(type) &&
@@ -19236,6 +19243,9 @@ function toggleIncEnvWhere(val) {
       b.style.padding = '9px 8px'; b.style.fontSize = '11.5px'; b.style.textAlign = 'left';
     }
   });
+  // Reveal describe-other field when 'other' is selected
+  var otherWrap = document.getElementById('inc-env-where-other-wrap');
+  if (otherWrap) otherWrap.style.display = (arr.indexOf('other') >= 0) ? 'block' : 'none';
   if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
 }
 
@@ -20089,6 +20099,7 @@ function goToIncidentDetail(ref) {
                    fmtRow('Estimated volume', r.env_volume) +
                    (r.env_concentration ? fmtRow('Concentration', r.env_concentration) : '') +
                    fmtRow('Where it went', where) +
+                   (Array.isArray(r.env_where) && r.env_where.indexOf('other') >= 0 && r.env_where_other_detail ? fmtRow('Other location described', r.env_where_other_detail) : '') +
                    fmtRow('Authorities notified', auths) +
                    fmtBlock('Containment / clean-up action (POEO s150)', r.env_containment_action);
           }
@@ -20626,6 +20637,9 @@ function downloadIncidentPdf() {
         drawCardRow('Estimated volume',         r.env_volume);
         if (r.env_concentration) drawCardRow('Concentration', r.env_concentration);
         drawCardRow('Where it went',            where);
+        if (Array.isArray(r.env_where) && r.env_where.indexOf('other') >= 0 && r.env_where_other_detail) {
+          drawCardRow('Other location described', r.env_where_other_detail);
+        }
         drawCardRow('Authorities notified',     auths);
         drawCardBlock('CONTAINMENT / CLEAN-UP ACTION (POEO s150)', r.env_containment_action || '');
       }
@@ -20920,6 +20934,7 @@ async function submitIncident() {
                            try { return JSON.parse((document.getElementById('inc-env-where') || {}).value || '[]'); }
                            catch(e) { return []; }
                          })(),
+    env_where_other_detail: ((document.getElementById('inc-env-where-other-detail') || {}).value || '').trim(),
     env_authorities_notified: (function(){
                            try { return JSON.parse((document.getElementById('inc-env-authorities') || {}).value || '[]'); }
                            catch(e) { return []; }
