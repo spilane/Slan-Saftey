@@ -769,47 +769,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
       </div>
     </div>
-    <div class="fcard">
-      <div class="fcard-hdr">Contact &amp; emergency details</div>
-      <div class="fcard-body">
-        <div class="fhint" style="margin-bottom:10px;line-height:1.5">Used to auto-fill your name, DOB and contact details on incident and injury reports so you don't have to retype them every time.</div>
-        <div class="fgroup">
-          <label class="flabel">Mobile phone</label>
-          <input type="tel" id="p-phone" placeholder="e.g. 0412 345 678" autocomplete="tel" inputmode="tel">
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Date of birth</label>
-          <input type="date" id="p-dob" autocomplete="bday" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box">
-          <div class="fhint">Required by WHS regulators for any notifiable injury report.</div>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">State / territory of work</label>
-          <select id="p-state" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
-            <option value="">Select state...</option>
-            <option value="NSW">New South Wales (NSW)</option>
-            <option value="VIC">Victoria (VIC)</option>
-            <option value="QLD">Queensland (QLD)</option>
-            <option value="WA">Western Australia (WA)</option>
-            <option value="SA">South Australia (SA)</option>
-            <option value="TAS">Tasmania (TAS)</option>
-            <option value="ACT">Australian Capital Territory (ACT)</option>
-            <option value="NT">Northern Territory (NT)</option>
-          </select>
-          <div class="fhint">Determines which WHS regulator's phone number is shown on notifiable incident reports.</div>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Years of industry experience</label>
-          <input type="hidden" id="p-experience" value="">
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="p-exp-grid">
-            <button type="button" class="ps-btn" id="p-exp-0-2"  onclick="setProfileExperience('0-2')"  style="padding:9px 4px;font-size:12px">0&ndash;2 yrs</button>
-            <button type="button" class="ps-btn" id="p-exp-3-5"  onclick="setProfileExperience('3-5')"  style="padding:9px 4px;font-size:12px">3&ndash;5 yrs</button>
-            <button type="button" class="ps-btn" id="p-exp-6-10" onclick="setProfileExperience('6-10')" style="padding:9px 4px;font-size:12px">6&ndash;10 yrs</button>
-            <button type="button" class="ps-btn" id="p-exp-10+"  onclick="setProfileExperience('10+')"  style="padding:9px 4px;font-size:12px">10+ yrs</button>
-          </div>
-          <div class="fhint">Auto-filled into incident reports — captures fatigue/experience context for investigators. There's no fixed regulator standard for these bands; we've grouped them this way for a clean tap target.</div>
-        </div>
-      </div>
-    </div>
+    <!--
+      Personnel data (phone, DOB, state, experience, white card etc.) is
+      captured at site induction and lives on the personnel register — not
+      duplicated here. We keep these as hidden inputs so saveProfile() can
+      persist any values that ARE present (e.g. seeded for demo, or supplied
+      by future induction-record sync) without showing them in the UI.
+    -->
+    <input type="hidden" id="p-phone" value="">
+    <input type="hidden" id="p-dob" value="">
+    <input type="hidden" id="p-state" value="">
+    <input type="hidden" id="p-experience" value="">
     <div class="fcard">
       <div class="fcard-hdr">Profile photo</div>
       <div class="fcard-body">
@@ -820,7 +790,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
           <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoUpload(event)">
           <button class="photo-upload-btn" onclick="document.getElementById('photo-input').click()">Take photo or upload</button>
-          <div class="fhint" style="text-align:center">Optional — appears in the app header</div>
+          <div class="fhint" style="text-align:center">Optional &mdash; appears in the app header</div>
         </div>
       </div>
     </div>
@@ -1869,6 +1839,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <label class="flabel">Mobile phone of person involved</label>
           <input type="tel" id="inc-person-phone" placeholder="e.g. 0412 345 678" autocomplete="off" inputmode="tel">
         </div>
+        <!-- Relationship to PCBU — SafeWork NSW asks for this when the call
+             is made for a notifiable incident. 6 canonical categories. -->
+        <div class="fgroup">
+          <label class="flabel">Relationship of person involved to your business<span class="slan-help" onclick="slanHelpToggle('inc-help-relationship')">?</span></label>
+          <div id="inc-help-relationship" class="slan-help-tip">SafeWork regulators ask for this when a notifiable incident is called in. Pick the option that best describes how the person involved relates to the entity running the workplace.</div>
+          <input type="hidden" id="inc-relationship" value="">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <button type="button" class="ps-btn" id="inc-rel-worker"        onclick="setIncRelationship('worker')"        style="padding:9px 4px;font-size:12px">Worker / employee</button>
+            <button type="button" class="ps-btn" id="inc-rel-contractor"    onclick="setIncRelationship('contractor')"    style="padding:9px 4px;font-size:12px">Contractor</button>
+            <button type="button" class="ps-btn" id="inc-rel-subcontractor" onclick="setIncRelationship('subcontractor')" style="padding:9px 4px;font-size:12px">Subcontractor</button>
+            <button type="button" class="ps-btn" id="inc-rel-volunteer"     onclick="setIncRelationship('volunteer')"     style="padding:9px 4px;font-size:12px">Volunteer</button>
+            <button type="button" class="ps-btn" id="inc-rel-visitor"       onclick="setIncRelationship('visitor')"       style="padding:9px 4px;font-size:12px">Site visitor</button>
+            <button type="button" class="ps-btn" id="inc-rel-public"        onclick="setIncRelationship('public')"        style="padding:9px 4px;font-size:12px">Member of public</button>
+          </div>
+        </div>
         <div class="fgroup">
           <label class="flabel">Supervisor name <span class="req">*</span></label>
           <input type="text" id="inc-supervisor-name" placeholder="Name of the responsible supervisor for this work" autocomplete="off" oninput="incRecheckSubmit()">
@@ -1899,8 +1884,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div class="fgroup">
-          <label class="flabel">Other witnesses <span style="font-weight:400;color:var(--muted);font-size:11px">(optional — list any additional people who saw the event)</span></label>
-          <textarea id="inc-witnesses" rows="2" placeholder="e.g. Sam Lynch (0412 111 222), Bobby Kelly (0433 555 666)"></textarea>
+          <label class="flabel">Other witnesses <span style="font-weight:400;color:var(--muted);font-size:11px">(optional — anyone else who saw what happened)</span></label>
+          <div class="fhint" style="margin-bottom:6px">Type a name to search the on-site personnel list. Tap a match to add them \u2014 their phone and company auto-fill from the induction record. For visitors or off-site witnesses not on the list, just type the full name and tap <b>Add as new</b>.</div>
+          <!-- Hidden array; actual data lives in window._incWitnesses -->
+          <input type="hidden" id="inc-witnesses" value="[]">
+          <!-- Selected witness chips -->
+          <div id="inc-witness-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+          <!-- Search input + dropdown -->
+          <div style="position:relative">
+            <input type="text" id="inc-witness-search" placeholder="Type a name (e.g. Steve)..." autocomplete="off" oninput="incWitnessSearch()" onkeydown="incWitnessSearchKey(event)" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
+            <div id="inc-witness-suggestions" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);box-shadow:0 6px 16px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:5"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1941,15 +1935,105 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button type="button" class="ps-btn" id="inc-exp-10+"  onclick="setIncExperience('10+')"  style="padding:9px 4px;font-size:12px">10+ yrs</button>
           </div>
         </div>
+        <!-- Weather conditions — recognised scene-investigation factor by
+             SafeWork regulators, but no regulator prescribes specific bands.
+             Auto-filled from Open-Meteo using the same fetch as the Site
+             Pre-Start. Worker can tap any pill to override. -->
+        <div class="fgroup">
+          <label class="flabel">Weather at the time<span class="slan-help" onclick="slanHelpToggle('inc-help-weather')">?</span></label>
+          <div id="inc-help-weather" class="slan-help-tip">Auto-filled from your location using Open-Meteo (same source as the site pre-start). Tap any pill to override if it's wrong. Regulators treat weather as a scene-investigation factor but don't prescribe specific bands.</div>
+          <div id="inc-weather-hint" class="fhint" style="margin-bottom:6px;color:#666">📍 Loading…</div>
+          <input type="hidden" id="inc-weather-temp" value="">
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:6px">
+            <button type="button" class="ps-btn" id="inc-weather-temp-cold" onclick="setIncWeather('temp','cold')" style="padding:9px 2px;font-size:11px">Cold</button>
+            <button type="button" class="ps-btn" id="inc-weather-temp-cool" onclick="setIncWeather('temp','cool')" style="padding:9px 2px;font-size:11px">Cool</button>
+            <button type="button" class="ps-btn" id="inc-weather-temp-mild" onclick="setIncWeather('temp','mild')" style="padding:9px 2px;font-size:11px">Mild</button>
+            <button type="button" class="ps-btn" id="inc-weather-temp-warm" onclick="setIncWeather('temp','warm')" style="padding:9px 2px;font-size:11px">Warm</button>
+            <button type="button" class="ps-btn" id="inc-weather-temp-hot"  onclick="setIncWeather('temp','hot')"  style="padding:9px 2px;font-size:11px">Hot</button>
+          </div>
+          <input type="hidden" id="inc-weather-cond" value="">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:6px">
+            <button type="button" class="ps-btn" id="inc-weather-cond-clear"    onclick="setIncWeather('cond','clear')"    style="padding:9px 2px;font-size:11.5px">Clear</button>
+            <button type="button" class="ps-btn" id="inc-weather-cond-cloudy"   onclick="setIncWeather('cond','cloudy')"   style="padding:9px 2px;font-size:11.5px">Cloudy</button>
+            <button type="button" class="ps-btn" id="inc-weather-cond-rain"     onclick="setIncWeather('cond','rain')"     style="padding:9px 2px;font-size:11.5px">Rain</button>
+            <button type="button" class="ps-btn" id="inc-weather-cond-windy"    onclick="setIncWeather('cond','windy')"    style="padding:9px 2px;font-size:11.5px">Windy</button>
+            <button type="button" class="ps-btn" id="inc-weather-cond-storm"    onclick="setIncWeather('cond','storm')"    style="padding:9px 2px;font-size:11.5px">Storm</button>
+            <button type="button" class="ps-btn" id="inc-weather-cond-fog"      onclick="setIncWeather('cond','fog')"      style="padding:9px 2px;font-size:11.5px">Fog</button>
+            <button type="button" class="ps-btn" id="inc-weather-cond-dusty"    onclick="setIncWeather('cond','dusty')"    style="padding:9px 2px;font-size:11.5px">Dusty</button>
+            <button type="button" class="ps-btn" id="inc-weather-cond-humid"    onclick="setIncWeather('cond','humid')"    style="padding:9px 2px;font-size:11.5px">Humid</button>
+            <button type="button" class="ps-btn" id="inc-weather-cond-indoors"  onclick="setIncWeather('cond','indoors')"  style="padding:9px 2px;font-size:11.5px">Indoors</button>
+          </div>
+          <input type="hidden" id="inc-weather-light" value="">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">
+            <button type="button" class="ps-btn" id="inc-weather-light-day"   onclick="setIncWeather('light','day')"   style="padding:9px 2px;font-size:11.5px">Daylight</button>
+            <button type="button" class="ps-btn" id="inc-weather-light-twi"   onclick="setIncWeather('light','twi')"   style="padding:9px 2px;font-size:11.5px">Dawn/Dusk</button>
+            <button type="button" class="ps-btn" id="inc-weather-light-flood" onclick="setIncWeather('light','flood')" style="padding:9px 2px;font-size:11.5px">Floodlit</button>
+            <button type="button" class="ps-btn" id="inc-weather-light-dark"  onclick="setIncWeather('light','dark')"  style="padding:9px 2px;font-size:11.5px">Dark</button>
+          </div>
+        </div>
+        <!-- Working overtime + Task part of normal duties — fatigue/familiarity
+             context. Both optional Y/N. -->
+        <div class="fgroup">
+          <label class="flabel">Were you working overtime?</label>
+          <input type="hidden" id="inc-overtime" value="">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+            <button type="button" class="ps-btn" id="inc-overtime-yes" onclick="setIncField('overtime','yes')">Yes</button>
+            <button type="button" class="ps-btn" id="inc-overtime-no"  onclick="setIncField('overtime','no')">No</button>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Was the task part of your normal duties?</label>
+          <input type="hidden" id="inc-normal-duty" value="">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+            <button type="button" class="ps-btn" id="inc-normal-duty-yes" onclick="setIncField('normalduty','yes')">Yes</button>
+            <button type="button" class="ps-btn" id="inc-normal-duty-no"  onclick="setIncField('normalduty','no')">No</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="fcard">
       <div class="fcard-hdr">4 — What happened</div>
       <div class="fcard-body">
+        <!-- MECHANISM — register classifier. Required so we always group reports
+             cleanly for trend analysis. Canonical 14 categories per SLSINC001
+             v1.3 / TOOCS Mechanism of Incident Major Groups. 2 cols × 7 rows. -->
+        <div class="fgroup">
+          <label class="flabel">Incident mechanism — how did it physically occur? <span class="req">*</span><span class="slan-help" onclick="slanHelpToggle('inc-help-mech')">?</span></label>
+          <div id="inc-help-mech" class="slan-help-tip">Pick the closest. This is how the report gets classified in the register \u2014 it powers trend reports like "we had 8 slips this quarter". Categories follow Safe Work Australia's TOOCS standard.</div>
+          <input type="hidden" id="inc-mechanism" value="">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <button type="button" class="ps-btn" id="inc-mech-fall-height"          onclick="setIncMechanism('fall-from-height')"      style="padding:9px 4px;font-size:11.5px">Fall from height</button>
+            <button type="button" class="ps-btn" id="inc-mech-struck-falling"       onclick="setIncMechanism('struck-falling-object')" style="padding:9px 4px;font-size:11.5px">Struck by falling object</button>
+            <button type="button" class="ps-btn" id="inc-mech-struck-moving"        onclick="setIncMechanism('struck-moving-plant')"   style="padding:9px 4px;font-size:11.5px">Struck by moving plant/vehicle</button>
+            <button type="button" class="ps-btn" id="inc-mech-hit-against"          onclick="setIncMechanism('hit-against-object')"    style="padding:9px 4px;font-size:11.5px">Hit against object</button>
+            <button type="button" class="ps-btn" id="inc-mech-caught"               onclick="setIncMechanism('caught-in-between')"     style="padding:9px 4px;font-size:11.5px">Caught in / between</button>
+            <button type="button" class="ps-btn" id="inc-mech-overexertion"         onclick="setIncMechanism('overexertion-manual')"   style="padding:9px 4px;font-size:11.5px">Overexertion / manual handling</button>
+            <button type="button" class="ps-btn" id="inc-mech-chemical-contact"     onclick="setIncMechanism('chemical-contact')"      style="padding:9px 4px;font-size:11.5px">Chemical contact</button>
+            <button type="button" class="ps-btn" id="inc-mech-electrical"           onclick="setIncMechanism('electrical')"            style="padding:9px 4px;font-size:11.5px">Electrical</button>
+            <button type="button" class="ps-btn" id="inc-mech-slip-trip"            onclick="setIncMechanism('slip-trip')"             style="padding:9px 4px;font-size:11.5px">Slip / trip</button>
+            <button type="button" class="ps-btn" id="inc-mech-fire-explosion"       onclick="setIncMechanism('fire-explosion')"        style="padding:9px 4px;font-size:11.5px">Fire / explosion</button>
+            <button type="button" class="ps-btn" id="inc-mech-environmental"        onclick="setIncMechanism('environmental-exposure')" style="padding:9px 4px;font-size:11.5px">Environmental exposure</button>
+            <button type="button" class="ps-btn" id="inc-mech-vehicle-collision"    onclick="setIncMechanism('vehicle-plant-collision')" style="padding:9px 4px;font-size:11.5px">Vehicle/plant collision</button>
+            <button type="button" class="ps-btn" id="inc-mech-psychological"        onclick="setIncMechanism('psychological')"         style="padding:9px 4px;font-size:11.5px">Psychological</button>
+            <button type="button" class="ps-btn" id="inc-mech-other"                onclick="setIncMechanism('other')"                 style="padding:9px 4px;font-size:11.5px">Other</button>
+          </div>
+        </div>
         <div class="fgroup">
           <label class="flabel">Description of the incident <span class="req">*</span></label>
           <textarea id="inc-description" placeholder="Describe exactly what happened — sequence of events, what you saw, what led to the incident. Be as specific as possible." rows="5" style="font-size:14px" oninput="incRecheckSubmit()"></textarea>
+        </div>
+        <!-- Worker's own causal reasoning + preventability — investigators
+             specifically want this in the worker's own words. -->
+        <div class="fgroup">
+          <label class="flabel">What do you think caused it?</label>
+          <div class="fhint" style="margin-bottom:6px">Optional but encouraged. Your view of the underlying cause &mdash; e.g. fatigue, poor lighting, rushed work, missing barriers, equipment fault.</div>
+          <textarea id="inc-cause" placeholder="e.g. Off-cuts left on the deck, plus the rain made it slippery." rows="3" style="font-size:14px"></textarea>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">How could it have been prevented?</label>
+          <div class="fhint" style="margin-bottom:6px">Optional but encouraged. What would have stopped this from happening &mdash; e.g. better housekeeping, clearer SWMS, additional barricading, swap to safer tool.</div>
+          <textarea id="inc-prevention" placeholder="e.g. A bin at every work zone for off-cuts, plus a wet-weather rule to halt formwork stripping when raining." rows="3" style="font-size:14px"></textarea>
         </div>
         <div class="fgroup">
           <label class="flabel">Nature of injury / damage (if applicable)</label>
@@ -17907,9 +17991,40 @@ function goToIncidentForm() {
    'inc-reg-call-date','inc-reg-call-time','inc-reg-contact','inc-reg-ref',
    'inc-sup-notified','inc-support-offered','inc-scene-preserved',
    'inc-activity','inc-description','inc-injury-nature','inc-body-part',
-   'inc-experience','inc-immediate-action','inc-corrective'].forEach(id => {
+   'inc-experience','inc-immediate-action','inc-corrective',
+   'inc-weather-temp','inc-weather-cond','inc-weather-light',
+   'inc-overtime','inc-normal-duty','inc-mechanism','inc-cause','inc-prevention',
+   'inc-relationship'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  // Reset relationship pills
+  ['worker','contractor','subcontractor','volunteer','visitor','public'].forEach(v => {
+    const b=document.getElementById('inc-rel-'+v); if(b){b.className='ps-btn'; b.style='';}
+  });
+  // Reset witness picker state
+  window._incWitnesses = [];
+  if (typeof incWitnessRender === 'function') incWitnessRender();
+  const witSearch = document.getElementById('inc-witness-search');
+  if (witSearch) witSearch.value = '';
+  const witDd = document.getElementById('inc-witness-suggestions');
+  if (witDd) { witDd.style.display = 'none'; witDd.innerHTML = ''; }
+  // Reset all new Pass-1 pill rows visually
+  ['cold','cool','mild','warm','hot'].forEach(v => { const b=document.getElementById('inc-weather-temp-'+v); if(b){b.className='ps-btn'; b.style='';} });
+  ['clear','cloudy','rain','windy','storm','fog','dusty','humid','indoors'].forEach(v => { const b=document.getElementById('inc-weather-cond-'+v); if(b){b.className='ps-btn'; b.style='';} });
+  ['day','twi','flood','dark'].forEach(v => { const b=document.getElementById('inc-weather-light-'+v); if(b){b.className='ps-btn'; b.style='';} });
+  // Reset the user-touched weather flags so autofill applies, then trigger
+  // the auto-fetch (uses cached prestart data when available, else a live
+  // Open-Meteo call). User can override by tapping any pill afterwards.
+  window._incWeatherTouched = {};
+  if (typeof incAutofillWeather === 'function') {
+    setTimeout(incAutofillWeather, 50);
+  }
+  ['yes','no'].forEach(v => {
+    [['inc-overtime-'+v], ['inc-normal-duty-'+v]].forEach(([id]) => {
+      const b=document.getElementById(id); if(b){b.className='ps-btn'; b.style='';}
+    });
+  });
+  ['fall-height','struck-falling','struck-moving','hit-against','caught','overexertion','chemical-contact','electrical','slip-trip','fire-explosion','environmental','vehicle-collision','psychological','other'].forEach(v => { const b=document.getElementById('inc-mech-'+v); if(b){b.className='ps-btn'; b.style='';} });
   document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('inc-time').value = new Date().toTimeString().slice(0,5);
   const warnEl = document.getElementById('inc-notif-warning');
@@ -18048,6 +18163,7 @@ function incRecheckSubmit() {
   const activity = document.getElementById('inc-activity');
   const desc     = document.getElementById('inc-description');
   const supName  = document.getElementById('inc-supervisor-name');
+  const mech     = document.getElementById('inc-mechanism');
   const v = el => (el && el.value && String(el.value).trim());
   const ok =
     !!v(type) &&
@@ -18061,6 +18177,7 @@ function incRecheckSubmit() {
     !!incFields.supnotif &&
     !!incFields.support &&
     !!v(activity) &&
+    !!v(mech) &&
     !!v(desc);
   if (ok) {
     btn.disabled = false;
@@ -18091,9 +18208,10 @@ function setIncField(field, val) {
   // Field-specific id mappings for buttons whose id doesn't follow the
   // `inc-<field>-<val>` convention. Keeps the helper above generic.
   const altMap = {
-    'supnotif': { yes:'inc-supnotif-yes', no:'inc-supnotif-no' },
-    'support':  { yes:'inc-support-yes', declined:'inc-support-decl', na:'inc-support-na' },
-    'scene':    { yes:'inc-scene-yes', no:'inc-scene-no' }
+    'supnotif':   { yes:'inc-supnotif-yes', no:'inc-supnotif-no' },
+    'support':    { yes:'inc-support-yes', declined:'inc-support-decl', na:'inc-support-na' },
+    'scene':      { yes:'inc-scene-yes', no:'inc-scene-no' },
+    'normalduty': { yes:'inc-normal-duty-yes', no:'inc-normal-duty-no' }
   };
   if (altMap[field]) {
     Object.entries(altMap[field]).forEach(([v, id]) => {
@@ -18102,8 +18220,18 @@ function setIncField(field, val) {
       b.style = '';
     });
     // Mirror into hidden input for validation/submit
-    const hiddenIdMap = { supnotif:'inc-sup-notified', support:'inc-support-offered', scene:'inc-scene-preserved' };
+    const hiddenIdMap = {
+      supnotif:'inc-sup-notified',
+      support:'inc-support-offered',
+      scene:'inc-scene-preserved',
+      normalduty:'inc-normal-duty'
+    };
     const hid = document.getElementById(hiddenIdMap[field] || '');
+    if (hid) hid.value = val;
+  }
+  // overtime Y/N — buttons use the standard inc-overtime-yes/no IDs
+  if (field === 'overtime') {
+    const hid = document.getElementById('inc-overtime');
     if (hid) hid.value = val;
   }
   if (field === 'notif') {
@@ -18197,6 +18325,325 @@ function setIncExperience(val) {
     b.className = 'ps-btn' + (v === val ? ' pass' : '');
     b.style = '';
   });
+}
+
+// Weather pickers — three independent pill rows (temp / cond / light). Each
+// is single-select, click-to-toggle (re-tap clears). Categories per
+// SLSINC001 v1.3 canonical schema.
+function setIncWeather(group, val) {
+  const hid = document.getElementById('inc-weather-' + group);
+  if (!hid) return;
+  // Toggle off if already selected
+  const newVal = (hid.value === val) ? '' : val;
+  hid.value = newVal;
+  // Update pill states. Build the option set per group.
+  const opts = {
+    temp:  ['cold','cool','mild','warm','hot'],
+    cond:  ['clear','cloudy','rain','windy','storm','fog','dusty','humid','indoors'],
+    light: ['day','twi','flood','dark']
+  }[group] || [];
+  opts.forEach(v => {
+    const b = document.getElementById('inc-weather-' + group + '-' + v);
+    if (!b) return;
+    b.className = 'ps-btn' + (v === newVal ? ' pass' : '');
+    b.style = '';
+  });
+  // Mark this group as user-touched so autofill won't override it later
+  if (!window._incWeatherTouched) window._incWeatherTouched = {};
+  window._incWeatherTouched[group] = true;
+}
+
+// Auto-fill weather pills from Open-Meteo (same provider used by Site
+// Pre-Start, Hazard form, dashboard widget). Triggered when the incident
+// form opens. If the user has already tapped a pill in a group, that
+// group is left alone.
+function incAutofillWeather() {
+  const hint = document.getElementById('inc-weather-hint');
+  // Try the cached prestart data first (already fetched today, no extra call)
+  if (typeof spsWeatherData !== 'undefined' && spsWeatherData && typeof spsWeatherData.temp === 'number') {
+    incApplyWeatherFromMeteo({
+      temperature_2m: spsWeatherData.temp,
+      weather_code:   spsWeatherData.code,
+      wind_speed_10m: spsWeatherData.wind,
+      precipitation:  spsWeatherData.rain,
+      is_day:         null  // not stored on prestart; derive from time below
+    }, hint, 'today\u2019s site pre-start');
+    return;
+  }
+  // No cached data — fetch live
+  if (!navigator.geolocation) {
+    if (hint) { hint.textContent = '\u26a0\ufe0f Location unavailable \u2014 tap pills manually'; hint.style.color = '#B8960C'; }
+    return;
+  }
+  if (hint) { hint.textContent = '\ud83d\udccd Loading current weather\u2026'; hint.style.color = '#666'; }
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    const lat = pos.coords.latitude.toFixed(4);
+    const lng = pos.coords.longitude.toFixed(4);
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng
+      + '&current=temperature_2m,weather_code,wind_speed_10m,precipitation,is_day&timezone=auto';
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      if (!data || !data.current) {
+        if (hint) { hint.textContent = '\u26a0\ufe0f Could not fetch weather \u2014 tap pills manually'; hint.style.color = '#B8960C'; }
+        return;
+      }
+      incApplyWeatherFromMeteo(data.current, hint, 'live from your GPS');
+    }).catch(function(){
+      if (hint) { hint.textContent = '\u26a0\ufe0f Network error \u2014 tap pills manually'; hint.style.color = '#B8960C'; }
+    });
+  }, function() {
+    if (hint) { hint.textContent = '\u26a0\ufe0f Location denied \u2014 tap pills manually'; hint.style.color = '#B8960C'; }
+  });
+}
+
+// Apply Open-Meteo data to the pill state. Skips groups already touched by
+// the user (so autofill doesn't override an explicit pick).
+function incApplyWeatherFromMeteo(c, hint, sourceLabel) {
+  const t = c.temperature_2m;
+  const w = c.wind_speed_10m || 0;
+  const p = c.precipitation  || 0;
+  const code = c.weather_code;
+  const isDay = (typeof c.is_day === 'number')
+    ? c.is_day
+    : (function(){
+        const h = new Date().getHours();
+        return (h >= 6 && h < 19) ? 1 : 0;
+      })();
+  const touched = window._incWeatherTouched || {};
+  // Temperature → 5 plain bands
+  if (!touched.temp && typeof t === 'number') {
+    let tempVal;
+    if      (t < 5)  tempVal = 'cold';
+    else if (t < 15) tempVal = 'cool';
+    else if (t < 25) tempVal = 'mild';
+    else if (t < 32) tempVal = 'warm';
+    else             tempVal = 'hot';
+    // Apply silently (don't mark touched, since this is autofill not user)
+    const hid = document.getElementById('inc-weather-temp');
+    if (hid) hid.value = tempVal;
+    ['cold','cool','mild','warm','hot'].forEach(function(v){
+      const b = document.getElementById('inc-weather-temp-' + v);
+      if (b) { b.className = 'ps-btn' + (v === tempVal ? ' pass' : ''); b.style = ''; }
+    });
+  }
+  // Condition → map weather_code, with wind override for clear/cloudy
+  if (!touched.cond && typeof code === 'number') {
+    let condVal;
+    if      (code === 0)              condVal = 'clear';
+    else if (code === 1)              condVal = 'clear';
+    else if (code === 2 || code === 3) condVal = 'cloudy';
+    else if (code === 45 || code === 48) condVal = 'fog';
+    else if (code >= 51 && code <= 67) condVal = 'rain';
+    else if (code >= 71 && code <= 77) condVal = 'cloudy';   // snow → closest available
+    else if (code >= 80 && code <= 86) condVal = 'rain';
+    else if (code >= 95 && code <= 99) condVal = 'storm';
+    else                                condVal = 'cloudy';
+    // Wind override (only if base was clear/cloudy and rain didn't trigger)
+    if ((condVal === 'clear' || condVal === 'cloudy') && w >= 25 && p < 0.2) {
+      condVal = 'windy';
+    }
+    const hid = document.getElementById('inc-weather-cond');
+    if (hid) hid.value = condVal;
+    ['clear','cloudy','rain','windy','storm','fog','dusty','humid','indoors'].forEach(function(v){
+      const b = document.getElementById('inc-weather-cond-' + v);
+      if (b) { b.className = 'ps-btn' + (v === condVal ? ' pass' : ''); b.style = ''; }
+    });
+  }
+  // Light → is_day
+  if (!touched.light) {
+    const lightVal = isDay ? 'day' : 'dark';
+    const hid = document.getElementById('inc-weather-light');
+    if (hid) hid.value = lightVal;
+    ['day','twi','flood','dark'].forEach(function(v){
+      const b = document.getElementById('inc-weather-light-' + v);
+      if (b) { b.className = 'ps-btn' + (v === lightVal ? ' pass' : ''); b.style = ''; }
+    });
+  }
+  // Status hint
+  if (hint) {
+    const tStr = (typeof t === 'number') ? Math.round(t) + '\u00b0C' : '';
+    const wStr = w ? ' \u00b7 ' + Math.round(w) + ' km/h wind' : '';
+    hint.textContent = '\ud83d\udccd Auto-filled from ' + (sourceLabel || 'live') + ' (' + tStr + wStr + ') \u2014 tap to change';
+    hint.style.color = '#1F5A3F';
+  }
+}
+
+// Relationship of person involved — single-select pill grid. Used by
+// SafeWork regulators when a notifiable incident is reported. Optional
+// (not required for submit) but strongly encouraged.
+function setIncRelationship(val) {
+  const hid = document.getElementById('inc-relationship');
+  if (hid) hid.value = val;
+  ['worker','contractor','subcontractor','volunteer','visitor','public'].forEach(v => {
+    const b = document.getElementById('inc-rel-' + v);
+    if (!b) return;
+    b.className = 'ps-btn' + (v === val ? ' pass' : '');
+    b.style = '';
+  });
+}
+
+// ─── WITNESS PICKER ─────────────────────────────────────────────
+// Smart witness picker: search-as-you-type against the on-site personnel
+// list (DEMO_WORKERS, with on-site workers preferred). Selected witnesses
+// become chips with name + phone + company captured. Free-text "Add as new"
+// supports visitors or off-list witnesses.
+window._incWitnesses = []; // [{ name, phone, company, source: 'roster'|'manual' }]
+
+function incWitnessRoster() {
+  // Return the canonical roster — prefer DEMO_WORKERS, fall back to any
+  // personnel-register-style global if it ever lands.
+  if (typeof DEMO_WORKERS !== 'undefined' && Array.isArray(DEMO_WORKERS)) return DEMO_WORKERS;
+  return [];
+}
+
+function incWitnessSearch() {
+  const inp = document.getElementById('inc-witness-search');
+  const dd  = document.getElementById('inc-witness-suggestions');
+  if (!inp || !dd) return;
+  const q = (inp.value || '').trim().toLowerCase();
+  if (q.length < 1) { dd.style.display = 'none'; dd.innerHTML = ''; return; }
+  // Match against name (and trade for tie-break clarity)
+  const roster = incWitnessRoster();
+  const already = new Set(window._incWitnesses.map(w => (w.name || '').toLowerCase()));
+  const matches = roster
+    .filter(w => (w.name || '').toLowerCase().includes(q))
+    .filter(w => !already.has((w.name || '').toLowerCase()))
+    // On-site workers first, then everyone else
+    .sort((a, b) => (b.onsite ? 1 : 0) - (a.onsite ? 1 : 0))
+    .slice(0, 8);
+  let html = '';
+  matches.forEach(w => {
+    const subline = [w.role || w.company || '', w.onsite ? '\u00b7 on site today' : '\u00b7 not signed in']
+      .filter(Boolean).join(' ');
+    html += '<div class="inc-witness-row" onclick="incWitnessAddFromRoster(\''
+      + (w.name || '').replace(/'/g, "\\'") + '\')" '
+      + 'style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px">'
+      + '<div style="font-weight:600;color:var(--text)">' + (w.name || '').replace(/</g,'&lt;') + '</div>'
+      + '<div style="font-size:11.5px;color:var(--muted);margin-top:1px">' + subline.replace(/</g,'&lt;') + '</div>'
+      + '</div>';
+  });
+  // "Add as new" footer when there's something typed (always offer it for
+  // off-list witnesses — visitors, members of public, etc.)
+  if (q.length >= 2) {
+    const addLbl = matches.length === 0
+      ? 'No match \u2014 add &ldquo;' + inp.value.replace(/</g,'&lt;') + '&rdquo; as a new witness'
+      : 'Not on the list? Add &ldquo;' + inp.value.replace(/</g,'&lt;') + '&rdquo; manually';
+    html += '<div onclick="incWitnessAddManual()" style="padding:10px 12px;cursor:pointer;background:#FAFAF7;font-size:12.5px;color:#1B6E3A;font-weight:600;display:flex;align-items:center;gap:6px">'
+      + '<span style="font-size:14px">+</span> ' + addLbl
+      + '</div>';
+  }
+  dd.innerHTML = html || '<div style="padding:10px 12px;color:var(--muted);font-size:12.5px">No matches.</div>';
+  dd.style.display = 'block';
+}
+
+// Enter key adds the typed name as a manual witness (no roster match required)
+function incWitnessSearchKey(ev) {
+  if (ev.key === 'Enter') {
+    ev.preventDefault();
+    incWitnessAddManual();
+  } else if (ev.key === 'Escape') {
+    const dd = document.getElementById('inc-witness-suggestions');
+    if (dd) dd.style.display = 'none';
+  }
+}
+
+function incWitnessAddFromRoster(name) {
+  const roster = incWitnessRoster();
+  const w = roster.find(x => x.name === name);
+  if (!w) return;
+  // Don't double-add
+  if (window._incWitnesses.some(x => x.name === w.name)) return;
+  window._incWitnesses.push({
+    name:    w.name || '',
+    phone:   w.phone || '',
+    company: w.company || '',
+    source:  'roster'
+  });
+  incWitnessRender();
+  // Clear search input + close dropdown
+  const inp = document.getElementById('inc-witness-search'); if (inp) inp.value = '';
+  const dd  = document.getElementById('inc-witness-suggestions'); if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
+}
+
+function incWitnessAddManual() {
+  const inp = document.getElementById('inc-witness-search');
+  if (!inp) return;
+  const name = (inp.value || '').trim();
+  if (!name) return;
+  // Don't double-add
+  if (window._incWitnesses.some(x => (x.name || '').toLowerCase() === name.toLowerCase())) {
+    inp.value = '';
+    const dd = document.getElementById('inc-witness-suggestions'); if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
+    return;
+  }
+  window._incWitnesses.push({
+    name:    name,
+    phone:   '',          // off-list witnesses can have phone added manually later if needed
+    company: '',
+    source:  'manual'
+  });
+  incWitnessRender();
+  inp.value = '';
+  const dd = document.getElementById('inc-witness-suggestions'); if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
+}
+
+function incWitnessRemove(idx) {
+  if (idx < 0 || idx >= window._incWitnesses.length) return;
+  window._incWitnesses.splice(idx, 1);
+  incWitnessRender();
+}
+
+function incWitnessRender() {
+  const chips = document.getElementById('inc-witness-chips');
+  const hid   = document.getElementById('inc-witnesses');
+  if (!chips) return;
+  if (window._incWitnesses.length === 0) {
+    chips.innerHTML = '<div style="font-size:12px;color:var(--muted);font-style:italic;padding:2px 0">No witnesses added yet.</div>';
+  } else {
+    chips.innerHTML = window._incWitnesses.map((w, i) => {
+      const sub = [w.phone, w.company].filter(Boolean).join(' \u00b7 ');
+      const subBlock = sub ? '<div style="font-size:10.5px;color:var(--muted);margin-top:2px">' + sub.replace(/</g,'&lt;') + '</div>' : '';
+      return '<div style="display:inline-flex;align-items:center;gap:8px;padding:7px 8px 7px 11px;background:#EAF1ED;border:1px solid #C8DBCE;border-radius:18px;font-size:12.5px;color:#1B3A2D">'
+        + '<div><div style="font-weight:600">' + (w.name || '').replace(/</g,'&lt;') + '</div>' + subBlock + '</div>'
+        + '<button type="button" onclick="incWitnessRemove(' + i + ')" aria-label="Remove witness" style="background:transparent;border:none;cursor:pointer;color:#1B3A2D;font-size:16px;line-height:1;padding:2px 4px;font-weight:700">\u00d7</button>'
+        + '</div>';
+    }).join('');
+  }
+  // Mirror to hidden input as JSON (for inspector / future direct DOM read)
+  if (hid) {
+    try { hid.value = JSON.stringify(window._incWitnesses); } catch(e) {}
+  }
+}
+
+// Incident mechanism — single-select pill grid. Required field, so calls
+// incRecheckSubmit so the master submit button updates. Values match the
+// SLSINC001 v1.3 / TOOCS canonical Mechanism of Incident Major Groups.
+function setIncMechanism(val) {
+  const hid = document.getElementById('inc-mechanism');
+  if (hid) hid.value = val;
+  // Map value → button-id suffix
+  const idMap = {
+    'fall-from-height':       'fall-height',
+    'struck-falling-object':  'struck-falling',
+    'struck-moving-plant':    'struck-moving',
+    'hit-against-object':     'hit-against',
+    'caught-in-between':      'caught',
+    'overexertion-manual':    'overexertion',
+    'chemical-contact':       'chemical-contact',
+    'electrical':             'electrical',
+    'slip-trip':              'slip-trip',
+    'fire-explosion':         'fire-explosion',
+    'environmental-exposure': 'environmental',
+    'vehicle-plant-collision':'vehicle-collision',
+    'psychological':          'psychological',
+    'other':                  'other'
+  };
+  Object.entries(idMap).forEach(([v, idsuf]) => {
+    const b = document.getElementById('inc-mech-' + idsuf);
+    if (!b) return;
+    b.className = 'ps-btn' + (v === val ? ' pass' : '');
+    b.style = '';
+  });
+  if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
 }
 
 // Role-in-event selector (replaces dropdown). When "Person Involved / Injured"
@@ -18621,6 +19068,33 @@ function goToIncidentDetail(ref) {
     };
     return map[v] || v || '';
   };
+  const mechLabel = function(v){
+    const map = {
+      // Canonical SLSINC001 v1.3 / TOOCS
+      'fall-from-height':       'Fall from height',
+      'struck-falling-object':  'Struck by falling object',
+      'struck-moving-plant':    'Struck by moving plant/vehicle',
+      'hit-against-object':     'Hit against object',
+      'caught-in-between':      'Caught in / between',
+      'overexertion-manual':    'Overexertion / manual handling',
+      'chemical-contact':       'Chemical contact',
+      'electrical':             'Electrical',
+      'slip-trip':              'Slip / trip',
+      'fire-explosion':         'Fire / explosion',
+      'environmental-exposure': 'Environmental exposure',
+      'vehicle-plant-collision':'Vehicle / plant collision',
+      'psychological':          'Psychological',
+      'other':                  'Other',
+      // Legacy values from before the canonical migration
+      'fall-height':            'Fall from height',
+      'struck-by':              'Struck by something',
+      'caught-in':              'Caught in / between',
+      'manual-handling':        'Manual handling',
+      'chemical-spill':         'Chemical / spill',
+      'plant-vehicle':          'Plant / vehicle'
+    };
+    return map[v] || v || '';
+  };
 
   // Supervisor review form — single-submit pattern matching the rest of the
   // app. Visible to supervisors when the incident is still Open. One Submit
@@ -18698,8 +19172,27 @@ function goToIncidentDetail(ref) {
         fmtRow('Supervisor name',    r.supervisor_name) +
         fmtRow('Supervisor present', r.supervisor_present) +
         fmtRow('Supervisor notified immediately', r.supervisor_notified_immediately) +
+        fmtRow('Relationship to business', (function(){
+          const m = {worker:'Worker / employee', contractor:'Contractor', subcontractor:'Subcontractor',
+                     volunteer:'Volunteer', visitor:'Site visitor', public:'Member of public'};
+          return m[r.relationship] || r.relationship || '';
+        })()) +
         fmtRow('Support person offered', r.support_person_offered) +
-        fmtBlock('Other witnesses',  r.other_witnesses) +
+        (function(){
+          // Prefer the structured array. Fall back to the legacy flat string
+          // for records saved before the witness picker.
+          if (Array.isArray(r.witnesses) && r.witnesses.length > 0) {
+            const html = r.witnesses.map(function(w){
+              const sub = [w.phone, w.company].filter(Boolean).join(' \u00b7 ');
+              return '<div style="padding:6px 0;border-bottom:1px solid #ECEDEF">'
+                + '<div style="font-weight:600;color:var(--text);font-size:13px">' + (w.name || '').replace(/</g,'&lt;') + '</div>'
+                + (sub ? '<div style="font-size:11.5px;color:var(--muted);margin-top:1px">' + sub.replace(/</g,'&lt;') + '</div>' : '')
+                + '</div>';
+            }).join('');
+            return '<div style="margin:8px 0"><div style="font-size:11.5px;color:var(--muted);margin-bottom:4px">Other witnesses</div>' + html + '</div>';
+          }
+          return fmtBlock('Other witnesses', r.other_witnesses);
+        })() +
       '</div></div>' +
       '<div class="fcard"><div class="fcard-hdr">Work context &amp; injury</div><div class="fcard-body">' +
         fmtRow('Activity at time',   r.work_activity) +
@@ -18707,6 +19200,23 @@ function goToIncidentDetail(ref) {
         fmtRow('Shift start',        r.shift_start) +
         fmtRow('Days worked',        r.days_worked) +
         fmtRow('Years experience',   r.years_experience ? expLabel(r.years_experience) : '') +
+        fmtRow('Working overtime',   r.working_overtime) +
+        fmtRow('Normal duties',      r.normal_duty) +
+        fmtRow('Weather',            (function(){
+          const t = {
+            cold:'Cold', cool:'Cool', mild:'Mild', warm:'Warm', hot:'Hot',
+            // Legacy band values (still supported for old records)
+            'sub-0':'<0°C', '0-15':'0–15°C', '15-30':'15–30°C', '30-45':'30–45°C', 'over-45':'>45°C'
+          }[r.weather_temp] || '';
+          const c = {
+            clear:'Clear', cloudy:'Cloudy', rain:'Rain', windy:'Windy', storm:'Storm',
+            fog:'Fog', dusty:'Dusty', humid:'Humid', indoors:'Indoors',
+            // Legacy
+            'clear-sky':'Clear sky', rainy:'Rainy', overcast:'Overcast', dust:'Dust', other:'Other'
+          }[r.weather_cond] || '';
+          const l = {day:'Daylight', twi:'Dawn/Dusk', flood:'Floodlit', dark:'Dark'}[r.weather_light] || '';
+          return [t, c, l].filter(Boolean).join(' \u00b7 ');
+        })()) +
         fmtRow('Injury nature',      r.injury_nature) +
         fmtRow('Body part',          r.body_part) +
         fmtRow('First aid given',    r.first_aid) +
@@ -18714,9 +19224,12 @@ function goToIncidentDetail(ref) {
         fmtRow('Treatment destination', r.treatment_destination) +
       '</div></div>' +
       '<div class="fcard"><div class="fcard-hdr">What happened</div><div class="fcard-body">' +
-        fmtBlock('Description',          r.description) +
-        fmtBlock('Immediate action',     r.immediate_action) +
-        fmtBlock('Corrective actions',   r.corrective_actions) +
+        fmtRow('Event mechanism',     mechLabel(r.mechanism)) +
+        fmtBlock('Description',       r.description) +
+        fmtBlock('What caused it',    r.cause_text) +
+        fmtBlock('How it could have been prevented', r.prevention_text) +
+        fmtBlock('Immediate action',  r.immediate_action) +
+        fmtBlock('Corrective actions', r.corrective_actions) +
       '</div></div>' +
       // Photo evidence — always rendered so the audit trail is explicit
       // (if no photos are attached, we say so rather than hiding the section)
@@ -19120,7 +19633,23 @@ function downloadIncidentPdf() {
     drawCardRow('Role in event',      r.role_in_event);
     drawCardRow('Person involved',    r.person_name);
     drawCardRow('Person company',     r.person_company);
+    drawCardRow('Relationship to business', (function(){
+      const m = {worker:'Worker / employee', contractor:'Contractor', subcontractor:'Subcontractor',
+                 volunteer:'Volunteer', visitor:'Site visitor', public:'Member of public'};
+      return m[r.relationship] || r.relationship || '';
+    })());
     drawCardRow('Supervisor present', r.supervisor_present);
+    // Other witnesses — render structured list when available, otherwise
+    // fall back to the legacy single-line string for older records.
+    if (Array.isArray(r.witnesses) && r.witnesses.length > 0) {
+      y = drawSubLabel(y, 'OTHER WITNESSES');
+      r.witnesses.forEach(function(w){
+        const sub = [w.phone, w.company].filter(Boolean).join(' \u00b7 ');
+        drawCardRow(w.name || '', sub);
+      });
+    } else if (r.other_witnesses) {
+      drawCardBlock('OTHER WITNESSES', r.other_witnesses);
+    }
 
     // SECTION 3 — Work context & injury
     y = drawMajorBanner(y, 'WORK CONTEXT & INJURY');
@@ -19135,16 +19664,60 @@ function downloadIncidentPdf() {
       };
       return m[r.years_experience] || r.years_experience || '';
     })());
+    drawCardRow('Working overtime', r.working_overtime);
+    drawCardRow('Task part of normal duties', r.normal_duty);
+    drawCardRow('Weather at the time', (function(){
+      const t = {
+        cold:'Cold', cool:'Cool', mild:'Mild', warm:'Warm', hot:'Hot',
+        'sub-0':'<0°C', '0-15':'0–15°C', '15-30':'15–30°C', '30-45':'30–45°C', 'over-45':'>45°C'
+      }[r.weather_temp] || '';
+      const c = {
+        clear:'Clear', cloudy:'Cloudy', rain:'Rain', windy:'Windy', storm:'Storm',
+        fog:'Fog', dusty:'Dusty', humid:'Humid', indoors:'Indoors',
+        'clear-sky':'Clear sky', rainy:'Rainy', overcast:'Overcast', dust:'Dust', other:'Other'
+      }[r.weather_cond] || '';
+      const l = {day:'Daylight', twi:'Dawn/Dusk', flood:'Floodlit', dark:'Dark'}[r.weather_light] || '';
+      return [t, c, l].filter(Boolean).join(' \u00b7 ');
+    })());
     drawCardRow('Injury nature',      r.injury_nature);
     drawCardRow('Body part',          r.body_part);
     drawCardRow('First aid given',    r.first_aid);
     drawCardRow('Medical attention',  r.medical_attention);
+    drawCardRow('Treatment destination', r.treatment_destination);
 
     // SECTION 4 — What happened
     y = drawMajorBanner(y, 'WHAT HAPPENED');
-    drawCardBlock('DESCRIPTION',         r.description);
-    drawCardBlock('IMMEDIATE ACTION',    r.immediate_action);
-    drawCardBlock('CORRECTIVE ACTIONS',  r.corrective_actions);
+    drawCardRow('Event mechanism', (function(){
+      const m = {
+        'fall-from-height':       'Fall from height',
+        'struck-falling-object':  'Struck by falling object',
+        'struck-moving-plant':    'Struck by moving plant/vehicle',
+        'hit-against-object':     'Hit against object',
+        'caught-in-between':      'Caught in / between',
+        'overexertion-manual':    'Overexertion / manual handling',
+        'chemical-contact':       'Chemical contact',
+        'electrical':             'Electrical',
+        'slip-trip':              'Slip / trip',
+        'fire-explosion':         'Fire / explosion',
+        'environmental-exposure': 'Environmental exposure',
+        'vehicle-plant-collision':'Vehicle / plant collision',
+        'psychological':          'Psychological',
+        'other':                  'Other',
+        // Legacy
+        'fall-height':            'Fall from height',
+        'struck-by':              'Struck by something',
+        'caught-in':              'Caught in / between',
+        'manual-handling':        'Manual handling',
+        'chemical-spill':         'Chemical / spill',
+        'plant-vehicle':          'Plant / vehicle'
+      };
+      return m[r.mechanism] || r.mechanism || '';
+    })());
+    drawCardBlock('DESCRIPTION',                       r.description);
+    drawCardBlock('WHAT CAUSED IT (REPORTER\u2019S VIEW)', r.cause_text);
+    drawCardBlock('HOW COULD IT HAVE BEEN PREVENTED',  r.prevention_text);
+    drawCardBlock('IMMEDIATE ACTION',                  r.immediate_action);
+    drawCardBlock('CORRECTIVE ACTIONS',                r.corrective_actions);
 
     // SECTION 5 — Notifiable assessment
     y = drawMajorBanner(y, 'NOTIFIABLE ASSESSMENT');
@@ -19335,12 +19908,26 @@ async function submitIncident() {
     supervisor_present: incFields.sup,
     supervisor_notified_immediately: incFields.supnotif || '',
     support_person_offered: incFields.support || '',
-    other_witnesses: ((document.getElementById('inc-witnesses') || {}).value || '').trim(),
+    witnesses: Array.isArray(window._incWitnesses) ? window._incWitnesses.slice() : [],
+    // Legacy field kept for old detail-screen / register paths that may
+    // still expect a flat string. Mirrors the same data.
+    other_witnesses: (Array.isArray(window._incWitnesses) ? window._incWitnesses : []).map(function(w){
+      return (w.name || '') + (w.phone ? ' (' + w.phone + ')' : '');
+    }).filter(Boolean).join(', '),
     work_activity: document.getElementById('inc-activity').value.trim(),
     briefing_received: incBriefing,
     shift_start: document.getElementById('inc-shift-start').value,
     days_worked: document.getElementById('inc-days-worked').value,
     years_experience: ((document.getElementById('inc-experience') || {}).value || ''),
+    weather_temp:  ((document.getElementById('inc-weather-temp')  || {}).value || ''),
+    weather_cond:  ((document.getElementById('inc-weather-cond')  || {}).value || ''),
+    weather_light: ((document.getElementById('inc-weather-light') || {}).value || ''),
+    working_overtime: ((document.getElementById('inc-overtime')   || {}).value || ''),
+    normal_duty:      ((document.getElementById('inc-normal-duty')|| {}).value || ''),
+    mechanism:        ((document.getElementById('inc-mechanism')  || {}).value || ''),
+    cause_text:       ((document.getElementById('inc-cause')      || {}).value || '').trim(),
+    prevention_text:  ((document.getElementById('inc-prevention') || {}).value || '').trim(),
+    relationship:     ((document.getElementById('inc-relationship')|| {}).value || ''),
     description: document.getElementById('inc-description').value.trim(),
     injury_nature: document.getElementById('inc-injury-nature').value.trim(),
     body_part: document.getElementById('inc-body-part').value.trim(),
@@ -32456,9 +33043,9 @@ function startDemoAs(role) {
   localStorage.setItem('slan_demo', 'true');
   var today = new Date().toLocaleDateString('en-AU').replace(/\//g, '-');
   var profiles = {
-    worker:     { name:'Jake Ryan',      company:'Murphy Civil Construction', role:'Worker',           safetyPoints:912, phone:'0412 345 678', dob:'1992-06-14', state:'NSW', licences:{ whitecard:{expiry:'2027-03-10'}, driver:{expiry:'2027-08-22'}, hrwl:{expiry:'2026-07-15'} } },
-    supervisor: { name:'Eoin Burke',     company:'Murphy Civil Construction', role:'Site Supervisor',  safetyPoints:0,   phone:'0432 778 901', dob:'1985-11-22', state:'NSW', licences:{ whitecard:{expiry:'2027-06-15'}, hrwl:{expiry:'2026-09-20'}, firstaid:{expiry:'2026-11-30'} } },
-    director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   phone:'0419 222 333', dob:'1972-03-08', state:'NSW', licences:{} }
+    worker:     { name:'Jake Ryan',      company:'Murphy Civil Construction', role:'Worker',           safetyPoints:912, phone:'0412 345 678', dob:'1992-06-14', state:'NSW', experience:'6-10', licences:{ whitecard:{expiry:'2027-03-10'}, driver:{expiry:'2027-08-22'}, hrwl:{expiry:'2026-07-15'} } },
+    supervisor: { name:'Eoin Burke',     company:'Murphy Civil Construction', role:'Site Supervisor',  safetyPoints:0,   phone:'0432 778 901', dob:'1985-11-22', state:'NSW', experience:'10+',  licences:{ whitecard:{expiry:'2027-06-15'}, hrwl:{expiry:'2026-09-20'}, firstaid:{expiry:'2026-11-30'} } },
+    director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   phone:'0419 222 333', dob:'1972-03-08', state:'NSW', experience:'10+',  licences:{} }
   };
   var p = profiles[role] || profiles.supervisor;
   p.created = new Date().toISOString(); p.demo = true; p.sig = null; p.photo = null;
@@ -34480,6 +35067,16 @@ function incSeedDemoIncidents(silent) {
       photos_skipped: true,
       reporter_signature: sigJake,
       years_experience: '6-10',
+      mechanism: 'fall-from-height',
+      cause_text: 'Wet plywood off-cuts left on the deck after the overnight rain, plus pressure to keep on schedule meant Mark was carrying a soldier without a clear walking path.',
+      prevention_text: 'Dedicated bins for off-cuts at every workzone, a wet-weather hold on formwork stripping until decks dry, and a two-person rule for moving soldiers in slippery conditions.',
+      weather_temp: 'mild',
+      weather_cond: 'rain',
+      weather_light: 'day',
+      working_overtime: 'no',
+      normal_duty: 'yes',
+      relationship: 'worker',
+      witnesses: [{ name: "Lee O'Brien", phone: "0411 111 007", company: "Murphy Civil Construction", source: 'roster' }, { name: "Sam Carroll", phone: "0411 111 003", company: "Burke Civil Contractors", source: 'roster' }],
       register_target: 'SLS-REG-006'
     },
     // 2) Near miss — open, moderate
@@ -34520,6 +35117,16 @@ function incSeedDemoIncidents(silent) {
       photos_skipped: true,
       reporter_signature: sigEoin,
       years_experience: '10+',
+      mechanism: 'vehicle-plant-collision',
+      cause_text: 'A sudden gust of wind exceeded the threshold for tandem lifts. Anemometer was working but no one was actively monitoring it during the lift.',
+      prevention_text: 'A live wind alarm in the dogger’s ear protection that triggers when sustained wind exceeds the SWMS threshold. Plus an automatic load-stop above 35 km/h.',
+      weather_temp: 'mild',
+      weather_cond: 'windy',
+      weather_light: 'day',
+      working_overtime: 'no',
+      normal_duty: 'yes',
+      relationship: 'subcontractor',
+      witnesses: [{ name: "Brendan Kelly", phone: "0411 111 009", company: "Kelly Crane Services", source: 'roster' }],
       register_target: 'SLS-REG-006'
     },
     // 3) Minor injury — already closed by supervisor
@@ -34578,6 +35185,16 @@ function incSeedDemoIncidents(silent) {
       reporter_signature: sigJake,
       closer_signature: sigEoin,
       years_experience: '6-10',
+      mechanism: 'caught-in-between',
+      cause_text: 'User error — hand slipped while making lunch in the tea room. Not work-task related.',
+      prevention_text: 'Reminder to staff about kitchen knife handling. No structural cause.',
+      weather_temp: 'mild',
+      weather_cond: 'clear',
+      weather_light: 'day',
+      working_overtime: 'no',
+      normal_duty: 'no',
+      relationship: 'worker',
+      witnesses: [],
       register_target: 'SLS-REG-006'
     },
     // 4) Property damage — major, open
@@ -34618,6 +35235,16 @@ function incSeedDemoIncidents(silent) {
       photos_skipped: true,
       reporter_signature: sigMark,
       years_experience: '3-5',
+      mechanism: 'vehicle-plant-collision',
+      cause_text: 'Operator did not have a spotter at the gate and the south gate camera coverage has a known blind spot at the rear of the boom.',
+      prevention_text: 'Spotter required at all gate movements. Camera coverage to be expanded. Reverse-beeper checks added to plant pre-start.',
+      weather_temp: 'mild',
+      weather_cond: 'cloudy',
+      weather_light: 'day',
+      working_overtime: 'no',
+      normal_duty: 'yes',
+      relationship: 'worker',
+      witnesses: [{ name: "Mick Doyle", phone: "0411 111 010", company: "Burke Civil Contractors", source: 'roster' }],
       register_target: 'SLS-REG-006'
     },
     // 5) Environmental spill — moderate, closed
@@ -34676,6 +35303,16 @@ function incSeedDemoIncidents(silent) {
       reporter_signature: sigTom,
       closer_signature: sigEoin,
       years_experience: '10+',
+      mechanism: 'chemical-contact',
+      cause_text: 'The auto cut-off on the transfer pump nozzle failed silently — there was no audible or visual warning that it had stopped working.',
+      prevention_text: 'Monthly inspection of all transfer pumps with a forced calibration test. Spill kit located within 5m of all fuelling points.',
+      weather_temp: 'mild',
+      weather_cond: 'clear',
+      weather_light: 'day',
+      working_overtime: 'no',
+      normal_duty: 'yes',
+      relationship: 'subcontractor',
+      witnesses: [{ name: "Gary Tully", phone: "0411 111 013", company: "Tully Plumbing", source: 'roster' }],
       register_target: 'SLS-REG-006'
     }
   ];
