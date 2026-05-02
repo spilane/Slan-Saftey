@@ -145,7 +145,7 @@ input[type="time"] {
 .fhint{font-size:11.5px;color:var(--muted);margin-top:-4px}
 .fgroup{display:flex;flex-direction:column;gap:5px}
 
-input[type=text],input[type=tel],input[type=email],input[type=number],input[type=search],input[type=url],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);background:#fff;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+input[type=text],input[type=tel],input[type=email],input[type=number],input[type=search],input[type=url],input[type=date],input[type=time],input[type=datetime-local],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);background:#fff;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
 input:focus,select:focus,textarea:focus{border-color:var(--mid);box-shadow:0 0 0 3px rgba(45,106,69,.1)}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235C6B62' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
 
@@ -2046,6 +2046,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button type="button" class="ps-btn" id="inc-mech-psychological"        onclick="setIncMechanism('psychological')"         style="padding:9px 4px;font-size:11.5px">Psychological</button>
             <button type="button" class="ps-btn" id="inc-mech-other"                onclick="setIncMechanism('other')"                 style="padding:9px 4px;font-size:11.5px">Other</button>
           </div>
+        </div>
+        <div class="fgroup" id="inc-mech-other-wrap" style="display:none">
+          <label class="flabel">Describe the &ldquo;other&rdquo; mechanism <span class="req">*</span></label>
+          <div class="fhint" style="margin-bottom:6px">In your own words \u2014 what kind of event was it? Helps the investigator classify it for the register.</div>
+          <textarea id="inc-mech-other-detail" placeholder="e.g. swallowed contaminated water, animal/insect bite, drowning, etc." rows="2" style="font-size:14px" oninput="incRecheckSubmit()"></textarea>
         </div>
         <div class="fgroup">
           <label class="flabel">Description of the incident <span class="req">*</span></label>
@@ -18092,6 +18097,11 @@ function goToIncidentForm() {
   if (faWrap) faWrap.style.display = 'none';
   const faDetail = document.getElementById('inc-fa-detail');
   if (faDetail) faDetail.value = '';
+  // Reset "describe other mechanism" reveal + value
+  const mechOtherWrap = document.getElementById('inc-mech-other-wrap');
+  if (mechOtherWrap) mechOtherWrap.style.display = 'none';
+  const mechOtherDetail = document.getElementById('inc-mech-other-detail');
+  if (mechOtherDetail) mechOtherDetail.value = '';
   const sceneWrap = document.getElementById('inc-scene-reason-wrap');
   if (sceneWrap) sceneWrap.style.display = 'none';
   const regSel = document.getElementById('inc-reg-state');
@@ -18201,28 +18211,10 @@ function goToIncidentForm() {
       if (dwEl && consecutive > 0) dwEl.value = String(consecutive);
     }
   } catch(e) {}
-  // ── Auto-fill: activity at the time ──────────────────────────
-  // Pull from today's site pre-start tasks_today if available; otherwise
-  // fall back to the worker's role from sign-in (e.g. "Concretor work").
-  try {
-    const actEl = document.getElementById('inc-activity');
-    if (actEl && !actEl.value) {
-      // Try today's prestart tasks first
-      let activity = '';
-      if (typeof DEMO_PRESTARTS !== 'undefined' && Array.isArray(DEMO_PRESTARTS)) {
-        const todayStr = new Date().toLocaleDateString('en-AU');
-        const sitePs = DEMO_PRESTARTS.find(ps => ps.is_site_prestart && ps.date === todayStr && ps.tasks_today);
-        if (sitePs && sitePs.tasks_today) activity = sitePs.tasks_today;
-      }
-      // Fallback to worker's signed-in role
-      if (!activity && typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS) && p.name) {
-        const todayStr = new Date().toLocaleDateString('en-AU');
-        const myToday = DEMO_SIGNINS.find(s => s.worker_name === p.name && s.type === 'Sign In' && s.date === todayStr);
-        if (myToday && myToday.role) activity = myToday.role + ' work';
-      }
-      if (activity) actEl.value = activity;
-    }
-  } catch(e) {}
+  // ── Activity at the time ─────────────────────────────────────
+  // NOT auto-filled. People do various tasks throughout the day —
+  // pouring, setup, formwork strip, cleanup — so guessing from the
+  // job role would be misleading. The reporter types this manually.
   // Reset photo slots
   if (typeof resetIncidentPhotos === 'function') resetIncidentPhotos();
   // Reset submit button to disabled state (no required fields filled yet)
@@ -18267,6 +18259,10 @@ function incRecheckSubmit() {
   const supName  = document.getElementById('inc-supervisor-name');
   const mech     = document.getElementById('inc-mechanism');
   const v = el => (el && el.value && String(el.value).trim());
+  // If mechanism = "other", the describe-other textarea is required
+  const mechVal = v(mech);
+  const mechOtherDetail = v(document.getElementById('inc-mech-other-detail'));
+  const mechValid = !!mechVal && (mechVal !== 'other' || !!mechOtherDetail);
   const ok =
     !!v(type) &&
     !!incSeverity &&
@@ -18279,7 +18275,7 @@ function incRecheckSubmit() {
     !!incFields.supnotif &&
     !!incFields.support &&
     !!v(activity) &&
-    !!v(mech) &&
+    mechValid &&
     !!v(desc);
   if (ok) {
     btn.disabled = false;
@@ -18873,6 +18869,9 @@ function setIncMechanism(val) {
     b.className = 'ps-btn' + (v === val ? ' pass' : '');
     b.style = '';
   });
+  // Reveal "describe other" textarea only when Other is picked
+  const otherWrap = document.getElementById('inc-mech-other-wrap');
+  if (otherWrap) otherWrap.style.display = (val === 'other') ? 'block' : 'none';
   if (typeof incRecheckSubmit === 'function') incRecheckSubmit();
 }
 
@@ -19458,6 +19457,7 @@ function goToIncidentDetail(ref) {
       '</div></div>' +
       '<div class="fcard"><div class="fcard-hdr">What happened</div><div class="fcard-body">' +
         fmtRow('Event mechanism',     mechLabel(r.mechanism)) +
+        (r.mechanism === 'other' && r.mechanism_other_detail ? fmtBlock('Other mechanism description', r.mechanism_other_detail) : '') +
         fmtBlock('Description',       r.description) +
         fmtBlock('What caused it',    r.cause_text) +
         fmtBlock('How it could have been prevented', r.prevention_text) +
@@ -19954,6 +19954,9 @@ function downloadIncidentPdf() {
       };
       return m[r.mechanism] || r.mechanism || '';
     })());
+    if (r.mechanism === 'other' && r.mechanism_other_detail) {
+      drawCardBlock('OTHER MECHANISM DESCRIPTION', r.mechanism_other_detail);
+    }
     drawCardBlock('DESCRIPTION',                       r.description);
     drawCardBlock('WHAT CAUSED IT (REPORTER\u2019S VIEW)', r.cause_text);
     drawCardBlock('HOW COULD IT HAVE BEEN PREVENTED',  r.prevention_text);
@@ -20168,6 +20171,7 @@ async function submitIncident() {
     working_overtime: ((document.getElementById('inc-overtime')   || {}).value || ''),
     normal_duty:      ((document.getElementById('inc-normal-duty')|| {}).value || ''),
     mechanism:        ((document.getElementById('inc-mechanism')  || {}).value || ''),
+    mechanism_other_detail: ((document.getElementById('inc-mech-other-detail') || {}).value || '').trim(),
     cause_text:       ((document.getElementById('inc-cause')      || {}).value || '').trim(),
     prevention_text:  ((document.getElementById('inc-prevention') || {}).value || '').trim(),
     relationship:     ((document.getElementById('inc-relationship')|| {}).value || ''),
