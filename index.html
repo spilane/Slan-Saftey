@@ -1204,6 +1204,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="sp-talk" onclick="chipTapTalk()">
         <div class="sp-dot sp-pending"></div><span id="sp-talk-lbl">Toolbox Talk</span>
       </div>
+      <div class="status-pill" id="sp-sds" onclick="chipTapSDS()" style="display:none">
+        <div class="sp-dot sp-pending"></div><span id="sp-sds-lbl">SDS Report</span>
+      </div>
       <div class="status-pill" id="sp-inc" onclick="chipTapIncidents()" style="display:none">
         <div class="sp-dot sp-pending"></div><span id="sp-inc-lbl">Incidents</span>
       </div>
@@ -1515,6 +1518,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="d-pill-ps" onclick="supChipTapPrestart()"><div class="sp-dot sp-pending"></div><span id="d-pill-ps-lbl">Site Pre-Start</span></div>
       <div class="status-pill" id="d-pill-swms" onclick="supChipTapSwms()"><div class="sp-dot sp-pending"></div><span id="d-pill-swms-lbl">SWMS</span></div>
       <div class="status-pill" id="d-pill-talk" onclick="supChipTapTalk()"><div class="sp-dot sp-pending"></div><span id="d-pill-talk-lbl">Toolbox Talk</span></div>
+      <div class="status-pill" id="d-pill-sds" onclick="supChipTapSDS()"><div class="sp-dot sp-pending"></div><span id="d-pill-sds-lbl">SDS Reports</span></div>
       <div class="status-pill" id="d-pill-haz" onclick="supChipTapHazards()"><div class="sp-dot sp-pending"></div><span id="d-pill-haz-lbl">Hazards</span></div>
       <div class="status-pill" id="d-pill-inc" onclick="supChipTapIncidents()"><div class="sp-dot sp-pending"></div><span id="d-pill-inc-lbl">Incidents</span></div>
     </div>
@@ -3196,18 +3200,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <input type="text" id="sds-missing-usage" placeholder="e.g. Waterproofing membrane - Applicator..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off">
         </div>
         <div class="fgroup">
-          <label class="flabel">Photo of product label (optional but recommended)</label>
+          <label class="flabel">Photos of product label (optional but recommended)</label>
           <div style="position:relative">
-            <input type="file" id="sds-missing-photo" accept="image/*" capture="environment" style="display:none" onchange="sdsMissingPhotoPreview(this)">
+            <input type="file" id="sds-missing-photo" accept="image/*" capture="environment" multiple style="display:none" onchange="sdsMissingPhotoPreview(this)">
             <button type="button" onclick="document.getElementById('sds-missing-photo').click()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px dashed rgba(184,150,12,.4);background:#FFFBF0;color:#8B6914;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
               <svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              <span id="sds-photo-btn-text">Take photo of label</span>
+              <span id="sds-photo-btn-text">Add photos</span>
             </button>
           </div>
-          <div id="sds-photo-preview" style="display:none;margin-top:8px;position:relative">
-            <img id="sds-photo-img" style="width:100%;border-radius:var(--rs);border:1.5px solid rgba(184,150,12,.4)">
-            <button type="button" onclick="sdsMissingPhotoRemove()" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(184,50,50,.9);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">×</button>
-          </div>
+          <div id="sds-photos-preview" style="display:none;margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px"></div>
         </div>
         <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#1B6E3A;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report to supervisor</button>
         <div id="sds-missing-confirm" style="display:none;text-align:center;font-size:13px;font-weight:600;color:#1B6E3A;padding:8px">Reported - supervisor has been notified</div>
@@ -13836,6 +13837,36 @@ async function updateStatusStrip() {
   const wkSignedToday = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(_meWk && _meWk.name) : null;
   setPillState('sp-talk', wkSignedToday ? 'done' : 'warn');
 
+  // SDS Reports — show only if worker has submitted missing chemical reports
+  const sdsLbl  = document.getElementById('sp-sds-lbl');
+  const sdsPill = document.getElementById('sp-sds');
+  if (sdsPill) {
+    let sdsMissing = [];
+    try {
+      sdsMissing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+    } catch(e) {}
+    const myReports = sdsMissing.filter(function(r){
+      return r.reported_by === (_meWk && _meWk.name);
+    });
+    const myPending = myReports.filter(function(r){
+      return !r.status || r.status === 'pending';
+    });
+    if (myReports.length === 0) {
+      // No reports filed by this worker — hide the chip
+      sdsPill.style.display = 'none';
+    } else if (myPending.length > 0) {
+      // Has pending reports
+      sdsPill.style.display = '';
+      if (sdsLbl) sdsLbl.textContent = 'SDS Report (' + myPending.length + ' pending review)';
+      setPillState('sp-sds', 'warn');
+    } else {
+      // All reviewed
+      sdsPill.style.display = '';
+      if (sdsLbl) sdsLbl.textContent = 'SDS Report (reviewed)';
+      setPillState('sp-sds', 'done');
+    }
+  }
+
   // Incidents chip — ONLY shows when this worker has incident reports filed.
   // Hidden entirely otherwise (it's an event chip, not a daily-task chip
   // like Sign In / Pre-Start / SWMS / Toolbox Talk).
@@ -13981,6 +14012,7 @@ function chipTapIncidents() {
   if (typeof goToIncident === 'function') goToIncident();
   else goTo('screen-incident');
 }
+function chipTapSDS() { goTo('screen-sds'); }
 
 // ────────────────────────────────────────────
 // PERMISSIONS ONBOARDING
@@ -14168,6 +14200,9 @@ function supChipTapTalk() {
   if (typeof initTalk === 'function') { goTo('screen-talk'); setTimeout(initTalk, 20); }
   else goTo('screen-talk');
 }
+function supChipTapSDS() {
+  goTo('screen-sds');
+}
 function supChipTapHazards() {
   // Go to open hazards list
   if (typeof goToHazardList === 'function') goToHazardList();
@@ -14225,16 +14260,47 @@ function updateSupActivityStrip() {
   const supSignedToday = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(_meSup && _meSup.name) : null;
   setPillState('d-pill-talk', supSignedToday ? 'done' : 'warn');
 
-  // Hazards — count open hazards
+  // SDS Reports — show pending missing chemical reports
+  let sdsMissing = [];
+  try {
+    sdsMissing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+  } catch(e) {}
+  const sdsPending = sdsMissing.filter(function(r) { return !r.status || r.status === 'pending'; });
+  const sdsLbl = document.getElementById('d-pill-sds-lbl');
+  const sdsPill = document.getElementById('d-pill-sds');
+  if (sdsPill) {
+    if (sdsPending.length > 0) {
+      sdsPill.style.display = '';
+      if (sdsLbl) sdsLbl.textContent = 'SDS Reports (' + sdsPending.length + ' pending)';
+      setPillState('d-pill-sds', 'warn');
+    } else if (sdsMissing.length > 0) {
+      // All reviewed
+      sdsPill.style.display = '';
+      if (sdsLbl) sdsLbl.textContent = 'SDS Reports (reviewed)';
+      setPillState('d-pill-sds', 'done');
+    } else {
+      // No reports
+      sdsPill.style.display = 'none';
+    }
+  }
+
+  // Hazards — count open hazards (hide pill if no hazards reported)
   const hazards = JSON.parse(localStorage.getItem('slan_hazards') || '[]');
   const openHazards = hazards.filter(h => h.status !== 'closed' && h.status !== 'resolved');
   const hazLbl = document.getElementById('d-pill-haz-lbl');
-  if (hazLbl) {
-    if (openHazards.length > 0) {
-      hazLbl.textContent = 'Hazards (' + openHazards.length + ' open)';
+  const hazPill = document.getElementById('d-pill-haz');
+  if (hazPill) {
+    if (hazards.length === 0) {
+      // No hazards reported → hide the chip
+      hazPill.style.display = 'none';
+    } else if (openHazards.length > 0) {
+      hazPill.style.display = '';
+      if (hazLbl) hazLbl.textContent = 'Hazards (' + openHazards.length + ' open)';
       setPillState('d-pill-haz', 'warn');
     } else {
-      hazLbl.textContent = 'Hazards';
+      // All hazards resolved → green
+      hazPill.style.display = '';
+      if (hazLbl) hazLbl.textContent = 'Hazards (resolved)';
       setPillState('d-pill-haz', 'done');
     }
   }
@@ -37260,14 +37326,24 @@ function sdsReportMissing() {
   var confirm = document.getElementById('sds-missing-confirm');
   if (!name || !name.value.trim()) { slanAlert('Please enter the chemical name before continuing.'); return; }
   var p = getProfile();
-  var photoData = null;
-  if (photo && photo.files && photo.files[0]) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      photoData = e.target.result;
-      submitMissingReport();
-    };
-    reader.readAsDataURL(photo.files[0]);
+  var photosData = [];
+  
+  if (photo && photo.files && photo.files.length > 0) {
+    var filesToRead = photo.files.length;
+    var filesRead = 0;
+    for (var i = 0; i < photo.files.length; i++) {
+      (function(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          photosData.push(e.target.result);
+          filesRead++;
+          if (filesRead === filesToRead) {
+            submitMissingReport();
+          }
+        };
+        reader.readAsDataURL(file);
+      })(photo.files[i]);
+    }
   } else {
     submitMissingReport();
   }
@@ -37277,7 +37353,7 @@ function sdsReportMissing() {
       form_type: 'sds_missing_report',
       chemical_name: name.value.trim(),
       usage: usage ? usage.value.trim() : '',
-      photo: photoData || '',
+      photos: photosData,
       reported_by: p ? p.name : 'Unknown',
       reported_at: new Date().toISOString()
     };
@@ -37294,27 +37370,54 @@ function sdsReportMissing() {
 }
 
 function sdsMissingPhotoPreview(input) {
-  if (input.files && input.files[0]) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      var preview = document.getElementById('sds-photo-preview');
-      var img = document.getElementById('sds-photo-img');
-      var btnText = document.getElementById('sds-photo-btn-text');
-      if (img) img.src = e.target.result;
-      if (preview) preview.style.display = 'block';
-      if (btnText) btnText.textContent = 'Change photo';
-    };
-    reader.readAsDataURL(input.files[0]);
+  var preview = document.getElementById('sds-photos-preview');
+  var btnText = document.getElementById('sds-photo-btn-text');
+  
+  if (!input.files || input.files.length === 0) return;
+  
+  preview.innerHTML = '';
+  preview.style.display = 'grid';
+  
+  for (var i = 0; i < input.files.length; i++) {
+    (function(index) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var photoCard = document.createElement('div');
+        photoCard.style.cssText = 'position:relative';
+        photoCard.innerHTML = '<img src="' + e.target.result + '" style="width:100%;border-radius:var(--rs);border:1.5px solid rgba(184,150,12,.4)">' +
+          '<button type="button" onclick="sdsMissingPhotoRemoveOne(' + index + ')" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(184,50,50,.9);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">×</button>';
+        preview.appendChild(photoCard);
+      };
+      reader.readAsDataURL(input.files[index]);
+    })(i);
   }
+  
+  if (btnText) btnText.textContent = input.files.length + ' photo' + (input.files.length > 1 ? 's' : '') + ' added';
 }
 
 function sdsMissingPhotoRemove() {
-  var preview = document.getElementById('sds-photo-preview');
+  var preview = document.getElementById('sds-photos-preview');
   var photo = document.getElementById('sds-missing-photo');
   var btnText = document.getElementById('sds-photo-btn-text');
-  if (preview) preview.style.display = 'none';
+  if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
   if (photo) photo.value = '';
-  if (btnText) btnText.textContent = 'Take photo of label';
+  if (btnText) btnText.textContent = 'Add photos';
+}
+
+function sdsMissingPhotoRemoveOne(index) {
+  var photo = document.getElementById('sds-missing-photo');
+  if (!photo || !photo.files) return;
+  
+  var dt = new DataTransfer();
+  for (var i = 0; i < photo.files.length; i++) {
+    if (i !== index) dt.items.add(photo.files[i]);
+  }
+  photo.files = dt.files;
+  sdsMissingPhotoPreview(photo);
+  
+  if (photo.files.length === 0) {
+    sdsMissingPhotoRemove();
+  }
 }
 
 function downloadSDS(chemicalName) {
