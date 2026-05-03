@@ -3209,7 +3209,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
                 <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
               </label>
             </div>
-            <div class="hz-photo-slot" id="sds-slot-1" style="display:none">
+            <div class="hz-photo-slot" id="sds-slot-1">
               <label for="sds-photo-input-1" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                 <div class="hw-photo-label">2 · Product label</div>
@@ -37540,12 +37540,6 @@ function handleSdsPhoto(idx, e) {
       if (slot) {
         slot.innerHTML = `<img src="${compressed}" alt="SDS photo" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
         slot.classList.add('filled');
-      }
-      
-      // Show next slot if available
-      if (idx === 0) {
-        const nextSlot = document.getElementById('sds-slot-1');
-        if (nextSlot) nextSlot.style.display = 'flex';
       }
     };
     img.src = ev.target.result;
