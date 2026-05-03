@@ -37355,9 +37355,21 @@ function sdsReportMissing() {
       usage: usage ? usage.value.trim() : '',
       photos: photosData,
       reported_by: p ? p.name : 'Unknown',
-      reported_at: new Date().toISOString()
+      reported_at: new Date().toISOString(),
+      status: 'pending'
     };
+    
+    // Save to Firebase
     fbInsert('sds_missing', payload);
+    
+    // ALSO save to localStorage so pills can read it
+    var existing = [];
+    try {
+      existing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+    } catch(e) {}
+    existing.push(payload);
+    localStorage.setItem('sds_missing', JSON.stringify(existing));
+    
     if (name) name.value = '';
     if (usage) usage.value = '';
     if (photo) photo.value = '';
