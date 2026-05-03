@@ -3193,7 +3193,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div style="font-size:12px;color:#8B6914;line-height:1.5">If a chemical is being used on site that is not in this register, it must be reported immediately. Do <strong>not</strong> use an unregistered chemical without a current SDS.</div>
         <div class="fgroup">
           <label class="flabel">Chemical / product name *</label>
-          <input type="text" id="sds-missing-name" placeholder="e.g. Bondcrete, Sika Primer, WD-40..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off">
+          <input type="text" id="sds-missing-name" placeholder="e.g. Bondcrete, Sika Primer, WD-40..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off" oninput="sdsValidateForm()">
         </div>
         <div class="fgroup">
           <label class="flabel">Where is it being used?</label>
@@ -3216,7 +3216,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(0,event)">
           <input type="file" id="sds-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(1,event)">
         </div>
-        <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#1B6E3A;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report Missing Chemical</button>
+        <button id="sds-submit-btn" onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#C8C8C8;color:#fff;font-size:14px;font-weight:600;cursor:not-allowed;font-family:inherit;opacity:.65" disabled>Report Missing Chemical</button>
         <div id="sds-missing-confirm" style="display:none;text-align:center;font-size:13px;font-weight:600;color:#1B6E3A;padding:8px">Reported - supervisor has been notified</div>
       </div>
     </div>
@@ -37438,6 +37438,7 @@ function sdsReportMissing() {
   var photosToSave = sdsPhotos.filter(function(p) { return p !== null; });
   
   var payload = {
+    id: Date.now() + '_' + Math.random().toString(36).substr(2, 9), // Unique ID
     form_type: 'sds_missing_report',
     chemical_name: name.value.trim(),
     usage: usage ? usage.value.trim() : '',
@@ -37450,13 +37451,17 @@ function sdsReportMissing() {
   // Save to Firebase
   fbInsert('sds_missing', payload);
   
-  // ALSO save to localStorage so pills can read it
+  // Save to localStorage - check for duplicates by ID
   var existing = [];
   try {
     existing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
   } catch(e) {}
-  existing.push(payload);
-  localStorage.setItem('sds_missing', JSON.stringify(existing));
+  
+  // Only add if this ID doesn't exist
+  if (!existing.find(function(r) { return r.id === payload.id; })) {
+    existing.push(payload);
+    localStorage.setItem('sds_missing', JSON.stringify(existing));
+  }
   
   // Clear form
   if (name) name.value = '';
@@ -37484,6 +37489,26 @@ function sdsReportMissing() {
 
 // SDS photo handling - stores up to 2 photos with timestamps
 var sdsPhotos = [null, null];
+
+function sdsValidateForm() {
+  var name = document.getElementById('sds-missing-name');
+  var btn = document.getElementById('sds-submit-btn');
+  if (!btn) return;
+  
+  var isValid = name && name.value.trim().length > 0;
+  
+  if (isValid) {
+    btn.disabled = false;
+    btn.style.background = '#1B6E3A';
+    btn.style.cursor = 'pointer';
+    btn.style.opacity = '1';
+  } else {
+    btn.disabled = true;
+    btn.style.background = '#C8C8C8';
+    btn.style.cursor = 'not-allowed';
+    btn.style.opacity = '.65';
+  }
+}
 
 function handleSdsPhoto(idx, e) {
   const file = e.target.files[0];
@@ -37706,40 +37731,24 @@ function sdsRenderPendingReports() {
       });
       photoHtml += '</div>';
     } else if (r.photo) {
-      // Fallback for old single photo format
       photoHtml = '<div onclick="sdsViewReportPhoto(' + idx + ', 0)" style="cursor:pointer;margin-top:8px"><img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></div>';
     }
     
-    return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px;cursor:pointer" onclick="toggleSdsSupCard(' + idx + ')">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
-        '<div style="font-size:15px;font-weight:700;color:var(--text)">' + r.chemical_name + '</div>' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;transition:transform 0.2s" id="sds-sup-arrow-' + idx + '"><polyline points="6 9 12 15 18 9"/></svg>' +
-      '</div>' +
-      '<div style="font-size:11px;color:var(--muted);margin-top:4px">' +
-        'Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date +
-      '</div>' +
-      '<div id="sds-sup-detail-' + idx + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(184,50,50,.2)" onclick="event.stopPropagation()">' +
-        (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
-        photoHtml +
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px">' +
-          '<button onclick="sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
-          '<button onclick="sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
-        '</div>' +
+    return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px">' +
+      '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">' + r.chemical_name + '</div>' +
+      (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px">Where being used: ' + r.usage + '</div>' : '') +
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date + '</div>' +
+      photoHtml +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px">' +
+        '<button onclick="sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
+        '<button onclick="sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
       '</div>' +
     '</div>';
   }).join('');
 }
 
 function toggleSdsSupCard(idx) {
-  var detail = document.getElementById('sds-sup-detail-' + idx);
-  var arrow = document.getElementById('sds-sup-arrow-' + idx);
-  if (detail) {
-    var isExpanded = detail.style.display !== 'none';
-    detail.style.display = isExpanded ? 'none' : 'block';
-    if (arrow) {
-      arrow.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
-    }
-  }
+  // Not needed anymore - cards don't collapse
 }
 
 function sdsRenderWorkerReports() {
