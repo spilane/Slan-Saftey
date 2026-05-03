@@ -1279,7 +1279,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="tile" onclick="goToSdsLookup()">
         <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/><path d="M12 15v3"/></svg></div>
-        <div class="tile-name">SDS Lookup</div><div class="tile-sub">Search safety data sheets</div>
+        <div class="tile-name">SDS Lookup</div><div class="tile-sub" id="worker-sds-tile-sub">Search safety data sheets</div>
       </div>
       <div class="tile" onclick="goToStars()">
         <div class="tile-icon" style="background:#FFF5D6"><svg viewBox="0 0 24 24" fill="none" stroke="#7A6020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
@@ -3222,6 +3222,26 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div style="font-size:12px;color:#1C5AAD;line-height:1.5">Under WHS Regulations, a current SDS must be accessible for every hazardous chemical on site. SDS must not be older than 5 years from issue. 10 chemicals registered — SLSREG-005 v1.3. 1 expired, 1 expiring in 14 days.</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- SDS SUBMISSION CONFIRMATION -->
+<div id="screen-sds-success" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <div style="width:36px"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tile-icon ic-teal" style="width:28px;height:28px;border-radius:7px"><svg viewBox="0 0 24 24" fill="none" stroke="#136D65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">SDS Report</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="hw-success-wrap">
+    <div class="hw-success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="hw-success-title">Report submitted</div>
+    <div class="hw-success-sub" id="sds-success-chemical"></div>
+    <div class="hw-success-time" id="sds-success-time"></div>
+    <div class="hw-success-sub" style="margin-top:10px">Your missing chemical report is pending supervisor review. They'll add it to the register or request more information.</div>
+    <button class="submit-btn" onclick="goTo('screen-sds')" style="margin-top:24px;max-width:280px">Done</button>
   </div>
 </div>
 
@@ -13925,6 +13945,7 @@ async function updateStatusStrip() {
   try { hwCheckHandoverAccepted(); } catch(e) {}
   try { ptwUpdateTileSubtitle(); } catch(e) {}
   try { workerUpdatePermitsTileSub(); } catch(e) {}
+  try { updateWorkerSdsTileSub(); } catch(e) {}
 }
 
 function workerUpdatePermitsTileSub() {
@@ -13966,6 +13987,35 @@ function workerUpdatePermitsTileSub() {
   if (rejected > 0) parts.push('<span style="color:#A32D2D;font-weight:600">' + rejected + ' rejected</span>');
 
   if (parts.length === 0) sub.textContent = 'Hot Works, WAH & more';
+  else sub.innerHTML = parts.join(' · ');
+}
+
+function updateWorkerSdsTileSub() {
+  const sub = document.getElementById('worker-sds-tile-sub');
+  if (!sub) return;
+  const p = getProfile && getProfile();
+  if (!p) return;
+  
+  let sdsMissing = [];
+  try {
+    sdsMissing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+  } catch(e) {}
+  
+  const myReports = sdsMissing.filter(function(r) {
+    return r.reported_by === (p && p.name);
+  });
+  const myPending = myReports.filter(function(r) {
+    return !r.status || r.status === 'pending';
+  });
+  const myReviewed = myReports.filter(function(r) {
+    return r.status === 'reviewed' || r.status === 'added';
+  });
+  
+  const parts = [];
+  if (myPending.length > 0) parts.push('<span style="color:#854F0B;font-weight:600">' + myPending.length + ' pending review</span>');
+  if (myReviewed.length > 0) parts.push('<span style="color:#1B6E3A;font-weight:600">' + myReviewed.length + ' reviewed</span>');
+  
+  if (parts.length === 0) sub.textContent = 'Search safety data sheets';
   else sub.innerHTML = parts.join(' · ');
 }
 
@@ -37374,12 +37424,19 @@ function sdsReportMissing() {
     if (usage) usage.value = '';
     if (photo) photo.value = '';
     sdsMissingPhotoRemove();
-    if (confirm) { confirm.style.display = 'block'; setTimeout(function(){ confirm.style.display='none'; }, 4000); }
+    
+    // Show confirmation screen
+    var chemicalName = payload.chemical_name;
+    var timeText = new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
+    document.getElementById('sds-success-chemical').textContent = chemicalName;
+    document.getElementById('sds-success-time').textContent = timeText;
+    goTo('screen-sds-success');
     
     // Update notification badge and activity pills
     if (typeof updateSdsNotif === 'function') updateSdsNotif();
     if (typeof updateStatusStrip === 'function') updateStatusStrip();
     if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip();
+    if (typeof updateWorkerSdsTileSub === 'function') updateWorkerSdsTileSub();
   }
 }
 
