@@ -1621,6 +1621,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="#136D65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/><path d="M12 15v3"/></svg></div>
         <div class="tile-name">SDS Lookup</div>
         <div class="tile-sub">Search safety data sheets</div>
+        <div class="tile-notif" id="sds-notif" style="display:none"></div>
       </div>
       <div class="tile" onclick="goToRiggingType('rigging')">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
@@ -3157,6 +3158,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
+    <!-- Supervisor: Pending missing chemical reports -->
+    <div class="fcard" id="sds-pending-reports-card" style="display:none;background:#FFF0F0;border-color:rgba(184,50,50,.25)">
+      <div class="fcard-hdr" style="color:#B83232;display:flex;align-items:center;justify-content:space-between">
+        <span>⚠️ Missing Chemical Reports</span>
+        <span id="sds-pending-count" style="background:#B83232;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">0</span>
+      </div>
+      <div id="sds-pending-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
     <!-- Results list -->
     <div id="sds-results" style="display:flex;flex-direction:column;gap:10px"></div>
 
@@ -3173,7 +3183,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <!-- Report missing chemical -->
-    <div class="fcard" style="background:#FDF8E8;border-color:rgba(184,150,12,.25)">
+    <div class="fcard" id="sds-report-missing-card" style="background:#FDF8E8;border-color:rgba(184,150,12,.25)">
       <div class="fcard-hdr" style="color:#8B6914">Chemical not listed?</div>
       <div class="fcard-body" style="gap:10px">
         <div style="font-size:12px;color:#8B6914;line-height:1.5">If a chemical is being used on site that is not in this register, it must be reported immediately. Do <strong>not</strong> use an unregistered chemical without a current SDS.</div>
@@ -3199,7 +3209,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <button type="button" onclick="sdsMissingPhotoRemove()" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(184,50,50,.9);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">×</button>
           </div>
         </div>
-        <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#B8960C;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report to supervisor</button>
+        <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#1B6E3A;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report to supervisor</button>
         <div id="sds-missing-confirm" style="display:none;text-align:center;font-size:13px;font-weight:600;color:#1B6E3A;padding:8px">Reported - supervisor has been notified</div>
       </div>
     </div>
@@ -12267,6 +12277,9 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
   const workerPs  = prestarts.filter(p=>!p.is_site_prestart);
   const sitePsDone= prestarts.find(p=>p.is_site_prestart);
   const missing   = signedIn.filter(w=>!talks.find(t=>t.worker_name===w.worker_name));
+  
+  // Update SDS notification badge
+  if (typeof updateSdsNotif === 'function') updateSdsNotif();
   const critHigh  = hazards.filter(h=>h.severity==='Critical'||h.severity==='High');
 
   // Metric cards in header
@@ -16233,6 +16246,27 @@ function ptwUpdateTileSubtitle() {
       : 'You have no permits today. Tap “New Permit” above to create one.';
   }
   else sub.innerHTML = parts.join(' · ');
+}
+
+function updateSdsNotif() {
+  const badge = document.getElementById('sds-notif');
+  if (!badge) return;
+  
+  // Count PENDING missing chemical reports from localStorage (exclude dismissed/added)
+  let missing = [];
+  try {
+    missing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+  } catch(e) {}
+  
+  const pending = missing.filter(function(r) { return !r.status || r.status === 'pending'; });
+  const count = pending.length;
+  
+  if (count === 0) {
+    badge.style.display = 'none';
+  } else {
+    badge.style.display = '';
+    badge.textContent = count;
+  }
 }
 
 
@@ -37158,6 +37192,23 @@ function goToSdsLookup() {
   document.getElementById("sds-search-input").value = "";
   document.getElementById("sds-results").innerHTML = "";
   document.getElementById("sds-empty").style.display = "block";
+  
+  // Hide "Report Missing" card if supervisor (they review reports, don't submit them)
+  var reportCard = document.getElementById("sds-report-missing-card");
+  if (reportCard) {
+    reportCard.style.display = (_sdsFromRole === 'supervisor') ? 'none' : 'block';
+  }
+  
+  // Show pending reports card for supervisors
+  var pendingCard = document.getElementById("sds-pending-reports-card");
+  if (pendingCard) {
+    if (_sdsFromRole === 'supervisor') {
+      pendingCard.style.display = 'block';
+      sdsRenderPendingReports();
+    } else {
+      pendingCard.style.display = 'none';
+    }
+  }
 }
 
 function sdsBrowseAll() {
@@ -37236,6 +37287,9 @@ function sdsReportMissing() {
     if (photo) photo.value = '';
     sdsMissingPhotoRemove();
     if (confirm) { confirm.style.display = 'block'; setTimeout(function(){ confirm.style.display='none'; }, 4000); }
+    
+    // Update supervisor notification badge
+    if (typeof updateSdsNotif === 'function') updateSdsNotif();
   }
 }
 
@@ -37267,6 +37321,13 @@ function downloadSDS(chemicalName) {
   var chem = SDS_CHEMICALS.find(function(c) { return c.name === chemicalName; });
   if (!chem) { slanAlert('Chemical not found'); return; }
   
+  // Check jsPDF is loaded
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    slanAlert('PDF library not loaded. Please refresh the page and try again.');
+    return;
+  }
+  
+  var jsPDF = window.jspdf.jsPDF;
   var doc = new jsPDF();
   var yPos = 20;
   var pageHeight = doc.internal.pageSize.height;
@@ -37365,6 +37426,104 @@ function downloadSDS(chemicalName) {
   // Save
   var filename = 'SDS_' + chem.name.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';
   doc.save(filename);
+}
+
+function sdsRenderPendingReports() {
+  var list = document.getElementById('sds-pending-list');
+  var count = document.getElementById('sds-pending-count');
+  var card = document.getElementById('sds-pending-reports-card');
+  if (!list || !count || !card) return;
+  
+  // Load missing reports
+  var reports = [];
+  try {
+    reports = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+  } catch(e) {}
+  
+  // Filter to only pending (not dismissed/resolved)
+  var pending = reports.filter(function(r) { return !r.status || r.status === 'pending'; });
+  
+  count.textContent = pending.length;
+  
+  if (pending.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+  
+  card.style.display = 'block';
+  
+  list.innerHTML = pending.map(function(r, idx) {
+    var date = r.reported_at ? new Date(r.reported_at).toLocaleString('en-AU', { 
+      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' 
+    }) : 'Unknown time';
+    
+    return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px;gap:10px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
+        '<div style="flex:1">' +
+          '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">' + r.chemical_name + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">' +
+            'Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date +
+          '</div>' +
+          (r.usage ? '<div style="font-size:12px;color:var(--text);line-height:1.4;margin-bottom:8px"><strong>Usage:</strong> ' + r.usage + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      (r.photo ? '<div onclick="sdsViewReportPhoto(' + idx + ')" style="cursor:pointer"><img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></div>' : '') +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">' +
+        '<button onclick="sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
+        '<button onclick="sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function sdsViewReportPhoto(idx) {
+  var reports = [];
+  try {
+    reports = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+  } catch(e) {}
+  
+  var pending = reports.filter(function(r) { return !r.status || r.status === 'pending'; });
+  if (!pending[idx] || !pending[idx].photo) return;
+  
+  // Open photo in new window
+  var win = window.open('', '_blank');
+  win.document.write('<html><head><title>Chemical Label Photo</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#000"><img src="' + pending[idx].photo + '" style="max-width:100%;max-height:100vh"></body></html>');
+}
+
+function sdsCloseReport(idx, action) {
+  var reports = [];
+  try {
+    reports = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+  } catch(e) {}
+  
+  var pending = reports.filter(function(r) { return !r.status || r.status === 'pending'; });
+  if (!pending[idx]) return;
+  
+  // Find this report in the full array and mark as closed
+  var reportId = pending[idx].reported_at; // Use timestamp as ID
+  reports.forEach(function(r) {
+    if (r.reported_at === reportId) {
+      r.status = action === 'added' ? 'added' : 'dismissed';
+      r.closed_at = new Date().toISOString();
+    }
+  });
+  
+  // Save back
+  try {
+    localStorage.setItem('sds_missing', JSON.stringify(reports));
+  } catch(e) {}
+  
+  // Re-render
+  sdsRenderPendingReports();
+  
+  // Update notification badge
+  if (typeof updateSdsNotif === 'function') updateSdsNotif();
+  
+  // Show confirmation
+  var msg = action === 'added' 
+    ? 'Chemical marked as added to register' 
+    : 'Report dismissed';
+  if (typeof slanToast === 'function') slanToast(msg);
 }
 
 function sdsBack() {
