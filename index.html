@@ -3202,15 +3202,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="hz-photo-slot" id="sds-slot-0" onclick="document.getElementById('sds-photo-input-0').click()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              <div class="hw-photo-label">1 · Product label</div>
-              <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
+            <div class="hz-photo-slot" id="sds-slot-0">
+              <label for="sds-photo-input-0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <div class="hw-photo-label">1 · Product label</div>
+                <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
+              </label>
             </div>
-            <div class="hz-photo-slot" id="sds-slot-1" onclick="document.getElementById('sds-photo-input-1').click()" style="display:none">
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              <div class="hw-photo-label">2 · Product label</div>
-              <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
+            <div class="hz-photo-slot" id="sds-slot-1" style="display:none">
+              <label for="sds-photo-input-1" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <div class="hw-photo-label">2 · Product label</div>
+                <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
+              </label>
             </div>
           </div>
           <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(0,event)">
@@ -37528,33 +37532,13 @@ function handleSdsPhoto(idx, e) {
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-
-      // Timestamp + site watermark
-      const now = new Date();
-      const stamp = now.toLocaleDateString('en-AU') + '  ' +
-        now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
-      const siteLine = (typeof SITE !== 'undefined') ? SITE : '';
-      const fontSize = Math.max(12, Math.round(w * 0.03));
-      ctx.font = `bold ${fontSize}px 'DM Mono', monospace`;
-      const lines = [stamp, siteLine].filter(l => l);
-      const padding = fontSize * 0.6;
-      const lineH   = fontSize * 1.5;
-      const boxH    = lines.length * lineH + padding * 2;
-      ctx.fillStyle = 'rgba(0,0,0,0.62)';
-      ctx.fillRect(0, h - boxH, w, boxH);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.textAlign = 'left';
-      lines.forEach((line, i) => {
-        ctx.fillText(line, padding, h - boxH + padding + (i + 1) * lineH - fontSize * 0.3);
-      });
-
-      const compressed = canvas.toDataURL('image/jpeg', 0.80);
+      const compressed = canvas.toDataURL('image/jpeg', 0.7);
       sdsPhotos[idx] = compressed;
 
       // Replace slot content with image
       const slot = document.getElementById('sds-slot-' + idx);
       if (slot) {
-        slot.innerHTML = `<img src="${compressed}" alt="SDS photo">`;
+        slot.innerHTML = `<img src="${compressed}" alt="SDS photo" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
         slot.classList.add('filled');
       }
       
@@ -37576,7 +37560,7 @@ function handleSdsPhotoRemove(idx) {
   
   if (slot) {
     const num = idx + 1;
-    slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">${num} · Product label</div><div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>`;
+    slot.innerHTML = `<label for="sds-photo-input-${idx}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">${num} · Product label</div><div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div></label>`;
     slot.classList.remove('filled');
   }
   if (input) input.value = '';
