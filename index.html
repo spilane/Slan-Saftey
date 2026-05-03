@@ -3196,8 +3196,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <input type="text" id="sds-missing-name" placeholder="e.g. Bondcrete, Sika Primer, WD-40..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off">
         </div>
         <div class="fgroup">
-          <label class="flabel">Where is it being used / who is using it?</label>
-          <input type="text" id="sds-missing-usage" placeholder="e.g. Waterproofing membrane - Applicator..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off">
+          <label class="flabel">Where is it being used?</label>
+          <input type="text" id="sds-missing-usage" placeholder="e.g. Level 2 slab waterproofing, Basement formwork..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off">
         </div>
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
@@ -3213,6 +3213,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#1B6E3A;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report to supervisor</button>
         <div id="sds-missing-confirm" style="display:none;text-align:center;font-size:13px;font-weight:600;color:#1B6E3A;padding:8px">Reported - supervisor has been notified</div>
       </div>
+    </div>
+
+    <!-- Worker: My submitted reports -->
+    <div class="fcard" id="sds-worker-reports-card" style="display:none">
+      <div class="fcard-hdr" style="display:flex;align-items:center;justify-content:space-between">
+        <span>My Submitted Reports</span>
+        <span id="sds-worker-reports-count" style="background:var(--muted);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">0</span>
+      </div>
+      <div id="sds-worker-reports-list" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
 
     <!-- Info banner -->
@@ -37351,6 +37360,11 @@ function goToSdsLookup() {
     }
   }
   
+  // Show worker's own submitted reports for workers
+  if (_sdsFromRole === 'worker') {
+    sdsRenderWorkerReports();
+  }
+  
   // Hide "Site Supervisor" contact line when viewing as supervisor
   var supLabel = document.getElementById('sds-supervisor-contact-label');
   var supValue = document.getElementById('sds-supervisor-contact-value');
@@ -37476,6 +37490,7 @@ function sdsReportMissing() {
     if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip();
     if (typeof updateWorkerSdsTileSub === 'function') updateWorkerSdsTileSub();
     if (typeof updateSupSdsTileSub === 'function') updateSupSdsTileSub();
+    if (typeof sdsRenderWorkerReports === 'function') sdsRenderWorkerReports();
   }
 }
 
@@ -37684,21 +37699,76 @@ function sdsRenderPendingReports() {
     }
     
     return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px;gap:10px">' +
-      '<div style="font-size:13px;font-weight:700;color:#B83232;margin-bottom:8px">⚠️ Missing Chemical Report</div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
-        '<div style="flex:1">' +
-          '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">' + r.chemical_name + '</div>' +
-          '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">' +
-            'Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date +
-          '</div>' +
-          (r.usage ? '<div style="font-size:12px;color:var(--text);line-height:1.4;margin-bottom:8px"><strong>Usage:</strong> ' + r.usage + '</div>' : '') +
-        '</div>' +
+      '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">' + r.chemical_name + '</div>' +
+      (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px">Where being used: ' + r.usage + '</div>' : '') +
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">' +
+        'Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date +
       '</div>' +
       photoHtml +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">' +
         '<button onclick="sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
         '<button onclick="sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
       '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function sdsRenderWorkerReports() {
+  var list = document.getElementById('sds-worker-reports-list');
+  var count = document.getElementById('sds-worker-reports-count');
+  var card = document.getElementById('sds-worker-reports-card');
+  if (!list || !count || !card) return;
+  
+  var p = getProfile();
+  if (!p) return;
+  
+  // Load missing reports
+  var reports = [];
+  try {
+    reports = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+  } catch(e) {}
+  
+  // Filter to only this worker's reports
+  var myReports = reports.filter(function(r) { return r.reported_by === p.name; });
+  
+  count.textContent = myReports.length;
+  
+  if (myReports.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+  
+  card.style.display = 'block';
+  
+  list.innerHTML = myReports.map(function(r, idx) {
+    var date = r.reported_at ? new Date(r.reported_at).toLocaleString('en-AU', { 
+      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' 
+    }) : 'Unknown time';
+    
+    var statusColor = (!r.status || r.status === 'pending') ? '#854F0B' : '#1B6E3A';
+    var statusText = (!r.status || r.status === 'pending') ? 'Pending review' : 'Reviewed';
+    var statusBg = (!r.status || r.status === 'pending') ? '#FDF8E8' : '#E6F5ED';
+    
+    // Handle both old single photo and new photos array
+    var photoHtml = '';
+    if (r.photos && r.photos.length > 0) {
+      photoHtml = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px">';
+      r.photos.forEach(function(photo, photoIdx) {
+        photoHtml += '<img src="' + photo + '" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:1px solid var(--border)">';
+      });
+      photoHtml += '</div>';
+    } else if (r.photo) {
+      photoHtml = '<div style="margin-top:8px"><img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></div>';
+    }
+    
+    return '<div class="fcard-body" style="background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;gap:10px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px">' +
+        '<div style="font-size:14px;font-weight:700;color:var(--text)">' + r.chemical_name + '</div>' +
+        '<div style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:' + statusBg + ';color:' + statusColor + ';white-space:nowrap">' + statusText + '</div>' +
+      '</div>' +
+      (r.usage ? '<div style="font-size:12px;color:var(--text);line-height:1.4;margin-bottom:8px">Where being used: ' + r.usage + '</div>' : '') +
+      '<div style="font-size:11px;color:var(--muted)">' + date + '</div>' +
+      photoHtml +
     '</div>';
   }).join('');
 }
