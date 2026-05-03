@@ -1624,7 +1624,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="tile" onclick="goToSdsLookup()">
         <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="#136D65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/><path d="M12 15v3"/></svg></div>
         <div class="tile-name">SDS Lookup</div>
-        <div class="tile-sub">Search safety data sheets</div>
+        <div class="tile-sub" id="sup-sds-tile-sub">Search safety data sheets</div>
         <div class="tile-notif" id="sds-notif" style="display:none"></div>
       </div>
       <div class="tile" onclick="goToRiggingType('rigging')">
@@ -3143,8 +3143,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="color:#B83232"><a href="tel:131126" style="color:#B83232;text-decoration:none;font-weight:600">13 11 26</a> (24/7)</div>
           <div style="font-weight:600;color:#B83232">EPA Pollution:</div>
           <div style="color:#B83232"><a href="tel:131555" style="color:#B83232;text-decoration:none;font-weight:600">131 555</a></div>
-          <div style="font-weight:600;color:#B83232">Site Supervisor:</div>
-          <div style="color:#B83232"><a href="tel:0412345678" style="color:#B83232;text-decoration:none;font-weight:600">Eoin Burke 0412 345 678</a></div>
+          <div id="sds-supervisor-contact-label" style="font-weight:600;color:#B83232">Site Supervisor:</div>
+          <div id="sds-supervisor-contact-value" style="color:#B83232"><a href="tel:0412345678" style="color:#B83232;text-decoration:none;font-weight:600">Eoin Burke 0412 345 678</a></div>
         </div>
       </div>
     </div>
@@ -12326,6 +12326,7 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
   // Old setP calls replaced with new updater (chips reworked to action-oriented)
   try { updateSupActivityStrip(); } catch(e) {}
   try { ptwUpdateTileSubtitle(); } catch(e) {}
+  try { updateSupSdsTileSub(); } catch(e) {}
   if (document.getElementById('d-pill-haz')) {
     const dot = document.getElementById('d-pill-haz').querySelector('.sp-dot');
     if (dot && hazards.length > 0) dot.className = 'sp-dot sp-warn';
@@ -14014,6 +14015,30 @@ function updateWorkerSdsTileSub() {
   const parts = [];
   if (myPending.length > 0) parts.push('<span style="color:#854F0B;font-weight:600">' + myPending.length + ' pending review</span>');
   if (myReviewed.length > 0) parts.push('<span style="color:#1B6E3A;font-weight:600">' + myReviewed.length + ' reviewed</span>');
+  
+  if (parts.length === 0) sub.textContent = 'Search safety data sheets';
+  else sub.innerHTML = parts.join(' · ');
+}
+
+function updateSupSdsTileSub() {
+  const sub = document.getElementById('sup-sds-tile-sub');
+  if (!sub) return;
+  
+  let sdsMissing = [];
+  try {
+    sdsMissing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+  } catch(e) {}
+  
+  const pending = sdsMissing.filter(function(r) {
+    return !r.status || r.status === 'pending';
+  });
+  const reviewed = sdsMissing.filter(function(r) {
+    return r.status === 'reviewed' || r.status === 'added' || r.status === 'dismissed';
+  });
+  
+  const parts = [];
+  if (pending.length > 0) parts.push('<span style="color:#854F0B;font-weight:600">' + pending.length + ' pending review</span>');
+  if (reviewed.length > 0) parts.push('<span style="color:#1B6E3A;font-weight:600">' + reviewed.length + ' reviewed</span>');
   
   if (parts.length === 0) sub.textContent = 'Search safety data sheets';
   else sub.innerHTML = parts.join(' · ');
@@ -37325,6 +37350,19 @@ function goToSdsLookup() {
       pendingCard.style.display = 'none';
     }
   }
+  
+  // Hide "Site Supervisor" contact line when viewing as supervisor
+  var supLabel = document.getElementById('sds-supervisor-contact-label');
+  var supValue = document.getElementById('sds-supervisor-contact-value');
+  if (supLabel && supValue) {
+    if (_sdsFromRole === 'supervisor') {
+      supLabel.style.display = 'none';
+      supValue.style.display = 'none';
+    } else {
+      supLabel.style.display = '';
+      supValue.style.display = '';
+    }
+  }
 }
 
 function sdsBrowseAll() {
@@ -37437,6 +37475,7 @@ function sdsReportMissing() {
     if (typeof updateStatusStrip === 'function') updateStatusStrip();
     if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip();
     if (typeof updateWorkerSdsTileSub === 'function') updateWorkerSdsTileSub();
+    if (typeof updateSupSdsTileSub === 'function') updateSupSdsTileSub();
   }
 }
 
@@ -37631,7 +37670,21 @@ function sdsRenderPendingReports() {
       day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' 
     }) : 'Unknown time';
     
+    // Handle both old single photo and new photos array
+    var photoHtml = '';
+    if (r.photos && r.photos.length > 0) {
+      photoHtml = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px">';
+      r.photos.forEach(function(photo, photoIdx) {
+        photoHtml += '<img src="' + photo + '" onclick="sdsViewReportPhoto(' + idx + ', ' + photoIdx + ')" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer">';
+      });
+      photoHtml += '</div>';
+    } else if (r.photo) {
+      // Fallback for old single photo format
+      photoHtml = '<div onclick="sdsViewReportPhoto(' + idx + ', 0)" style="cursor:pointer;margin-top:8px"><img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></div>';
+    }
+    
     return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px;gap:10px">' +
+      '<div style="font-size:13px;font-weight:700;color:#B83232;margin-bottom:8px">⚠️ Missing Chemical Report</div>' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
         '<div style="flex:1">' +
           '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">' + r.chemical_name + '</div>' +
@@ -37641,7 +37694,7 @@ function sdsRenderPendingReports() {
           (r.usage ? '<div style="font-size:12px;color:var(--text);line-height:1.4;margin-bottom:8px"><strong>Usage:</strong> ' + r.usage + '</div>' : '') +
         '</div>' +
       '</div>' +
-      (r.photo ? '<div onclick="sdsViewReportPhoto(' + idx + ')" style="cursor:pointer"><img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></div>' : '') +
+      photoHtml +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">' +
         '<button onclick="sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
         '<button onclick="sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
