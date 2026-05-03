@@ -3201,14 +3201,30 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
-          <div style="position:relative">
-            <input type="file" id="sds-missing-photo" accept="image/*" multiple style="display:none" onchange="sdsMissingPhotoPreview(this)">
-            <button type="button" onclick="document.getElementById('sds-missing-photo').click()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px dashed rgba(184,150,12,.4);background:#FFFBF0;color:#8B6914;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              <span id="sds-photo-btn-text">Add photos</span>
-            </button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="position:relative">
+              <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(0,event)">
+              <button type="button" onclick="document.getElementById('sds-photo-input-0').click()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px dashed rgba(184,150,12,.4);background:#FFFBF0;color:#8B6914;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span id="sds-photo-btn-0">Photo 1</span>
+              </button>
+              <div id="sds-photo-preview-0" style="display:none;margin-top:8px;position:relative">
+                <img id="sds-photo-img-0" style="width:100%;border-radius:var(--rs);border:1.5px solid rgba(184,150,12,.4)">
+                <button type="button" onclick="handleSdsPhotoRemove(0)" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(184,50,50,.9);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">×</button>
+              </div>
+            </div>
+            <div style="position:relative">
+              <input type="file" id="sds-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(1,event)">
+              <button type="button" onclick="document.getElementById('sds-photo-input-1').click()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px dashed rgba(184,150,12,.4);background:#FFFBF0;color:#8B6914;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span id="sds-photo-btn-1">Photo 2</span>
+              </button>
+              <div id="sds-photo-preview-1" style="display:none;margin-top:8px;position:relative">
+                <img id="sds-photo-img-1" style="width:100%;border-radius:var(--rs);border:1.5px solid rgba(184,150,12,.4)">
+                <button type="button" onclick="handleSdsPhotoRemove(1)" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(184,50,50,.9);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">×</button>
+              </div>
+            </div>
           </div>
-          <div id="sds-photos-preview" style="display:none;margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px"></div>
         </div>
         <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#1B6E3A;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report to supervisor</button>
         <div id="sds-missing-confirm" style="display:none;text-align:center;font-size:13px;font-weight:600;color:#1B6E3A;padding:8px">Reported - supervisor has been notified</div>
@@ -37424,125 +37440,90 @@ function sdsBrowseAll() {
 function sdsReportMissing() {
   var name = document.getElementById('sds-missing-name');
   var usage = document.getElementById('sds-missing-usage');
-  var photo = document.getElementById('sds-missing-photo');
-  var confirm = document.getElementById('sds-missing-confirm');
   if (!name || !name.value.trim()) { slanAlert('Please enter the chemical name before continuing.'); return; }
+  
   var p = getProfile();
-  var photosData = [];
   
-  if (photo && photo.files && photo.files.length > 0) {
-    var filesToRead = photo.files.length;
-    var filesRead = 0;
-    for (var i = 0; i < photo.files.length; i++) {
-      (function(file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          photosData.push(e.target.result);
-          filesRead++;
-          if (filesRead === filesToRead) {
-            submitMissingReport();
-          }
-        };
-        reader.readAsDataURL(file);
-      })(photo.files[i]);
-    }
-  } else {
-    submitMissingReport();
-  }
+  // Filter out null photos
+  var photosToSave = sdsPhotos.filter(function(p) { return p !== null; });
   
-  function submitMissingReport() {
-    var payload = {
-      form_type: 'sds_missing_report',
-      chemical_name: name.value.trim(),
-      usage: usage ? usage.value.trim() : '',
-      photos: photosData,
-      reported_by: p ? p.name : 'Unknown',
-      reported_at: new Date().toISOString(),
-      status: 'pending'
-    };
-    
-    // Save to Firebase
-    fbInsert('sds_missing', payload);
-    
-    // ALSO save to localStorage so pills can read it
-    var existing = [];
-    try {
-      existing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
-    } catch(e) {}
-    existing.push(payload);
-    localStorage.setItem('sds_missing', JSON.stringify(existing));
-    
-    if (name) name.value = '';
-    if (usage) usage.value = '';
-    if (photo) photo.value = '';
-    sdsMissingPhotoRemove();
-    
-    // Show confirmation screen
-    var chemicalName = payload.chemical_name;
-    var timeText = new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
-    document.getElementById('sds-success-chemical').textContent = chemicalName;
-    document.getElementById('sds-success-time').textContent = timeText;
-    goTo('screen-sds-success');
-    
-    // Update notification badge and activity pills
-    if (typeof updateSdsNotif === 'function') updateSdsNotif();
-    if (typeof updateStatusStrip === 'function') updateStatusStrip();
-    if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip();
-    if (typeof updateWorkerSdsTileSub === 'function') updateWorkerSdsTileSub();
-    if (typeof updateSupSdsTileSub === 'function') updateSupSdsTileSub();
-    if (typeof sdsRenderWorkerReports === 'function') sdsRenderWorkerReports();
-  }
+  var payload = {
+    form_type: 'sds_missing_report',
+    chemical_name: name.value.trim(),
+    usage: usage ? usage.value.trim() : '',
+    photos: photosToSave,
+    reported_by: p ? p.name : 'Unknown',
+    reported_at: new Date().toISOString(),
+    status: 'pending'
+  };
+  
+  // Save to Firebase
+  fbInsert('sds_missing', payload);
+  
+  // ALSO save to localStorage so pills can read it
+  var existing = [];
+  try {
+    existing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
+  } catch(e) {}
+  existing.push(payload);
+  localStorage.setItem('sds_missing', JSON.stringify(existing));
+  
+  // Clear form
+  if (name) name.value = '';
+  if (usage) usage.value = '';
+  
+  // Clear photos
+  handleSdsPhotoRemove(0);
+  handleSdsPhotoRemove(1);
+  
+  // Show confirmation screen
+  var chemicalName = payload.chemical_name;
+  var timeText = new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
+  document.getElementById('sds-success-chemical').textContent = chemicalName;
+  document.getElementById('sds-success-time').textContent = timeText;
+  goTo('screen-sds-success');
+  
+  // Update notification badge and activity pills
+  if (typeof updateSdsNotif === 'function') updateSdsNotif();
+  if (typeof updateStatusStrip === 'function') updateStatusStrip();
+  if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip();
+  if (typeof updateWorkerSdsTileSub === 'function') updateWorkerSdsTileSub();
+  if (typeof updateSupSdsTileSub === 'function') updateSupSdsTileSub();
+  if (typeof sdsRenderWorkerReports === 'function') sdsRenderWorkerReports();
 }
 
-function sdsMissingPhotoPreview(input) {
-  var preview = document.getElementById('sds-photos-preview');
-  var btnText = document.getElementById('sds-photo-btn-text');
+// SDS photo handling - stores up to 2 photos
+var sdsPhotos = [null, null];
+
+function handleSdsPhoto(idx, e) {
+  const file = e.target.files[0];
+  if (!file) return;
   
-  if (!input.files || input.files.length === 0) return;
-  
-  preview.innerHTML = '';
-  preview.style.display = 'grid';
-  
-  for (var i = 0; i < input.files.length; i++) {
-    (function(index) {
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var photoCard = document.createElement('div');
-        photoCard.style.cssText = 'position:relative';
-        photoCard.innerHTML = '<img src="' + e.target.result + '" style="width:100%;border-radius:var(--rs);border:1.5px solid rgba(184,150,12,.4)">' +
-          '<button type="button" onclick="sdsMissingPhotoRemoveOne(' + index + ')" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(184,50,50,.9);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">×</button>';
-        preview.appendChild(photoCard);
-      };
-      reader.readAsDataURL(input.files[index]);
-    })(i);
-  }
-  
-  if (btnText) btnText.textContent = input.files.length + ' photo' + (input.files.length > 1 ? 's' : '') + ' added';
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    sdsPhotos[idx] = ev.target.result;
+    
+    // Show preview
+    const preview = document.getElementById('sds-photo-preview-' + idx);
+    const img = document.getElementById('sds-photo-img-' + idx);
+    const btn = document.getElementById('sds-photo-btn-' + idx);
+    
+    if (img) img.src = ev.target.result;
+    if (preview) preview.style.display = 'block';
+    if (btn) btn.textContent = '✓ Added';
+  };
+  reader.readAsDataURL(file);
 }
 
-function sdsMissingPhotoRemove() {
-  var preview = document.getElementById('sds-photos-preview');
-  var photo = document.getElementById('sds-missing-photo');
-  var btnText = document.getElementById('sds-photo-btn-text');
-  if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
-  if (photo) photo.value = '';
-  if (btnText) btnText.textContent = 'Add photos';
-}
-
-function sdsMissingPhotoRemoveOne(index) {
-  var photo = document.getElementById('sds-missing-photo');
-  if (!photo || !photo.files) return;
+function handleSdsPhotoRemove(idx) {
+  sdsPhotos[idx] = null;
+  const preview = document.getElementById('sds-photo-preview-' + idx);
+  const input = document.getElementById('sds-photo-input-' + idx);
+  const btn = document.getElementById('sds-photo-btn-' + idx);
   
-  var dt = new DataTransfer();
-  for (var i = 0; i < photo.files.length; i++) {
-    if (i !== index) dt.items.add(photo.files[i]);
-  }
-  photo.files = dt.files;
-  sdsMissingPhotoPreview(photo);
-  
-  if (photo.files.length === 0) {
-    sdsMissingPhotoRemove();
-  }
+  if (preview) preview.style.display = 'none';
+  if (input) input.value = '';
+  if (btn) btn.textContent = 'Photo ' + (idx + 1);
 }
 
 function downloadSDS(chemicalName) {
