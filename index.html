@@ -37364,8 +37364,10 @@ function sdsReportMissing() {
     sdsMissingPhotoRemove();
     if (confirm) { confirm.style.display = 'block'; setTimeout(function(){ confirm.style.display='none'; }, 4000); }
     
-    // Update supervisor notification badge
+    // Update notification badge and activity pills
     if (typeof updateSdsNotif === 'function') updateSdsNotif();
+    if (typeof updateStatusStrip === 'function') updateStatusStrip();
+    if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip();
   }
 }
 
