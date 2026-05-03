@@ -3143,7 +3143,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="color:#B83232"><a href="tel:131126" style="color:#B83232;text-decoration:none;font-weight:600">13 11 26</a> (24/7)</div>
           <div style="font-weight:600;color:#B83232">EPA Pollution:</div>
           <div style="color:#B83232"><a href="tel:131555" style="color:#B83232;text-decoration:none;font-weight:600">131 555</a></div>
-          <div style="font-weight:600;color:#B83232">Site Coordinator:</div>
+          <div style="font-weight:600;color:#B83232">Site Supervisor:</div>
           <div style="color:#B83232"><a href="tel:0412345678" style="color:#B83232;text-decoration:none;font-weight:600">Eoin Burke 0412 345 678</a></div>
         </div>
       </div>
@@ -3202,7 +3202,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
           <div style="position:relative">
-            <input type="file" id="sds-missing-photo" accept="image/*" capture="environment" multiple style="display:none" onchange="sdsMissingPhotoPreview(this)">
+            <input type="file" id="sds-missing-photo" accept="image/*" multiple style="display:none" onchange="sdsMissingPhotoPreview(this)">
             <button type="button" onclick="document.getElementById('sds-missing-photo').click()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px dashed rgba(184,150,12,.4);background:#FFFBF0;color:#8B6914;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
               <svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <span id="sds-photo-btn-text">Add photos</span>
@@ -16327,11 +16327,11 @@ function updateSdsNotif() {
   const pending = missing.filter(function(r) { return !r.status || r.status === 'pending'; });
   const count = pending.length;
   
+  // Just show/hide dot (no text/number like other notification badges)
   if (count === 0) {
     badge.style.display = 'none';
   } else {
-    badge.style.display = '';
-    badge.textContent = count;
+    badge.style.display = 'block';
   }
 }
 
