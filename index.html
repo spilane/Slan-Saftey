@@ -3197,7 +3197,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="fgroup">
           <label class="flabel">Where is it being used?</label>
-          <input type="text" id="sds-missing-usage" placeholder="e.g. Level 2 slab waterproofing, Basement formwork..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off">
+          <input type="text" id="sds-missing-usage" placeholder="e.g. Level 2 slab waterproofing, Basement formwork..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off" oninput="sdsValidateForm()">
         </div>
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
@@ -37506,10 +37506,11 @@ var sdsPhotos = [null, null];
 
 function sdsValidateForm() {
   var name = document.getElementById('sds-missing-name');
+  var usage = document.getElementById('sds-missing-usage');
   var btn = document.getElementById('sds-submit-btn');
   if (!btn) return;
   
-  var isValid = name && name.value.trim().length > 0;
+  var isValid = name && name.value.trim().length > 0 && usage && usage.value.trim().length > 0;
   
   if (isValid) {
     btn.disabled = false;
