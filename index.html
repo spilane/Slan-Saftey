@@ -3204,17 +3204,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="hz-photo-slot" id="sds-slot-0" onclick="document.getElementById('sds-photo-input-0').click()">
               <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              <span>Tap to take photo</span>
+              <div class="hw-photo-label">1 · Product label</div>
+              <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
             </div>
             <div class="hz-photo-slot" id="sds-slot-1" onclick="document.getElementById('sds-photo-input-1').click()" style="display:none">
               <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              <span>Tap to take photo</span>
+              <div class="hw-photo-label">2 · Product label</div>
+              <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
             </div>
           </div>
           <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(0,event)">
           <input type="file" id="sds-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(1,event)">
         </div>
-        <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#1B6E3A;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report missing chemical</button>
+        <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#1B6E3A;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report Missing Chemical</button>
         <div id="sds-missing-confirm" style="display:none;text-align:center;font-size:13px;font-weight:600;color:#1B6E3A;padding:8px">Reported - supervisor has been notified</div>
       </div>
     </div>
@@ -37548,7 +37550,8 @@ function handleSdsPhotoRemove(idx) {
   const input = document.getElementById('sds-photo-input-' + idx);
   
   if (slot) {
-    slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Tap to take photo</span>`;
+    const num = idx + 1;
+    slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">${num} · Product label</div><div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>`;
     slot.classList.remove('filled');
   }
   if (input) input.value = '';
@@ -37845,8 +37848,9 @@ function sdsCloseReport(idx, action) {
     localStorage.setItem('sds_missing', JSON.stringify(reports));
   } catch(e) {}
   
-  // Re-render
+  // Re-render both supervisor and worker views
   sdsRenderPendingReports();
+  if (typeof sdsRenderWorkerReports === 'function') sdsRenderWorkerReports();
   
   // Update all notification systems
   if (typeof updateSdsNotif === 'function') updateSdsNotif();
