@@ -3202,29 +3202,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div style="position:relative">
-              <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(0,event)">
-              <button type="button" onclick="document.getElementById('sds-photo-input-0').click()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px dashed rgba(184,150,12,.4);background:#FFFBF0;color:#8B6914;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                <span id="sds-photo-btn-0">Photo 1</span>
-              </button>
-              <div id="sds-photo-preview-0" style="display:none;margin-top:8px;position:relative">
-                <img id="sds-photo-img-0" style="width:100%;border-radius:var(--rs);border:1.5px solid rgba(184,150,12,.4)">
-                <button type="button" onclick="handleSdsPhotoRemove(0)" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(184,50,50,.9);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">×</button>
-              </div>
+            <div class="hz-photo-slot" id="sds-slot-0" onclick="document.getElementById('sds-photo-input-0').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Photo 1</span>
             </div>
-            <div style="position:relative">
-              <input type="file" id="sds-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(1,event)">
-              <button type="button" onclick="document.getElementById('sds-photo-input-1').click()" style="width:100%;padding:12px;border-radius:var(--rs);border:1.5px dashed rgba(184,150,12,.4);background:#FFFBF0;color:#8B6914;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                <span id="sds-photo-btn-1">Photo 2</span>
-              </button>
-              <div id="sds-photo-preview-1" style="display:none;margin-top:8px;position:relative">
-                <img id="sds-photo-img-1" style="width:100%;border-radius:var(--rs);border:1.5px solid rgba(184,150,12,.4)">
-                <button type="button" onclick="handleSdsPhotoRemove(1)" style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(184,50,50,.9);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">×</button>
-              </div>
+            <div class="hz-photo-slot" id="sds-slot-1" onclick="document.getElementById('sds-photo-input-1').click()" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Photo 2</span>
             </div>
           </div>
+          <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(0,event)">
+          <input type="file" id="sds-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(1,event)">
         </div>
         <button onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#1B6E3A;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Report to supervisor</button>
         <div id="sds-missing-confirm" style="display:none;text-align:center;font-size:13px;font-weight:600;color:#1B6E3A;padding:8px">Reported - supervisor has been notified</div>
@@ -37492,7 +37480,7 @@ function sdsReportMissing() {
   if (typeof sdsRenderWorkerReports === 'function') sdsRenderWorkerReports();
 }
 
-// SDS photo handling - stores up to 2 photos
+// SDS photo handling - stores up to 2 photos with timestamps
 var sdsPhotos = [null, null];
 
 function handleSdsPhoto(idx, e) {
@@ -37500,30 +37488,70 @@ function handleSdsPhoto(idx, e) {
   if (!file) return;
   
   const reader = new FileReader();
-  reader.onload = function(ev) {
-    sdsPhotos[idx] = ev.target.result;
-    
-    // Show preview
-    const preview = document.getElementById('sds-photo-preview-' + idx);
-    const img = document.getElementById('sds-photo-img-' + idx);
-    const btn = document.getElementById('sds-photo-btn-' + idx);
-    
-    if (img) img.src = ev.target.result;
-    if (preview) preview.style.display = 'block';
-    if (btn) btn.textContent = '✓ Added';
+  reader.onload = ev => {
+    const img = new window.Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const MAX = 800;
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX/w, MAX/h);
+        w = Math.round(w*ratio); h = Math.round(h*ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // Timestamp + site watermark
+      const now = new Date();
+      const stamp = now.toLocaleDateString('en-AU') + '  ' +
+        now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+      const siteLine = (typeof SITE !== 'undefined') ? SITE : '';
+      const fontSize = Math.max(12, Math.round(w * 0.03));
+      ctx.font = `bold ${fontSize}px 'DM Mono', monospace`;
+      const lines = [stamp, siteLine].filter(l => l);
+      const padding = fontSize * 0.6;
+      const lineH   = fontSize * 1.5;
+      const boxH    = lines.length * lineH + padding * 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.62)';
+      ctx.fillRect(0, h - boxH, w, boxH);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'left';
+      lines.forEach((line, i) => {
+        ctx.fillText(line, padding, h - boxH + padding + (i + 1) * lineH - fontSize * 0.3);
+      });
+
+      const compressed = canvas.toDataURL('image/jpeg', 0.80);
+      sdsPhotos[idx] = compressed;
+
+      // Replace slot content with image
+      const slot = document.getElementById('sds-slot-' + idx);
+      if (slot) {
+        slot.innerHTML = `<img src="${compressed}" alt="SDS photo">`;
+        slot.classList.add('filled');
+      }
+      
+      // Show next slot if available
+      if (idx === 0) {
+        const nextSlot = document.getElementById('sds-slot-1');
+        if (nextSlot) nextSlot.style.display = 'flex';
+      }
+    };
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
 function handleSdsPhotoRemove(idx) {
   sdsPhotos[idx] = null;
-  const preview = document.getElementById('sds-photo-preview-' + idx);
+  const slot = document.getElementById('sds-slot-' + idx);
   const input = document.getElementById('sds-photo-input-' + idx);
-  const btn = document.getElementById('sds-photo-btn-' + idx);
   
-  if (preview) preview.style.display = 'none';
+  if (slot) {
+    slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Photo ${idx + 1}</span>`;
+    slot.classList.remove('filled');
+  }
   if (input) input.value = '';
-  if (btn) btn.textContent = 'Photo ' + (idx + 1);
 }
 
 function downloadSDS(chemicalName) {
@@ -37679,19 +37707,36 @@ function sdsRenderPendingReports() {
       photoHtml = '<div onclick="sdsViewReportPhoto(' + idx + ', 0)" style="cursor:pointer;margin-top:8px"><img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></div>';
     }
     
-    return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px;gap:10px">' +
-      '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">' + r.chemical_name + '</div>' +
-      (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px">Where being used: ' + r.usage + '</div>' : '') +
-      '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">' +
+    return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px;cursor:pointer" onclick="toggleSdsSupCard(' + idx + ')">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
+        '<div style="font-size:15px;font-weight:700;color:var(--text)">' + r.chemical_name + '</div>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;transition:transform 0.2s" id="sds-sup-arrow-' + idx + '"><polyline points="6 9 12 15 18 9"/></svg>' +
+      '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px">' +
         'Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date +
       '</div>' +
-      photoHtml +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">' +
-        '<button onclick="sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
-        '<button onclick="sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
+      '<div id="sds-sup-detail-' + idx + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(184,50,50,.2)" onclick="event.stopPropagation()">' +
+        (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
+        photoHtml +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px">' +
+          '<button onclick="sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
+          '<button onclick="sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }).join('');
+}
+
+function toggleSdsSupCard(idx) {
+  var detail = document.getElementById('sds-sup-detail-' + idx);
+  var arrow = document.getElementById('sds-sup-arrow-' + idx);
+  if (detail) {
+    var isExpanded = detail.style.display !== 'none';
+    detail.style.display = isExpanded ? 'none' : 'block';
+    if (arrow) {
+      arrow.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+  }
 }
 
 function sdsRenderWorkerReports() {
@@ -37742,16 +37787,25 @@ function sdsRenderWorkerReports() {
       photoHtml = '<div style="margin-top:8px"><img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></div>';
     }
     
-    return '<div class="fcard-body" style="background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;gap:10px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px">' +
+    return '<div class="fcard-body" style="background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;cursor:pointer" onclick="toggleSdsWorkerCard(' + idx + ')">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
         '<div style="font-size:14px;font-weight:700;color:var(--text)">' + r.chemical_name + '</div>' +
         '<div style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:' + statusBg + ';color:' + statusColor + ';white-space:nowrap">' + statusText + '</div>' +
       '</div>' +
-      (r.usage ? '<div style="font-size:12px;color:var(--text);line-height:1.4;margin-bottom:8px">Where being used: ' + r.usage + '</div>' : '') +
-      '<div style="font-size:11px;color:var(--muted)">' + date + '</div>' +
-      photoHtml +
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px">' + date + '</div>' +
+      '<div id="sds-worker-detail-' + idx + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' +
+        (r.usage ? '<div style="font-size:12px;color:var(--text);line-height:1.4;margin-bottom:8px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
+        photoHtml +
+      '</div>' +
     '</div>';
   }).join('');
+}
+
+function toggleSdsWorkerCard(idx) {
+  var detail = document.getElementById('sds-worker-detail-' + idx);
+  if (detail) {
+    detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+  }
 }
 
 function sdsViewReportPhoto(idx) {
