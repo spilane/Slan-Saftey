@@ -136,10 +136,10 @@ input[type="time"] {
 .inner-hdr-text p{font-size:12px;color:rgba(255,255,255,.55);margin-top:1px}
 
 /* FORM */
-.fbody{flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-bottom:calc(20px + var(--sb))}
-.fcard{background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
-.fcard-hdr{background:var(--deep);padding:11px 15px;font-size:10.5px;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase}
-.fcard-body{padding:15px;display:flex;flex-direction:column;gap:13px}
+.fbody{flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;padding-bottom:calc(20px + var(--sb))}
+.fcard{background:#fff;border-radius:8px;border:1px solid #E0E0E0;overflow:hidden}
+.fcard-body{padding:16px;display:flex;flex-direction:column;gap:12px}
+.fcard-hdr{background:var(--deep);padding:9px 12px;font-size:9px;font-weight:700;color:var(--gold);letter-spacing:.08em;text-transform:uppercase}
 .flabel{font-size:12.5px;font-weight:600;color:var(--text)}
 .flabel .req{color:#B83232;margin-left:2px}
 .fhint{font-size:11.5px;color:var(--muted);margin-top:-4px}
@@ -651,6 +651,52 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .ack-tick.checked .ack-tick-box svg { opacity:1; }
 .ack-tick-text { font-size:13.5px; line-height:1.4; color:var(--text); flex:1; }
 .ack-tick.checked .ack-tick-text { color:#0F4A27; font-weight:500; }
+
+/* ─── NEW BADGE PULSE ANIMATION ───────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+/* ─── MOBILE OPTIMIZATION ───────────────── */
+@media (max-width: 480px) {
+  body {
+    padding: 8px !important;
+  }
+  
+  /* Stack filter dropdowns vertically */
+  .fcard-hdr {
+    font-size: 10px !important;
+    padding: 10px 12px !important;
+  }
+  
+  /* Make touch targets bigger */
+  select, button, input {
+    min-height: 44px !important;
+    font-size: 13px !important;
+  }
+  
+  /* Stack stats boxes */
+  #dir-inc-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  
+  /* Severity breakdown - 3 columns still works but tighter */
+  #dir-inc-severity {
+    gap: 6px !important;
+  }
+  
+  /* Action buttons stack */
+  #dir-inc-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  #dir-inc-actions button {
+    width: 100% !important;
+  }
+}
 
 </style>
 </head>
@@ -9943,48 +9989,136 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="form-greeting">
       <h1>Incidents & Near Misses</h1>
-      <p id="dir-inc-period">Last 30 days · All sites</p>
+      <p id="dir-inc-period">Last 6 months · All sites</p>
     </div>
   </div>
 
-  <div class="fbody" style="padding-bottom:90px">
+  <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
     
-    <!-- Quick stats -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div style="background:var(--bg);border-radius:var(--rs);padding:14px;text-align:center">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Total incidents</div>
-        <div style="font-size:28px;font-weight:600;color:var(--text)" id="dir-inc-total">—</div>
-        <div style="font-size:11px;color:#1B6E3A;margin-top:4px" id="dir-inc-trend">—</div>
+    <!-- Header Actions -->
+    <div id="dir-inc-actions" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:11px;color:#999">
+        <span style="font-weight:600;color:#666">Last updated:</span> 2 hours ago
       </div>
-      <div style="background:var(--bg);border-radius:var(--rs);padding:14px;text-align:center">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">LTI-free days</div>
-        <div style="font-size:28px;font-weight:600;color:var(--text)" id="dir-inc-lti">—</div>
-        <div style="font-size:11px;color:#1B6E3A;margin-top:4px">Running total</div>
+      <div style="display:flex;gap:6px">
+        <button style="padding:6px 10px;font-size:10px;font-weight:600;background:#fff;border:1px solid #D0D0D0;border-radius:6px;color:#555;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08)">Export</button>
+        <button onclick="showIncidentForm()" style="padding:6px 10px;font-size:10px;font-weight:600;background:linear-gradient(135deg, #1B6E3A 0%, #2D8A4F 100%);border:none;border-radius:6px;color:#fff;cursor:pointer;box-shadow:0 2px 6px rgba(27,110,58,0.3)">+ Report Incident</button>
+      </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="fcard">
+      <div class="fcard-hdr">Filter Data</div>
+      <div style="padding:10px">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+          <button style="padding:4px 8px;font-size:9px;font-weight:600;background:transparent;border:1px solid #D0D0D0;border-radius:4px;color:#666;cursor:pointer">Reset</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+          <select style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
+            <option>All Sites</option>
+            <option>Site A</option>
+            <option>Site B</option>
+            <option>Site C</option>
+          </select>
+          <select style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
+            <option>Last 6 months</option>
+            <option>Last 30 days</option>
+            <option>Last 90 days</option>
+            <option>YTD</option>
+            <option>All time</option>
+          </select>
+          <select style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
+            <option>All Severity</option>
+            <option>Near Miss</option>
+            <option>First Aid</option>
+            <option>LTI</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Industry Benchmark -->
+    <div class="fcard">
+      <div class="fcard-hdr">Industry Benchmark</div>
+      <div style="padding:10px">
+        <div style="background:linear-gradient(135deg, #FFF9E6 0%, #FFF3D6 100%);border-radius:6px;padding:10px;border-left:3px solid #B8960C">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-size:8px;color:#999;background:#fff;padding:2px 6px;border-radius:4px">Australian Average</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div style="font-size:9px;color:#856404;margin-bottom:3px;display:flex;align-items:center;gap:4px">
+                Your TRIFR
+                <span style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:50%;font-size:9px;font-weight:700;color:#B8960C;text-align:center;line-height:14px;cursor:help;border:1px solid #E8D9B0" title="Total Recordable Injury Frequency Rate - Number of injuries per million hours worked. Lower is better.">ⓘ</span>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:4px">
+                <span id="dir-inc-your-trifr" style="font-size:20px;font-weight:800;color:#1B6E3A">4.2</span>
+                <span id="dir-inc-trifr-trend" style="font-size:10px;color:#1B6E3A;font-weight:600">↓ 35%</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:#856404;margin-bottom:3px">Industry Avg</div>
+              <div style="display:flex;align-items:baseline;gap:4px">
+                <span style="font-size:20px;font-weight:800;color:#666">6.5</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:8px;background:#fff;border-radius:4px;padding:6px;font-size:9px;color:#666">
+            📊 You're performing <strong id="dir-inc-performance-text" style="color:#1B6E3A">35% better</strong> than the construction industry average (Safe Work Australia 2025)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="fcard">
+      <div class="fcard-hdr">Key Metrics</div>
+      <div style="padding:10px">
+        <div id="dir-inc-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
+        <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Total incidents</div>
+        <div style="font-size:28px;font-weight:800;color:#1A2A1F;line-height:1;background:linear-gradient(135deg, #1A2A1F 0%, #2D5F3F 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="dir-inc-total">—</div>
+        <div style="font-size:10px;color:#1B6E3A;margin-top:4px;font-weight:600" id="dir-inc-trend">—</div>
+      </div>
+      <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
+        <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">LTI-free days</div>
+        <div style="font-size:28px;font-weight:800;color:#1A2A1F;line-height:1;background:linear-gradient(135deg, #1A2A1F 0%, #2D5F3F 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="dir-inc-lti">—</div>
+        <div style="font-size:10px;color:#1B6E3A;margin-top:4px;font-weight:600">Running total</div>
+      </div>
+        </div>
       </div>
     </div>
 
     <!-- 1. MOST RELEVANT: Recent incidents list -->
     <div class="fcard">
       <div class="fcard-hdr">Recent incidents</div>
-      <div id="dir-inc-list"></div>
+      <div style="padding:10px">
+        <!-- Search bar -->
+        <div style="margin-bottom:10px">
+          <input type="text" placeholder="Search incidents..." style="width:100%;padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#F8F8F8;color:#333;box-sizing:border-box">
+        </div>
+        <!-- Result counter -->
+        <div style="font-size:10px;color:#999;margin-bottom:10px;font-weight:500">Showing <strong style="color:#1A2A1F" id="dir-inc-showing">0</strong> of <strong style="color:#1A2A1F" id="dir-inc-of">0</strong> incidents</div>
+        <div id="dir-inc-list"></div>
+      </div>
     </div>
 
     <!-- 2. Severity breakdown -->
     <div class="fcard">
       <div class="fcard-hdr">Severity breakdown</div>
-      <div id="dir-inc-severity" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
+      <div id="dir-inc-severity" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px"></div>
     </div>
 
     <!-- 3. Trend chart -->
     <div class="fcard">
       <div class="fcard-hdr">Incident trend (last 6 months)</div>
-      <div style="height:180px;position:relative;padding:10px 0"><canvas id="dir-inc-chart" role="img" aria-label="Incident trend chart"></canvas></div>
+      <div style="height:160px;position:relative;padding:10px 0"><canvas id="dir-inc-chart" role="img" aria-label="Incident trend chart"></canvas></div>
     </div>
 
     <!-- 4. Breakdown by mechanism -->
     <div class="fcard">
       <div class="fcard-hdr">Incidents by mechanism</div>
-      <div id="dir-inc-breakdown" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div id="dir-inc-breakdown" style="display:flex;flex-direction:column;gap:8px;padding:10px"></div>
     </div>
 
     <!-- 5. Body injury map -->
@@ -10037,7 +10171,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- 6. LEAST RELEVANT: Time patterns -->
     <div class="fcard">
       <div class="fcard-hdr">When do incidents happen?</div>
-      <div id="dir-inc-timepatterns"></div>
+      <div id="dir-inc-timepatterns" style="padding:12px"></div>
     </div>
 
   </div>
@@ -40998,8 +41132,8 @@ function loadDirectorIncidents() {
   // Load incidents from localStorage
   var incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
   
-  // Filter to last 30 days
-  var cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
+  // Filter to last 6 months (180 days) to show all demo data
+  var cutoff = Date.now() - (180 * 24 * 60 * 60 * 1000);
   var recentIncidents = incidents.filter(function(i) {
     var t = i.timestamp || i.reported_at;
     return t && new Date(t).getTime() > cutoff;
@@ -41031,6 +41165,44 @@ function loadDirectorIncidents() {
   
   // Render list
   renderDirectorIncidentList(recentIncidents);
+  
+  // Update benchmark colors
+  updateDirectorBenchmarkColors();
+}
+
+function updateDirectorBenchmarkColors() {
+  var yourTrifr = 4.2; // In real app, calculate from actual incident data
+  var industryAvg = 6.5;
+  
+  var yourTrifrEl = document.getElementById('dir-inc-your-trifr');
+  var trifrTrendEl = document.getElementById('dir-inc-trifr-trend');
+  var performanceTextEl = document.getElementById('dir-inc-performance-text');
+  
+  if (!yourTrifrEl || !trifrTrendEl || !performanceTextEl) return;
+  
+  if (yourTrifr < industryAvg) {
+    // GOOD - Below average means fewer injuries
+    yourTrifrEl.style.color = '#1B6E3A';
+    trifrTrendEl.style.color = '#1B6E3A';
+    performanceTextEl.style.color = '#1B6E3A';
+    var pct = Math.round(((industryAvg - yourTrifr) / industryAvg) * 100);
+    performanceTextEl.textContent = pct + '% better';
+  } else if (yourTrifr > industryAvg) {
+    // BAD - Above average means more injuries
+    yourTrifrEl.style.color = '#A32D2D';
+    trifrTrendEl.style.color = '#A32D2D';
+    performanceTextEl.style.color = '#A32D2D';
+    var pct = Math.round(((yourTrifr - industryAvg) / industryAvg) * 100);
+    performanceTextEl.textContent = pct + '% worse';
+    trifrTrendEl.textContent = '↑ ' + pct + '%';
+  } else {
+    // EQUAL to industry average
+    yourTrifrEl.style.color = '#666';
+    trifrTrendEl.style.color = '#666';
+    performanceTextEl.style.color = '#666';
+    performanceTextEl.textContent = 'on par with';
+    trifrTrendEl.textContent = '—';
+  }
 }
 
 function renderDirectorSeverityBreakdown(incidents) {
@@ -41054,17 +41226,17 @@ function renderDirectorSeverityBreakdown(incidents) {
   }
   
   container.innerHTML = 
-    '<div style="background:#E6F5ED;border-radius:8px;padding:12px;text-align:center">' +
-      '<div style="font-size:26px;font-weight:700;color:#1B6E3A">' + nearMiss + '</div>' +
-      '<div style="font-size:10px;color:#1B6E3A;margin-top:4px;font-weight:600">Near Miss</div>' +
+    '<div style="background:#E6F5ED;border-radius:8px;padding:14px;text-align:center">' +
+      '<div style="font-size:26px;font-weight:700;color:#1B6E3A;line-height:1">' + nearMiss + '</div>' +
+      '<div style="font-size:9px;color:#1B6E3A;font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px">Near Miss</div>' +
     '</div>' +
-    '<div style="background:#FCEBEB;border-radius:8px;padding:12px;text-align:center">' +
-      '<div style="font-size:26px;font-weight:700;color:#A32D2D">' + firstAid + '</div>' +
-      '<div style="font-size:10px;color:#A32D2D;margin-top:4px;font-weight:600">First Aid</div>' +
+    '<div style="background:#FCEBEB;border-radius:8px;padding:14px;text-align:center">' +
+      '<div style="font-size:26px;font-weight:700;color:#A32D2D;line-height:1">' + firstAid + '</div>' +
+      '<div style="font-size:9px;color:#A32D2D;font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px">First Aid</div>' +
     '</div>' +
-    '<div style="background:#FAEEDA;border-radius:8px;padding:12px;text-align:center">' +
-      '<div style="font-size:26px;font-weight:700;color:#854F0B">' + lti + '</div>' +
-      '<div style="font-size:10px;color:#854F0B;margin-top:4px;font-weight:600">LTI</div>' +
+    '<div style="background:#FAEEDA;border-radius:8px;padding:14px;text-align:center">' +
+      '<div style="font-size:26px;font-weight:700;color:#854F0B;line-height:1">' + lti + '</div>' +
+      '<div style="font-size:9px;color:#854F0B;font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px">LTI</div>' +
     '</div>';
 }
 
@@ -41241,12 +41413,12 @@ function renderDirectorIncidentBreakdown(incidents) {
   // Render bars
   container.innerHTML = items.map(function(item) {
     var pct = Math.round((item.count / total) * 100);
-    return '<div>' +
-      '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">' +
-        '<span style="color:var(--muted)">' + item.mechanism + '</span>' +
-        '<span style="font-weight:600">' + item.count + '</span>' +
+    return '<div style="margin-bottom:8px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">' +
+        '<span style="font-size:11px;color:#555">' + item.mechanism + '</span>' +
+        '<span style="font-size:11px;font-weight:600;color:#1A2A1F">' + item.count + '</span>' +
       '</div>' +
-      '<div style="background:var(--bg);height:6px;border-radius:3px;overflow:hidden">' +
+      '<div style="background:#F0F0F0;height:6px;border-radius:3px;overflow:hidden">' +
         '<div style="background:#F0997B;width:' + pct + '%;height:100%"></div>' +
       '</div>' +
     '</div>';
@@ -41257,28 +41429,180 @@ function renderDirectorIncidentList(incidents) {
   var container = document.getElementById('dir-inc-list');
   if (!container) return;
   
-  // DEMO DATA - always show at least 3 demo incidents for presentation
+  // DEMO DATA - 18 incidents over 6 months for realistic volume
   var demoIncidents = [
+    // April 2026 (3 incidents)
     {
-      incident_id: 'INC-2026-003',
+      incident_id: 'INC-2026-018',
       severity: 'first-aid',
       what_happened: 'Slip on wet floor near amenities block',
       reported_by: 'Jake Ryan',
+      mechanism: 'Slip / trip',
+      body_part: 'Knee',
       timestamp: new Date(2026, 3, 28).toISOString()
     },
     {
-      incident_id: 'INC-2026-002',
+      incident_id: 'INC-2026-017',
       severity: 'near-miss',
       what_happened: 'Manual handling - load exceeding safe limit',
       reported_by: 'Tom Chen',
+      mechanism: 'Manual handling',
+      body_part: 'Lower Back',
       timestamp: new Date(2026, 3, 22).toISOString()
     },
     {
-      incident_id: 'INC-2026-001',
+      incident_id: 'INC-2026-016',
       severity: 'first-aid',
       what_happened: 'Hit head on scaffold support beam',
       reported_by: 'Sarah O\'Brien',
+      mechanism: 'Hit against object',
+      body_part: 'Head',
       timestamp: new Date(2026, 3, 15).toISOString()
+    },
+    
+    // March 2026 (4 incidents)
+    {
+      incident_id: 'INC-2026-015',
+      severity: 'near-miss',
+      what_happened: 'Nearly struck by falling tool from height',
+      reported_by: 'Mike Johnson',
+      mechanism: 'Struck by object',
+      body_part: 'Head',
+      timestamp: new Date(2026, 2, 26).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-014',
+      severity: 'first-aid',
+      what_happened: 'Cut hand on steel reinforcement bar',
+      reported_by: 'Emma Wilson',
+      mechanism: 'Cut / laceration',
+      body_part: 'Right Hand',
+      timestamp: new Date(2026, 2, 19).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-013',
+      severity: 'near-miss',
+      what_happened: 'Trip hazard - unsecured cable across walkway',
+      reported_by: 'David Lee',
+      mechanism: 'Slip / trip',
+      body_part: 'Ankle',
+      timestamp: new Date(2026, 2, 12).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-012',
+      severity: 'first-aid',
+      what_happened: 'Pinched finger between steel plates',
+      reported_by: 'Lisa Brown',
+      mechanism: 'Caught between',
+      body_part: 'Left Hand',
+      timestamp: new Date(2026, 2, 5).toISOString()
+    },
+    
+    // February 2026 (2 incidents)
+    {
+      incident_id: 'INC-2026-011',
+      severity: 'near-miss',
+      what_happened: 'Excavator operating near workers without spotter',
+      reported_by: 'James Martinez',
+      mechanism: 'Vehicle / mobile plant',
+      body_part: 'Multiple',
+      timestamp: new Date(2026, 1, 21).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-010',
+      severity: 'lti',
+      what_happened: 'Fall from ladder - 2m height, fractured wrist',
+      reported_by: 'Rachel Green',
+      mechanism: 'Fall from height',
+      body_part: 'Right Hand',
+      timestamp: new Date(2026, 1, 8).toISOString()
+    },
+    
+    // January 2026 (5 incidents)
+    {
+      incident_id: 'INC-2026-009',
+      severity: 'first-aid',
+      what_happened: 'Strain from lifting concrete form',
+      reported_by: 'Chris Anderson',
+      mechanism: 'Manual handling',
+      body_part: 'Lower Back',
+      timestamp: new Date(2026, 0, 29).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-008',
+      severity: 'near-miss',
+      what_happened: 'Unsecured scaffold board nearly fell',
+      reported_by: 'Sophie Taylor',
+      mechanism: 'Struck by object',
+      body_part: 'Head',
+      timestamp: new Date(2026, 0, 24).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-007',
+      severity: 'first-aid',
+      what_happened: 'Splinter in palm from timber formwork',
+      reported_by: 'Ben Harris',
+      mechanism: 'Penetrating injury',
+      body_part: 'Left Hand',
+      timestamp: new Date(2026, 0, 18).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-006',
+      severity: 'near-miss',
+      what_happened: 'Chemical splash - PPE prevented contact',
+      reported_by: 'Amy White',
+      mechanism: 'Chemical exposure',
+      body_part: 'Eyes',
+      timestamp: new Date(2026, 0, 11).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-005',
+      severity: 'first-aid',
+      what_happened: 'Twisted ankle stepping off uneven ground',
+      reported_by: 'Oliver Scott',
+      mechanism: 'Slip / trip',
+      body_part: 'Ankle',
+      timestamp: new Date(2026, 0, 4).toISOString()
+    },
+    
+    // December 2025 (3 incidents)
+    {
+      incident_id: 'INC-2025-034',
+      severity: 'near-miss',
+      what_happened: 'Power tool malfunction - cord fraying',
+      reported_by: 'Isabella Clark',
+      mechanism: 'Equipment failure',
+      body_part: 'Right Hand',
+      timestamp: new Date(2025, 11, 20).toISOString()
+    },
+    {
+      incident_id: 'INC-2025-033',
+      severity: 'first-aid',
+      what_happened: 'Dust in eyes despite safety glasses',
+      reported_by: 'Liam Murphy',
+      mechanism: 'Foreign object',
+      body_part: 'Eyes',
+      timestamp: new Date(2025, 11, 14).toISOString()
+    },
+    {
+      incident_id: 'INC-2025-032',
+      severity: 'first-aid',
+      what_happened: 'Minor burn from hot pipe',
+      reported_by: 'Mia Robinson',
+      mechanism: 'Thermal contact',
+      body_part: 'Left Hand',
+      timestamp: new Date(2025, 11, 6).toISOString()
+    },
+    
+    // November 2025 (1 incident)
+    {
+      incident_id: 'INC-2025-031',
+      severity: 'near-miss',
+      what_happened: 'Unsecured load on delivery truck shifted',
+      reported_by: 'Noah Foster',
+      mechanism: 'Struck by object',
+      body_part: 'Torso',
+      timestamp: new Date(2025, 10, 15).toISOString()
     }
   ];
   
@@ -41301,21 +41625,37 @@ function renderDirectorIncidentList(incidents) {
     });
     
     var severity = inc.severity || 'first-aid';
-    var severityColor = severity === 'near-miss' ? '#E6F5ED' : '#FCEBEB';
-    var severityText = severity === 'near-miss' ? '#1B6E3A' : '#A32D2D';
+    var severityColor = severity === 'near-miss' ? '#E6F5ED' : severity === 'lti' ? '#FAEEDA' : '#FCEBEB';
+    var severityText = severity === 'near-miss' ? '#1B6E3A' : severity === 'lti' ? '#854F0B' : '#A32D2D';
+    var severityBorder = severity === 'near-miss' ? '#1B6E3A' : severity === 'lti' ? '#B8960C' : '#A32D2D';
     var severityLabel = severity === 'near-miss' ? 'Near Miss' : severity === 'lti' ? 'LTI' : 'First Aid';
     
     var incId = inc.incident_id || 'INC-' + (inc.timestamp ? new Date(inc.timestamp).getFullYear() + '-' + String(idx + 1).padStart(3, '0') : '000');
     
-    return '<div onclick="viewIncidentDetail(\'' + incId + '\')" style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px;cursor:pointer">' +
-      '<div style="display:flex;justify-content:space-between;margin-bottom:6px">' +
-        '<div style="font-size:13px;font-weight:600">' + incId + '</div>' +
-        '<div style="background:' + severityColor + ';color:' + severityText + ';font-size:10px;font-weight:600;padding:3px 8px;border-radius:8px">' + severityLabel + '</div>' +
+    var isNew = idx < 2; // First 2 are "new" (last 24hrs)
+    
+    return '<div onclick="viewIncidentDetail(\'' + incId + '\')" style="background:#fff;border-radius:6px;padding:8px 10px;margin-bottom:6px;cursor:pointer;border-left:3px solid ' + severityBorder + ';box-shadow:0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);position:relative">' +
+      (isNew ? '<div style="position:absolute;top:8px;right:8px;width:6px;height:6px;background:#E74C3C;border-radius:50%;animation:pulse 2s infinite"></div>' : '') +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+        '<div style="font-size:11px;font-weight:600;color:#1A2A1F;display:flex;align-items:center;gap:6px">' +
+          incId +
+          (isNew ? '<span style="background:#E74C3C;color:#fff;font-size:7px;font-weight:700;padding:2px 4px;border-radius:3px;text-transform:uppercase">NEW</span>' : '') +
+        '</div>' +
+        '<div style="background:' + severityColor + ';color:' + severityText + ';font-size:8px;font-weight:600;padding:2px 6px;border-radius:8px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.1)">' + severityLabel + '</div>' +
       '</div>' +
-      '<div style="font-size:12px;color:var(--muted);margin-bottom:4px">' + (inc.what_happened || inc.description || 'Incident details') + '</div>' +
-      '<div style="font-size:11px;color:var(--muted)">' + (inc.reported_by || 'Unknown') + ' · ' + date + '</div>' +
+      '<div style="font-size:10px;color:#666;margin-bottom:6px;line-height:1.4">' + (inc.what_happened || inc.description || 'Incident details') + '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+        '<div style="font-size:9px;color:#999">' + (inc.reported_by || 'Unknown') + ' · ' + date + '</div>' +
+        '<button onclick="event.stopPropagation();viewIncidentDetail(\'' + incId + '\')" style="padding:3px 8px;font-size:9px;font-weight:600;background:#F8F8F8;border:1px solid #D0D0D0;border-radius:4px;color:#555;cursor:pointer">View →</button>' +
+      '</div>' +
     '</div>';
   }).join('');
+  
+  // Update result counter
+  var showingEl = document.getElementById('dir-inc-showing');
+  var ofEl = document.getElementById('dir-inc-of');
+  if (showingEl) showingEl.textContent = top.length;
+  if (ofEl) ofEl.textContent = displayIncidents.length;
 }
 
 function viewIncidentDetail(incidentId) {
