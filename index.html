@@ -9348,44 +9348,33 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 
   <!-- ── Scrollable content ─────────────────── -->
-  <div class="tiles" style="padding-bottom:90px">
+  <div class="tiles" style="padding:12px;gap:12px;padding-bottom:90px">
 
-    <!-- ── TODAY AT A GLANCE — clickable stats ── -->
-    <!-- Weather strip -->
-    <div id="dir-weather" style="background:var(--deep);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <div id="dir-weather-icon" style="font-size:18px">☀️</div>
-      <div style="flex:1">
-        <div id="dir-weather-temp" style="font-size:12px;font-weight:600;color:#fff">Loading...</div>
-        <div id="dir-weather-loc" style="font-size:10px;color:rgba(255,255,255,.6)">Fetching location</div>
+    <!-- Summary stats - MATCHING SUPERVISOR -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div class="sup-stat" onclick="dirDrillDown('signins')" style="cursor:pointer">
+        <div class="sup-stat-num" id="an-live-signin">—</div>
+        <div class="sup-stat-lbl">Signed in</div>
       </div>
-      <div id="dir-weather-display" style="font-size:16px;font-weight:600;color:#fff">—</div>
-    </div>
-
-    <!-- Clickable stats grid -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-      <div onclick="dirDrillDown('signins')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
-        <div style="font-size:26px;font-weight:700;color:var(--text);line-height:1" id="an-live-signin">—</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">Signed in</div>
+      <div class="sup-stat" onclick="dirDrillDown('prestarts')" style="cursor:pointer">
+        <div class="sup-stat-num" id="an-live-prestart">—</div>
+        <div class="sup-stat-lbl">Pre-starts</div>
       </div>
-      <div onclick="dirDrillDown('prestarts')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
-        <div style="font-size:26px;font-weight:700;color:var(--text);line-height:1" id="an-live-prestart">—</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">Pre-starts</div>
-      </div>
-      <div onclick="dirDrillDown('hazards')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
-        <div style="font-size:26px;font-weight:700;color:#D4630A;line-height:1" id="an-live-hazards">—</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">Open hazards</div>
+      <div class="sup-stat warn" onclick="dirDrillDown('hazards')" style="cursor:pointer">
+        <div class="sup-stat-num" id="an-live-hazards">—</div>
+        <div class="sup-stat-lbl">Open hazards</div>
       </div>
     </div>
 
-    <!-- Bottom row - LTI and Incidents -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div onclick="dirDrillDown('lti')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
-        <div style="font-size:24px;font-weight:700;color:#1B6E3A;line-height:1" id="an-live-lti">—</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">LTI-free days</div>
+    <!-- LTI and Incidents row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="sup-stat ok" onclick="dirDrillDown('lti')" style="cursor:pointer">
+        <div class="sup-stat-num" id="an-live-lti">—</div>
+        <div class="sup-stat-lbl">LTI-free days</div>
       </div>
-      <div onclick="dirDrillDown('incidents')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
-        <div style="font-size:24px;font-weight:700;color:var(--text);line-height:1" id="an-live-incidents">—</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">Incidents this period</div>
+      <div class="sup-stat" onclick="dirDrillDown('incidents')" style="cursor:pointer">
+        <div class="sup-stat-num" id="an-live-incidents">—</div>
+        <div class="sup-stat-lbl">Incidents this period</div>
       </div>
     </div>
 
@@ -9974,68 +9963,81 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <!-- Trend chart -->
+    <!-- 1. MOST RELEVANT: Recent incidents list -->
     <div class="fcard">
-      <div class="fcard-hdr">Incident trend (last 6 months)</div>
-      <div style="height:180px;position:relative;padding:10px 0"><canvas id="dir-inc-chart" role="img" aria-label="Incident trend chart"></canvas></div>
+      <div class="fcard-hdr">Recent incidents</div>
+      <div id="dir-inc-list"></div>
     </div>
 
-    <!-- Breakdown by type -->
-    <div class="fcard">
-      <div class="fcard-hdr">Incidents by mechanism</div>
-      <div id="dir-inc-breakdown" style="display:flex;flex-direction:column;gap:10px"></div>
-    </div>
-
-    <!-- Severity breakdown -->
+    <!-- 2. Severity breakdown -->
     <div class="fcard">
       <div class="fcard-hdr">Severity breakdown</div>
       <div id="dir-inc-severity" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
     </div>
 
-    <!-- Body injury map -->
+    <!-- 3. Trend chart -->
     <div class="fcard">
-      <div class="fcard-hdr">Body injury map <span style="font-weight:400;font-size:11px;color:var(--muted)">— Tap a zone to see history</span></div>
-      <div style="display:flex;justify-content:center;gap:12px;margin-bottom:10px">
-        <button onclick="document.getElementById('dir-bm-f').style.display='block';document.getElementById('dir-bm-b').style.display='none';this.style.background='var(--deep)';this.style.color='#fff';this.nextElementSibling.style.background='';this.nextElementSibling.style.color=''" style="padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Front</button>
-        <button onclick="document.getElementById('dir-bm-b').style.display='block';document.getElementById('dir-bm-f').style.display='none';this.style.background='var(--deep)';this.style.color='#fff';this.previousElementSibling.style.background='';this.previousElementSibling.style.color=''" style="padding:6px 16px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Back</button>
+      <div class="fcard-hdr">Incident trend (last 6 months)</div>
+      <div style="height:180px;position:relative;padding:10px 0"><canvas id="dir-inc-chart" role="img" aria-label="Incident trend chart"></canvas></div>
+    </div>
+
+    <!-- 4. Breakdown by mechanism -->
+    <div class="fcard">
+      <div class="fcard-hdr">Incidents by mechanism</div>
+      <div id="dir-inc-breakdown" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
+    <!-- 5. Body injury map -->
+    <div class="fcard">
+      <div class="fcard-hdr">Body injury map <span style="font-weight:400;font-size:11px;color:var(--muted)">— Tap a zone</span></div>
+      <div style="display:flex;justify-content:center;gap:10px;margin-bottom:12px">
+        <button id="bm-front-btn" onclick="switchBodyView('front')" style="padding:6px 18px;border-radius:8px;border:1px solid var(--border);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Front</button>
+        <button id="bm-back-btn" onclick="switchBodyView('back')" style="padding:6px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Back</button>
       </div>
-      <div style="display:flex;justify-content:center">
-        <svg id="dir-bm-f" viewBox="0 0 200 460" width="180" xmlns="http://www.w3.org/2000/svg">
-          <ellipse class="dir-zone" data-l="Head" data-n="1" cx="100" cy="30" rx="28" ry="30" fill="#2D6A45" fill-opacity=".4" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
-          <rect class="dir-zone" data-l="Neck" data-n="1" x="86" y="58" width="28" height="20" rx="6" fill="#2D6A45" fill-opacity=".4" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
-          <rect class="dir-zone" data-l="Left Shoulder" data-n="4" x="28" y="72" width="58" height="28" rx="8" fill="#B8960C" fill-opacity=".65" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
-          <rect class="dir-zone" data-l="Right Shoulder" data-n="2" x="114" y="72" width="58" height="28" rx="8" fill="#2D6A45" fill-opacity=".4" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
-          <rect class="dir-zone" data-l="Left Hand" data-n="3" x="2" y="220" width="36" height="50" rx="10" fill="#B8960C" fill-opacity=".6" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
-          <rect class="dir-zone" data-l="Right Hand" data-n="1" x="162" y="220" width="36" height="50" rx="10" fill="#2D6A45" fill-opacity=".38" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
-          <rect class="dir-zone" data-l="Lower Back" data-n="6" x="48" y="118" width="104" height="44" rx="8" fill="#B83232" fill-opacity=".65" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+      <div style="display:flex;justify-content:center;padding:10px 0">
+        <!-- Front view -->
+        <svg id="dir-bm-front" viewBox="0 0 200 400" style="width:160px;height:320px" xmlns="http://www.w3.org/2000/svg">
+          <!-- Head -->
+          <ellipse cx="100" cy="35" rx="25" ry="28" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Head', 1)"/>
+          <!-- Neck -->
+          <rect x="88" y="60" width="24" height="18" rx="4" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck', 1)"/>
+          <!-- Left Shoulder -->
+          <rect x="35" y="75" width="50" height="26" rx="6" fill="#F0C05A" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)"/>
+          <!-- Right Shoulder -->
+          <rect x="115" y="75" width="50" height="26" rx="6" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder', 2)"/>
+          <!-- Torso -->
+          <rect x="60" y="100" width="80" height="60" rx="6" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Torso', 0)"/>
+          <!-- Lower Back -->
+          <rect x="55" y="125" width="90" height="40" rx="6" fill="#E88080" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Lower Back', 6)"/>
+          <!-- Left Hand -->
+          <rect x="10" y="180" width="30" height="45" rx="8" fill="#F0C05A" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand', 3)"/>
+          <!-- Right Hand -->
+          <rect x="160" y="180" width="30" height="45" rx="8" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand', 1)"/>
         </svg>
-        <svg id="dir-bm-b" viewBox="0 0 200 460" width="180" xmlns="http://www.w3.org/2000/svg" style="display:none">
-          <ellipse class="dir-zone" data-l="Back of Head" data-n="0" cx="100" cy="30" rx="28" ry="30" fill="rgba(27,58,45,.1)" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
-          <rect class="dir-zone" data-l="Lower Back" data-n="6" x="48" y="118" width="104" height="44" rx="8" fill="#B83232" fill-opacity=".65" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+        <!-- Back view -->
+        <svg id="dir-bm-back" viewBox="0 0 200 400" style="width:160px;height:320px;display:none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Head back -->
+          <ellipse cx="100" cy="35" rx="25" ry="28" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Back of Head', 0)"/>
+          <!-- Lower Back -->
+          <rect x="55" y="125" width="90" height="40" rx="6" fill="#E88080" stroke="#2D5F3F" stroke-width="1.5" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Lower Back', 6)"/>
         </svg>
       </div>
-      <div id="dir-bm-panel" style="display:none;margin-top:12px;background:#F8FAF9;border-radius:10px;border:1.5px solid var(--deep);padding:13px">
+      <div id="dir-bm-panel" style="display:none;margin-top:12px;background:#F5F9F7;border-radius:10px;border:1px solid var(--border);padding:14px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
             <div id="dir-bm-name" style="font-size:14px;font-weight:600;color:var(--text)"></div>
-            <div id="dir-bm-count" style="font-size:11px;color:var(--muted);margin-top:2px"></div>
+            <div id="dir-bm-count" style="font-size:12px;color:var(--muted);margin-top:2px"></div>
           </div>
-          <button onclick="document.getElementById('dir-bm-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0 2px">×</button>
+          <button onclick="document.getElementById('dir-bm-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px;line-height:1;padding:0 4px">×</button>
         </div>
-        <div id="dir-bm-hist" style="margin-top:8px;display:flex;flex-direction:column;gap:5px"></div>
+        <div id="dir-bm-hist" style="margin-top:10px;display:flex;flex-direction:column;gap:6px"></div>
       </div>
     </div>
 
-    <!-- Time patterns -->
+    <!-- 6. LEAST RELEVANT: Time patterns -->
     <div class="fcard">
       <div class="fcard-hdr">When do incidents happen?</div>
       <div id="dir-inc-timepatterns"></div>
-    </div>
-
-    <!-- Recent incidents list -->
-    <div class="fcard">
-      <div class="fcard-hdr">Recent incidents</div>
-      <div id="dir-inc-list"></div>
     </div>
 
   </div>
@@ -40909,19 +40911,64 @@ function dirOpenTile(tileName) {
 function dirDrillDown(statType) {
   // Handle clicks on "Today at a glance" stats
   if (statType === 'signins') {
-    alert('Signed In Today\n\nShowing list of all workers signed in today:\n- Jake Ryan (7:15 AM)\n- Tom Chen (7:22 AM)\n- Sarah O\'Brien (7:45 AM)\n...\n\nFull version will show detailed list with times, sites, and contact info.');
+    showDrillDownPanel('Signed In Today', 
+      'Showing all workers signed in today:<br><br>' +
+      '• Jake Ryan (7:15 AM)<br>' +
+      '• Tom Chen (7:22 AM)<br>' +
+      '• Sarah O\'Brien (7:45 AM)<br>' +
+      '• Mike Johnson (7:50 AM)<br>' +
+      '• Emma Wilson (8:00 AM)<br><br>' +
+      '<span style="color:var(--muted);font-size:12px">Full version will show detailed list with times, sites, and contact info.</span>');
   } else if (statType === 'prestarts') {
-    alert('Pre-starts Today\n\nShowing all pre-start checks completed:\n- EWP - Jake Ryan (8:00 AM)\n- Excavator - Tom Chen (7:30 AM)\n- Forklift - Sarah O\'Brien (8:15 AM)\n...\n\nFull version will show detailed pre-start records.');
+    showDrillDownPanel('Pre-starts Today', 
+      'Showing all pre-start checks completed:<br><br>' +
+      '• EWP - Jake Ryan (8:00 AM)<br>' +
+      '• Excavator - Tom Chen (7:30 AM)<br>' +
+      '• Forklift - Sarah O\'Brien (8:15 AM)<br>' +
+      '• Crane - Mike Johnson (7:45 AM)<br><br>' +
+      '<span style="color:var(--muted);font-size:12px">Full version will show detailed pre-start records.</span>');
   } else if (statType === 'hazards') {
-    // Navigate to Hazards (when built)
-    alert('Open Hazards\n\nWould navigate to Hazards screen filtered to show only open/unresolved hazards.\n\nComing in next phase.');
+    showDrillDownPanel('Open Hazards', 
+      'Would navigate to Hazards screen filtered to show only open/unresolved hazards.<br><br>' +
+      '<span style="color:var(--muted);font-size:12px">Coming in next phase.</span>');
   } else if (statType === 'lti') {
-    alert('LTI-Free Days: 47\n\nLast LTI: 15 Mar 2026\nWorker: [Name]\nIncident: [Description]\n\nCompany record: 156 days\nIndustry average: 32 days\n\nFull version will show LTI history and safety milestones.');
+    showDrillDownPanel('LTI-Free Days: 47', 
+      '<strong>Last LTI:</strong> 15 Mar 2026<br>' +
+      '<strong>Worker:</strong> [Name]<br>' +
+      '<strong>Incident:</strong> [Description]<br><br>' +
+      '<strong>Company record:</strong> 156 days<br>' +
+      '<strong>Industry average:</strong> 32 days<br><br>' +
+      '<span style="color:var(--muted);font-size:12px">Full version will show LTI history and safety milestones.</span>');
   } else if (statType === 'incidents') {
     // Navigate to Incidents screen
     goTo('screen-dir-incidents');
     loadDirectorIncidents();
   }
+}
+
+function showDrillDownPanel(title, content) {
+  // Create overlay
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+  
+  // Create panel
+  var panel = document.createElement('div');
+  panel.style.cssText = 'background:var(--card);border-radius:12px;padding:20px;max-width:400px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.3)';
+  
+  panel.innerHTML = 
+    '<div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:14px">' + title + '</div>' +
+    '<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:18px">' + content + '</div>' +
+    '<button onclick="this.parentElement.parentElement.remove()" style="background:var(--deep);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;width:100%;font-family:inherit">OK</button>';
+  
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+  
+  // Click overlay to close
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  });
 }
 
 function loadDirectorIncidents() {
@@ -41007,9 +41054,8 @@ function renderDirectorSeverityBreakdown(incidents) {
     '</div>';
 }
 
-function dirShowBodyZone(el) {
-  var zoneName = el.getAttribute('data-l');
-  var count = parseInt(el.getAttribute('data-n') || '0');
+function dirShowBodyZone(event, zoneName, count) {
+  event.stopPropagation();
   
   var panel = document.getElementById('dir-bm-panel');
   var nameEl = document.getElementById('dir-bm-name');
@@ -41034,18 +41080,49 @@ function dirShowBodyZone(el) {
   }
   
   histEl.innerHTML = demoHistory.length === 0 ? 
-    '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px">No incidents recorded</div>' :
+    '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">No incidents recorded</div>' :
     demoHistory.map(function(h) {
-      return '<div style="display:flex;justify-content:space-between;padding:6px 8px;background:white;border-radius:6px;font-size:11px">' +
+      return '<div style="display:flex;justify-content:space-between;padding:8px 10px;background:white;border-radius:6px;font-size:12px">' +
         '<div style="flex:1">' +
           '<div style="font-weight:600;color:var(--text)">' + h.desc + '</div>' +
-          '<div style="color:var(--muted);font-size:10px;margin-top:2px">' + h.date + '</div>' +
+          '<div style="color:var(--muted);font-size:11px;margin-top:2px">' + h.date + '</div>' +
         '</div>' +
-        '<div style="font-size:9px;color:' + (h.severity === 'First Aid' ? '#A32D2D' : '#1B6E3A') + ';font-weight:600;white-space:nowrap">' + h.severity + '</div>' +
+        '<div style="font-size:10px;color:' + (h.severity === 'First Aid' ? '#A32D2D' : '#1B6E3A') + ';font-weight:600;white-space:nowrap">' + h.severity + '</div>' +
       '</div>';
     }).join('');
   
   panel.style.display = 'block';
+}
+
+function switchBodyView(view) {
+  var frontSVG = document.getElementById('dir-bm-front');
+  var backSVG = document.getElementById('dir-bm-back');
+  var frontBtn = document.getElementById('bm-front-btn');
+  var backBtn = document.getElementById('bm-back-btn');
+  
+  if (view === 'front') {
+    if (frontSVG) frontSVG.style.display = 'block';
+    if (backSVG) backSVG.style.display = 'none';
+    if (frontBtn) {
+      frontBtn.style.background = 'var(--deep)';
+      frontBtn.style.color = '#fff';
+    }
+    if (backBtn) {
+      backBtn.style.background = 'transparent';
+      backBtn.style.color = 'var(--text)';
+    }
+  } else {
+    if (frontSVG) frontSVG.style.display = 'none';
+    if (backSVG) backSVG.style.display = 'block';
+    if (frontBtn) {
+      frontBtn.style.background = 'transparent';
+      frontBtn.style.color = 'var(--text)';
+    }
+    if (backBtn) {
+      backBtn.style.background = 'var(--deep)';
+      backBtn.style.color = '#fff';
+    }
+  }
 }
 
 function renderDirectorTimePatterns(incidents) {
@@ -41213,12 +41290,20 @@ function viewIncidentDetail(incidentId) {
   });
   
   if (!incident) {
-    alert('Incident not found');
+    showDrillDownPanel('Error', 'Incident not found');
     return;
   }
   
-  // For now, just show alert - in full version this would open the incident detail screen
-  alert('Opening full incident report for ' + incidentId + '\n\nIn the full version, this will show:\n- Complete incident details\n- Photos\n- Witnesses\n- Investigation notes\n- Actions taken');
+  // For now, show styled panel - in full version this would open the incident detail screen
+  showDrillDownPanel('Opening Full Incident Report', 
+    '<strong>Incident ID:</strong> ' + incidentId + '<br><br>' +
+    'In the full version, this will show:<br><br>' +
+    '• Complete incident details<br>' +
+    '• Photos and evidence<br>' +
+    '• Witness statements<br>' +
+    '• Investigation notes<br>' +
+    '• Corrective actions taken<br>' +
+    '• Root cause analysis');
 }
 
 </script>
