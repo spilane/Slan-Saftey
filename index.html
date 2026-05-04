@@ -10001,7 +10001,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <span style="font-weight:600;color:#666">Last updated:</span> 2 hours ago
       </div>
       <div style="display:flex;gap:6px">
-        <button style="padding:6px 10px;font-size:10px;font-weight:600;background:#fff;border:1px solid #D0D0D0;border-radius:6px;color:#555;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08)">Export</button>
+        <button onclick="exportIncidentsToCSV()" style="padding:6px 10px;font-size:10px;font-weight:600;background:#fff;border:1px solid #D0D0D0;border-radius:6px;color:#555;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08)">Export</button>
         <button onclick="showIncidentForm()" style="padding:6px 10px;font-size:10px;font-weight:600;background:linear-gradient(135deg, #1B6E3A 0%, #2D8A4F 100%);border:none;border-radius:6px;color:#fff;cursor:pointer;box-shadow:0 2px 6px rgba(27,110,58,0.3)">+ Report Incident</button>
       </div>
     </div>
@@ -10011,23 +10011,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-hdr">Filter Data</div>
       <div style="padding:10px">
         <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-          <button style="padding:4px 8px;font-size:9px;font-weight:600;background:transparent;border:1px solid #D0D0D0;border-radius:4px;color:#666;cursor:pointer">Reset</button>
+          <button onclick="resetDirectorFilters()" style="padding:4px 8px;font-size:9px;font-weight:600;background:transparent;border:1px solid #D0D0D0;border-radius:4px;color:#666;cursor:pointer">Reset</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-          <select style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
+          <select id="filter-site" onchange="applyDirectorFilters()" style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
             <option>All Sites</option>
             <option>Site A</option>
             <option>Site B</option>
             <option>Site C</option>
           </select>
-          <select style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
-            <option>Last 6 months</option>
-            <option>Last 30 days</option>
-            <option>Last 90 days</option>
-            <option>YTD</option>
-            <option>All time</option>
+          <select id="filter-period" onchange="applyDirectorFilters()" style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
+            <option value="180">Last 6 months</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">YTD</option>
+            <option value="9999">All time</option>
           </select>
-          <select style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
+          <select id="filter-severity" onchange="applyDirectorFilters()" style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
             <option>All Severity</option>
             <option>Near Miss</option>
             <option>First Aid</option>
@@ -10047,9 +10047,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div>
-              <div style="font-size:9px;color:#856404;margin-bottom:3px;display:flex;align-items:center;gap:4px">
+              <div style="font-size:9px;color:#856404;margin-bottom:3px;display:flex;align-items:center;gap:4px;position:relative">
                 Your TRIFR
-                <span style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:50%;font-size:9px;font-weight:700;color:#B8960C;text-align:center;line-height:14px;cursor:help;border:1px solid #E8D9B0" title="Total Recordable Injury Frequency Rate - Number of injuries per million hours worked. Lower is better.">ⓘ</span>
+                <span onclick="toggleTrifrTooltip(event)" style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:50%;font-size:9px;font-weight:700;color:#B8960C;text-align:center;line-height:14px;cursor:pointer;border:1px solid #E8D9B0">ⓘ</span>
+                <div id="trifr-tooltip" style="display:none;position:absolute;background:#fff;border:2px solid #B8960C;border-radius:8px;padding:10px;font-size:10px;color:#333;width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1000;top:25px;left:0">
+                  <strong style="color:#B8960C">TRIFR</strong><br>
+                  Total Recordable Injury Frequency Rate - Number of injuries per million hours worked. Lower is better.
+                  <button onclick="event.stopPropagation();document.getElementById('trifr-tooltip').style.display='none'" style="position:absolute;top:4px;right:4px;background:none;border:none;cursor:pointer;color:#999;font-size:16px;line-height:1;padding:0 4px">×</button>
+                </div>
               </div>
               <div style="display:flex;align-items:baseline;gap:4px">
                 <span id="dir-inc-your-trifr" style="font-size:20px;font-weight:800;color:#1B6E3A">4.2</span>
@@ -10132,101 +10137,103 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="display:flex;justify-content:center;padding:16px;background:#F8F8F8;border-radius:8px;margin:0 10px 10px 10px">
         <!-- Front view - Full body -->
         <svg id="dir-bm-front" viewBox="0 0 240 520" style="width:100%;max-width:220px;height:auto" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#B8D5C4;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#A8D5BA;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="highlightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#F5C885;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#F0C05A;stop-opacity:1" />
+            </linearGradient>
+          </defs>
           <!-- Head -->
-          <ellipse cx="120" cy="40" rx="32" ry="36" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Head', 1)"/>
+          <ellipse cx="120" cy="38" rx="30" ry="34" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Head', 1)"/>
           <!-- Neck -->
-          <rect x="106" y="72" width="28" height="22" rx="5" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck', 1)"/>
-          <!-- Left Shoulder -->
-          <ellipse cx="72" cy="108" rx="28" ry="20" fill="#F0C05A" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)"/>
-          <!-- Right Shoulder -->
-          <ellipse cx="168" cy="108" rx="28" ry="20" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder', 2)"/>
-          <!-- Upper Chest -->
-          <rect x="80" y="94" width="80" height="50" rx="8" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Chest', 0)"/>
-          <!-- Abdomen -->
-          <rect x="85" y="144" width="70" height="45" rx="8" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Abdomen', 0)"/>
+          <path d="M 108 68 Q 108 75 108 78 L 108 88 L 132 88 L 132 78 Q 132 75 132 68 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck', 1)"/>
+          <!-- Shoulders (more rounded) -->
+          <ellipse cx="75" cy="108" rx="26" ry="18" fill="url(#highlightGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)"/>
+          <ellipse cx="165" cy="108" rx="26" ry="18" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder', 2)"/>
+          <!-- Torso (tapered) -->
+          <path d="M 90 95 Q 82 110 82 125 L 82 140 Q 82 150 85 155 L 95 180 Q 100 188 105 188 L 135 188 Q 140 188 145 180 L 155 155 Q 158 150 158 140 L 158 125 Q 158 110 150 95 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Chest', 0)"/>
+          <!-- Abdomen (narrower) -->
+          <path d="M 95 185 Q 92 195 92 205 L 92 220 L 148 220 L 148 205 Q 148 195 145 185 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Abdomen', 0)"/>
           <!-- Pelvis -->
-          <rect x="90" y="189" width="60" height="35" rx="6" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Pelvis', 0)"/>
-          <!-- Left Upper Arm -->
-          <rect x="42" y="120" width="22" height="75" rx="11" fill="#F0C05A" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm', 2)"/>
-          <!-- Right Upper Arm -->
-          <rect x="176" y="120" width="22" height="75" rx="11" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm', 1)"/>
-          <!-- Left Forearm -->
-          <rect x="38" y="195" width="20" height="70" rx="10" fill="#F0C05A" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm', 2)"/>
-          <!-- Right Forearm -->
-          <rect x="182" y="195" width="20" height="70" rx="10" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm', 0)"/>
-          <!-- Left Hand -->
-          <ellipse cx="48" cy="280" rx="14" ry="18" fill="#F0C05A" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand', 3)"/>
-          <!-- Right Hand -->
-          <ellipse cx="192" cy="280" rx="14" ry="18" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand', 1)"/>
-          <!-- Left Thigh -->
-          <rect x="85" y="224" width="28" height="95" rx="14" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Thigh', 0)"/>
-          <!-- Right Thigh -->
-          <rect x="127" y="224" width="28" height="95" rx="14" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Thigh', 0)"/>
-          <!-- Left Knee -->
-          <ellipse cx="99" cy="330" rx="16" ry="14" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee', 1)"/>
-          <!-- Right Knee -->
-          <ellipse cx="141" cy="330" rx="16" ry="14" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee', 0)"/>
-          <!-- Left Lower Leg -->
-          <rect x="88" y="344" width="22" height="100" rx="11" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Lower Leg', 0)"/>
-          <!-- Right Lower Leg -->
-          <rect x="130" y="344" width="22" height="100" rx="11" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Lower Leg', 0)"/>
-          <!-- Left Ankle -->
-          <ellipse cx="99" cy="456" rx="13" ry="10" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Ankle', 2)"/>
-          <!-- Right Ankle -->
-          <ellipse cx="141" cy="456" rx="13" ry="10" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Ankle', 0)"/>
-          <!-- Left Foot -->
-          <ellipse cx="99" cy="488" rx="16" ry="22" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Foot', 0)"/>
-          <!-- Right Foot -->
-          <ellipse cx="141" cy="488" rx="16" ry="22" fill="#A8D5BA" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Foot', 0)"/>
+          <path d="M 92 218 L 92 240 Q 92 248 95 252 L 145 252 Q 148 248 148 240 L 148 218 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Pelvis', 0)"/>
+          <!-- Arms (tapered) -->
+          <path d="M 48 115 Q 45 120 45 130 L 45 185 Q 45 190 48 193 L 62 193 Q 65 190 65 185 L 65 130 Q 65 120 62 115 Z" fill="url(#highlightGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm', 2)"/>
+          <path d="M 175 115 Q 172 120 172 130 L 172 185 Q 172 190 175 193 L 189 193 Q 192 190 192 185 L 192 130 Q 192 120 189 115 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm', 1)"/>
+          <!-- Forearms (tapered) -->
+          <path d="M 42 195 Q 40 200 40 210 L 40 260 Q 40 265 42 268 L 54 268 Q 56 265 56 260 L 56 210 Q 56 200 54 195 Z" fill="url(#highlightGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm', 2)"/>
+          <path d="M 184 195 Q 182 200 182 210 L 182 260 Q 182 265 184 268 L 196 268 Q 198 265 198 260 L 198 210 Q 198 200 196 195 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm', 0)"/>
+          <!-- Hands -->
+          <ellipse cx="48" cy="282" rx="12" ry="16" fill="url(#highlightGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand', 3)"/>
+          <ellipse cx="190" cy="282" rx="12" ry="16" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand', 1)"/>
+          <!-- Thighs (tapered) -->
+          <path d="M 90 250 Q 88 260 88 280 L 88 315 Q 88 320 90 324 L 108 324 Q 110 320 110 315 L 110 280 Q 110 260 108 250 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Thigh', 0)"/>
+          <path d="M 130 250 Q 128 260 128 280 L 128 315 Q 128 320 130 324 L 148 324 Q 150 320 150 315 L 150 280 Q 150 260 148 250 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Thigh', 0)"/>
+          <!-- Knees -->
+          <ellipse cx="99" cy="335" rx="14" ry="12" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee', 1)"/>
+          <ellipse cx="139" cy="335" rx="14" ry="12" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee', 0)"/>
+          <!-- Lower legs (tapered to ankles) -->
+          <path d="M 91 345 Q 90 355 90 380 L 90 445 Q 90 450 91 452 L 107 452 Q 108 450 108 445 L 108 380 Q 108 355 107 345 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Lower Leg', 0)"/>
+          <path d="M 131 345 Q 130 355 130 380 L 130 445 Q 130 450 131 452 L 147 452 Q 148 450 148 445 L 148 380 Q 148 355 147 345 Z" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Lower Leg', 0)"/>
+          <!-- Ankles -->
+          <ellipse cx="99" cy="461" rx="11" ry="9" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Ankle', 2)"/>
+          <ellipse cx="139" cy="461" rx="11" ry="9" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Ankle', 0)"/>
+          <!-- Feet -->
+          <ellipse cx="99" cy="490" rx="14" ry="20" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Foot', 0)"/>
+          <ellipse cx="139" cy="490" rx="14" ry="20" fill="url(#bodyGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Foot', 0)"/>
         </svg>
         <!-- Back view - Full body -->
         <svg id="dir-bm-back" viewBox="0 0 240 520" style="width:100%;max-width:220px;height:auto;display:none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="backGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#DFF0E5;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#D5E8DC;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="backHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#F09090;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#E88080;stop-opacity:1" />
+            </linearGradient>
+          </defs>
           <!-- Back of Head -->
-          <ellipse cx="120" cy="40" rx="32" ry="36" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Back of Head', 0)"/>
+          <ellipse cx="120" cy="38" rx="30" ry="34" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Back of Head', 0)"/>
           <!-- Neck Back -->
-          <rect x="106" y="72" width="28" height="22" rx="5" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck (Back)', 1)"/>
-          <!-- Left Shoulder Back -->
-          <ellipse cx="72" cy="108" rx="28" ry="20" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder (Back)', 2)"/>
-          <!-- Right Shoulder Back -->
-          <ellipse cx="168" cy="108" rx="28" ry="20" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder (Back)', 1)"/>
+          <path d="M 108 68 Q 108 75 108 78 L 108 88 L 132 88 L 132 78 Q 132 75 132 68 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck (Back)', 1)"/>
+          <!-- Shoulders Back -->
+          <ellipse cx="75" cy="108" rx="26" ry="18" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder (Back)', 2)"/>
+          <ellipse cx="165" cy="108" rx="26" ry="18" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder (Back)', 1)"/>
           <!-- Upper Back -->
-          <rect x="80" y="94" width="80" height="50" rx="8" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Upper Back', 1)"/>
-          <!-- Lower Back -->
-          <rect x="85" y="144" width="70" height="45" rx="8" fill="#E88080" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Lower Back', 6)"/>
+          <path d="M 90 95 Q 82 110 82 125 L 82 135 Q 82 142 85 145 L 155 145 Q 158 142 158 135 L 158 125 Q 158 110 150 95 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Upper Back', 1)"/>
+          <!-- Lower Back (highlighted) -->
+          <path d="M 85 142 Q 82 150 82 160 L 82 180 Q 82 188 85 192 L 95 192 L 145 192 L 155 192 Q 158 188 158 180 L 158 160 Q 158 150 155 142 Z" fill="url(#backHighlight)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Lower Back', 6)"/>
           <!-- Buttocks -->
-          <rect x="90" y="189" width="60" height="35" rx="6" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Buttocks', 0)"/>
-          <!-- Left Upper Arm Back -->
-          <rect x="42" y="120" width="22" height="75" rx="11" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm (Back)', 1)"/>
-          <!-- Right Upper Arm Back -->
-          <rect x="176" y="120" width="22" height="75" rx="11" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm (Back)', 0)"/>
-          <!-- Left Forearm Back -->
-          <rect x="38" y="195" width="20" height="70" rx="10" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm (Back)', 1)"/>
-          <!-- Right Forearm Back -->
-          <rect x="182" y="195" width="20" height="70" rx="10" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm (Back)', 0)"/>
-          <!-- Left Hand Back -->
-          <ellipse cx="48" cy="280" rx="14" ry="18" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand (Back)', 1)"/>
-          <!-- Right Hand Back -->
-          <ellipse cx="192" cy="280" rx="14" ry="18" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand (Back)', 0)"/>
-          <!-- Left Hamstring -->
-          <rect x="85" y="224" width="28" height="95" rx="14" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hamstring', 0)"/>
-          <!-- Right Hamstring -->
-          <rect x="127" y="224" width="28" height="95" rx="14" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hamstring', 0)"/>
-          <!-- Left Knee Back -->
-          <ellipse cx="99" cy="330" rx="16" ry="14" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee (Back)', 0)"/>
-          <!-- Right Knee Back -->
-          <ellipse cx="141" cy="330" rx="16" ry="14" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee (Back)', 0)"/>
-          <!-- Left Calf -->
-          <rect x="88" y="344" width="22" height="100" rx="11" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Calf', 0)"/>
-          <!-- Right Calf -->
-          <rect x="130" y="344" width="22" height="100" rx="11" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Calf', 0)"/>
-          <!-- Left Ankle Back -->
-          <ellipse cx="99" cy="456" rx="13" ry="10" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Ankle (Back)', 0)"/>
-          <!-- Right Ankle Back -->
-          <ellipse cx="141" cy="456" rx="13" ry="10" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Ankle (Back)', 0)"/>
-          <!-- Left Heel -->
-          <ellipse cx="99" cy="488" rx="16" ry="22" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Heel', 0)"/>
-          <!-- Right Heel -->
-          <ellipse cx="141" cy="488" rx="16" ry="22" fill="#D5E8DC" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Heel', 0)"/>
+          <path d="M 92 190 L 92 235 Q 92 243 95 247 L 145 247 Q 148 243 148 235 L 148 190 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Buttocks', 0)"/>
+          <!-- Arms Back (tapered) -->
+          <path d="M 48 115 Q 45 120 45 130 L 45 185 Q 45 190 48 193 L 62 193 Q 65 190 65 185 L 65 130 Q 65 120 62 115 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm (Back)', 1)"/>
+          <path d="M 175 115 Q 172 120 172 130 L 172 185 Q 172 190 175 193 L 189 193 Q 192 190 192 185 L 192 130 Q 192 120 189 115 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm (Back)', 0)"/>
+          <!-- Forearms Back -->
+          <path d="M 42 195 Q 40 200 40 210 L 40 260 Q 40 265 42 268 L 54 268 Q 56 265 56 260 L 56 210 Q 56 200 54 195 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm (Back)', 1)"/>
+          <path d="M 184 195 Q 182 200 182 210 L 182 260 Q 182 265 184 268 L 196 268 Q 198 265 198 260 L 198 210 Q 198 200 196 195 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm (Back)', 0)"/>
+          <!-- Hands Back -->
+          <ellipse cx="48" cy="282" rx="12" ry="16" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand (Back)', 1)"/>
+          <ellipse cx="190" cy="282" rx="12" ry="16" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand (Back)', 0)"/>
+          <!-- Hamstrings -->
+          <path d="M 90 245 Q 88 255 88 275 L 88 315 Q 88 320 90 324 L 108 324 Q 110 320 110 315 L 110 275 Q 110 255 108 245 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hamstring', 0)"/>
+          <path d="M 130 245 Q 128 255 128 275 L 128 315 Q 128 320 130 324 L 148 324 Q 150 320 150 315 L 150 275 Q 150 255 148 245 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hamstring', 0)"/>
+          <!-- Knees Back -->
+          <ellipse cx="99" cy="335" rx="14" ry="12" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee (Back)', 0)"/>
+          <ellipse cx="139" cy="335" rx="14" ry="12" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee (Back)', 0)"/>
+          <!-- Calves (tapered) -->
+          <path d="M 91 345 Q 90 355 90 380 L 90 445 Q 90 450 91 452 L 107 452 Q 108 450 108 445 L 108 380 Q 108 355 107 345 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Calf', 0)"/>
+          <path d="M 131 345 Q 130 355 130 380 L 130 445 Q 130 450 131 452 L 147 452 Q 148 450 148 445 L 148 380 Q 148 355 147 345 Z" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Calf', 0)"/>
+          <!-- Ankles Back -->
+          <ellipse cx="99" cy="461" rx="11" ry="9" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Ankle (Back)', 0)"/>
+          <ellipse cx="139" cy="461" rx="11" ry="9" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Ankle (Back)', 0)"/>
+          <!-- Heels -->
+          <ellipse cx="99" cy="490" rx="14" ry="20" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Heel', 0)"/>
+          <ellipse cx="139" cy="490" rx="14" ry="20" fill="url(#backGrad)" stroke="#2D5F3F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Heel', 0)"/>
         </svg>
       </div>
       <div id="dir-bm-panel" style="display:none;margin:0 10px 10px 10px;background:linear-gradient(135deg, #F5F9F7 0%, #EDF5F0 100%);border-radius:10px;border:2px solid var(--border);padding:16px;box-shadow:0 3px 10px rgba(0,0,0,0.1)">
@@ -41243,6 +41250,94 @@ function loadDirectorIncidents() {
   updateDirectorBenchmarkColors();
 }
 
+function exportIncidentsToCSV() {
+  var incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  
+  if (incidents.length === 0) {
+    alert('No incidents to export');
+    return;
+  }
+  
+  // CSV header
+  var csv = 'Incident ID,Date,Severity,Description,Reported By,Mechanism,Body Part\n';
+  
+  // Add rows
+  incidents.forEach(function(inc) {
+    var date = new Date(inc.timestamp || inc.reported_at).toLocaleDateString('en-AU');
+    var row = [
+      inc.incident_id || '',
+      date,
+      inc.severity || '',
+      (inc.what_happened || inc.description || '').replace(/,/g, ';'),
+      inc.reported_by || '',
+      inc.mechanism || '',
+      inc.body_part || ''
+    ].join(',');
+    csv += row + '\n';
+  });
+  
+  // Download
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = window.URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'incidents_export_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+function applyDirectorFilters() {
+  var periodDays = parseInt(document.getElementById('filter-period').value);
+  var severity = document.getElementById('filter-severity').value;
+  var site = document.getElementById('filter-site').value;
+  
+  var allIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  var now = new Date();
+  
+  // Filter by period
+  var filtered = allIncidents.filter(function(inc) {
+    var incDate = new Date(inc.timestamp || inc.reported_at);
+    var daysDiff = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
+    return daysDiff <= periodDays;
+  });
+  
+  // Filter by severity
+  if (severity !== 'All Severity') {
+    filtered = filtered.filter(function(inc) {
+      return (inc.severity || '').toLowerCase().includes(severity.toLowerCase());
+    });
+  }
+  
+  // Filter by site (if we add site data later)
+  if (site !== 'All Sites') {
+    filtered = filtered.filter(function(inc) {
+      return (inc.site || 'All Sites') === site;
+    });
+  }
+  
+  // Re-render with filtered data
+  loadDirectorIncidents(filtered);
+}
+
+function resetDirectorFilters() {
+  document.getElementById('filter-site').selectedIndex = 0;
+  document.getElementById('filter-period').selectedIndex = 0;
+  document.getElementById('filter-severity').selectedIndex = 0;
+  loadDirectorIncidents();
+}
+
+function toggleTrifrTooltip(event) {
+  event.stopPropagation();
+  var tooltip = document.getElementById('trifr-tooltip');
+  tooltip.style.display = tooltip.style.display === 'none' ? 'block' : 'none';
+}
+
+// Click outside to close tooltip
+document.addEventListener('click', function() {
+  var tooltip = document.getElementById('trifr-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
+});
+
 function updateDirectorBenchmarkColors() {
   var yourTrifr = 4.2; // In real app, calculate from actual incident data
   var industryAvg = 6.5;
@@ -41486,13 +41581,15 @@ function renderDirectorIncidentBreakdown(incidents) {
   // Render bars with percentages and premium styling
   container.innerHTML = items.map(function(item) {
     var pct = Math.round((item.count / total) * 100);
-    return '<div style="margin-bottom:10px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
-        '<span style="font-size:11px;color:#555;font-weight:500">' + item.mechanism + '</span>' +
-        '<span style="font-size:10px;font-weight:700;color:#1A2A1F">' + item.count + ' <span style="color:#999;font-weight:500">(' + pct + '%)</span></span>' +
+    return '<div style="margin-bottom:12px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">' +
+        '<span style="font-size:11px;color:#555;font-weight:600">' + item.mechanism + '</span>' +
+        '<span style="font-size:10px;font-weight:700;color:#1A2A1F">' + item.count + ' <span style="color:#999;font-weight:600">(' + pct + '%)</span></span>' +
       '</div>' +
-      '<div style="background:#E8E8E8;height:8px;border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1)">' +
-        '<div style="background:linear-gradient(90deg, #F0997B 0%, #E8856A 100%);width:' + pct + '%;height:100%;box-shadow:0 1px 3px rgba(240,153,123,0.4)"></div>' +
+      '<div style="background:linear-gradient(135deg, #E0E0E0 0%, #D0D0D0 100%);height:10px;border-radius:5px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.15)">' +
+        '<div style="background:linear-gradient(135deg, #F5AD7D 0%, #F0997B 50%, #E8856A 100%);width:' + pct + '%;height:100%;box-shadow:0 2px 6px rgba(240,153,123,0.5), inset 0 1px 0 rgba(255,255,255,0.3);position:relative;overflow:hidden">' +
+          '<div style="position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%)"></div>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -41732,29 +41829,43 @@ function renderDirectorIncidentList(incidents) {
 }
 
 function viewIncidentDetail(incidentId) {
-  // Find the incident in localStorage
+  // Try to find the incident in localStorage first
   var incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
   var incident = incidents.find(function(i) {
     return (i.incident_id === incidentId) || 
            ('INC-' + new Date(i.timestamp).getFullYear() + '-' + String(incidents.indexOf(i) + 1).padStart(3, '0') === incidentId);
   });
   
+  // If not found, create a demo incident view
   if (!incident) {
-    showDrillDownPanel('Error', 'Incident not found');
+    showDrillDownPanel('Incident Report: ' + incidentId, 
+      '<div style="margin-bottom:12px;padding:10px;background:#F5F9F7;border-radius:6px">' +
+      '<strong style="color:#1B3A2D">Incident ID:</strong> ' + incidentId + '<br><br>' +
+      '<strong style="color:#1B3A2D">Status:</strong> <span style="color:#1B6E3A">✓ Closed</span><br>' +
+      '<strong style="color:#1B3A2D">Investigation:</strong> Complete' +
+      '</div>' +
+      '<div style="font-size:11px;color:#666;line-height:1.6">' +
+      'In the full app, this screen shows:<br><br>' +
+      '📋 Complete incident details<br>' +
+      '📸 Photos and evidence<br>' +
+      '👥 Witness statements<br>' +
+      '🔍 Investigation notes<br>' +
+      '✅ Corrective actions taken<br>' +
+      '📊 Root cause analysis<br>' +
+      '📄 Generated PDF report' +
+      '</div>');
     return;
   }
   
-  // For now, show styled panel - in full version this would open the incident detail screen
-  showDrillDownPanel('Opening Full Incident Report', 
-    '<strong>Incident ID:</strong> ' + incidentId + '<br><br>' +
-    'In the full version, this will show:<br><br>' +
-    '• Complete incident details<br>' +
-    '• Photos and evidence<br>' +
-    '• Witness statements<br>' +
-    '• Investigation notes<br>' +
-    '• Corrective actions taken<br>' +
-    '• Root cause analysis');
+  // Show full incident details if found in storage
+  showDrillDownPanel('Incident Report', 
+    '<strong>Incident ID:</strong> ' + (incident.incident_id || incidentId) + '<br><br>' +
+    '<strong>Description:</strong> ' + (incident.what_happened || incident.description || 'N/A') + '<br><br>' +
+    '<strong>Severity:</strong> ' + (incident.severity || 'N/A') + '<br>' +
+    '<strong>Mechanism:</strong> ' + (incident.mechanism || 'N/A') + '<br>' +
+    '<strong>Body Part:</strong> ' + (incident.body_part || 'N/A'));
 }
+
 
 </script>
 
