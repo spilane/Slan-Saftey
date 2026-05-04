@@ -37463,6 +37463,9 @@ function sdsReportMissing() {
   
   if (!name || !name.value.trim()) { slanAlert('Please enter the chemical name before continuing.'); return; }
   
+  // Set submission flag to prevent re-enable
+  sdsSubmitting = true;
+  
   // Prevent double-click
   if (btn) {
     if (btn.disabled) return; // Already submitting
@@ -37512,6 +37515,11 @@ function sdsReportMissing() {
   document.getElementById('sds-success-time').textContent = timeText;
   goTo('screen-sds-success');
   
+  // Reset submission flag after navigation
+  setTimeout(function() {
+    sdsSubmitting = false;
+  }, 500);
+  
   // Update notification badge and activity pills
   if (typeof updateSdsNotif === 'function') updateSdsNotif();
   if (typeof updateStatusStrip === 'function') updateStatusStrip();
@@ -37523,12 +37531,16 @@ function sdsReportMissing() {
 
 // SDS photo handling - stores up to 2 photos with timestamps
 var sdsPhotos = [null, null];
+var sdsSubmitting = false; // Flag to prevent double-submit
 
 function sdsValidateForm() {
   var name = document.getElementById('sds-missing-name');
   var usage = document.getElementById('sds-missing-usage');
   var btn = document.getElementById('sds-submit-btn');
   if (!btn) return;
+  
+  // Don't re-enable button if we're currently submitting
+  if (sdsSubmitting) return;
   
   // Require: name filled, usage filled, AND both photos uploaded
   var nameValid = name && name.value.trim().length > 0;
@@ -37568,6 +37580,46 @@ function handleSdsPhoto(idx, e) {
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
+      
+      // Get chemical name from form
+      const chemNameInput = document.getElementById('sds-missing-name');
+      const chemName = chemNameInput && chemNameInput.value.trim() ? chemNameInput.value.trim() : '';
+      
+      // Stamp chemical name + timestamp on photo
+      if (chemName) {
+        const now = new Date();
+        const timestamp = now.toLocaleString('en-AU', { 
+          day: '2-digit', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit', hour12: true 
+        });
+        
+        // Semi-transparent black background for text
+        const padding = 8;
+        const fontSize = Math.max(12, Math.floor(w / 50));
+        ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+        
+        // Chemical name at top
+        const chemText = chemName.length > 30 ? chemName.substring(0, 27) + '...' : chemName;
+        const chemMetrics = ctx.measureText(chemText);
+        const chemWidth = chemMetrics.width + (padding * 2);
+        const chemHeight = fontSize + (padding * 2);
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(8, 8, chemWidth, chemHeight);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(chemText, 8 + padding, 8 + padding + (fontSize * 0.8));
+        
+        // Timestamp at bottom
+        const timeMetrics = ctx.measureText(timestamp);
+        const timeWidth = timeMetrics.width + (padding * 2);
+        const timeHeight = fontSize + (padding * 2);
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(8, h - timeHeight - 8, timeWidth, timeHeight);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(timestamp, 8 + padding, h - 8 - padding - (fontSize * 0.2));
+      }
+      
       const compressed = canvas.toDataURL('image/jpeg', 0.7);
       sdsPhotos[idx] = compressed;
 
