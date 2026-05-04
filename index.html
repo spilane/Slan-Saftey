@@ -37842,21 +37842,26 @@ function sdsRenderPendingReports() {
       photoHtml = '<div onclick="sdsViewReportPhoto(' + idx + ', 0)" style="cursor:pointer;margin-top:8px"><img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></div>';
     }
     
-    return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px">' +
+    return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px;cursor:pointer" onclick="toggleSdsSupCard(' + idx + ')">' +
       '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:6px"><strong>Chemical/Product Name:</strong> ' + r.chemical_name + '</div>' +
       (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
       '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date + '</div>' +
+      '<div id="sds-sup-detail-' + idx + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' +
       photoHtml +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px">' +
-        '<button onclick="sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
-        '<button onclick="sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
+        '<button onclick="event.stopPropagation(); sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
+        '<button onclick="event.stopPropagation(); sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
+      '</div>' +
       '</div>' +
     '</div>';
   }).join('');
 }
 
 function toggleSdsSupCard(idx) {
-  // Not needed anymore - cards don't collapse
+  var detail = document.getElementById('sds-sup-detail-' + idx);
+  if (detail) {
+    detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+  }
 }
 
 function sdsRenderWorkerReports() {
