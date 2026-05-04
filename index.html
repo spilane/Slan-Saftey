@@ -37535,7 +37535,12 @@ function sdsValidateForm() {
   var btn = document.getElementById('sds-submit-btn');
   if (!btn) return;
   
-  var isValid = name && name.value.trim().length > 0 && usage && usage.value.trim().length > 0;
+  // Require: name filled, usage filled, AND both photos uploaded
+  var nameValid = name && name.value.trim().length > 0;
+  var usageValid = usage && usage.value.trim().length > 0;
+  var photosValid = sdsPhotos[0] !== null && sdsPhotos[1] !== null;
+  
+  var isValid = nameValid && usageValid && photosValid;
   
   if (isValid) {
     btn.disabled = false;
@@ -37577,6 +37582,9 @@ function handleSdsPhoto(idx, e) {
         slot.innerHTML = `<img src="${compressed}" alt="SDS photo" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
         slot.classList.add('filled');
       }
+      
+      // Trigger validation check
+      sdsValidateForm();
     };
     img.src = ev.target.result;
   };
@@ -37594,6 +37602,9 @@ function handleSdsPhotoRemove(idx) {
     slot.classList.remove('filled');
   }
   if (input) input.value = '';
+  
+  // Trigger validation check
+  sdsValidateForm();
 }
 
 function downloadSDS(chemicalName) {
