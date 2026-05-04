@@ -37487,20 +37487,15 @@ function sdsReportMissing() {
     status: 'pending'
   };
   
-  // Save to Firebase
-  fbInsert('sds_missing', payload);
-  
-  // Save to localStorage - check for duplicates by ID
+  // Save to localStorage only (Firebase not in use for SDS reports)
   var existing = [];
   try {
     existing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
   } catch(e) {}
   
-  // Only add if this ID doesn't exist
-  if (!existing.find(function(r) { return r.id === payload.id; })) {
-    existing.push(payload);
-    localStorage.setItem('sds_missing', JSON.stringify(existing));
-  }
+  // Add to array (duplicate check not needed as each submission has unique ID)
+  existing.push(payload);
+  localStorage.setItem('sds_missing', JSON.stringify(existing));
   
   // Clear form
   if (name) name.value = '';
