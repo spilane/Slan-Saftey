@@ -14434,12 +14434,23 @@ function showProfileSummaryThenLand() {
 
 function myProfContinueToApp() {
   const p = (typeof getProfile === 'function') ? getProfile() : null;
+  
+  // DIRECTOR ROUTING - Force to analytics screen
   if (p && p.role === 'Company Director') {
-    if (typeof goToAnalytics === 'function') { goToAnalytics('director'); return; }
+    console.log('Director role detected - routing to analytics');
+    // Load director dashboard data
+    if (typeof loadDirectorDashboard === 'function') loadDirectorDashboard();
+    // Navigate to analytics screen
+    goTo('screen-analytics');
+    return;
   }
+  
+  // SUPERVISOR ROUTING  
   if (p && p.role === 'Site Supervisor') {
     if (typeof _doOpenSuperDash === 'function') { _doOpenSuperDash(); return; }
   }
+  
+  // WORKER - goes to home
   goTo('screen-home');
   if (typeof updateStatusStrip === 'function') updateStatusStrip();
 }
@@ -40999,7 +41010,10 @@ function loadDirectorIncidents() {
   var ltiEl = document.getElementById('dir-inc-lti');
   var trendEl = document.getElementById('dir-inc-trend');
   
-  if (totalEl) totalEl.textContent = recentIncidents.length;
+  // Use actual count or demo count (3)
+  var displayCount = recentIncidents.length > 0 ? recentIncidents.length : 3;
+  
+  if (totalEl) totalEl.textContent = displayCount;
   if (ltiEl) ltiEl.textContent = calculateLTIDays(incidents);
   if (trendEl) trendEl.textContent = '↓ 40% vs last period'; // Demo data
   
@@ -41243,13 +41257,36 @@ function renderDirectorIncidentList(incidents) {
   var container = document.getElementById('dir-inc-list');
   if (!container) return;
   
-  if (incidents.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">No incidents in this period</div>';
-    return;
-  }
+  // DEMO DATA - always show at least 3 demo incidents for presentation
+  var demoIncidents = [
+    {
+      incident_id: 'INC-2026-003',
+      severity: 'first-aid',
+      what_happened: 'Slip on wet floor near amenities block',
+      reported_by: 'Jake Ryan',
+      timestamp: new Date(2026, 3, 28).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-002',
+      severity: 'near-miss',
+      what_happened: 'Manual handling - load exceeding safe limit',
+      reported_by: 'Tom Chen',
+      timestamp: new Date(2026, 3, 22).toISOString()
+    },
+    {
+      incident_id: 'INC-2026-001',
+      severity: 'first-aid',
+      what_happened: 'Hit head on scaffold support beam',
+      reported_by: 'Sarah O\'Brien',
+      timestamp: new Date(2026, 3, 15).toISOString()
+    }
+  ];
+  
+  // Use real incidents if available, otherwise use demo
+  var displayIncidents = incidents.length > 0 ? incidents : demoIncidents;
   
   // Sort by date, most recent first
-  var sorted = incidents.slice().sort(function(a, b) {
+  var sorted = displayIncidents.slice().sort(function(a, b) {
     var aTime = new Date(a.timestamp || a.reported_at).getTime();
     var bTime = new Date(b.timestamp || b.reported_at).getTime();
     return bTime - aTime;
