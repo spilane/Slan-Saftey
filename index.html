@@ -9353,6 +9353,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- ── TODAY AT A GLANCE — always visible ── -->
     <div style="background:var(--deep);border-radius:var(--r);padding:16px">
       <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px">Today at a glance</div>
+      
+      <!-- Weather strip -->
+      <div id="dir-weather" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.05);border-radius:6px;margin-bottom:12px">
+        <div id="dir-weather-icon" style="font-size:20px">☀️</div>
+        <div style="flex:1">
+          <div id="dir-weather-temp" style="font-size:12px;font-weight:600;color:#fff">Loading...</div>
+          <div id="dir-weather-loc" style="font-size:10px;color:rgba(255,255,255,.45)">Fetching location</div>
+        </div>
+        <div id="dir-weather-display" style="font-size:18px;font-weight:600;color:#fff">—</div>
+      </div>
+      
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:14px">
         <div style="text-align:center;padding:8px 4px">
           <div style="font-size:30px;font-weight:700;color:#fff;line-height:1" id="an-live-signin">—</div>
@@ -9400,7 +9411,72 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div id="an-dir-alerts-list" style="font-size:13px;color:var(--muted);text-align:center;padding:12px">No critical alerts at this time.</div>
     </div>
 
-    <!-- ── EXPANDABLE TILES ─────────────────── -->
+    <!-- ── TILES GRID ─────────────────── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      
+      <!-- Toolbox Talks tile -->
+      <div class="fcard" onclick="dirOpenTile('toolbox')" style="cursor:pointer;position:relative;padding:14px">
+        <div id="dir-toolbox-badge" style="position:absolute;top:10px;right:10px;background:#E24B4A;color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
+        <div style="width:34px;height:34px;background:#EAF3DE;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" style="width:18px;height:18px"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Toolbox Talks</div>
+        <div style="font-size:11px;color:var(--muted)">Completed this period</div>
+      </div>
+
+      <!-- Permits tile -->
+      <div class="fcard" onclick="dirOpenTile('permits')" style="cursor:pointer;position:relative;padding:14px">
+        <div id="dir-permits-badge" style="position:absolute;top:10px;right:10px;background:#F0997B;color:#4A1B0C;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
+        <div style="width:34px;height:34px;background:#FAEEDA;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2" style="width:18px;height:18px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Permits</div>
+        <div style="font-size:11px;color:var(--muted)">Active permits</div>
+      </div>
+
+      <!-- Incidents tile -->
+      <div class="fcard" onclick="dirOpenTile('incidents')" style="cursor:pointer;position:relative;padding:14px">
+        <div id="dir-incidents-badge" style="position:absolute;top:10px;right:10px;background:#E24B4A;color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
+        <div style="width:34px;height:34px;background:#FCEBEB;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2" style="width:18px;height:18px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Incidents</div>
+        <div style="font-size:11px;color:var(--muted)">Reported this period</div>
+      </div>
+
+      <!-- Hazards tile -->
+      <div class="fcard" onclick="dirOpenTile('hazards')" style="cursor:pointer;position:relative;padding:14px">
+        <div id="dir-hazards-badge" style="position:absolute;top:10px;right:10px;background:#F0997B;color:#4A1B0C;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
+        <div style="width:34px;height:34px;background:#FAEEDA;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2" style="width:18px;height:18px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Hazards</div>
+        <div style="font-size:11px;color:var(--muted)">Open hazards</div>
+      </div>
+
+      <!-- SDS tile -->
+      <div class="fcard" onclick="dirOpenTile('sds')" style="cursor:pointer;position:relative;padding:14px">
+        <div id="dir-sds-badge" style="position:absolute;top:10px;right:10px;background:#E24B4A;color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
+        <div style="width:34px;height:34px;background:#FCEBEB;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2" style="width:18px;height:18px"><path d="M5 4h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/></svg>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">SDS Reports</div>
+        <div style="font-size:11px;color:var(--muted)">Pending review</div>
+      </div>
+
+      <!-- Pre-starts tile -->
+      <div class="fcard" onclick="dirOpenTile('prestarts')" style="cursor:pointer;position:relative;padding:14px">
+        <div id="dir-prestarts-badge" style="position:absolute;top:10px;right:10px;background:#97C459;color:#173404;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
+        <div style="width:34px;height:34px;background:#EAF3DE;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Pre-starts</div>
+        <div style="font-size:11px;color:var(--muted)">Completed today</div>
+      </div>
+
+    </div>
+
+    <!-- Old expandable sections hidden for now -->
 
     <!-- Safety Performance -->
     <div class="fcard" style="overflow:hidden;padding:0">
@@ -9863,6 +9939,58 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="contact-call" style="font-size:10px;font-weight:600;color:#1C5AAD;padding:4px 8px;background:#E6EEF9;border-color:rgba(28,90,173,.2);border-radius:8px">Call</div>
         </a>
       </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ DIRECTOR INCIDENTS DETAIL ═══ -->
+<div id="screen-dir-incidents" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goToAnalytics('director')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="dir-inc-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div class="badge" style="background:rgba(184,150,12,.2);border-color:rgba(184,150,12,.4);color:rgba(184,150,12,.95);font-size:10px">Director</div>
+    </div>
+    <div class="form-greeting">
+      <h1>Incidents & Near Misses</h1>
+      <p id="dir-inc-period">Last 30 days · All sites</p>
+    </div>
+  </div>
+
+  <div class="fbody" style="padding-bottom:90px">
+    
+    <!-- Quick stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:var(--bg);border-radius:var(--rs);padding:14px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Total incidents</div>
+        <div style="font-size:28px;font-weight:600;color:var(--text)" id="dir-inc-total">—</div>
+        <div style="font-size:11px;color:#1B6E3A;margin-top:4px" id="dir-inc-trend">—</div>
+      </div>
+      <div style="background:var(--bg);border-radius:var(--rs);padding:14px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">LTI-free days</div>
+        <div style="font-size:28px;font-weight:600;color:var(--text)" id="dir-inc-lti">—</div>
+        <div style="font-size:11px;color:#1B6E3A;margin-top:4px">Running total</div>
+      </div>
+    </div>
+
+    <!-- Trend chart -->
+    <div class="fcard">
+      <div class="fcard-hdr">Incident trend (last 6 months)</div>
+      <div style="height:180px;position:relative;padding:10px 0"><canvas id="dir-inc-chart" role="img" aria-label="Incident trend chart"></canvas></div>
+    </div>
+
+    <!-- Breakdown by type -->
+    <div class="fcard">
+      <div class="fcard-hdr">Incidents by mechanism</div>
+      <div id="dir-inc-breakdown" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
+    <!-- Recent incidents list -->
+    <div class="fcard">
+      <div class="fcard-hdr">Recent incidents</div>
+      <div id="dir-inc-list"></div>
     </div>
 
   </div>
@@ -33566,6 +33694,12 @@ function goToAnalytics(fromRole) {
   if (ctBtn) ctBtn.style.display = anIsDirector ? 'block' : 'none';
   var dirTiles = document.getElementById('an-dir-tiles');
   if (dirTiles) dirTiles.style.display = anIsDirector ? 'grid' : 'none';
+  
+  // Load Director dashboard data
+  if (anIsDirector) {
+    loadDirectorDashboard();
+  }
+  
   // Stars
   anRenderStars();
   // Body map zones
@@ -40561,6 +40695,350 @@ document.addEventListener('DOMContentLoaded', slanWireNumericInputs);
     goTo._slanWired = true;
   }
 })();
+
+// ═══════════════════ DIRECTOR DASHBOARD ═══
+function loadDirectorDashboard() {
+  // Fetch weather
+  fetchDirectorWeather();
+  
+  // Load data from localStorage
+  var incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  var hazards = JSON.parse(localStorage.getItem('hazards') || '[]');
+  var toolbox = JSON.parse(localStorage.getItem('toolbox_talks') || '[]');
+  var permits = JSON.parse(localStorage.getItem('permits') || '[]');
+  var sdsReports = JSON.parse(localStorage.getItem('sds_missing_reports') || '[]');
+  var prestarts = JSON.parse(localStorage.getItem('prestart_records') || '[]');
+  var signins = JSON.parse(localStorage.getItem('signin_records') || '[]');
+  
+  // Filter to selected period (default 30 days)
+  var periodDays = 30;
+  var cutoff = Date.now() - (periodDays * 24 * 60 * 60 * 1000);
+  
+  // Count incidents in period
+  var incidentsInPeriod = incidents.filter(function(i) {
+    var t = i.timestamp || i.reported_at;
+    return t && new Date(t).getTime() > cutoff;
+  }).length;
+  
+  // Count open hazards
+  var openHazards = hazards.filter(function(h) {
+    return h.status !== 'closed' && h.status !== 'resolved';
+  }).length;
+  
+  // Count toolbox talks in period
+  var toolboxInPeriod = toolbox.filter(function(t) {
+    return t.timestamp && new Date(t.timestamp).getTime() > cutoff;
+  }).length;
+  
+  // Count active permits
+  var activePermits = permits.filter(function(p) {
+    return p.status === 'active' || p.status === 'pending';
+  }).length;
+  
+  // Count pending SDS reports
+  var pendingSds = sdsReports.filter(function(s) {
+    return s.status === 'pending' || !s.status;
+  }).length;
+  
+  // Count today's prestarts
+  var today = new Date().toDateString();
+  var todayPrestarts = prestarts.filter(function(p) {
+    return p.timestamp && new Date(p.timestamp).toDateString() === today;
+  }).length;
+  
+  // Count today's sign-ins
+  var todaySignins = signins.filter(function(s) {
+    return s.timestamp && new Date(s.timestamp).toDateString() === today;
+  }).length;
+  
+  // Calculate LTI-free days
+  var ltiDays = calculateLTIDays(incidents);
+  
+  // Update "Today at a glance"
+  var signin = document.getElementById('an-live-signin');
+  var prestart = document.getElementById('an-live-prestart');
+  var hazard = document.getElementById('an-live-hazards');
+  var lti = document.getElementById('an-live-lti');
+  var incident = document.getElementById('an-live-incidents');
+  
+  if (signin) signin.textContent = todaySignins;
+  if (prestart) prestart.textContent = todayPrestarts;
+  if (hazard) hazard.textContent = openHazards;
+  if (lti) lti.textContent = ltiDays;
+  if (incident) incident.textContent = incidentsInPeriod;
+  
+  // Update tile badges
+  var toolboxBadge = document.getElementById('dir-toolbox-badge');
+  var permitsBadge = document.getElementById('dir-permits-badge');
+  var incidentsBadge = document.getElementById('dir-incidents-badge');
+  var hazardsBadge = document.getElementById('dir-hazards-badge');
+  var sdsBadge = document.getElementById('dir-sds-badge');
+  var prestartsBadge = document.getElementById('dir-prestarts-badge');
+  
+  if (toolboxBadge) toolboxBadge.textContent = toolboxInPeriod;
+  if (permitsBadge) permitsBadge.textContent = activePermits;
+  if (incidentsBadge) incidentsBadge.textContent = incidentsInPeriod;
+  if (hazardsBadge) hazardsBadge.textContent = openHazards;
+  if (sdsBadge) sdsBadge.textContent = pendingSds;
+  if (prestartsBadge) prestartsBadge.textContent = todayPrestarts;
+}
+
+function calculateLTIDays(incidents) {
+  // Find most recent LTI
+  var ltiIncidents = incidents.filter(function(i) {
+    return i.severity === 'lti' || i.severity === 'lost-time-injury';
+  });
+  
+  if (ltiIncidents.length === 0) return 47; // Default demo value
+  
+  // Sort by timestamp, most recent first
+  ltiIncidents.sort(function(a, b) {
+    var aTime = new Date(a.timestamp || a.reported_at).getTime();
+    var bTime = new Date(b.timestamp || b.reported_at).getTime();
+    return bTime - aTime;
+  });
+  
+  var mostRecent = ltiIncidents[0];
+  var ltiDate = new Date(mostRecent.timestamp || mostRecent.reported_at);
+  var today = new Date();
+  var diff = today - ltiDate;
+  var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  return days;
+}
+
+function fetchDirectorWeather() {
+  // Get location - use Tralee, Kerry as default
+  var lat = 52.2593;
+  var lon = -9.6993;
+  
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code&timezone=auto')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var temp = Math.round(data.current.temperature_2m);
+      var code = data.current.weather_code;
+      
+      // Weather code to icon mapping
+      var icon = '☀️';
+      var desc = 'Clear';
+      if (code >= 1 && code <= 3) { icon = '⛅'; desc = 'Partly cloudy'; }
+      else if (code >= 45 && code <= 48) { icon = '🌫️'; desc = 'Foggy'; }
+      else if (code >= 51 && code <= 67) { icon = '🌧️'; desc = 'Rainy'; }
+      else if (code >= 71 && code <= 77) { icon = '🌨️'; desc = 'Snow'; }
+      else if (code >= 80 && code <= 99) { icon = '⛈️'; desc = 'Stormy'; }
+      
+      // Update weather display
+      var iconEl = document.getElementById('dir-weather-icon');
+      var tempEl = document.getElementById('dir-weather-temp');
+      var locEl = document.getElementById('dir-weather-loc');
+      var displayEl = document.getElementById('dir-weather-display');
+      
+      if (iconEl) iconEl.textContent = icon;
+      if (tempEl) tempEl.textContent = temp + '°C · ' + desc;
+      if (locEl) locEl.textContent = 'Tralee, Kerry';
+      if (displayEl) displayEl.textContent = temp + '°';
+    })
+    .catch(function(err) {
+      console.error('Weather fetch failed:', err);
+    });
+}
+
+function dirOpenTile(tileName) {
+  // Navigate to detail screens
+  if (tileName === 'incidents') {
+    goTo('screen-dir-incidents');
+    loadDirectorIncidents();
+  } else if (tileName === 'toolbox') {
+    alert('Toolbox detail screen - coming in next phase');
+  } else if (tileName === 'permits') {
+    alert('Permits detail screen - coming in next phase');
+  } else if (tileName === 'hazards') {
+    alert('Hazards detail screen - coming in next phase');
+  } else if (tileName === 'sds') {
+    alert('SDS detail screen - coming in next phase');
+  } else if (tileName === 'prestarts') {
+    alert('Pre-starts detail screen - coming in next phase');
+  }
+}
+
+function loadDirectorIncidents() {
+  // Set logo
+  var logo = document.getElementById('dir-inc-logo');
+  if (logo) {
+    var allLogos = document.querySelectorAll('.tbar-logo img');
+    for (var i = 0; i < allLogos.length; i++) {
+      if (allLogos[i] !== logo && allLogos[i].src) {
+        logo.src = allLogos[i].src;
+        break;
+      }
+    }
+  }
+  
+  // Load incidents from localStorage
+  var incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  
+  // Filter to last 30 days
+  var cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
+  var recentIncidents = incidents.filter(function(i) {
+    var t = i.timestamp || i.reported_at;
+    return t && new Date(t).getTime() > cutoff;
+  });
+  
+  // Update stats
+  var totalEl = document.getElementById('dir-inc-total');
+  var ltiEl = document.getElementById('dir-inc-lti');
+  var trendEl = document.getElementById('dir-inc-trend');
+  
+  if (totalEl) totalEl.textContent = recentIncidents.length;
+  if (ltiEl) ltiEl.textContent = calculateLTIDays(incidents);
+  if (trendEl) trendEl.textContent = '↓ 40% vs last period'; // Demo data
+  
+  // Render chart
+  renderDirectorIncidentChart(incidents);
+  
+  // Render breakdown
+  renderDirectorIncidentBreakdown(recentIncidents);
+  
+  // Render list
+  renderDirectorIncidentList(recentIncidents);
+}
+
+function renderDirectorIncidentChart(incidents) {
+  var canvas = document.getElementById('dir-inc-chart');
+  if (!canvas || !canvas.getContext) return;
+  
+  // Simple bar chart showing last 6 months
+  var ctx = canvas.getContext('2d');
+  var months = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'];
+  var counts = [5, 4, 8, 3, 6, 3]; // Demo data
+  
+  // Clear canvas
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  
+  var w = canvas.width;
+  var h = canvas.height;
+  var barWidth = w / months.length;
+  var maxCount = Math.max.apply(null, counts);
+  
+  // Draw bars
+  ctx.fillStyle = '#97C459';
+  for (var i = 0; i < counts.length; i++) {
+    var barHeight = (counts[i] / maxCount) * (h - 40);
+    var x = i * barWidth + barWidth * 0.2;
+    var y = h - barHeight - 30;
+    ctx.fillRect(x, y, barWidth * 0.6, barHeight);
+  }
+  
+  // Draw labels
+  ctx.fillStyle = '#888';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  for (var i = 0; i < months.length; i++) {
+    ctx.fillText(months[i], i * barWidth + barWidth / 2, h - 10);
+  }
+}
+
+function renderDirectorIncidentBreakdown(incidents) {
+  var container = document.getElementById('dir-inc-breakdown');
+  if (!container) return;
+  
+  // Count by mechanism
+  var breakdown = {};
+  incidents.forEach(function(inc) {
+    var mech = inc.mechanism || 'Unknown';
+    breakdown[mech] = (breakdown[mech] || 0) + 1;
+  });
+  
+  // Convert to array and sort
+  var items = Object.keys(breakdown).map(function(key) {
+    return { mechanism: key, count: breakdown[key] };
+  }).sort(function(a, b) { return b.count - a.count; });
+  
+  // Demo data if empty
+  if (items.length === 0) {
+    items = [
+      { mechanism: 'Slip / trip', count: 1 },
+      { mechanism: 'Manual handling', count: 1 },
+      { mechanism: 'Hit against object', count: 1 }
+    ];
+  }
+  
+  var total = items.reduce(function(sum, item) { return sum + item.count; }, 0);
+  
+  // Render bars
+  container.innerHTML = items.map(function(item) {
+    var pct = Math.round((item.count / total) * 100);
+    return '<div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">' +
+        '<span style="color:var(--muted)">' + item.mechanism + '</span>' +
+        '<span style="font-weight:600">' + item.count + '</span>' +
+      '</div>' +
+      '<div style="background:var(--bg);height:6px;border-radius:3px;overflow:hidden">' +
+        '<div style="background:#F0997B;width:' + pct + '%;height:100%"></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderDirectorIncidentList(incidents) {
+  var container = document.getElementById('dir-inc-list');
+  if (!container) return;
+  
+  if (incidents.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">No incidents in this period</div>';
+    return;
+  }
+  
+  // Sort by date, most recent first
+  var sorted = incidents.slice().sort(function(a, b) {
+    var aTime = new Date(a.timestamp || a.reported_at).getTime();
+    var bTime = new Date(b.timestamp || b.reported_at).getTime();
+    return bTime - aTime;
+  });
+  
+  // Take top 10
+  var top = sorted.slice(0, 10);
+  
+  container.innerHTML = top.map(function(inc, idx) {
+    var date = new Date(inc.timestamp || inc.reported_at).toLocaleDateString('en-AU', {
+      day: 'numeric', month: 'short', year: 'numeric'
+    });
+    
+    var severity = inc.severity || 'first-aid';
+    var severityColor = severity === 'near-miss' ? '#E6F5ED' : '#FCEBEB';
+    var severityText = severity === 'near-miss' ? '#1B6E3A' : '#A32D2D';
+    var severityLabel = severity === 'near-miss' ? 'Near Miss' : severity === 'lti' ? 'LTI' : 'First Aid';
+    
+    var incId = inc.incident_id || 'INC-' + (inc.timestamp ? new Date(inc.timestamp).getFullYear() + '-' + String(idx + 1).padStart(3, '0') : '000');
+    
+    return '<div onclick="viewIncidentDetail(\'' + incId + '\')" style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px;cursor:pointer">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px">' +
+        '<div style="font-size:13px;font-weight:600">' + incId + '</div>' +
+        '<div style="background:' + severityColor + ';color:' + severityText + ';font-size:10px;font-weight:600;padding:3px 8px;border-radius:8px">' + severityLabel + '</div>' +
+      '</div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:4px">' + (inc.what_happened || inc.description || 'Incident details') + '</div>' +
+      '<div style="font-size:11px;color:var(--muted)">' + (inc.reported_by || 'Unknown') + ' · ' + date + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function viewIncidentDetail(incidentId) {
+  // Find the incident in localStorage
+  var incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  var incident = incidents.find(function(i) {
+    return (i.incident_id === incidentId) || 
+           ('INC-' + new Date(i.timestamp).getFullYear() + '-' + String(incidents.indexOf(i) + 1).padStart(3, '0') === incidentId);
+  });
+  
+  if (!incident) {
+    alert('Incident not found');
+    return;
+  }
+  
+  // For now, just show alert - in full version this would open the incident detail screen
+  alert('Opening full incident report for ' + incidentId + '\n\nIn the full version, this will show:\n- Complete incident details\n- Photos\n- Witnesses\n- Investigation notes\n- Actions taken');
+}
 
 </script>
 
