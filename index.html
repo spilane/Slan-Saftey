@@ -34750,6 +34750,7 @@ function tbtSaveWrapup() {
       questions: (document.getElementById('wu-questions') || {}).value || '',
       actions: (document.getElementById('wu-actions') || {}).value || '',
       supervisor_name: p.name || '',
+      supervisor_signature: p.sig || '',
       saved_at: new Date().toISOString()
     };
     all[talkId + '|' + todayDate] = entry;
@@ -35005,6 +35006,29 @@ function tbtDownloadRosterPDF(targetTalkId) {
       debriefBlock('Site-specific hazards discussed', wrapup.hazards);
       debriefBlock('Questions or concerns raised', wrapup.questions);
       debriefBlock('Action items / follow-ups', wrapup.actions);
+      
+      // Supervisor signature block
+      if (wrapup.supervisor_signature) {
+        y = newPageIfNeeded(y, 32);
+        y += 4;
+        setText(C.darkText);
+        doc.setFont('helvetica','bold'); doc.setFontSize(9);
+        doc.text('Delivered by:', ML, y);
+        y += 6;
+        setText(C.darkText);
+        doc.setFont('helvetica','normal'); doc.setFontSize(10);
+        doc.text(wrapup.supervisor_name || 'Site Supervisor', ML, y);
+        y += 6;
+        // Signature box
+        var sigW = 70, sigH = 22;
+        setStroke(C.greyLight); doc.setLineWidth(0.3);
+        doc.rect(ML, y, sigW, sigH);
+        try { doc.addImage(wrapup.supervisor_signature, 'PNG', ML + 1, y + 1, sigW - 2, sigH - 2); } catch(e) {}
+        setText(C.greyLabel || '#888888');
+        doc.setFont('helvetica','normal'); doc.setFontSize(7);
+        doc.text('Supervisor Signature', ML + sigW/2, y + sigH + 3, {align:'center'});
+        y += sigH + 6;
+      }
     }
 
     // ── WORKER ACKNOWLEDGEMENT (audit completeness) ──
@@ -36267,6 +36291,7 @@ function tbtSeedDemoSupervisorRosters(silent) {
         questions: t.debrief.questions,
         actions: t.debrief.actions,
         supervisor_name: p.name || 'Site Supervisor',
+        supervisor_signature: p.sig || '',
         site: t.site || (typeof SITE !== 'undefined' ? SITE : 'Demo Site'),
         saved_at: supTime.toISOString()
       };
