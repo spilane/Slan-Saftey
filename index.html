@@ -9350,43 +9350,42 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <!-- ── Scrollable content ─────────────────── -->
   <div class="tiles" style="padding-bottom:90px">
 
-    <!-- ── TODAY AT A GLANCE — always visible ── -->
-    <div style="background:var(--deep);border-radius:var(--r);padding:16px">
-      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px">Today at a glance</div>
-      
-      <!-- Weather strip -->
-      <div id="dir-weather" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.05);border-radius:6px;margin-bottom:12px">
-        <div id="dir-weather-icon" style="font-size:20px">☀️</div>
-        <div style="flex:1">
-          <div id="dir-weather-temp" style="font-size:12px;font-weight:600;color:#fff">Loading...</div>
-          <div id="dir-weather-loc" style="font-size:10px;color:rgba(255,255,255,.45)">Fetching location</div>
-        </div>
-        <div id="dir-weather-display" style="font-size:18px;font-weight:600;color:#fff">—</div>
+    <!-- ── TODAY AT A GLANCE — clickable stats ── -->
+    <!-- Weather strip -->
+    <div id="dir-weather" style="background:var(--deep);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div id="dir-weather-icon" style="font-size:18px">☀️</div>
+      <div style="flex:1">
+        <div id="dir-weather-temp" style="font-size:12px;font-weight:600;color:#fff">Loading...</div>
+        <div id="dir-weather-loc" style="font-size:10px;color:rgba(255,255,255,.6)">Fetching location</div>
       </div>
-      
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:14px">
-        <div style="text-align:center;padding:8px 4px">
-          <div style="font-size:30px;font-weight:700;color:#fff;line-height:1" id="an-live-signin">—</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">Signed in</div>
-        </div>
-        <div style="text-align:center;padding:8px 4px;border-left:1px solid rgba(255,255,255,.08);border-right:1px solid rgba(255,255,255,.08)">
-          <div style="font-size:30px;font-weight:700;color:#fff;line-height:1" id="an-live-prestart">—</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">Pre-starts</div>
-        </div>
-        <div style="text-align:center;padding:8px 4px">
-          <div style="font-size:30px;font-weight:700;color:var(--gold);line-height:1" id="an-live-hazards">—</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">Open hazards</div>
-        </div>
+      <div id="dir-weather-display" style="font-size:16px;font-weight:600;color:#fff">—</div>
+    </div>
+
+    <!-- Clickable stats grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div onclick="dirDrillDown('signins')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
+        <div style="font-size:26px;font-weight:700;color:var(--text);line-height:1" id="an-live-signin">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">Signed in</div>
       </div>
-      <div id="an-lti-row" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
-        <div style="text-align:center;padding:6px 4px">
-          <div style="font-size:24px;font-weight:700;color:#5CDB95;line-height:1" id="an-live-lti">—</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">LTI-free days</div>
-        </div>
-        <div style="text-align:center;padding:6px 4px;border-left:1px solid rgba(255,255,255,.08)">
-          <div style="font-size:24px;font-weight:700;color:#fff;line-height:1" id="an-live-incidents">—</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">Incidents this period</div>
-        </div>
+      <div onclick="dirDrillDown('prestarts')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
+        <div style="font-size:26px;font-weight:700;color:var(--text);line-height:1" id="an-live-prestart">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">Pre-starts</div>
+      </div>
+      <div onclick="dirDrillDown('hazards')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
+        <div style="font-size:26px;font-weight:700;color:#D4630A;line-height:1" id="an-live-hazards">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">Open hazards</div>
+      </div>
+    </div>
+
+    <!-- Bottom row - LTI and Incidents -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div onclick="dirDrillDown('lti')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
+        <div style="font-size:24px;font-weight:700;color:#1B6E3A;line-height:1" id="an-live-lti">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">LTI-free days</div>
+      </div>
+      <div onclick="dirDrillDown('incidents')" style="background:var(--card);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;border:1px solid var(--border)">
+        <div style="font-size:24px;font-weight:700;color:var(--text);line-height:1" id="an-live-incidents">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;font-weight:600">Incidents this period</div>
       </div>
     </div>
 
@@ -9985,6 +9984,52 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fcard">
       <div class="fcard-hdr">Incidents by mechanism</div>
       <div id="dir-inc-breakdown" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
+    <!-- Severity breakdown -->
+    <div class="fcard">
+      <div class="fcard-hdr">Severity breakdown</div>
+      <div id="dir-inc-severity" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
+    </div>
+
+    <!-- Body injury map -->
+    <div class="fcard">
+      <div class="fcard-hdr">Body injury map <span style="font-weight:400;font-size:11px;color:var(--muted)">— Tap a zone to see history</span></div>
+      <div style="display:flex;justify-content:center;gap:12px;margin-bottom:10px">
+        <button onclick="document.getElementById('dir-bm-f').style.display='block';document.getElementById('dir-bm-b').style.display='none';this.style.background='var(--deep)';this.style.color='#fff';this.nextElementSibling.style.background='';this.nextElementSibling.style.color=''" style="padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Front</button>
+        <button onclick="document.getElementById('dir-bm-b').style.display='block';document.getElementById('dir-bm-f').style.display='none';this.style.background='var(--deep)';this.style.color='#fff';this.previousElementSibling.style.background='';this.previousElementSibling.style.color=''" style="padding:6px 16px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Back</button>
+      </div>
+      <div style="display:flex;justify-content:center">
+        <svg id="dir-bm-f" viewBox="0 0 200 460" width="180" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="dir-zone" data-l="Head" data-n="1" cx="100" cy="30" rx="28" ry="30" fill="#2D6A45" fill-opacity=".4" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+          <rect class="dir-zone" data-l="Neck" data-n="1" x="86" y="58" width="28" height="20" rx="6" fill="#2D6A45" fill-opacity=".4" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+          <rect class="dir-zone" data-l="Left Shoulder" data-n="4" x="28" y="72" width="58" height="28" rx="8" fill="#B8960C" fill-opacity=".65" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+          <rect class="dir-zone" data-l="Right Shoulder" data-n="2" x="114" y="72" width="58" height="28" rx="8" fill="#2D6A45" fill-opacity=".4" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+          <rect class="dir-zone" data-l="Left Hand" data-n="3" x="2" y="220" width="36" height="50" rx="10" fill="#B8960C" fill-opacity=".6" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+          <rect class="dir-zone" data-l="Right Hand" data-n="1" x="162" y="220" width="36" height="50" rx="10" fill="#2D6A45" fill-opacity=".38" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+          <rect class="dir-zone" data-l="Lower Back" data-n="6" x="48" y="118" width="104" height="44" rx="8" fill="#B83232" fill-opacity=".65" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+        </svg>
+        <svg id="dir-bm-b" viewBox="0 0 200 460" width="180" xmlns="http://www.w3.org/2000/svg" style="display:none">
+          <ellipse class="dir-zone" data-l="Back of Head" data-n="0" cx="100" cy="30" rx="28" ry="30" fill="rgba(27,58,45,.1)" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+          <rect class="dir-zone" data-l="Lower Back" data-n="6" x="48" y="118" width="104" height="44" rx="8" fill="#B83232" fill-opacity=".65" stroke="#1B3A2D" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(this)"/>
+        </svg>
+      </div>
+      <div id="dir-bm-panel" style="display:none;margin-top:12px;background:#F8FAF9;border-radius:10px;border:1.5px solid var(--deep);padding:13px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div id="dir-bm-name" style="font-size:14px;font-weight:600;color:var(--text)"></div>
+            <div id="dir-bm-count" style="font-size:11px;color:var(--muted);margin-top:2px"></div>
+          </div>
+          <button onclick="document.getElementById('dir-bm-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0 2px">×</button>
+        </div>
+        <div id="dir-bm-hist" style="margin-top:8px;display:flex;flex-direction:column;gap:5px"></div>
+      </div>
+    </div>
+
+    <!-- Time patterns -->
+    <div class="fcard">
+      <div class="fcard-hdr">When do incidents happen?</div>
+      <div id="dir-inc-timepatterns"></div>
     </div>
 
     <!-- Recent incidents list -->
@@ -40861,6 +40906,24 @@ function dirOpenTile(tileName) {
   }
 }
 
+function dirDrillDown(statType) {
+  // Handle clicks on "Today at a glance" stats
+  if (statType === 'signins') {
+    alert('Signed In Today\n\nShowing list of all workers signed in today:\n- Jake Ryan (7:15 AM)\n- Tom Chen (7:22 AM)\n- Sarah O\'Brien (7:45 AM)\n...\n\nFull version will show detailed list with times, sites, and contact info.');
+  } else if (statType === 'prestarts') {
+    alert('Pre-starts Today\n\nShowing all pre-start checks completed:\n- EWP - Jake Ryan (8:00 AM)\n- Excavator - Tom Chen (7:30 AM)\n- Forklift - Sarah O\'Brien (8:15 AM)\n...\n\nFull version will show detailed pre-start records.');
+  } else if (statType === 'hazards') {
+    // Navigate to Hazards (when built)
+    alert('Open Hazards\n\nWould navigate to Hazards screen filtered to show only open/unresolved hazards.\n\nComing in next phase.');
+  } else if (statType === 'lti') {
+    alert('LTI-Free Days: 47\n\nLast LTI: 15 Mar 2026\nWorker: [Name]\nIncident: [Description]\n\nCompany record: 156 days\nIndustry average: 32 days\n\nFull version will show LTI history and safety milestones.');
+  } else if (statType === 'incidents') {
+    // Navigate to Incidents screen
+    goTo('screen-dir-incidents');
+    loadDirectorIncidents();
+  }
+}
+
 function loadDirectorIncidents() {
   // Set logo
   var logo = document.getElementById('dir-inc-logo');
@@ -40899,8 +40962,126 @@ function loadDirectorIncidents() {
   // Render breakdown
   renderDirectorIncidentBreakdown(recentIncidents);
   
+  // Render severity breakdown
+  renderDirectorSeverityBreakdown(recentIncidents);
+  
+  // Render time patterns
+  renderDirectorTimePatterns(recentIncidents);
+  
   // Render list
   renderDirectorIncidentList(recentIncidents);
+}
+
+function renderDirectorSeverityBreakdown(incidents) {
+  var container = document.getElementById('dir-inc-severity');
+  if (!container) return;
+  
+  // Count by severity
+  var nearMiss = 0, firstAid = 0, lti = 0;
+  incidents.forEach(function(inc) {
+    var sev = (inc.severity || 'first-aid').toLowerCase();
+    if (sev.includes('near')) nearMiss++;
+    else if (sev.includes('lti')) lti++;
+    else firstAid++;
+  });
+  
+  // Demo data if empty
+  if (incidents.length === 0) {
+    nearMiss = 1;
+    firstAid = 2;
+    lti = 0;
+  }
+  
+  container.innerHTML = 
+    '<div style="background:#E6F5ED;border-radius:8px;padding:12px;text-align:center">' +
+      '<div style="font-size:26px;font-weight:700;color:#1B6E3A">' + nearMiss + '</div>' +
+      '<div style="font-size:10px;color:#1B6E3A;margin-top:4px;font-weight:600">Near Miss</div>' +
+    '</div>' +
+    '<div style="background:#FCEBEB;border-radius:8px;padding:12px;text-align:center">' +
+      '<div style="font-size:26px;font-weight:700;color:#A32D2D">' + firstAid + '</div>' +
+      '<div style="font-size:10px;color:#A32D2D;margin-top:4px;font-weight:600">First Aid</div>' +
+    '</div>' +
+    '<div style="background:#FAEEDA;border-radius:8px;padding:12px;text-align:center">' +
+      '<div style="font-size:26px;font-weight:700;color:#854F0B">' + lti + '</div>' +
+      '<div style="font-size:10px;color:#854F0B;margin-top:4px;font-weight:600">LTI</div>' +
+    '</div>';
+}
+
+function dirShowBodyZone(el) {
+  var zoneName = el.getAttribute('data-l');
+  var count = parseInt(el.getAttribute('data-n') || '0');
+  
+  var panel = document.getElementById('dir-bm-panel');
+  var nameEl = document.getElementById('dir-bm-name');
+  var countEl = document.getElementById('dir-bm-count');
+  var histEl = document.getElementById('dir-bm-hist');
+  
+  if (!panel || !nameEl || !countEl || !histEl) return;
+  
+  nameEl.textContent = zoneName;
+  countEl.textContent = count + ' incident' + (count !== 1 ? 's' : '') + ' in this zone';
+  
+  // Demo history based on count
+  var demoHistory = [];
+  if (count > 0) {
+    for (var i = 0; i < Math.min(count, 3); i++) {
+      demoHistory.push({
+        date: new Date(Date.now() - (i * 7 + 2) * 24 * 60 * 60 * 1000).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }),
+        desc: i === 0 ? 'Manual handling strain' : i === 1 ? 'Hit by falling object' : 'Repetitive strain',
+        severity: i === 0 ? 'First Aid' : 'Near Miss'
+      });
+    }
+  }
+  
+  histEl.innerHTML = demoHistory.length === 0 ? 
+    '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px">No incidents recorded</div>' :
+    demoHistory.map(function(h) {
+      return '<div style="display:flex;justify-content:space-between;padding:6px 8px;background:white;border-radius:6px;font-size:11px">' +
+        '<div style="flex:1">' +
+          '<div style="font-weight:600;color:var(--text)">' + h.desc + '</div>' +
+          '<div style="color:var(--muted);font-size:10px;margin-top:2px">' + h.date + '</div>' +
+        '</div>' +
+        '<div style="font-size:9px;color:' + (h.severity === 'First Aid' ? '#A32D2D' : '#1B6E3A') + ';font-weight:600;white-space:nowrap">' + h.severity + '</div>' +
+      '</div>';
+    }).join('');
+  
+  panel.style.display = 'block';
+}
+
+function renderDirectorTimePatterns(incidents) {
+  var container = document.getElementById('dir-inc-timepatterns');
+  if (!container) return;
+  
+  // Demo data - day of week pattern
+  var dayPattern = {
+    'Mon': 0, 'Tue': 1, 'Wed': 0, 'Thu': 0, 'Fri': 2, 'Sat': 0, 'Sun': 0
+  };
+  
+  var maxDayCount = Math.max.apply(null, Object.values(dayPattern));
+  
+  container.innerHTML = 
+    '<div style="margin-bottom:14px">' +
+      '<div style="font-size:12px;font-weight:600;margin-bottom:8px">By day of week</div>' +
+      '<div style="display:flex;gap:4px;align-items:flex-end;height:80px">' +
+        Object.keys(dayPattern).map(function(day) {
+          var count = dayPattern[day];
+          var height = maxDayCount > 0 ? (count / maxDayCount * 100) : 0;
+          return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">' +
+            '<div style="background:' + (count > 0 ? '#F0997B' : 'var(--bg)') + ';width:100%;height:' + height + '%;border-radius:4px 4px 0 0;min-height:4px;position:relative">' +
+              (count > 0 ? '<div style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:600;color:var(--text)">' + count + '</div>' : '') +
+            '</div>' +
+            '<div style="font-size:9px;color:var(--muted);margin-top:4px;font-weight:600">' + day + '</div>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+    '</div>' +
+    '<div>' +
+      '<div style="font-size:12px;font-weight:600;margin-bottom:8px">Most common times</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' +
+        '<div style="font-size:11px;color:var(--muted)">• Early morning (7-9 AM) — 2 incidents</div>' +
+        '<div style="font-size:11px;color:var(--muted)">• Late afternoon (3-5 PM) — 1 incident</div>' +
+      '</div>' +
+    '</div>';
 }
 
 function renderDirectorIncidentChart(incidents) {
