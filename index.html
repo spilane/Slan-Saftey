@@ -37396,8 +37396,12 @@ function goToSdsLookup() {
   }
   
   // Show worker's own submitted reports for workers
+  var workerCard = document.getElementById('sds-worker-reports-card');
   if (_sdsFromRole === 'worker') {
+    if (workerCard) workerCard.style.display = 'block';
     sdsRenderWorkerReports();
+  } else {
+    if (workerCard) workerCard.style.display = 'none';
   }
   
   // Hide "Site Supervisor" contact line when viewing as supervisor
@@ -37904,13 +37908,13 @@ function sdsRenderWorkerReports() {
     }
     
     return '<div class="fcard-body" style="background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;cursor:pointer" onclick="toggleSdsWorkerCard(' + idx + ')">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
-        '<div style="font-size:15px;font-weight:700;color:var(--text)">' + r.chemical_name + '</div>' +
+      '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:6px"><strong>Chemical/Product Name:</strong> ' + r.chemical_name + '</div>' +
+      (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:8px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date + '</div>' +
+      '<div style="display:flex;justify-content:flex-end;margin-top:8px">' +
         '<div style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:' + statusBg + ';color:' + statusColor + ';white-space:nowrap">' + statusText + '</div>' +
       '</div>' +
-      '<div style="font-size:11px;color:var(--muted);margin-top:4px">' + date + '</div>' +
       '<div id="sds-worker-detail-' + idx + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' +
-        (r.usage ? '<div style="font-size:12px;color:var(--text);line-height:1.4;margin-bottom:8px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
         photoHtml +
       '</div>' +
     '</div>';
