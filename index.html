@@ -3193,7 +3193,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div style="font-size:12px;color:#8B6914;line-height:1.5">If a chemical is being used on site that is not in this register, it must be reported immediately. Do <strong>not</strong> use an unregistered chemical without a current SDS.</div>
         <div class="fgroup">
           <label class="flabel">Chemical / product name *</label>
-          <input type="text" id="sds-missing-name" placeholder="e.g. Bondcrete, Sika Primer, WD-40..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off" oninput="sdsStampPhotos(); sdsValidateForm();">
+          <input type="text" id="sds-missing-name" placeholder="e.g. Bondcrete, Sika Primer, WD-40..." style="width:100%;padding:11px 13px;border:1.5px solid rgba(184,150,12,.4);border-radius:var(--rs);font-size:14px;font-family:inherit;outline:none" autocomplete="off" oninput="sdsValidateForm()">
         </div>
         <div class="fgroup">
           <label class="flabel">Where is it being used?</label>
@@ -37476,15 +37476,20 @@ function sdsReportMissing() {
   
   var p = getProfile();
   
-  // Filter out null photos
-  var photosToSave = sdsPhotos.filter(function(p) { return p !== null; });
+  // Stamp photos with final chemical name NOW before saving
+  var chemName = name.value.trim();
+  var finalPhotos = [];
+  for (var i = 0; i < sdsPhotosOriginal.length; i++) {
+    if (!sdsPhotosOriginal[i]) continue;
+    finalPhotos.push(sdsStampPhotoSync(sdsPhotosOriginal[i], chemName));
+  }
   
   var payload = {
     id: Date.now() + '_' + Math.random().toString(36).substr(2, 9), // Unique ID
     form_type: 'sds_missing_report',
-    chemical_name: name.value.trim(),
+    chemical_name: chemName,
     usage: usage ? usage.value.trim() : '',
-    photos: photosToSave,
+    photos: finalPhotos,
     reported_by: p ? p.name : 'Unknown',
     reported_at: new Date().toISOString(),
     status: 'pending'
@@ -37496,9 +37501,20 @@ function sdsReportMissing() {
     existing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
   } catch(e) {}
   
-  // Add to array (duplicate check not needed as each submission has unique ID)
-  existing.push(payload);
-  localStorage.setItem('sds_missing', JSON.stringify(existing));
+  // Deduplicate: check if this exact payload already exists (by chemical_name + reported_by + timestamp within 2 seconds)
+  var isDuplicate = existing.some(function(r) {
+    if (r.chemical_name !== payload.chemical_name) return false;
+    if (r.reported_by !== payload.reported_by) return false;
+    var timeDiff = Math.abs(new Date(r.reported_at).getTime() - new Date(payload.reported_at).getTime());
+    return timeDiff < 2000; // Within 2 seconds = duplicate
+  });
+  
+  if (!isDuplicate) {
+    existing.push(payload);
+    localStorage.setItem('sds_missing', JSON.stringify(existing));
+  } else {
+    console.warn('Duplicate SDS report blocked');
+  }
   
   // Clear form
   if (name) name.value = '';
@@ -37565,6 +37581,54 @@ function sdsValidateForm() {
 // Store original photos without stamping
 var sdsPhotosOriginal = [null, null];
 
+function sdsStampPhotoSync(photoBase64, chemName) {
+  // Create image and canvas synchronously
+  var img = new window.Image();
+  img.src = photoBase64;
+  
+  // Note: This assumes image is already loaded from base64 (instant for data URIs)
+  var canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  
+  var w = canvas.width;
+  var h = canvas.height;
+  var now = new Date();
+  var timestamp = now.toLocaleString('en-AU', { 
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true 
+  });
+  
+  var padding = 8;
+  var fontSize = Math.max(14, Math.floor(w / 45));
+  ctx.font = '600 ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  
+  // Chemical name at top
+  var chemText = chemName.length > 30 ? chemName.substring(0, 27) + '...' : chemName;
+  var chemMetrics = ctx.measureText(chemText);
+  var chemWidth = chemMetrics.width + (padding * 2);
+  var chemHeight = fontSize + (padding * 2);
+  
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  ctx.fillRect(8, 8, chemWidth, chemHeight);
+  ctx.fillStyle = '#fff';
+  ctx.fillText(chemText, 8 + padding, 8 + padding + (fontSize * 0.75));
+  
+  // Timestamp at bottom
+  var timeMetrics = ctx.measureText(timestamp);
+  var timeWidth = timeMetrics.width + (padding * 2);
+  var timeHeight = fontSize + (padding * 2);
+  
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  ctx.fillRect(8, h - timeHeight - 8, timeWidth, timeHeight);
+  ctx.fillStyle = '#fff';
+  ctx.fillText(timestamp, 8 + padding, h - 8 - (fontSize * 0.25));
+  
+  return canvas.toDataURL('image/jpeg', 0.7);
+}
+
 function handleSdsPhoto(idx, e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -37585,11 +37649,16 @@ function handleSdsPhoto(idx, e) {
       ctx.drawImage(img, 0, 0, w, h);
       const compressed = canvas.toDataURL('image/jpeg', 0.7);
       
-      // Store original without stamping
+      // Store original without stamping (will stamp at submit time)
       sdsPhotosOriginal[idx] = compressed;
+      sdsPhotos[idx] = compressed; // Also store in sdsPhotos for validation
       
-      // Stamp and display
-      sdsStampPhotos();
+      // Display the photo
+      const slot = document.getElementById('sds-slot-' + idx);
+      if (slot) {
+        slot.innerHTML = `<img src="${compressed}" alt="SDS photo" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+        slot.classList.add('filled');
+      }
       
       // Trigger validation check
       sdsValidateForm();
@@ -37599,67 +37668,6 @@ function handleSdsPhoto(idx, e) {
   reader.readAsDataURL(file);
 }
 
-function sdsStampPhotos() {
-  const chemNameInput = document.getElementById('sds-missing-name');
-  const chemName = chemNameInput && chemNameInput.value.trim() ? chemNameInput.value.trim() : 'Chemical/Product Name';
-  
-  for (let idx = 0; idx < 2; idx++) {
-    if (!sdsPhotosOriginal[idx]) continue;
-    
-    const img = new window.Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      
-      const w = canvas.width;
-      const h = canvas.height;
-      const now = new Date();
-      const timestamp = now.toLocaleString('en-AU', { 
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', hour12: true 
-      });
-      
-      const padding = 8;
-      const fontSize = Math.max(12, Math.floor(w / 50));
-      ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-      
-      // Chemical name at top
-      const chemText = chemName.length > 30 ? chemName.substring(0, 27) + '...' : chemName;
-      const chemMetrics = ctx.measureText(chemText);
-      const chemWidth = chemMetrics.width + (padding * 2);
-      const chemHeight = fontSize + (padding * 2);
-      
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(8, 8, chemWidth, chemHeight);
-      ctx.fillStyle = '#fff';
-      ctx.fillText(chemText, 8 + padding, 8 + padding + (fontSize * 0.8));
-      
-      // Timestamp at bottom
-      const timeMetrics = ctx.measureText(timestamp);
-      const timeWidth = timeMetrics.width + (padding * 2);
-      const timeHeight = fontSize + (padding * 2);
-      
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(8, h - timeHeight - 8, timeWidth, timeHeight);
-      ctx.fillStyle = '#fff';
-      ctx.fillText(timestamp, 8 + padding, h - 8 - padding - (fontSize * 0.2));
-      
-      const stamped = canvas.toDataURL('image/jpeg', 0.7);
-      sdsPhotos[idx] = stamped;
-      
-      // Update display
-      const slot = document.getElementById('sds-slot-' + idx);
-      if (slot) {
-        slot.innerHTML = `<img src="${stamped}" alt="SDS photo" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
-        slot.classList.add('filled');
-      }
-    };
-    img.src = sdsPhotosOriginal[idx];
-  }
-}
 
 function handleSdsPhotoRemove(idx) {
   sdsPhotos[idx] = null;
@@ -37831,8 +37839,8 @@ function sdsRenderPendingReports() {
     }
     
     return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px">' +
-      '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">' + r.chemical_name + '</div>' +
-      (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px">Where being used: ' + r.usage + '</div>' : '') +
+      '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:6px"><strong>Chemical/Product Name:</strong> ' + r.chemical_name + '</div>' +
+      (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
       '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date + '</div>' +
       photoHtml +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px">' +
