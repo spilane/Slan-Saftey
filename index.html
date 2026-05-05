@@ -10135,106 +10135,106 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button id="bm-back-btn" onclick="switchBodyView('back')" style="padding:8px 24px;border-radius:8px;border:2px solid var(--border);background:#fff;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Back</button>
       </div>
       <div style="display:flex;justify-content:center;padding:16px;background:#F8F8F8;border-radius:8px;margin:0 10px 10px 10px">
-        <!-- Front view - Realistic Human Medical Diagram -->
-        <svg id="dir-bm-front" viewBox="0 0 200 520" style="width:100%;max-width:190px;height:auto" xmlns="http://www.w3.org/2000/svg">
+        <!-- Front view - Realistic Human Silhouette -->
+        <svg id="dir-bm-front" viewBox="0 0 200 540" style="width:100%;max-width:200px;height:auto" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="skinTone" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style="stop-color:#FDF5E6;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#F5EBD3;stop-opacity:1" />
+            <linearGradient id="skinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#FFE5CC;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#F5D4B8;stop-opacity:1" />
             </linearGradient>
           </defs>
           
-          <!-- Head (oval shape) -->
-          <ellipse cx="100" cy="40" rx="25" ry="30" fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Head', 1)"/>
-          <!-- Face features -->
-          <circle cx="92" cy="38" r="2.5" fill="#3F2A1D"/>
-          <circle cx="108" cy="38" r="2.5" fill="#3F2A1D"/>
-          <path d="M 95 48 Q 100 50 105 48" fill="none" stroke="#3F2A1D" stroke-width="1.5"/>
+          <!-- Head (realistic oval) -->
+          <ellipse cx="100" cy="42" rx="26" ry="31" fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Head', 1)"/>
+          <!-- Simple face -->
+          <circle cx="91" cy="39" r="2.5" fill="#5A4A3A"/>
+          <circle cx="109" cy="39" r="2.5" fill="#5A4A3A"/>
+          <path d="M 93 51 Q 100 53 107 51" fill="none" stroke="#5A4A3A" stroke-width="1.5" stroke-linecap="round"/>
           
-          <!-- Neck -->
-          <path d="M 85 68 Q 85 72 85 78 L 115 78 Q 115 72 115 68" fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck', 1)"/>
+          <!-- Neck (narrower) -->
+          <path d="M 87 70 Q 85 74 85 82 L 85 90 L 115 90 L 115 82 Q 115 74 113 70" fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck', 1)"/>
           
-          <!-- Shoulders (rounded) -->
-          <ellipse cx="70" cy="95" rx="18" ry="13" fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)"/>
-          <ellipse cx="130" cy="95" rx="18" ry="13" fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder', 2)"/>
+          <!-- Shoulders (realistic curve) -->
+          <ellipse cx="68" cy="107" rx="20" ry="15" fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)"/>
+          <ellipse cx="132" cy="107" rx="20" ry="15" fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder', 2)"/>
           
-          <!-- Chest/Torso (tapered from shoulders to waist) -->
-          <path d="M 82 85 Q 75 95 75 110 L 75 145 Q 75 155 78 160 L 122 160 Q 125 155 125 145 L 125 110 Q 125 95 118 85 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Chest', 0)"/>
+          <!-- Torso (hourglass shape - wide chest, narrow waist) -->
+          <path d="M 80 94 Q 72 107 72 125 L 72 165 Q 72 175 76 182 L 84 190 Q 87 192 90 192 L 110 192 Q 113 192 116 190 L 124 182 Q 128 175 128 165 L 128 125 Q 128 107 120 94 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Chest', 0)"/>
           
-          <!-- Abdomen (narrower) -->
-          <path d="M 78 158 Q 80 165 80 175 L 80 195 Q 80 202 82 207 L 118 207 Q 120 202 120 195 L 120 175 Q 120 165 122 158 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Abdomen', 0)"/>
+          <!-- Waist/Abdomen (narrower) -->
+          <path d="M 84 190 Q 82 197 82 207 L 82 222 Q 82 230 85 235 L 115 235 Q 118 230 118 222 L 118 207 Q 118 197 116 190 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Abdomen', 0)"/>
           
-          <!-- Pelvis/Hips (wider) -->
-          <path d="M 82 205 Q 78 215 78 225 L 78 240 L 88 240 L 112 240 L 122 240 L 122 225 Q 122 215 118 205 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Pelvis', 0)"/>
+          <!-- Hips/Pelvis (wider than waist) -->
+          <path d="M 85 233 Q 78 241 78 252 L 78 265 L 90 265 L 110 265 L 122 265 L 122 252 Q 122 241 115 233 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Pelvis', 0)"/>
           
-          <!-- Left Upper Arm (tapered) -->
-          <path d="M 54 98 Q 50 100 48 110 L 48 165 Q 48 172 50 175 L 64 175 Q 66 172 66 165 L 66 110 Q 66 100 62 98 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm', 2)"/>
+          <!-- Left Upper Arm (tapered, muscular) -->
+          <path d="M 50 110 Q 46 114 45 125 L 45 185 Q 45 193 47 197 L 49 197 Q 57 197 60 194 L 62 194 Q 64 190 64 185 L 64 125 Q 64 114 60 110 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F)" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm', 2)"/>
           
-          <!-- Right Upper Arm (tapered) -->
-          <path d="M 134 98 Q 130 100 130 110 L 130 165 Q 130 172 132 175 L 146 175 Q 150 172 150 165 L 150 110 Q 150 100 146 98 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm', 1)"/>
+          <!-- Right Upper Arm -->
+          <path d="M 136 110 Q 132 114 132 125 L 132 185 Q 132 193 134 197 L 136 197 Q 144 197 147 194 L 149 194 Q 151 190 151 185 L 151 125 Q 151 114 147 110 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm', 1)"/>
           
-          <!-- Left Forearm (narrower, tapered) -->
-          <path d="M 46 177 Q 44 182 44 190 L 44 255 Q 44 262 46 265 L 56 265 Q 58 262 58 255 L 58 190 Q 58 182 56 177 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm', 2)"/>
+          <!-- Left Forearm (narrower) -->
+          <path d="M 43 199 Q 41 205 41 215 L 41 280 Q 41 288 43 292 L 45 292 Q 51 292 53 289 L 55 289 Q 57 285 57 280 L 57 215 Q 57 205 55 199 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm', 2)"/>
           
-          <!-- Right Forearm (narrower, tapered) -->
-          <path d="M 142 177 Q 140 182 140 190 L 140 255 Q 140 262 142 265 L 152 265 Q 156 262 156 255 L 156 190 Q 156 182 154 177 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm', 0)"/>
+          <!-- Right Forearm -->
+          <path d="M 143 199 Q 141 205 141 215 L 141 280 Q 141 288 143 292 L 145 292 Q 151 292 153 289 L 155 289 Q 157 285 157 280 L 157 215 Q 157 205 155 199 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm', 0)"/>
           
-          <!-- Left Hand (with fingers suggested) -->
-          <path d="M 44 268 Q 42 270 42 275 L 42 285 Q 42 292 46 295 Q 50 297 54 295 Q 58 292 58 285 L 58 275 Q 58 270 56 268 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand', 3)"/>
+          <!-- Left Hand (with thumb) -->
+          <path d="M 41 295 Q 39 298 39 305 L 39 318 Q 39 325 42 328 Q 45 330 49 330 Q 53 330 56 328 Q 59 325 59 318 L 59 305 Q 59 298 57 295 Z M 37 305 Q 35 307 35 312 Q 35 317 37 319 Q 39 321 42 321 Q 44 321 46 319 Q 48 317 48 312 Q 48 307 46 305 Q 44 303 42 303 Q 39 303 37 305 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand', 3)"/>
           
-          <!-- Right Hand (with fingers suggested) -->
-          <path d="M 142 268 Q 140 270 140 275 L 140 285 Q 140 292 144 295 Q 148 297 152 295 Q 156 292 156 285 L 156 275 Q 156 270 154 268 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand', 1)"/>
+          <!-- Right Hand (with thumb) -->
+          <path d="M 141 295 Q 139 298 139 305 L 139 318 Q 139 325 142 328 Q 145 330 149 330 Q 153 330 156 328 Q 159 325 159 318 L 159 305 Q 159 298 157 295 Z M 152 305 Q 150 307 150 312 Q 150 317 152 319 Q 154 321 157 321 Q 159 321 161 319 Q 163 317 163 312 Q 163 307 161 305 Q 159 303 157 303 Q 154 303 152 305 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand', 1)"/>
           
-          <!-- Left Thigh (muscular shape) -->
-          <path d="M 88 238 Q 84 245 84 260 L 84 320 Q 84 328 86 332 L 96 332 Q 98 328 98 320 L 98 260 Q 98 245 96 238 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Thigh', 0)"/>
+          <!-- Left Thigh (muscular taper) -->
+          <path d="M 90 263 Q 85 271 85 285 L 85 355 Q 85 363 87 367 L 89 367 Q 95 367 97 364 L 99 364 Q 101 360 101 355 L 101 285 Q 101 271 99 263 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Thigh', 0)"/>
           
-          <!-- Right Thigh (muscular shape) -->
-          <path d="M 104 238 Q 102 245 102 260 L 102 320 Q 102 328 104 332 L 114 332 Q 116 328 116 320 L 116 260 Q 116 245 114 238 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Thigh', 0)"/>
+          <!-- Right Thigh -->
+          <path d="M 101 263 Q 99 271 99 285 L 99 355 Q 99 363 101 367 L 103 367 Q 109 367 111 364 L 113 364 Q 115 360 115 355 L 115 285 Q 115 271 113 263 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Thigh', 0)"/>
           
           <!-- Left Knee (joint) -->
-          <ellipse cx="92" cy="342" rx="11" ry="9" fill="#E8DCC8" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee', 1)"/>
+          <ellipse cx="93" cy="375" rx="12" ry="10" fill="#E5D0BB" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee', 1)"/>
           
-          <!-- Right Knee (joint) -->
-          <ellipse cx="108" cy="342" rx="11" ry="9" fill="#E8DCC8" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee', 0)"/>
+          <!-- Right Knee -->
+          <ellipse cx="107" cy="375" rx="12" ry="10" fill="#E5D0BB" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee', 0)"/>
           
-          <!-- Left Lower Leg (calf shape) -->
-          <path d="M 88 350 Q 86 360 86 380 L 86 445 Q 86 452 88 456 L 96 456 Q 98 452 98 445 L 98 380 Q 98 360 96 350 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Lower Leg', 0)"/>
+          <!-- Left Lower Leg (calf bulge) -->
+          <path d="M 89 383 Q 86 392 85 410 L 85 480 Q 85 488 87 492 L 89 492 Q 95 492 97 489 L 99 489 Q 101 485 101 480 L 101 410 Q 101 392 99 383 Z M 88 415 Q 85 420 85 430 L 87 430 Q 91 430 93 428 Q 95 426 95 420 Q 95 414 93 412 Q 91 410 88 410 Q 85 410 88 415 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Lower Leg', 0)"/>
           
-          <!-- Right Lower Leg (calf shape) -->
-          <path d="M 104 350 Q 102 360 102 380 L 102 445 Q 102 452 104 456 L 112 456 Q 114 452 114 445 L 114 380 Q 114 360 112 350 Z" 
-                fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Lower Leg', 0)"/>
+          <!-- Right Lower Leg (calf bulge) -->
+          <path d="M 101 383 Q 99 392 99 410 L 99 480 Q 99 488 101 492 L 103 492 Q 109 492 111 489 L 113 489 Q 115 485 115 480 L 115 410 Q 115 392 113 383 Z M 105 415 Q 102 420 102 430 L 104 430 Q 108 430 110 428 Q 112 426 112 420 Q 112 414 110 412 Q 108 410 105 410 Q 102 410 105 415 Z" 
+                fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Lower Leg', 0)"/>
           
           <!-- Left Foot -->
-          <ellipse cx="92" cy="480" rx="12" ry="20" fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Foot', 0)"/>
+          <ellipse cx="93" cy="512" rx="13" ry="22" fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Foot', 0)"/>
           
           <!-- Right Foot -->
-          <ellipse cx="108" cy="480" rx="12" ry="20" fill="url(#skinTone)" stroke="#8B7355" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Foot', 0)"/>
+          <ellipse cx="107" cy="512" rx="13" ry="22" fill="url(#skinGrad)" stroke="#A68B6F" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Foot', 0)"/>
           
-          <!-- Injury Markers with glow -->
-          <circle cx="100" cy="180" r="6" fill="#DC3545" stroke="#fff" stroke-width="2" style="cursor:pointer;filter:drop-shadow(0 0 6px rgba(220,53,69,0.8))" onclick="dirShowBodyZone(event, 'Lower Back', 6)">
+          <!-- Injury Markers -->
+          <circle cx="100" cy="210" r="7" fill="#DC3545" stroke="#fff" stroke-width="2.5" style="cursor:pointer;filter:drop-shadow(0 0 8px rgba(220,53,69,0.9))" onclick="dirShowBodyZone(event, 'Lower Back', 6)">
             <title>Lower Back: 6 incidents</title>
           </circle>
-          <circle cx="70" cy="95" r="5" fill="#FD7E14" stroke="#fff" stroke-width="2" style="cursor:pointer;filter:drop-shadow(0 0 5px rgba(253,126,20,0.8))" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)">
+          <circle cx="68" cy="107" r="6" fill="#FD7E14" stroke="#fff" stroke-width="2.5" style="cursor:pointer;filter:drop-shadow(0 0 7px rgba(253,126,20,0.9))" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)">
             <title>Left Shoulder: 4 incidents</title>
           </circle>
-          <circle cx="50" cy="282" r="5" fill="#F39C12" stroke="#fff" stroke-width="2" style="cursor:pointer;filter:drop-shadow(0 0 5px rgba(243,156,18,0.8))" onclick="dirShowBodyZone(event, 'Left Hand', 3)">
+          <circle cx="49" cy="315" r="6" fill="#F39C12" stroke="#fff" stroke-width="2.5" style="cursor:pointer;filter:drop-shadow(0 0 7px rgba(243,156,18,0.9))" onclick="dirShowBodyZone(event, 'Left Hand', 3)">
             <title>Left Hand: 3 incidents</title>
           </circle>
           
           <!-- Label -->
-          <text x="100" y="510" font-size="10" fill="#8B7355" text-anchor="middle" font-weight="600">FRONT VIEW</text>
+          <text x="100" y="535" font-size="10" fill="#A68B6F" text-anchor="middle" font-weight="600">FRONT VIEW</text>
         </svg>
         <!-- Back view - Professional medical diagram -->
         <svg id="dir-bm-back" viewBox="0 0 200 480" style="width:100%;max-width:180px;height:auto;display:none" xmlns="http://www.w3.org/2000/svg">
@@ -41287,7 +41287,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Jake Ryan',
     mechanism: 'Slip / trip',
     body_part: 'Knee',
-    timestamp: new Date(2026, 3, 28).toISOString()
+    timestamp: new Date(2026, 3, 28, 14, 30).toISOString() // Mon 2:30 PM
   },
   {
     incident_id: 'INC-2026-017',
@@ -41296,7 +41296,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Tom Chen',
     mechanism: 'Manual handling',
     body_part: 'Lower Back',
-    timestamp: new Date(2026, 3, 22).toISOString()
+    timestamp: new Date(2026, 3, 22, 9, 15).toISOString() // Wed 9:15 AM
   },
   {
     incident_id: 'INC-2026-016',
@@ -41305,7 +41305,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Sarah O\'Brien',
     mechanism: 'Hit against object',
     body_part: 'Head',
-    timestamp: new Date(2026, 3, 15).toISOString()
+    timestamp: new Date(2026, 3, 15, 11, 45).toISOString() // Wed 11:45 AM
   },
   // March 2026 (4 incidents)
   {
@@ -41315,7 +41315,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Mike Johnson',
     mechanism: 'Struck by object',
     body_part: 'Head',
-    timestamp: new Date(2026, 2, 26).toISOString()
+    timestamp: new Date(2026, 2, 26, 15, 20).toISOString() // Thu 3:20 PM
   },
   {
     incident_id: 'INC-2026-014',
@@ -41324,7 +41324,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Emma Wilson',
     mechanism: 'Cut / laceration',
     body_part: 'Right Hand',
-    timestamp: new Date(2026, 2, 19).toISOString()
+    timestamp: new Date(2026, 2, 19, 10, 30).toISOString() // Thu 10:30 AM
   },
   {
     incident_id: 'INC-2026-013',
@@ -41333,7 +41333,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'David Lee',
     mechanism: 'Slip / trip',
     body_part: 'Ankle',
-    timestamp: new Date(2026, 2, 12).toISOString()
+    timestamp: new Date(2026, 2, 12, 8, 15).toISOString() // Thu 8:15 AM
   },
   {
     incident_id: 'INC-2026-012',
@@ -41342,7 +41342,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Lisa Brown',
     mechanism: 'Caught between',
     body_part: 'Left Hand',
-    timestamp: new Date(2026, 2, 5).toISOString()
+    timestamp: new Date(2026, 2, 5, 13, 45).toISOString() // Thu 1:45 PM
   },
   // February 2026 (2 incidents)
   {
@@ -41352,7 +41352,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'James Martinez',
     mechanism: 'Vehicle / mobile plant',
     body_part: 'Multiple',
-    timestamp: new Date(2026, 1, 21).toISOString()
+    timestamp: new Date(2026, 1, 21, 7, 30).toISOString() // Fri 7:30 AM
   },
   {
     incident_id: 'INC-2026-010',
@@ -41361,7 +41361,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Rachel Green',
     mechanism: 'Fall from height',
     body_part: 'Right Hand',
-    timestamp: new Date(2026, 1, 8).toISOString()
+    timestamp: new Date(2026, 1, 8, 14, 10).toISOString() // Sat 2:10 PM
   },
   // January 2026 (5 incidents)
   {
@@ -41371,7 +41371,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Chris Anderson',
     mechanism: 'Manual handling',
     body_part: 'Lower Back',
-    timestamp: new Date(2026, 0, 29).toISOString()
+    timestamp: new Date(2026, 0, 29, 10, 0).toISOString() // Wed 10:00 AM
   },
   {
     incident_id: 'INC-2026-008',
@@ -41380,7 +41380,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Sophie Taylor',
     mechanism: 'Struck by object',
     body_part: 'Head',
-    timestamp: new Date(2026, 0, 24).toISOString()
+    timestamp: new Date(2026, 0, 24, 16, 20).toISOString() // Fri 4:20 PM
   },
   {
     incident_id: 'INC-2026-007',
@@ -41389,7 +41389,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Ben Harris',
     mechanism: 'Penetrating injury',
     body_part: 'Left Hand',
-    timestamp: new Date(2026, 0, 18).toISOString()
+    timestamp: new Date(2026, 0, 18, 9, 45).toISOString() // Sat 9:45 AM
   },
   {
     incident_id: 'INC-2026-006',
@@ -41398,7 +41398,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Amy White',
     mechanism: 'Chemical exposure',
     body_part: 'Eyes',
-    timestamp: new Date(2026, 0, 11).toISOString()
+    timestamp: new Date(2026, 0, 11, 11, 15).toISOString() // Sat 11:15 AM
   },
   {
     incident_id: 'INC-2026-005',
@@ -41407,7 +41407,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Oliver Scott',
     mechanism: 'Slip / trip',
     body_part: 'Ankle',
-    timestamp: new Date(2026, 0, 4).toISOString()
+    timestamp: new Date(2026, 0, 4, 15, 0).toISOString() // Sat 3:00 PM
   },
   // December 2025 (3 incidents)
   {
@@ -41417,7 +41417,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Isabella Clark',
     mechanism: 'Equipment failure',
     body_part: 'Right Hand',
-    timestamp: new Date(2025, 11, 20).toISOString()
+    timestamp: new Date(2025, 11, 20, 13, 30).toISOString() // Fri 1:30 PM
   },
   {
     incident_id: 'INC-2025-033',
@@ -41426,7 +41426,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Liam Murphy',
     mechanism: 'Foreign object',
     body_part: 'Eyes',
-    timestamp: new Date(2025, 11, 14).toISOString()
+    timestamp: new Date(2025, 11, 14, 8, 45).toISOString() // Sat 8:45 AM
   },
   {
     incident_id: 'INC-2025-032',
@@ -41435,7 +41435,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Mia Robinson',
     mechanism: 'Thermal contact',
     body_part: 'Left Hand',
-    timestamp: new Date(2025, 11, 6).toISOString()
+    timestamp: new Date(2025, 11, 6, 14, 0).toISOString() // Fri 2:00 PM
   },
   // November 2025 (1 incident)
   {
@@ -41445,7 +41445,7 @@ var DIRECTOR_DEMO_INCIDENTS = [
     reported_by: 'Noah Foster',
     mechanism: 'Struck by object',
     body_part: 'Torso',
-    timestamp: new Date(2025, 10, 15).toISOString()
+    timestamp: new Date(2025, 10, 15, 14, 0).toISOString() // Sat 2:00 PM
   }
 ];
 
@@ -42046,7 +42046,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Jake Ryan',
       mechanism: 'Slip / trip',
       body_part: 'Knee',
-      timestamp: new Date(2026, 3, 28).toISOString()
+      timestamp: new Date(2026, 3, 28, 14, 30).toISOString() // Mon 2:30 PM
     },
     {
       incident_id: 'INC-2026-017',
@@ -42055,7 +42055,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Tom Chen',
       mechanism: 'Manual handling',
       body_part: 'Lower Back',
-      timestamp: new Date(2026, 3, 22).toISOString()
+      timestamp: new Date(2026, 3, 22, 9, 15).toISOString() // Wed 9:15 AM
     },
     {
       incident_id: 'INC-2026-016',
@@ -42064,7 +42064,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Sarah O\'Brien',
       mechanism: 'Hit against object',
       body_part: 'Head',
-      timestamp: new Date(2026, 3, 15).toISOString()
+      timestamp: new Date(2026, 3, 15, 11, 45).toISOString() // Wed 11:45 AM
     },
     
     // March 2026 (4 incidents)
@@ -42075,7 +42075,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Mike Johnson',
       mechanism: 'Struck by object',
       body_part: 'Head',
-      timestamp: new Date(2026, 2, 26).toISOString()
+      timestamp: new Date(2026, 2, 26, 15, 20).toISOString() // Thu 3:20 PM
     },
     {
       incident_id: 'INC-2026-014',
@@ -42084,7 +42084,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Emma Wilson',
       mechanism: 'Cut / laceration',
       body_part: 'Right Hand',
-      timestamp: new Date(2026, 2, 19).toISOString()
+      timestamp: new Date(2026, 2, 19, 10, 30).toISOString() // Thu 10:30 AM
     },
     {
       incident_id: 'INC-2026-013',
@@ -42093,7 +42093,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'David Lee',
       mechanism: 'Slip / trip',
       body_part: 'Ankle',
-      timestamp: new Date(2026, 2, 12).toISOString()
+      timestamp: new Date(2026, 2, 12, 8, 15).toISOString() // Thu 8:15 AM
     },
     {
       incident_id: 'INC-2026-012',
@@ -42102,7 +42102,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Lisa Brown',
       mechanism: 'Caught between',
       body_part: 'Left Hand',
-      timestamp: new Date(2026, 2, 5).toISOString()
+      timestamp: new Date(2026, 2, 5, 13, 45).toISOString() // Thu 1:45 PM
     },
     
     // February 2026 (2 incidents)
@@ -42113,7 +42113,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'James Martinez',
       mechanism: 'Vehicle / mobile plant',
       body_part: 'Multiple',
-      timestamp: new Date(2026, 1, 21).toISOString()
+      timestamp: new Date(2026, 1, 21, 7, 30).toISOString() // Fri 7:30 AM
     },
     {
       incident_id: 'INC-2026-010',
@@ -42122,7 +42122,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Rachel Green',
       mechanism: 'Fall from height',
       body_part: 'Right Hand',
-      timestamp: new Date(2026, 1, 8).toISOString()
+      timestamp: new Date(2026, 1, 8, 14, 10).toISOString() // Sat 2:10 PM
     },
     
     // January 2026 (5 incidents)
@@ -42133,7 +42133,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Chris Anderson',
       mechanism: 'Manual handling',
       body_part: 'Lower Back',
-      timestamp: new Date(2026, 0, 29).toISOString()
+      timestamp: new Date(2026, 0, 29, 10, 0).toISOString() // Wed 10:00 AM
     },
     {
       incident_id: 'INC-2026-008',
@@ -42142,7 +42142,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Sophie Taylor',
       mechanism: 'Struck by object',
       body_part: 'Head',
-      timestamp: new Date(2026, 0, 24).toISOString()
+      timestamp: new Date(2026, 0, 24, 16, 20).toISOString() // Fri 4:20 PM
     },
     {
       incident_id: 'INC-2026-007',
@@ -42151,7 +42151,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Ben Harris',
       mechanism: 'Penetrating injury',
       body_part: 'Left Hand',
-      timestamp: new Date(2026, 0, 18).toISOString()
+      timestamp: new Date(2026, 0, 18, 9, 45).toISOString() // Sat 9:45 AM
     },
     {
       incident_id: 'INC-2026-006',
@@ -42160,7 +42160,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Amy White',
       mechanism: 'Chemical exposure',
       body_part: 'Eyes',
-      timestamp: new Date(2026, 0, 11).toISOString()
+      timestamp: new Date(2026, 0, 11, 11, 15).toISOString() // Sat 11:15 AM
     },
     {
       incident_id: 'INC-2026-005',
@@ -42169,7 +42169,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Oliver Scott',
       mechanism: 'Slip / trip',
       body_part: 'Ankle',
-      timestamp: new Date(2026, 0, 4).toISOString()
+      timestamp: new Date(2026, 0, 4, 15, 0).toISOString() // Sat 3:00 PM
     },
     
     // December 2025 (3 incidents)
@@ -42180,7 +42180,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Isabella Clark',
       mechanism: 'Equipment failure',
       body_part: 'Right Hand',
-      timestamp: new Date(2025, 11, 20).toISOString()
+      timestamp: new Date(2025, 11, 20, 13, 30).toISOString() // Fri 1:30 PM
     },
     {
       incident_id: 'INC-2025-033',
@@ -42189,7 +42189,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Liam Murphy',
       mechanism: 'Foreign object',
       body_part: 'Eyes',
-      timestamp: new Date(2025, 11, 14).toISOString()
+      timestamp: new Date(2025, 11, 14, 8, 45).toISOString() // Sat 8:45 AM
     },
     {
       incident_id: 'INC-2025-032',
@@ -42198,7 +42198,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Mia Robinson',
       mechanism: 'Thermal contact',
       body_part: 'Left Hand',
-      timestamp: new Date(2025, 11, 6).toISOString()
+      timestamp: new Date(2025, 11, 6, 14, 0).toISOString() // Fri 2:00 PM
     },
     
     // November 2025 (1 incident)
@@ -42209,7 +42209,7 @@ function renderDirectorIncidentList(incidents) {
       reported_by: 'Noah Foster',
       mechanism: 'Struck by object',
       body_part: 'Torso',
-      timestamp: new Date(2025, 10, 15).toISOString()
+      timestamp: new Date(2025, 10, 15, 14, 0).toISOString() // Sat 2:00 PM
     }
   ];
   
@@ -42343,15 +42343,96 @@ function viewIncidentDetail(incidentId) {
       '<div style="font-size:13px;font-weight:600;color:#1B3A2D">' + (incident.reported_by || 'Unknown Reporter') + '</div>' +
     '</div>' +
     
-    // Action Buttons
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">' +
-      '<button onclick="alert(\'Export functionality coming soon\')" style="padding:10px;font-size:11px;font-weight:600;background:#FFFFFF;border:1.5px solid #D0D0D0;border-radius:8px;color:#555;cursor:pointer;transition:all 0.2s">📄 Export PDF</button>' +
-      '<button onclick="alert(\'Email functionality coming soon\')" style="padding:10px;font-size:11px;font-weight:600;background:#FFFFFF;border:1.5px solid #D0D0D0;border-radius:8px;color:#555;cursor:pointer;transition:all 0.2s">📧 Email Report</button>' +
+    // Action Buttons - Single "View Full PDF" button
+    '<div style="margin-top:16px">' +
+      '<button onclick="viewIncidentFullPDF(\'' + incident.incident_id + '\')" style="width:100%;padding:12px;font-size:12px;font-weight:600;background:linear-gradient(135deg, #1B3A2D 0%, #2D5F3F 100%);border:none;border-radius:8px;color:#FFFFFF;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 6px rgba(27,58,45,0.3)">📄 View Full PDF Report</button>' +
     '</div>' +
     
     '<div style="border-top:1px solid #E0E0E0;margin-top:16px;padding-top:10px;font-size:9px;color:#999;text-align:center">' +
       'Incident ID: ' + incident.incident_id + ' • Slan Safety Management System' +
     '</div>');
+}
+
+function viewIncidentFullPDF(incidentId) {
+  // Find the incident
+  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  var incident = storedIncidents.find(function(i) {
+    return (i.incident_id === incidentId) || 
+           ('INC-' + new Date(i.timestamp).getFullYear() + '-' + String(storedIncidents.indexOf(i) + 1).padStart(3, '0') === incidentId);
+  });
+  
+  if (!incident) {
+    incident = DIRECTOR_DEMO_INCIDENTS.find(function(i) {
+      return i.incident_id === incidentId;
+    });
+  }
+  
+  if (!incident) {
+    alert('Incident not found');
+    return;
+  }
+  
+  // Navigate to incident form in view mode
+  goTo('screen-inc');
+  
+  // Populate form with incident data (view-only mode)
+  setTimeout(function() {
+    // Set basic info
+    document.getElementById('inc-form-id').value = incident.incident_id || '';
+    document.getElementById('inc-date-display').textContent = new Date(incident.timestamp || incident.reported_at).toLocaleDateString('en-AU', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+    
+    // Set severity
+    var severity = (incident.severity || 'first-aid').toLowerCase();
+    if (severity.includes('near')) {
+      document.getElementById('inc-sev-nearmiss').checked = true;
+      incSeverity = 'near-miss';
+    } else if (severity.includes('lti')) {
+      document.getElementById('inc-sev-lti').checked = true;
+      incSeverity = 'lti';
+    } else {
+      document.getElementById('inc-sev-firstaid').checked = true;
+      incSeverity = 'first-aid';
+    }
+    
+    // Populate all fields
+    var fields = {
+      'inc-what': incident.what_happened || incident.description || '',
+      'inc-mechanism': incident.mechanism || '',
+      'inc-body-part': incident.body_part || '',
+      'inc-person-name': incident.reported_by || ''
+    };
+    
+    for (var id in fields) {
+      var el = document.getElementById(id);
+      if (el) el.value = fields[id];
+    }
+    
+    // Disable all inputs (view-only mode)
+    var inputs = document.querySelectorAll('#screen-inc input, #screen-inc textarea, #screen-inc select');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].disabled = true;
+      inputs[i].style.opacity = '0.7';
+      inputs[i].style.cursor = 'not-allowed';
+    }
+    
+    // Hide submit button, show "Close" button
+    var submitBtn = document.querySelector('#screen-inc button[onclick="submitIncident()"]');
+    if (submitBtn) {
+      submitBtn.textContent = 'Close Report';
+      submitBtn.onclick = function() {
+        // Re-enable inputs for next use
+        var inputs = document.querySelectorAll('#screen-inc input, #screen-inc textarea, #screen-inc select');
+        for (var i = 0; i < inputs.length; i++) {
+          inputs[i].disabled = false;
+          inputs[i].style.opacity = '1';
+          inputs[i].style.cursor = '';
+        }
+        goTo('screen-director-incidents');
+      };
+    }
+  }, 100);
 }
 
 
