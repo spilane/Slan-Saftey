@@ -36800,62 +36800,6 @@ function tbtSeedDemoSupervisorRosters(silent) {
 }
 
 
-// ─── HAZARD SEEDER ─────────────────────────────────────────────
-// Creates 4 demo hazards on site so the Hazards tile / chip / list look populated.
-function seedDemoHazards(silent) {
-  var key = 'slan_hazards';
-  var existing = [];
-  try { existing = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-  var now = Date.now();
-  var demos = [
-    // Using REAL personnel from Personnel Register & existing system data
-    // Company: Murphy Civil Construction
-    // Subcontractors: Ironclad Electrical, Summit Formwork, BlueRidge Plumbing
-    
-    // ── APRIL 2026 (3 incidents) ──────────────────────────────────────────────
-    {ref:'INC-260428001',site:SITE||'Murphy Civil Construction',reporter_name:'John Smith',reporter_company:'Murphy Civil Construction',reporter_role:'Site Supervisor',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-28',incident_time:'14:30',location:'Amenities block',description:'Slip on wet floor near amenities block',mechanism:'slip-trip',body_part:'Knee',injury_nature:'Bruise',submitted_at:new Date(2026,3,28,14,30).toISOString(),status:'open'},
-    {ref:'INC-260422002',site:SITE||'Murphy Civil Construction',reporter_name:'Sean Murphy',reporter_company:'Ironclad Electrical Pty Ltd',reporter_role:'Electrician',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-04-22',incident_time:'09:15',location:'Loading bay',description:'Manual handling - load exceeding safe limit',mechanism:'overexertion-manual',body_part:'Lower Back',submitted_at:new Date(2026,3,22,9,15).toISOString(),status:'open'},
-    {ref:'INC-260415003',site:SITE||'Murphy Civil Construction',reporter_name:'Tara Jones',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-15',incident_time:'11:45',location:'Scaffold area level 3',description:'Hit head on scaffold support beam',mechanism:'hit-against-object',body_part:'Head',injury_nature:'Laceration',submitted_at:new Date(2026,3,15,11,45).toISOString(),status:'open'},
-    
-    // ── MARCH 2026 (4 incidents) ──────────────────────────────────────────────
-    {ref:'INC-260326004',site:SITE||'Murphy Civil Construction',reporter_name:'Jake Ryan',reporter_company:'Murphy Civil Construction',reporter_role:'Concretor',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-03-26',incident_time:'15:20',location:'Level 2 formwork',description:'Nearly struck by falling tool from height',mechanism:'struck-falling-object',body_part:'Head',submitted_at:new Date(2026,2,26,15,20).toISOString(),status:'open'},
-    {ref:'INC-260319005',site:SITE||'Murphy Civil Construction',reporter_name:'Mark Flynn',reporter_company:'Murphy Civil Construction',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-19',incident_time:'10:30',location:'Steel laydown area',description:'Cut hand on steel reinforcement bar',mechanism:'other',body_part:'Right Hand',injury_nature:'Laceration',submitted_at:new Date(2026,2,19,10,30).toISOString(),status:'open'},
-    {ref:'INC-260312006',site:SITE||'Murphy Civil Construction',reporter_name:'Lee OBrien',reporter_company:'Murphy Civil Construction',reporter_role:'Rigger',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-03-12',incident_time:'08:15',location:'Main walkway',description:'Trip hazard - unsecured cable across walkway',mechanism:'slip-trip',body_part:'Ankle',submitted_at:new Date(2026,2,12,8,15).toISOString(),status:'open'},
-    {ref:'INC-260305007',site:SITE||'Murphy Civil Construction',reporter_name:'Maria Kelly',reporter_company:'Summit Formwork & Concrete Pty Ltd',reporter_role:'Formwork Labourer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-05',incident_time:'13:45',location:'Loading area',description:'Pinched finger between steel plates',mechanism:'caught-in-between',body_part:'Left Hand',injury_nature:'Crush',submitted_at:new Date(2026,2,5,13,45).toISOString(),status:'open'},
-    
-    // ── FEBRUARY 2026 (3 incidents - includes 1 LTI) ──────────────────────────
-    {ref:'INC-260221008',site:SITE||'Murphy Civil Construction',reporter_name:'John Smith',reporter_company:'Murphy Civil Construction',reporter_role:'Site Supervisor',incident_type:'Near Miss',severity:'Major',incident_date:'2026-02-21',incident_time:'07:30',location:'Excavation zone',description:'Excavator operating near workers without spotter',mechanism:'struck-moving-plant',body_part:'Multiple',submitted_at:new Date(2026,1,21,7,30).toISOString(),status:'open'},
-    {ref:'INC-260208009',site:SITE||'Murphy Civil Construction',reporter_name:'Tara Jones',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Major',incident_date:'2026-02-08',incident_time:'14:10',location:'Second floor access',description:'Fall from ladder - 2m height, fractured wrist (LTI)',mechanism:'fall-from-height',body_part:'Right Wrist',injury_nature:'Fracture',submitted_at:new Date(2026,1,8,14,10).toISOString(),status:'open'},
-    {ref:'INC-260205010',site:SITE||'Murphy Civil Construction',reporter_name:'Sean Murphy',reporter_company:'Ironclad Electrical Pty Ltd',reporter_role:'Electrician',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2026-02-05',incident_time:'11:20',location:'Electrical switchboard',description:'Minor laceration from sharp edge',mechanism:'other',body_part:'Left Hand',injury_nature:'Laceration',submitted_at:new Date(2026,1,5,11,20).toISOString(),status:'open'},
-    
-    // ── JANUARY 2026 (5 incidents - includes 1 LTI) ──────────────────────────
-    {ref:'INC-260129011',site:SITE||'Murphy Civil Construction',reporter_name:'Jake Ryan',reporter_company:'Murphy Civil Construction',reporter_role:'Concretor',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-01-29',incident_time:'10:00',location:'Formwork area',description:'Strain from lifting concrete form',mechanism:'overexertion-manual',body_part:'Lower Back',injury_nature:'Strain',submitted_at:new Date(2026,0,29,10,0).toISOString(),status:'open'},
-    {ref:'INC-260122012',site:SITE||'Murphy Civil Construction',reporter_name:'Mark Flynn',reporter_company:'Murphy Civil Construction',reporter_role:'Formworker',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-01-22',incident_time:'16:20',location:'Scaffold level 3',description:'Unsecured scaffold board nearly fell',mechanism:'struck-falling-object',body_part:'Head',submitted_at:new Date(2026,0,22,16,20).toISOString(),status:'open'},
-    {ref:'INC-260115013',site:SITE||'Murphy Civil Construction',reporter_name:'Lee OBrien',reporter_company:'Murphy Civil Construction',reporter_role:'Rigger',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-01-15',incident_time:'09:45',location:'Access stairs',description:'Scaffolding plank found unsecured',mechanism:'fall-from-height',body_part:'None',submitted_at:new Date(2026,0,15,9,45).toISOString(),status:'open'},
-    {ref:'INC-260108014',site:SITE||'Murphy Civil Construction',reporter_name:'Maria Kelly',reporter_company:'Summit Formwork & Concrete Pty Ltd',reporter_role:'Formwork Labourer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-01-08',incident_time:'11:15',location:'Timber storage',description:'Splinter from timber handling',mechanism:'other',body_part:'Left Hand',injury_nature:'Penetrating',submitted_at:new Date(2026,0,8,11,15).toISOString(),status:'open'},
-    {ref:'INC-260102015',site:SITE||'Murphy Civil Construction',reporter_name:'John Smith',reporter_company:'Murphy Civil Construction',reporter_role:'Site Supervisor',incident_type:'Actual Injury',severity:'Critical',incident_date:'2026-01-02',incident_time:'15:00',location:'Lifting zone',description:'Crushed hand operating defective equipment (LTI)',mechanism:'caught-in-between',body_part:'Right Hand',injury_nature:'Crush',submitted_at:new Date(2026,0,2,15,0).toISOString(),status:'open'},
-    
-    // ── DECEMBER 2025 (2 incidents) ───────────────────────────────────────────
-    {ref:'INC-251218016',site:SITE||'Murphy Civil Construction',reporter_name:'Sean Murphy',reporter_company:'Ironclad Electrical Pty Ltd',reporter_role:'Electrician',incident_type:'Actual Injury',severity:'Minor',incident_date:'2025-12-18',incident_time:'13:30',location:'Grinding area',description:'Metal fragment in eye despite PPE',mechanism:'other',body_part:'Left Eye',injury_nature:'Foreign object',submitted_at:new Date(2025,11,18,13,30).toISOString(),status:'open'},
-    {ref:'INC-251211017',site:SITE||'Murphy Civil Construction',reporter_name:'Jake Ryan',reporter_company:'Murphy Civil Construction',reporter_role:'Concretor',incident_type:'Near Miss',severity:'Major',incident_date:'2025-12-11',incident_time:'08:45',location:'Site perimeter',description:'Overhead power line contacted by equipment',mechanism:'electrical',body_part:'None',submitted_at:new Date(2025,11,11,8,45).toISOString(),status:'open'},
-    
-    // ── NOVEMBER 2025 (1 incident) ────────────────────────────────────────────
-    {ref:'INC-251115018',site:SITE||'Murphy Civil Construction',reporter_name:'Tara Jones',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2025-11-15',incident_time:'14:00',location:'Delivery zone',description:'Bruised shoulder from unsecured load shift',mechanism:'struck-moving-plant',body_part:'Left Shoulder',injury_nature:'Bruise',submitted_at:new Date(2025,10,15,14,0).toISOString(),status:'open'}
-  ];
-  var added = 0;
-  demos.forEach(function(d) {
-    if (existing.some(function(x) { return x.id === d.id; })) return;
-    existing.push(d);
-    added++;
-  });
-  try { localStorage.setItem(key, JSON.stringify(existing)); } catch(e) {}
-  if (!silent) {
-    if (typeof slanToast === 'function') slanToast('Loaded ' + added + ' demo hazards.');
-    else slanAlert('Demo data loaded', 'Loaded ' + added + ' demo hazards.', 'info');
-  }
-  return added;
-}
-
 // ─── INCIDENT DEMO SEEDER ───────────────────────────────────────
 // Adds 5 representative incident reports across a mix of types, severities
 // and statuses so the supervisor (and worker) can see what a populated
@@ -41260,27 +41204,39 @@ function showDrillDownPanel(title, content) {
 
 function prepopulateDemoIncidents() {
   var existing = incLoadAll();
-  if (existing && existing.length > 0) return; // Already have data
+  
+  // FORCE RELOAD: Clear any old demo data and load the new 25 incidents
+  if (existing && existing.length > 0) {
+    console.log('Clearing old incidents and loading new demo data...');
+    localStorage.removeItem('slan_incidents_v1');
+  }
   
   var demos = [
-    {ref:'INC-260428001',site:SITE||'Murphy Civil Construction',reporter_name:'John Smith',reporter_company:'Murphy Civil Construction',reporter_role:'Site Supervisor',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-28',incident_time:'14:30',location:'Amenities block',description:'Slip on wet floor near amenities block',mechanism:'slip-trip',body_part:'Knee',injury_nature:'Bruise',submitted_at:new Date(2026,3,28,14,30).toISOString(),status:'open'},
-    {ref:'INC-260422002',site:SITE||'Murphy Civil Construction',reporter_name:'Sean Murphy',reporter_company:'Ironclad Electrical Pty Ltd',reporter_role:'Electrician',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-04-22',incident_time:'09:15',location:'Loading bay',description:'Manual handling - load exceeding safe limit',mechanism:'overexertion-manual',body_part:'Lower Back',submitted_at:new Date(2026,3,22,9,15).toISOString(),status:'open'},
-    {ref:'INC-260415003',site:SITE||'Murphy Civil Construction',reporter_name:'Tara Jones',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-15',incident_time:'11:45',location:'Scaffold area',description:'Hit head on scaffold support beam',mechanism:'hit-against-object',body_part:'Head',injury_nature:'Laceration',submitted_at:new Date(2026,3,15,11,45).toISOString(),status:'open'},
-    {ref:'INC-260326004',site:SITE||'Murphy Civil Construction',reporter_name:'Jake Ryan',reporter_company:'Murphy Civil Construction',reporter_role:'Concretor',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-03-26',incident_time:'15:20',location:'Level 2',description:'Nearly struck by falling tool from height',mechanism:'struck-falling-object',body_part:'Head',submitted_at:new Date(2026,2,26,15,20).toISOString(),status:'open'},
-    {ref:'INC-260319005',site:SITE||'Murphy Civil Construction',reporter_name:'Mark Flynn',reporter_company:'Murphy Civil Construction',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-19',incident_time:'10:30',location:'Steel laydown',description:'Cut hand on steel reinforcement bar',mechanism:'other',body_part:'Right Hand',injury_nature:'Laceration',submitted_at:new Date(2026,2,19,10,30).toISOString(),status:'open'},
-    {ref:'INC-260312006',site:SITE||'Murphy Civil Construction',reporter_name:'Lee OBrien',reporter_company:'Murphy Civil Construction',reporter_role:'Rigger',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-03-12',incident_time:'08:15',location:'Walkway',description:'Trip hazard - unsecured cable across walkway',mechanism:'slip-trip',body_part:'Ankle',submitted_at:new Date(2026,2,12,8,15).toISOString(),status:'open'},
-    {ref:'INC-260305007',site:SITE||'Murphy Civil Construction',reporter_name:'Maria Kelly',reporter_company:'Summit Formwork & Concrete Pty Ltd',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-05',incident_time:'13:45',location:'Loading area',description:'Pinched finger between steel plates',mechanism:'caught-in-between',body_part:'Left Hand',injury_nature:'Crush',submitted_at:new Date(2026,2,5,13,45).toISOString(),status:'open'},
-    {ref:'INC-260221008',site:SITE||'Murphy Civil Construction',reporter_name:'John Smith',reporter_company:'Murphy Civil Construction',reporter_role:'Site Supervisor',incident_type:'Near Miss',severity:'Major',incident_date:'2026-02-21',incident_time:'07:30',location:'Excavation zone',description:'Excavator operating near workers without spotter',mechanism:'struck-moving-plant',body_part:'Multiple',submitted_at:new Date(2026,1,21,7,30).toISOString(),status:'open'},
-    {ref:'INC-260208009',site:SITE||'Murphy Civil Construction',reporter_name:'Tara Jones',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Major',incident_date:'2026-02-08',incident_time:'14:10',location:'Second floor',description:'Fall from ladder - 2m height, fractured wrist (LTI)',mechanism:'fall-from-height',body_part:'Right Wrist',injury_nature:'Fracture',submitted_at:new Date(2026,1,8,14,10).toISOString(),status:'open'},
-    {ref:'INC-260205010',site:SITE||'Murphy Civil Construction',reporter_name:'Sean Murphy',reporter_company:'Ironclad Electrical Pty Ltd',reporter_role:'Electrician',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2026-02-05',incident_time:'11:20',location:'Cutting area',description:'Minor laceration from power tool',mechanism:'other',body_part:'Left Hand',injury_nature:'Laceration',submitted_at:new Date(2026,1,5,11,20).toISOString(),status:'open'},
-    {ref:'INC-260129011',site:SITE||'Murphy Civil Construction',reporter_name:'Jake Ryan',reporter_company:'Murphy Civil Construction',reporter_role:'Concretor',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-01-29',incident_time:'10:00',location:'Formwork area',description:'Strain from lifting concrete form',mechanism:'overexertion-manual',body_part:'Lower Back',injury_nature:'Strain',submitted_at:new Date(2026,0,29,10,0).toISOString(),status:'open'},
-    {ref:'INC-260122012',site:SITE||'Murphy Civil Construction',reporter_name:'Mark Flynn',reporter_company:'Murphy Civil Construction',reporter_role:'Formworker',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-01-22',incident_time:'16:20',location:'Scaffold level 3',description:'Unsecured scaffold board nearly fell',mechanism:'struck-falling-object',body_part:'Head',submitted_at:new Date(2026,0,22,16,20).toISOString(),status:'open'},
-    {ref:'INC-260115013',site:SITE||'Murphy Civil Construction',reporter_name:'Lee OBrien',reporter_company:'Murphy Civil Construction',reporter_role:'Rigger',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-01-15',incident_time:'09:45',location:'Access stairs',description:'Scaffolding plank found unsecured',mechanism:'fall-from-height',body_part:'None',submitted_at:new Date(2026,0,15,9,45).toISOString(),status:'open'},
-    {ref:'INC-260108014',site:SITE||'Murphy Civil Construction',reporter_name:'Maria Kelly',reporter_company:'Summit Formwork & Concrete Pty Ltd',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-01-08',incident_time:'11:15',location:'Timber storage',description:'Splinter from timber handling',mechanism:'other',body_part:'Left Hand',injury_nature:'Penetrating',submitted_at:new Date(2026,0,8,11,15).toISOString(),status:'open'},
-    {ref:'INC-260102015',site:SITE||'Murphy Civil Construction',reporter_name:'John Smith',reporter_company:'Murphy Civil Construction',reporter_role:'Site Supervisor',incident_type:'Actual Injury',severity:'Critical',incident_date:'2026-01-02',incident_time:'15:00',location:'Lifting zone',description:'Crushed hand operating defective equipment (LTI)',mechanism:'caught-in-between',body_part:'Right Hand',injury_nature:'Crush',submitted_at:new Date(2026,0,2,15,0).toISOString(),status:'open'},
-    {ref:'INC-251218016',site:SITE||'Murphy Civil Construction',reporter_name:'Sean Murphy',reporter_company:'Ironclad Electrical Pty Ltd',reporter_role:'Electrician',incident_type:'Actual Injury',severity:'Minor',incident_date:'2025-12-18',incident_time:'13:30',location:'Grinding area',description:'Metal fragment in eye despite PPE',mechanism:'other',body_part:'Left Eye',injury_nature:'Foreign object',submitted_at:new Date(2025,11,18,13,30).toISOString(),status:'open'},
-    {ref:'INC-251211017',site:SITE||'Murphy Civil Construction',reporter_name:'Jake Ryan',reporter_company:'Murphy Civil Construction',reporter_role:'Concretor',incident_type:'Near Miss',severity:'Major',incident_date:'2025-12-11',incident_time:'08:45',location:'Perimeter',description:'Overhead power line contacted by equipment',mechanism:'electrical',body_part:'None',submitted_at:new Date(2025,11,11,8,45).toISOString(),status:'open'},
-    {ref:'INC-251115018',site:SITE||'Murphy Civil Construction',reporter_name:'Tara Jones',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2025-11-15',incident_time:'14:00',location:'Delivery zone',description:'Bruised shoulder from unsecured load shift',mechanism:'struck-moving-plant',body_part:'Left Shoulder',injury_nature:'Bruise',submitted_at:new Date(2025,10,15,14,0).toISOString(),status:'open'}
+    {ref:'INC-260428001',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Jake Ryan',reporter_company:'Murphy Civil Construction',reporter_role:'Concretor',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-28',incident_time:'14:30',location:'Platform level excavation',description:'Slip on wet floor near dewatering area',mechanism:'slip-trip',body_part:'Knee',injury_nature:'Bruise',submitted_at:'2026-04-28T14:30:00.000Z',status:'open'},
+    {ref:'INC-260422002',site:SITE||'Parramatta Metro Stage 2',reporter_name:'David Zhang',reporter_company:'Burke Civil Contractors',reporter_role:'Plant Operator',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-04-22',incident_time:'09:15',location:'Tunnel boring machine zone',description:'Excavator operating too close to edge protection',mechanism:'struck-moving-plant',body_part:'None',injury_nature:'None',submitted_at:'2026-04-22T09:15:00.000Z',status:'open'},
+    {ref:'INC-260415003',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Sarah Thompson',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-15',incident_time:'11:45',location:'Concourse level formwork',description:'Cut hand on steel reinforcement bar',mechanism:'other',body_part:'Right Hand',injury_nature:'Laceration',submitted_at:'2026-04-15T11:45:00.000Z',status:'open'},
+    {ref:'INC-260405004',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Michael Patel',reporter_company:'Murphy Civil Construction',reporter_role:'Site Supervisor',incident_type:'Near Miss',severity:'Major',incident_date:'2026-04-05',incident_time:'15:20',location:'Ventilation shaft',description:'Unsecured load on crane hook nearly fell',mechanism:'struck-falling-object',body_part:'Head',injury_nature:'None',submitted_at:'2026-04-05T15:20:00.000Z',status:'open'},
+    {ref:'INC-260326005',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Mark Flynn',reporter_company:'Murphy Civil Construction',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-26',incident_time:'10:30',location:'Station box formwork',description:'Pinched finger between formwork panels',mechanism:'caught-in-between',body_part:'Left Hand',injury_nature:'Crush',submitted_at:'2026-03-26T10:30:00.000Z',status:'open'},
+    {ref:'INC-260312006',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Lisa Nguyen',reporter_company:'Burke Civil Contractors',reporter_role:'Engineer',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-03-12',incident_time:'08:15',location:'Access ramp',description:'Trip hazard - unsecured cable across walkway',mechanism:'slip-trip',body_part:'Ankle',injury_nature:'None',submitted_at:'2026-03-12T08:15:00.000Z',status:'open'},
+    {ref:'INC-260221007',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Tom Burke',reporter_company:'Burke Civil Contractors',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Major',incident_date:'2026-02-21',incident_time:'14:10',location:'Platform level',description:'Fall from scaffold - 2.5m height, ankle fracture (LTI)',mechanism:'fall-from-height',body_part:'Right Ankle',injury_nature:'Fracture',submitted_at:'2026-02-21T14:10:00.000Z',status:'open'},
+    {ref:'INC-260205008',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Shane Connolly',reporter_company:'Murphy Civil Construction',reporter_role:'Steelfixer',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2026-02-05',incident_time:'11:20',location:'Rebar cage assembly',description:'Hand strain from repetitive bending',mechanism:'overexertion-manual',body_part:'Right Hand',injury_nature:'Strain',submitted_at:'2026-02-05T11:20:00.000Z',status:'open'},
+    {ref:'INC-260122009',site:SITE||'Parramatta Metro Stage 2',reporter_name:'James Anderson',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Carpenter',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-01-22',incident_time:'16:20',location:'Temporary works',description:'Formwork prop found unsecured',mechanism:'struck-falling-object',body_part:'None',injury_nature:'None',submitted_at:'2026-01-22T16:20:00.000Z',status:'open'},
+    {ref:'INC-260108010',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Lee OBrien',reporter_company:'Murphy Civil Construction',reporter_role:'Rigger',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-01-08',incident_time:'09:30',location:'Crane lift zone',description:'Minor burn from grinding spark',mechanism:'other',body_part:'Left Forearm',injury_nature:'Burn',submitted_at:'2026-01-08T09:30:00.000Z',status:'open'},
+    {ref:'INC-260420011',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Emma Williams',reporter_company:'Murphy Civil Construction',reporter_role:'Site Manager',incident_type:'Near Miss',severity:'Major',incident_date:'2026-04-20',incident_time:'10:45',location:'Tower crane radius',description:'Pedestrian entered exclusion zone during lift',mechanism:'struck-moving-plant',body_part:'None',injury_nature:'None',submitted_at:'2026-04-20T10:45:00.000Z',status:'open'},
+    {ref:'INC-260410012',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Pat Healy',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-10',incident_time:'13:25',location:'Ground floor slab',description:'Concrete splashback to face',mechanism:'other',body_part:'Face',injury_nature:'Chemical irritation',submitted_at:'2026-04-10T13:25:00.000Z',status:'open'},
+    {ref:'INC-260328013',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Chris Mitchell',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-28',incident_time:'11:10',location:'Level 3 slab edge',description:'Hit head on protruding rebar',mechanism:'hit-against-object',body_part:'Head',injury_nature:'Laceration',submitted_at:'2026-03-28T11:10:00.000Z',status:'open'},
+    {ref:'INC-260315014',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Mick Doyle',reporter_company:'Burke Civil Contractors',reporter_role:'Excavator Operator',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-03-15',incident_time:'08:50',location:'Basement excavation',description:'Service strike near miss - stopped before hitting water main',mechanism:'other',body_part:'None',injury_nature:'None',submitted_at:'2026-03-15T08:50:00.000Z',status:'open'},
+    {ref:'INC-260228015',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Rachel Cooper',reporter_company:'Murphy Civil Construction',reporter_role:'Safety Officer',incident_type:'Actual Injury',severity:'Critical',incident_date:'2026-02-28',incident_time:'15:00',location:'Level 5 formwork',description:'Crushed finger in formwork clamp (LTI)',mechanism:'caught-in-between',body_part:'Left Index Finger',injury_nature:'Crush',submitted_at:'2026-02-28T15:00:00.000Z',status:'open'},
+    {ref:'INC-260210016',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Sam Carroll',reporter_company:'Burke Civil Contractors',reporter_role:'Concretor',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2026-02-10',incident_time:'14:40',location:'Basement pour',description:'Back strain from shoveling concrete',mechanism:'overexertion-manual',body_part:'Lower Back',injury_nature:'Strain',submitted_at:'2026-02-10T14:40:00.000Z',status:'open'},
+    {ref:'INC-260125017',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Wei Chen',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Labourer',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-01-25',incident_time:'12:15',location:'Material laydown',description:'Forklift reversing without spotter',mechanism:'struck-moving-plant',body_part:'None',injury_nature:'None',submitted_at:'2026-01-25T12:15:00.000Z',status:'open'},
+    {ref:'INC-251218018',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Brendan Kelly',reporter_company:'Kelly Crane Services',reporter_role:'Crane Operator',incident_type:'Actual Injury',severity:'Minor',incident_date:'2025-12-18',incident_time:'09:45',location:'Tower crane cab',description:'Minor cut from sharp edge on controls',mechanism:'other',body_part:'Right Hand',injury_nature:'Laceration',submitted_at:'2025-12-18T09:45:00.000Z',status:'open'},
+    {ref:'INC-251205019',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Dave Murphy',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Carpenter',incident_type:'Actual Injury',severity:'Minor',incident_date:'2025-12-05',incident_time:'10:20',location:'Stairwell formwork',description:'Splinter from timber handling',mechanism:'other',body_part:'Left Palm',injury_nature:'Penetrating',submitted_at:'2025-12-05T10:20:00.000Z',status:'open'},
+    {ref:'INC-260418020',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Aaron Farrell',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Formworker',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-04-18',incident_time:'14:50',location:'Grandstand structure',description:'Dropped tool from height - no one below',mechanism:'struck-falling-object',body_part:'None',injury_nature:'None',submitted_at:'2026-04-18T14:50:00.000Z',status:'open'},
+    {ref:'INC-260330021',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Gary Tully',reporter_company:'Tully Plumbing',reporter_role:'Plumber',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-30',incident_time:'11:30',location:'Amenities plumbing',description:'Minor burn from hot pipe',mechanism:'other',body_part:'Right Hand',injury_nature:'Burn',submitted_at:'2026-03-30T11:30:00.000Z',status:'open'},
+    {ref:'INC-260308022',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Daniel Gibson',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Near Miss',severity:'Major',incident_date:'2026-03-08',incident_time:'08:30',location:'Roof steelwork',description:'Working at heights without harness attached',mechanism:'fall-from-height',body_part:'None',injury_nature:'None',submitted_at:'2026-03-08T08:30:00.000Z',status:'open'},
+    {ref:'INC-260218023',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Chris Walsh',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2026-02-18',incident_time:'13:15',location:'Seating tier formwork',description:'Eye irritation from concrete dust',mechanism:'other',body_part:'Both Eyes',injury_nature:'Foreign object',submitted_at:'2026-02-18T13:15:00.000Z',status:'open'},
+    {ref:'INC-260129024',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Sophie Martin',reporter_company:'Murphy Civil Construction',reporter_role:'Engineer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-01-29',incident_time:'15:45',location:'Site office stairs',description:'Twisted ankle on uneven surface',mechanism:'slip-trip',body_part:'Left Ankle',injury_nature:'Sprain',submitted_at:'2026-01-29T15:45:00.000Z',status:'open'},
+    {ref:'INC-251211025',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Liam Brennan',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Near Miss',severity:'Major',incident_date:'2025-12-11',incident_time:'10:00',location:'External works',description:'Overhead powerline contacted by equipment boom',mechanism:'electrical',body_part:'None',injury_nature:'None',submitted_at:'2025-12-11T10:00:00.000Z',status:'open'},
   ]
   
   demos.forEach(function(inc){incSaveRecord(inc);});
@@ -41388,7 +41344,7 @@ function exportIncidentsToCSV() {
   
   // Add rows
   incidents.forEach(function(inc) {
-    var date = new Date(inc.submitted_at || inc.reported_at || inc.timestamp).toLocaleDateString('en-AU');
+    var date = new Date(inc.timestamp || inc.reported_at).toLocaleDateString('en-AU');
     var row = [
       inc.incident_id || '',
       date,
@@ -41422,7 +41378,7 @@ function applyDirectorFilters() {
   
   // Filter by period
   var filtered = allIncidents.filter(function(inc) {
-    var incDate = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    var incDate = new Date(inc.timestamp || inc.reported_at);
     var daysDiff = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
     return daysDiff <= periodDays;
   });
@@ -41473,7 +41429,7 @@ function searchDirectorIncidents() {
   
   // Apply period and severity filters first
   var filtered = allIncidents.filter(function(inc) {
-    var incDate = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    var incDate = new Date(inc.timestamp || inc.reported_at);
     var daysDiff = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
     if (daysDiff > periodDays) return false;
     
@@ -41555,12 +41511,12 @@ function renderDirectorSeverityBreakdown(incidents) {
   var container = document.getElementById('dir-inc-severity');
   if (!container) return;
   
-  // Count by severity
+  // Count by severity using mapping function
   var nearMiss = 0, firstAid = 0, lti = 0;
   incidents.forEach(function(inc) {
-    var sev = (inc.severity || 'first-aid').toLowerCase();
-    if (sev.includes('near')) nearMiss++;
-    else if (sev.includes('lti')) lti++;
+    var mapped = mapSeverityForDirector(inc);
+    if (mapped.label === 'Near Miss') nearMiss++;
+    else if (mapped.label === 'LTI') lti++;
     else firstAid++;
   });
   
@@ -41668,7 +41624,7 @@ function renderDirectorTimePatterns(incidents) {
   
   // Count by day
   incidents.forEach(function(inc) {
-    var date = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    var date = new Date(inc.timestamp || inc.reported_at);
     var dayName = dayNames[date.getDay()];
     dayPattern[dayName]++;
   });
@@ -41683,7 +41639,7 @@ function renderDirectorTimePatterns(incidents) {
   };
   
   incidents.forEach(function(inc) {
-    var date = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    var date = new Date(inc.timestamp || inc.reported_at);
     var hour = date.getHours();
     if (hour >= 7 && hour < 9) timeSlots['Early morning (7-9 AM)']++;
     else if (hour >= 9 && hour < 11) timeSlots['Mid-morning (9-11 AM)']++;
@@ -41757,7 +41713,7 @@ function renderDirectorIncidentChart(incidents) {
   }
   
   incidents.forEach(function(inc) {
-    var incDate = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    var incDate = new Date(inc.timestamp || inc.reported_at);
     for (var j = 0; j < monthData.length; j++) {
       if (incDate.getFullYear() === monthData[j].year && incDate.getMonth() === monthData[j].month) {
         monthData[j].count++;
@@ -41924,60 +41880,43 @@ function renderDirectorIncidentList(incidents) {
   var container = document.getElementById('dir-inc-list');
   if (!container) return;
   
-  // DEMO DATA - 18 incidents over 6 months for realistic volume
-  if (!incidents || incidents.length === 0) incidents = incLoadAll();
-    
-  // Use real incidents if available, otherwise use demo
-  var displayIncidents = incidents.length > 0 ? incidents : incidents;
+  // Use REAL incidents from incLoadAll()
+  var allIncidents = incLoadAll();
   
-  // Sort by date, most recent first
-  var sorted = displayIncidents.slice().sort(function(a, b) {
-    var aTime = new Date(a.submitted_at || a.reported_at || a.timestamp).getTime();
-    var bTime = new Date(b.submitted_at || b.reported_at || b.timestamp).getTime();
-    return bTime - aTime;
+  // Sort by date (newest first)
+  allIncidents.sort(function(a, b) {
+    return new Date(b.submitted_at) - new Date(a.submitted_at);
   });
   
-  // Take top 10
-  var top = sorted.slice(0, 10);
+  // Take top 8 for display
+  var displayIncidents = allIncidents.slice(0, 8);
   
-  container.innerHTML = top.map(function(inc, idx) {
-    var date = new Date(inc.submitted_at || inc.reported_at || inc.timestamp).toLocaleDateString('en-AU', {
-      day: 'numeric', month: 'short', year: 'numeric'
-    });
+  if (displayIncidents.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:#999">No incidents to display</div>';
+    return;
+  }
+  
+  var html = displayIncidents.map(function(inc) {
+    var mapped = mapSeverityForDirector(inc);
+    var date = new Date(inc.submitted_at);
+    var dateStr = date.toLocaleDateString('en-AU', {day: 'numeric', month: 'short'});
     
-    // Use severity mapping
-    var severityMap = mapSeverityForDirector(inc);
-    var severityColor = severityMap.color;
-    var severityText = severityMap.textColor;
-    var severityLabel = severityMap.label;
-    var severityBorder = severityMap.textColor;
-    
-    var incId = inc.ref || inc.incident_id || 'INC-UNKNOWN';
-    
-    var isNew = idx < 2; // First 2 are "new" (last 24hrs)
-    
-    return '<div onclick="viewIncidentDetail(\'' + incId + '\')" style="background:#fff;border-radius:6px;padding:8px 10px;margin-bottom:6px;cursor:pointer;border-left:3px solid ' + severityBorder + ';box-shadow:0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);position:relative">' +
-      (isNew ? '<div style="position:absolute;top:8px;right:8px;width:6px;height:6px;background:#E74C3C;border-radius:50%;animation:pulse 2s infinite"></div>' : '') +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
-        '<div style="font-size:11px;font-weight:600;color:#1A2A1F;display:flex;align-items:center;gap:6px">' +
-          incId +
-          (isNew ? '<span style="background:#E74C3C;color:#fff;font-size:7px;font-weight:700;padding:2px 4px;border-radius:3px;text-transform:uppercase">NEW</span>' : '') +
+    return '<div onclick="viewIncidentDetail(\'' + inc.ref + '\')" style="background:#FFFFFF;border:1px solid #E8E8E8;border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;margin-bottom:8px" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.1)\';this.style.borderColor=\'#D0D0D0\'" onmouseout="this.style.boxShadow=\'none\';this.style.borderColor=\'#E8E8E8\'">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
+        '<div style="flex:1">' +
+          '<div style="font-size:11px;font-weight:700;color:#1A2A1F;margin-bottom:3px">' + inc.ref + '</div>' +
+          '<div style="font-size:12px;color:#555;line-height:1.4">' + (inc.description || inc.what_happened || 'No description') + '</div>' +
         '</div>' +
-        '<div style="background:' + severityColor + ';color:' + severityText + ';font-size:8px;font-weight:600;padding:2px 6px;border-radius:8px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.1)">' + severityLabel + '</div>' +
+        '<div style="background:' + mapped.color + ';color:' + mapped.textColor + ';font-size:9px;font-weight:700;padding:4px 8px;border-radius:12px;white-space:nowrap;margin-left:10px">' + mapped.label + '</div>' +
       '</div>' +
-      '<div style="font-size:10px;color:#666;margin-bottom:6px;line-height:1.4">' + (inc.description || inc.what_happened || 'Incident details') + '</div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:center">' +
-        '<div style="font-size:9px;color:#999">' + (inc.reporter_name || inc.reported_by || 'Unknown') + ' · ' + date + '</div>' +
-        '<button onclick="event.stopPropagation();viewIncidentDetail(\'' + incId + '\')" style="padding:3px 8px;font-size:9px;font-weight:600;background:#F8F8F8;border:1px solid #D0D0D0;border-radius:4px;color:#555;cursor:pointer">View →</button>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#999">' +
+        '<div>' + mapped.icon + ' ' + (inc.reporter_name || inc.reported_by || 'Unknown') + '</div>' +
+        '<div>' + dateStr + '</div>' +
       '</div>' +
     '</div>';
   }).join('');
   
-  // Update result counter
-  var showingEl = document.getElementById('dir-inc-showing');
-  var ofEl = document.getElementById('dir-inc-of');
-  if (showingEl) showingEl.textContent = top.length;
-  if (ofEl) ofEl.textContent = displayIncidents.length;
+  container.innerHTML = html;
 }
 
 function viewIncidentDetail(incidentId) {
@@ -42013,12 +41952,12 @@ function viewIncidentDetail(incidentId) {
     hour: '2-digit', minute: '2-digit'
   });
   
-  // USE SEVERITY MAPPING
-  var severityMap = mapSeverityForDirector(incident);
-  var severityColor = severityMap.color;
-  var severityText = severityMap.textColor;
-  var severityLabel = severityMap.label;
-  var severityIcon = severityMap.icon;
+  // Severity styling
+  var severity = (incident.severity || 'first-aid').toLowerCase();
+  var severityColor = severity.includes('near') ? '#E6F5ED' : severity.includes('lti') ? '#FAEEDA' : '#FCEBEB';
+  var severityText = severity.includes('near') ? '#1B6E3A' : severity.includes('lti') ? '#854F0B' : '#A32D2D';
+  var severityLabel = severity.includes('near') ? 'Near Miss' : severity.includes('lti') ? 'LTI' : 'First Aid';
+  var severityIcon = severity.includes('near') ? '⚠️' : severity.includes('lti') ? '🚨' : '🩹';
   
   // Build comprehensive incident report view
   showDrillDownPanel('Incident Report', 
@@ -42071,24 +42010,72 @@ function viewIncidentDetail(incidentId) {
 }
 
 function viewIncidentFullPDF(incidentId) {
-  var incident = incLoadAll().find(function(i) { return i.ref === incidentId; });
+  // Find the incident from localStorage or demo data
+  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  var incident = storedIncidents.find(function(i) {
+    return (i.ref === incidentId) || 
+           ('INC-' + new Date(i.submitted_at).getFullYear() + '-' + String(storedIncidents.indexOf(i) + 1).padStart(3, '0') === incidentId);
+  });
+  
   if (!incident) {
-    alert('Incident not found: ' + incidentId);
+    incident = incLoadAll().find(function(i) {
+      return i.ref === incidentId;
+    });
+  }
+  
+  if (!incident) {
+    alert('Incident not found');
     return;
   }
   
+  // Close the drill-down panel first
   var drillDown = document.getElementById('dir-drilldown');
   if (drillDown) drillDown.style.display = 'none';
   
-  goTo('screen-supervisor-incidents');
+  // Navigate to incident screen
+  goTo('screen-incident');
   
+  // Wait for screen to render, then populate form
   setTimeout(function() {
-    if (typeof populateIncidentFormReadOnly === 'function') {
-      populateIncidentFormReadOnly(incident);
+    // Populate the form with incident data
+    var whatField = document.querySelector('#screen-incident textarea');
+    if (whatField) whatField.value = incident.description || incident.description || '';
+    
+    // Set severity if checkboxes exist
+    var severityInputs = document.querySelectorAll('#screen-incident input[type="radio"]');
+    var severity = (incident.severity || 'first-aid').toLowerCase();
+    for (var i = 0; i < severityInputs.length; i++) {
+      var input = severityInputs[i];
+      if ((severity.includes('near') && input.value && input.value.toLowerCase().includes('near')) ||
+          (severity.includes('lti') && input.value && input.value.toLowerCase().includes('lti')) ||
+          (severity.includes('first') && input.value && input.value.toLowerCase().includes('first'))) {
+        input.checked = true;
+      }
     }
-  }, 300);
+    
+    // Add a banner at the top showing this is a view-only incident
+    var screen = document.getElementById('screen-incident');
+    if (screen) {
+      var banner = document.createElement('div');
+      banner.id = 'incident-view-banner';
+      banner.style.cssText = 'background:linear-gradient(135deg,#1B3A2D,#2D5F3F);color:#fff;padding:12px 16px;text-align:center;font-weight:600;font-size:13px;position:sticky;top:0;z-index:100';
+      banner.innerHTML = '📄 Viewing Incident Report: ' + incident.ref + ' <button onclick="closeIncidentPDF()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:4px 12px;border-radius:4px;margin-left:12px;cursor:pointer;font-weight:600">Close</button>';
+      
+      // Remove old banner if it exists
+      var oldBanner = document.getElementById('incident-view-banner');
+      if (oldBanner) oldBanner.remove();
+      
+      screen.insertBefore(banner, screen.firstChild);
+    }
+    
+    // Disable all form inputs to make it read-only
+    var inputs = document.querySelectorAll('#screen-incident input, #screen-incident textarea, #screen-incident select, #screen-incident button:not(#incident-view-banner button)');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].disabled = true;
+      inputs[i].style.opacity = '0.6';
+    }
+  }, 100);
 }
-
 
 function closeIncidentPDF() {
   // Re-enable all inputs
