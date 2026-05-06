@@ -136,10 +136,10 @@ input[type="time"] {
 .inner-hdr-text p{font-size:12px;color:rgba(255,255,255,.55);margin-top:1px}
 
 /* FORM */
-.fbody{flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;padding-bottom:calc(20px + var(--sb))}
-.fcard{background:#fff;border-radius:8px;border:1px solid #E0E0E0;overflow:hidden}
-.fcard-body{padding:16px;display:flex;flex-direction:column;gap:12px}
-.fcard-hdr{background:var(--deep);padding:9px 12px;font-size:9px;font-weight:700;color:var(--gold);letter-spacing:.08em;text-transform:uppercase}
+.fbody{flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-bottom:calc(20px + var(--sb))}
+.fcard{background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.fcard-hdr{background:var(--deep);padding:11px 15px;font-size:10.5px;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase}
+.fcard-body{padding:15px;display:flex;flex-direction:column;gap:13px}
 .flabel{font-size:12.5px;font-weight:600;color:var(--text)}
 .flabel .req{color:#B83232;margin-left:2px}
 .fhint{font-size:11.5px;color:var(--muted);margin-top:-4px}
@@ -651,52 +651,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .ack-tick.checked .ack-tick-box svg { opacity:1; }
 .ack-tick-text { font-size:13.5px; line-height:1.4; color:var(--text); flex:1; }
 .ack-tick.checked .ack-tick-text { color:#0F4A27; font-weight:500; }
-
-/* ─── NEW BADGE PULSE ANIMATION ───────────────── */
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.1); }
-}
-
-/* ─── MOBILE OPTIMIZATION ───────────────── */
-@media (max-width: 480px) {
-  body {
-    padding: 8px !important;
-  }
-  
-  /* Stack filter dropdowns vertically */
-  .fcard-hdr {
-    font-size: 10px !important;
-    padding: 10px 12px !important;
-  }
-  
-  /* Make touch targets bigger */
-  select, button, input {
-    min-height: 44px !important;
-    font-size: 13px !important;
-  }
-  
-  /* Stack stats boxes */
-  #dir-inc-stats-grid {
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
-  }
-  
-  /* Severity breakdown - 3 columns still works but tighter */
-  #dir-inc-severity {
-    gap: 6px !important;
-  }
-  
-  /* Action buttons stack */
-  #dir-inc-actions {
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-  
-  #dir-inc-actions button {
-    width: 100% !important;
-  }
-}
 
 </style>
 </head>
@@ -5541,7 +5495,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="fgroup">
         <label class="flabel">Dogger / rigger name</label>
-        <input type="text" id="lift-dogger" placeholder="e.g. Lee OBrien" oninput="liftCheckLicence('lift-dogger', 'lift-dogger-status', ['Dogging DG','Rigging RB','Rigging RI','Rigging RA'])" autocomplete="off" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
+        <input type="text" id="lift-dogger" placeholder="e.g. Lee O'Brien" oninput="liftCheckLicence('lift-dogger', 'lift-dogger-status', ['Dogging DG','Rigging RB','Rigging RI','Rigging RA'])" autocomplete="off" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none">
         <div id="lift-dogger-status" style="display:none;margin-top:6px;font-size:11.5px;line-height:1.4"></div>
       </div>
       <div class="fgroup">
@@ -9394,33 +9348,34 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 
   <!-- ── Scrollable content ─────────────────── -->
-  <div class="tiles" style="padding:12px;gap:12px;padding-bottom:90px">
+  <div class="tiles" style="padding-bottom:90px">
 
-    <!-- Summary stats - MATCHING SUPERVISOR -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <div class="sup-stat" onclick="dirDrillDown('signins')" style="cursor:pointer">
-        <div class="sup-stat-num" id="an-live-signin">—</div>
-        <div class="sup-stat-lbl">Signed in</div>
+    <!-- ── TODAY AT A GLANCE — always visible ── -->
+    <div style="background:var(--deep);border-radius:var(--r);padding:16px">
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px">Today at a glance</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:14px">
+        <div style="text-align:center;padding:8px 4px">
+          <div style="font-size:30px;font-weight:700;color:#fff;line-height:1" id="an-live-signin">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">Signed in</div>
+        </div>
+        <div style="text-align:center;padding:8px 4px;border-left:1px solid rgba(255,255,255,.08);border-right:1px solid rgba(255,255,255,.08)">
+          <div style="font-size:30px;font-weight:700;color:#fff;line-height:1" id="an-live-prestart">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">Pre-starts</div>
+        </div>
+        <div style="text-align:center;padding:8px 4px">
+          <div style="font-size:30px;font-weight:700;color:var(--gold);line-height:1" id="an-live-hazards">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">Open hazards</div>
+        </div>
       </div>
-      <div class="sup-stat" onclick="dirDrillDown('prestarts')" style="cursor:pointer">
-        <div class="sup-stat-num" id="an-live-prestart">—</div>
-        <div class="sup-stat-lbl">Pre-starts</div>
-      </div>
-      <div class="sup-stat warn" onclick="dirDrillDown('hazards')" style="cursor:pointer">
-        <div class="sup-stat-num" id="an-live-hazards">—</div>
-        <div class="sup-stat-lbl">Open hazards</div>
-      </div>
-    </div>
-
-    <!-- LTI and Incidents row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div class="sup-stat ok" onclick="dirDrillDown('lti')" style="cursor:pointer">
-        <div class="sup-stat-num" id="an-live-lti">—</div>
-        <div class="sup-stat-lbl">LTI-free days</div>
-      </div>
-      <div class="sup-stat" onclick="dirDrillDown('incidents')" style="cursor:pointer">
-        <div class="sup-stat-num" id="an-live-incidents">—</div>
-        <div class="sup-stat-lbl">Incidents this period</div>
+      <div id="an-lti-row" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+        <div style="text-align:center;padding:6px 4px">
+          <div style="font-size:24px;font-weight:700;color:#5CDB95;line-height:1" id="an-live-lti">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">LTI-free days</div>
+        </div>
+        <div style="text-align:center;padding:6px 4px;border-left:1px solid rgba(255,255,255,.08)">
+          <div style="font-size:24px;font-weight:700;color:#fff;line-height:1" id="an-live-incidents">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:4px">Incidents this period</div>
+        </div>
       </div>
     </div>
 
@@ -9445,72 +9400,28 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div id="an-dir-alerts-list" style="font-size:13px;color:var(--muted);text-align:center;padding:12px">No critical alerts at this time.</div>
     </div>
 
-    <!-- ── TILES GRID ─────────────────── -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      
-      <!-- Toolbox Talks tile -->
-      <div class="fcard" onclick="dirOpenTile('toolbox')" style="cursor:pointer;position:relative;padding:14px">
-        <div id="dir-toolbox-badge" style="position:absolute;top:10px;right:10px;background:#E24B4A;color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
-        <div style="width:34px;height:34px;background:#EAF3DE;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" style="width:18px;height:18px"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-        </div>
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Toolbox Talks</div>
-        <div style="font-size:11px;color:var(--muted)">Completed this period</div>
-      </div>
+    <!-- ── EXPANDABLE TILES ─────────────────── -->
 
-      <!-- Permits tile -->
-      <div class="fcard" onclick="dirOpenTile('permits')" style="cursor:pointer;position:relative;padding:14px">
-        <div id="dir-permits-badge" style="position:absolute;top:10px;right:10px;background:#F0997B;color:#4A1B0C;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
-        <div style="width:34px;height:34px;background:#FAEEDA;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2" style="width:18px;height:18px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <!-- Incidents (Director Only) -->
+    <div class="fcard" style="overflow:hidden;padding:0">
+      <div onclick="anToggleSection('incidents')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;background:#FAEBEB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--text)">Incidents</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px" id="an-inc-summary">Loading incidents...</div>
+          </div>
         </div>
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Permits</div>
-        <div style="font-size:11px;color:var(--muted)">Active permits</div>
+        <svg id="an-arrow-incidents" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px;transition:transform .25s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-
-      <!-- Incidents tile -->
-      <div class="fcard" onclick="dirOpenTile('incidents')" style="cursor:pointer;position:relative;padding:14px">
-        <div id="dir-incidents-badge" style="position:absolute;top:10px;right:10px;background:#E24B4A;color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
-        <div style="width:34px;height:34px;background:#FCEBEB;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2" style="width:18px;height:18px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div id="an-section-incidents" style="display:none;border-top:1px solid var(--border);padding:14px 16px">
+        <div id="an-incidents-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">No incidents to display</div>
         </div>
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Incidents</div>
-        <div style="font-size:11px;color:var(--muted)">Reported this period</div>
       </div>
-
-      <!-- Hazards tile -->
-      <div class="fcard" onclick="dirOpenTile('hazards')" style="cursor:pointer;position:relative;padding:14px">
-        <div id="dir-hazards-badge" style="position:absolute;top:10px;right:10px;background:#F0997B;color:#4A1B0C;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
-        <div style="width:34px;height:34px;background:#FAEEDA;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="2" style="width:18px;height:18px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-        </div>
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Hazards</div>
-        <div style="font-size:11px;color:var(--muted)">Open hazards</div>
-      </div>
-
-      <!-- SDS tile -->
-      <div class="fcard" onclick="dirOpenTile('sds')" style="cursor:pointer;position:relative;padding:14px">
-        <div id="dir-sds-badge" style="position:absolute;top:10px;right:10px;background:#E24B4A;color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
-        <div style="width:34px;height:34px;background:#FCEBEB;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2" style="width:18px;height:18px"><path d="M5 4h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/></svg>
-        </div>
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">SDS Reports</div>
-        <div style="font-size:11px;color:var(--muted)">Pending review</div>
-      </div>
-
-      <!-- Pre-starts tile -->
-      <div class="fcard" onclick="dirOpenTile('prestarts')" style="cursor:pointer;position:relative;padding:14px">
-        <div id="dir-prestarts-badge" style="position:absolute;top:10px;right:10px;background:#97C459;color:#173404;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px">0</div>
-        <div style="width:34px;height:34px;background:#EAF3DE;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:10px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </div>
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Pre-starts</div>
-        <div style="font-size:11px;color:var(--muted)">Completed today</div>
-      </div>
-
     </div>
-
-    <!-- Old expandable sections hidden for now -->
 
     <!-- Safety Performance -->
     <div class="fcard" style="overflow:hidden;padding:0">
@@ -9973,362 +9884,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="contact-call" style="font-size:10px;font-weight:600;color:#1C5AAD;padding:4px 8px;background:#E6EEF9;border-color:rgba(28,90,173,.2);border-radius:8px">Call</div>
         </a>
       </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ═══════════════════ DIRECTOR INCIDENTS DETAIL ═══ -->
-<div id="screen-dir-incidents" class="screen">
-  <div class="sb"></div>
-  <div class="topbar" style="padding-bottom:14px">
-    <div class="topbar-row">
-      <button class="back-btn" onclick="goToAnalytics('director')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="dir-inc-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div class="badge" style="background:rgba(184,150,12,.2);border-color:rgba(184,150,12,.4);color:rgba(184,150,12,.95);font-size:10px">Director</div>
-    </div>
-    <div class="form-greeting">
-      <h1 style="color:#fff">Incidents & Near Misses</h1>
-      <p id="dir-inc-period" style="color:rgba(255,255,255,0.8)">Last 6 months · All sites</p>
-    </div>
-  </div>
-
-  <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
-    
-    <!-- Header Actions -->
-    <div id="dir-inc-actions" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="font-size:11px;color:#999">
-        <span style="font-weight:600;color:#666">Last updated:</span> 2 hours ago
-      </div>
-      <div style="display:flex;gap:6px">
-        <button onclick="exportIncidentsToCSV()" style="padding:6px 10px;font-size:10px;font-weight:600;background:#fff;border:1px solid #D0D0D0;border-radius:6px;color:#555;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08)">Export</button>
-        <button onclick="goToIncidentForm()" style="padding:6px 10px;font-size:10px;font-weight:600;background:linear-gradient(135deg, #1B6E3A 0%, #2D8A4F 100%);border:none;border-radius:6px;color:#fff;cursor:pointer;box-shadow:0 2px 6px rgba(27,110,58,0.3)">+ Report Incident</button>
-      </div>
-    </div>
-
-    <!-- Filter Controls -->
-    <div class="fcard">
-      <div class="fcard-hdr">Filter Data</div>
-      <div style="padding:10px">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-          <button onclick="resetDirectorFilters()" style="padding:4px 8px;font-size:9px;font-weight:600;background:transparent;border:1px solid #D0D0D0;border-radius:4px;color:#666;cursor:pointer">Reset</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-          <select id="filter-site" onchange="applyDirectorFilters()" style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
-            <option>All Sites</option>
-            <option>Parramatta Metro Stage 2</option>
-            <option>Bondi Junction Mixed Use Development</option>
-            <option>Sydney Olympic Park Sports Complex</option>
-          </select>
-          <select id="filter-period" onchange="applyDirectorFilters()" style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
-            <option value="180">Last 6 months</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">YTD</option>
-            <option value="9999">All time</option>
-          </select>
-          <select id="filter-severity" onchange="applyDirectorFilters()" style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
-            <option>All Severity</option>
-            <option>Near Miss</option>
-            <option>First Aid</option>
-            <option>LTI</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Demo Data Button -->
-    <button id="dir-inc-demo-btn" onclick="loadDirectorDemoIncidents()" style="display:block;width:100%;padding:10px;margin-bottom:12px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">⚡ Load 25 demo incidents across 3 sites</button>
-
-    <!-- Industry Benchmark -->
-    <div class="fcard">
-      <div class="fcard-hdr">Industry Benchmark</div>
-      <div style="padding:10px">
-        <div style="background:linear-gradient(135deg, #FFF9E6 0%, #FFF3D6 100%);border-radius:6px;padding:10px;border-left:3px solid #B8960C">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <div style="font-size:8px;color:#999;background:#fff;padding:2px 6px;border-radius:4px">Australian Average</div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div>
-              <div style="font-size:9px;color:#856404;margin-bottom:3px;display:flex;align-items:center;gap:4px;position:relative">
-                Your TRIFR
-                <span onclick="toggleTrifrTooltip(event)" style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:50%;font-size:9px;font-weight:700;color:#B8960C;text-align:center;line-height:14px;cursor:pointer;border:1px solid #E8D9B0">ⓘ</span>
-                <div id="trifr-tooltip" style="display:none;position:absolute;background:#fff;border:2px solid #B8960C;border-radius:8px;padding:10px;font-size:10px;color:#333;width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1000;top:25px;left:0">
-                  <strong style="color:#B8960C">TRIFR</strong><br>
-                  Total Recordable Injury Frequency Rate - Number of injuries per million hours worked. Lower is better.
-                  <button onclick="event.stopPropagation();document.getElementById('trifr-tooltip').style.display='none'" style="position:absolute;top:4px;right:4px;background:none;border:none;cursor:pointer;color:#999;font-size:16px;line-height:1;padding:0 4px">×</button>
-                </div>
-              </div>
-              <div style="display:flex;align-items:baseline;gap:4px">
-                <span id="dir-inc-your-trifr" style="font-size:20px;font-weight:800;color:#1B6E3A">4.2</span>
-                <span id="dir-inc-trifr-trend" style="font-size:10px;color:#1B6E3A;font-weight:600">↓ 35%</span>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:#856404;margin-bottom:3px">Industry Avg</div>
-              <div style="display:flex;align-items:baseline;gap:4px">
-                <span style="font-size:20px;font-weight:800;color:#666">6.5</span>
-              </div>
-            </div>
-          </div>
-          <div style="margin-top:8px;background:#fff;border-radius:4px;padding:6px;font-size:9px;color:#666">
-            📊 You're performing <strong id="dir-inc-performance-text" style="color:#1B6E3A">35% better</strong> than the construction industry average (Safe Work Australia 2025)
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Key Metrics -->
-    <div class="fcard">
-      <div class="fcard-hdr">Key Metrics</div>
-      <div style="padding:10px">
-        <div id="dir-inc-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-        <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Total incidents</div>
-        <div style="font-size:28px;font-weight:800;color:#1A2A1F;line-height:1;background:linear-gradient(135deg, #1A2A1F 0%, #2D5F3F 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="dir-inc-total">—</div>
-        <div style="font-size:10px;color:#1B6E3A;margin-top:4px;font-weight:600" id="dir-inc-trend">—</div>
-      </div>
-      <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-        <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">LTI-free days</div>
-        <div style="font-size:28px;font-weight:800;color:#1A2A1F;line-height:1;background:linear-gradient(135deg, #1A2A1F 0%, #2D5F3F 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="dir-inc-lti">—</div>
-        <div style="font-size:10px;color:#1B6E3A;margin-top:4px;font-weight:600">Running total</div>
-      </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 1. MOST RELEVANT: Recent incidents list -->
-    <div class="fcard">
-      <div class="fcard-hdr">Recent incidents</div>
-      <div style="padding:10px">
-        <!-- Search bar -->
-        <div style="margin-bottom:10px">
-          <input id="dir-inc-search" type="text" placeholder="Search incidents..." oninput="searchDirectorIncidents()" style="width:100%;padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#F8F8F8;color:#333;box-sizing:border-box">
-        </div>
-        <!-- Result counter -->
-        <div style="font-size:10px;color:#999;margin-bottom:10px;font-weight:500">Showing <strong style="color:#1A2A1F" id="dir-inc-showing">0</strong> of <strong style="color:#1A2A1F" id="dir-inc-of">0</strong> incidents</div>
-        <div id="dir-inc-list"></div>
-      </div>
-    </div>
-
-    <!-- 2. Severity breakdown -->
-    <div class="fcard">
-      <div class="fcard-hdr">Severity breakdown</div>
-      <div id="dir-inc-severity" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px"></div>
-    </div>
-
-    <!-- 3. Trend chart -->
-    <!-- 3. Trend chart -->
-    <div class="fcard">
-      <div class="fcard-hdr">Incident trend (last 6 months)</div>
-      <div style="padding:10px"><div style="height:160px;position:relative"><canvas id="dir-inc-chart" role="img" aria-label="Incident trend chart"></canvas></div></div>
-    </div>
-
-    <!-- 4. Breakdown by mechanism -->
-    <div class="fcard">
-      <div class="fcard-hdr">Incidents by mechanism</div>
-      <div style="padding:10px"><div id="dir-inc-breakdown" style="display:flex;flex-direction:column;gap:10px"></div></div>
-    </div>
-
-    <!-- 5. Body injury map -->
-    <div class="fcard">
-      <div class="fcard-hdr">Body injury map <span style="font-weight:400;font-size:11px;color:var(--muted)">— Tap a zone</span></div>
-      <div style="display:flex;justify-content:center;gap:10px;margin-bottom:12px;padding:10px">
-        <button id="bm-front-btn" onclick="switchBodyView('front')" style="padding:8px 24px;border-radius:8px;border:2px solid var(--deep);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 2px 6px rgba(27,58,45,0.3)">Front</button>
-        <button id="bm-back-btn" onclick="switchBodyView('back')" style="padding:8px 24px;border-radius:8px;border:2px solid var(--border);background:#fff;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Back</button>
-      </div>
-      <div style="display:flex;justify-content:center;padding:16px;background:#F8F8F8;border-radius:8px;margin:0 10px 10px 10px">
-        <!-- Front view - Human Silhouette (NO FACE) -->
-        <svg id="dir-bm-front" viewBox="0 0 200 540" style="width:100%;max-width:200px;height:auto" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="skinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style="stop-color:#E8D4C0;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#D9C3AD;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-          
-          <!-- Head (simple oval, NO FACE) -->
-          <ellipse cx="100" cy="42" rx="26" ry="31" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Head', 1)"/>
-          
-          <!-- Neck -->
-          <path d="M 87 70 Q 85 74 85 82 L 85 90 L 115 90 L 115 82 Q 115 74 113 70" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck', 1)"/>
-          
-          <!-- Shoulders -->
-          <ellipse cx="68" cy="107" rx="20" ry="15" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)"/>
-          <ellipse cx="132" cy="107" rx="20" ry="15" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder', 2)"/>
-          
-          <!-- Torso -->
-          <path d="M 80 94 Q 72 107 72 125 L 72 165 Q 72 175 76 182 L 84 190 Q 87 192 90 192 L 110 192 Q 113 192 116 190 L 124 182 Q 128 175 128 165 L 128 125 Q 128 107 120 94 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Chest', 0)"/>
-          
-          <!-- Abdomen -->
-          <path d="M 84 190 Q 82 197 82 207 L 82 222 Q 82 230 85 235 L 115 235 Q 118 230 118 222 L 118 207 Q 118 197 116 190 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Abdomen', 0)"/>
-          
-          <!-- Pelvis -->
-          <path d="M 85 233 Q 78 241 78 252 L 78 265 L 90 265 L 110 265 L 122 265 L 122 252 Q 122 241 115 233 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Pelvis', 0)"/>
-          
-          <!-- Left Upper Arm -->
-          <path d="M 50 110 Q 46 114 45 125 L 45 185 Q 45 193 47 197 L 49 197 Q 57 197 60 194 L 62 194 Q 64 190 64 185 L 64 125 Q 64 114 60 110 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm', 2)"/>
-          
-          <!-- Right Upper Arm -->
-          <path d="M 136 110 Q 132 114 132 125 L 132 185 Q 132 193 134 197 L 136 197 Q 144 197 147 194 L 149 194 Q 151 190 151 185 L 151 125 Q 151 114 147 110 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm', 1)"/>
-          
-          <!-- Left Forearm -->
-          <path d="M 43 199 Q 41 205 41 215 L 41 280 Q 41 288 43 292 L 45 292 Q 51 292 53 289 L 55 289 Q 57 285 57 280 L 57 215 Q 57 205 55 199 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm', 2)"/>
-          
-          <!-- Right Forearm -->
-          <path d="M 143 199 Q 141 205 141 215 L 141 280 Q 141 288 143 292 L 145 292 Q 151 292 153 289 L 155 289 Q 157 285 157 280 L 157 215 Q 157 205 155 199 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm', 0)"/>
-          
-          <!-- Left Hand -->
-          <ellipse cx="49" cy="310" rx="10" ry="16" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand', 3)"/>
-          
-          <!-- Right Hand -->
-          <ellipse cx="149" cy="310" rx="10" ry="16" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand', 1)"/>
-          
-          <!-- Left Thigh -->
-          <path d="M 90 263 Q 85 271 85 285 L 85 355 Q 85 363 87 367 L 89 367 Q 95 367 97 364 L 99 364 Q 101 360 101 355 L 101 285 Q 101 271 99 263 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Thigh', 0)"/>
-          
-          <!-- Right Thigh -->
-          <path d="M 101 263 Q 99 271 99 285 L 99 355 Q 99 363 101 367 L 103 367 Q 109 367 111 364 L 113 364 Q 115 360 115 355 L 115 285 Q 115 271 113 263 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Thigh', 0)"/>
-          
-          <!-- Left Knee -->
-          <ellipse cx="93" cy="375" rx="12" ry="10" fill="#D4BFAA" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee', 1)"/>
-          
-          <!-- Right Knee -->
-          <ellipse cx="107" cy="375" rx="12" ry="10" fill="#D4BFAA" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee', 0)"/>
-          
-          <!-- Left Lower Leg -->
-          <path d="M 89 383 Q 86 392 85 410 L 85 480 Q 85 488 87 492 L 89 492 Q 95 492 97 489 L 99 489 Q 101 485 101 480 L 101 410 Q 101 392 99 383 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Lower Leg', 0)"/>
-          
-          <!-- Right Lower Leg -->
-          <path d="M 101 383 Q 99 392 99 410 L 99 480 Q 99 488 101 492 L 103 492 Q 109 492 111 489 L 113 489 Q 115 485 115 480 L 115 410 Q 115 392 113 383 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Lower Leg', 0)"/>
-          
-          <!-- Left Foot -->
-          <ellipse cx="93" cy="512" rx="13" ry="22" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Foot', 0)"/>
-          
-          <!-- Right Foot -->
-          <ellipse cx="107" cy="512" rx="13" ry="22" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Foot', 0)"/>
-          
-          <!-- Injury Markers -->
-          <circle cx="100" cy="210" r="7" fill="#DC3545" stroke="#fff" stroke-width="2.5" style="cursor:pointer;filter:drop-shadow(0 0 8px rgba(220,53,69,0.9))" onclick="dirShowBodyZone(event, 'Lower Back', 6)">
-            <title>Lower Back: 6 incidents</title>
-          </circle>
-          <circle cx="68" cy="107" r="6" fill="#FD7E14" stroke="#fff" stroke-width="2.5" style="cursor:pointer;filter:drop-shadow(0 0 7px rgba(253,126,20,0.9))" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)">
-            <title>Left Shoulder: 4 incidents</title>
-          </circle>
-          <circle cx="49" cy="310" r="6" fill="#F39C12" stroke="#fff" stroke-width="2.5" style="cursor:pointer;filter:drop-shadow(0 0 7px rgba(243,156,18,0.9))" onclick="dirShowBodyZone(event, 'Left Hand', 3)">
-            <title>Left Hand: 3 incidents</title>
-          </circle>
-          
-          <text x="100" y="535" font-size="10" fill="#9B8770" text-anchor="middle" font-weight="600">FRONT VIEW</text>
-        </svg>
-        <!-- Back view - Professional medical diagram -->
-        <svg id="dir-bm-back" viewBox="0 0 200 480" style="width:100%;max-width:180px;height:auto;display:none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Professional medical body outline - back view -->
-          
-          <!-- Back of Head -->
-          <ellipse cx="100" cy="35" rx="24" ry="28" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Back of Head', 0)"/>
-          
-          <!-- Neck -->
-          <path d="M 85 60 L 85 78 L 115 78 L 115 60" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck (Back)', 1)"/>
-          
-          <!-- Shoulders (rounded) -->
-          <ellipse cx="68" cy="95" rx="20" ry="14" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder (Back)', 2)"/>
-          <ellipse cx="132" cy="95" rx="20" ry="14" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder (Back)', 1)"/>
-          
-          <!-- Upper Back -->
-          <path d="M 75 82 Q 70 95 70 110 L 70 135 L 130 135 L 130 110 Q 130 95 125 82 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Upper Back', 1)"/>
-          
-          <!-- Lower Back (highlighted high-risk area) -->
-          <path d="M 70 133 L 70 160 Q 70 175 75 185 L 125 185 Q 130 175 130 160 L 130 133 Z" 
-                fill="#FFE8E8" stroke="#DC3545" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Lower Back', 6)"/>
-          
-          <!-- Pelvis/Buttocks -->
-          <path d="M 75 183 L 75 210 Q 75 220 78 225 L 122 225 Q 125 220 125 210 L 125 183 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Pelvis (Back)', 0)"/>
-          
-          <!-- Left Upper Arm -->
-          <path d="M 50 100 Q 48 105 48 115 L 48 160 Q 48 168 50 172 L 60 172 Q 62 168 62 160 L 62 115 Q 62 105 60 100 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm (Back)', 1)"/>
-          
-          <!-- Right Upper Arm -->
-          <path d="M 140 100 Q 138 105 138 115 L 138 160 Q 138 168 140 172 L 150 172 Q 152 168 152 160 L 152 115 Q 152 105 150 100 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm (Back)', 0)"/>
-          
-          <!-- Left Forearm -->
-          <path d="M 46 174 Q 44 180 44 190 L 44 250 Q 44 258 46 262 L 54 262 Q 56 258 56 250 L 56 190 Q 56 180 54 174 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm (Back)', 1)"/>
-          
-          <!-- Right Forearm -->
-          <path d="M 146 174 Q 144 180 144 190 L 144 250 Q 144 258 146 262 L 154 262 Q 156 258 156 250 L 156 190 Q 156 180 154 174 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm (Back)', 0)"/>
-          
-          <!-- Left Hand -->
-          <ellipse cx="50" cy="278" rx="10" ry="14" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand (Back)', 1)"/>
-          
-          <!-- Right Hand -->
-          <ellipse cx="150" cy="278" rx="10" ry="14" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand (Back)', 0)"/>
-          
-          <!-- Left Hamstring/Thigh -->
-          <path d="M 78 223 Q 76 230 76 245 L 76 310 Q 76 318 78 322 L 92 322 Q 94 318 94 310 L 94 245 Q 94 230 92 223 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hamstring', 0)"/>
-          
-          <!-- Right Hamstring/Thigh -->
-          <path d="M 108 223 Q 106 230 106 245 L 106 310 Q 106 318 108 322 L 122 322 Q 124 318 124 310 L 124 245 Q 124 230 122 223 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hamstring', 0)"/>
-          
-          <!-- Left Knee (back) -->
-          <ellipse cx="85" cy="334" rx="12" ry="10" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee (Back)', 0)"/>
-          
-          <!-- Right Knee (back) -->
-          <ellipse cx="115" cy="334" rx="12" ry="10" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee (Back)', 0)"/>
-          
-          <!-- Left Calf -->
-          <path d="M 80 342 Q 78 350 78 370 L 78 420 Q 78 428 80 432 L 90 432 Q 92 428 92 420 L 92 370 Q 92 350 90 342 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Calf', 0)"/>
-          
-          <!-- Right Calf -->
-          <path d="M 110 342 Q 108 350 108 370 L 108 420 Q 108 428 110 432 L 120 432 Q 122 428 122 420 L 122 370 Q 122 350 120 342 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Calf', 0)"/>
-          
-          <!-- Left Heel/Foot -->
-          <ellipse cx="85" cy="454" rx="12" ry="18" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Heel', 0)"/>
-          
-          <!-- Right Heel/Foot -->
-          <ellipse cx="115" cy="454" rx="12" ry="18" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Heel', 0)"/>
-          
-          <!-- Injury marker on lower back (already highlighted with red fill) -->
-          <circle cx="100" cy="155" r="4" fill="#DC3545" stroke="#FFF" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Lower Back', 6)"/>
-          
-        </svg>
-      </div>
-      <div id="dir-bm-panel" style="display:none;margin:0 10px 10px 10px;background:linear-gradient(135deg, #F5F9F7 0%, #EDF5F0 100%);border-radius:10px;border:2px solid var(--border);padding:16px;box-shadow:0 3px 10px rgba(0,0,0,0.1)">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div id="dir-bm-name" style="font-size:15px;font-weight:700;color:var(--text)"></div>
-            <div id="dir-bm-count" style="font-size:12px;color:var(--muted);margin-top:3px;font-weight:500"></div>
-          </div>
-          <button onclick="document.getElementById('dir-bm-panel').style.display='none'" style="background:rgba(0,0,0,0.05);border:none;cursor:pointer;color:var(--muted);font-size:24px;line-height:1;padding:2px 8px;border-radius:6px">×</button>
-        </div>
-        <div id="dir-bm-hist" style="margin-top:12px;display:flex;flex-direction:column;gap:8px"></div>
-      </div>
-    </div>
-
-    <!-- 6. LEAST RELEVANT: Time patterns -->
-    <div class="fcard">
-      <div class="fcard-hdr">When do incidents happen?</div>
-      <div id="dir-inc-timepatterns" style="padding:12px"></div>
     </div>
 
   </div>
@@ -11137,7 +10692,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <option>Tom Burke</option>
             <option>Chris Walsh</option>
             <option>Dave Murphy</option>
-            <option>Lee OBrien</option>
+            <option>Lee O'Brien</option>
             <option>Pat Healy</option>
           </select>
         </div>
@@ -11328,7 +10883,7 @@ var DEMO_WORKERS = [
   { name:'Tom Burke',       dob:'1995-01-15', company:'Burke Civil Contractors',   role:'Labourer',           pts:541, tier:'silver', phone:'0411 111 004', inducted:true,  onsite:true,  signin:'07:10', licences:{ whitecard:{expiry:'2027-01-08',ok:true} } },
   { name:'Chris Walsh',     dob:'1987-11-30', company:'Smith Formwork Pty Ltd',    role:'Formworker',         pts:490, tier:'silver', phone:'0411 111 005', inducted:true,  onsite:true,  signin:'07:08', licences:{ whitecard:{expiry:'2026-11-25',ok:true}, driver:{expiry:'2026-05-14',ok:true} } },
   { name:'Dave Murphy',     dob:'1990-04-18', company:'Smith Formwork Pty Ltd',    role:'Carpenter',          pts:388, tier:'silver', phone:'0411 111 006', inducted:true,  onsite:true,  signin:'07:12', licences:{ whitecard:{expiry:'2026-08-30',ok:true} } },
-  { name:"Lee OBrien",     dob:'1993-07-25', company:'Murphy Civil Construction', role:'Rigger',             pts:312, tier:'silver', phone:'0411 111 007', inducted:true,  onsite:true,  signin:'07:00', licences:{ whitecard:{expiry:'2027-04-18',ok:true}, hrwl:{type:'Rigging RI',expiry:'2026-09-20',ok:true} } },
+  { name:"Lee O'Brien",     dob:'1993-07-25', company:'Murphy Civil Construction', role:'Rigger',             pts:312, tier:'silver', phone:'0411 111 007', inducted:true,  onsite:true,  signin:'07:00', licences:{ whitecard:{expiry:'2027-04-18',ok:true}, hrwl:{type:'Rigging RI',expiry:'2026-09-20',ok:true} } },
   { name:'Pat Healy',       dob:'1985-12-04', company:'Murphy Civil Construction', role:'Labourer',           pts:285, tier:'bronze', phone:'0411 111 008', inducted:true,  onsite:true,  signin:'07:15', licences:{ whitecard:{expiry:'2026-07-05',ok:true} } },
   { name:'Brendan Kelly',   dob:'1980-08-12', company:'Kelly Crane Services',      role:'Crane Operator',     pts:260, tier:'bronze', phone:'0411 111 009', inducted:true,  onsite:true,  signin:'07:00', licences:{ whitecard:{expiry:'2027-02-14',ok:true}, hrwl:{type:'Slewing Crane SC',expiry:'2026-06-30',ok:false} } },
   { name:'Mick Doyle',      dob:'1983-05-19', company:'Burke Civil Contractors',   role:'Excavator Operator', pts:241, tier:'bronze', phone:'0411 111 010', inducted:true,  onsite:true,  signin:'07:05', licences:{ whitecard:{expiry:'2026-10-22',ok:true}, hrwl:{type:'Earthmoving ME',expiry:'2027-01-15',ok:true} } },
@@ -11356,7 +10911,7 @@ var DEMO_SIGNINS = [
   { worker_name:'Tom Burke',       company:'Burke Civil Contractors',   role:'Labourer',            type:'Sign In',  time:'06:58', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:9  },
   { worker_name:'Chris Walsh',     company:'Smith Formwork Pty Ltd',    role:'Formworker',          type:'Sign In',  time:'07:01', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:7  },
   { worker_name:'Dave Murphy',     company:'Smith Formwork Pty Ltd',    role:'Carpenter',           type:'Sign In',  time:'07:03', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:11 },
-  { worker_name:"Lee OBrien",     company:'Murphy Civil Construction', role:'Rigger',              type:'Sign In',  time:'07:05', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:8  },
+  { worker_name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',              type:'Sign In',  time:'07:05', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:8  },
   { worker_name:'Pat Healy',       company:'Murphy Civil Construction', role:'Labourer',            type:'Sign In',  time:'07:08', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:6  },
   { worker_name:'Brendan Kelly',   company:'Kelly Crane Services',      role:'Crane Operator',      type:'Sign In',  time:'06:40', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:4  },
   { worker_name:'Mick Doyle',      company:'Burke Civil Contractors',   role:'Excavator Operator',  type:'Sign In',  time:'06:45', date:_today,  address:'45 Industrial Drive Northside', gps_accuracy_m:7  },
@@ -11376,13 +10931,13 @@ var DEMO_SIGNINS = [
   // Yesterday sign-outs
   { worker_name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',           type:'Sign Out', time:'16:32', date:_yest,   address:'45 Industrial Drive Northside', gps_accuracy_m:7  },
   { worker_name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',          type:'Sign Out', time:'16:28', date:_yest,   address:'45 Industrial Drive Northside', gps_accuracy_m:9  },
-  { worker_name:"Lee OBrien",     company:'Murphy Civil Construction', role:'Rigger',              type:'Sign Out', time:'15:45', date:_yest,   address:'45 Industrial Drive Northside', gps_accuracy_m:8  }
+  { worker_name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',              type:'Sign Out', time:'15:45', date:_yest,   address:'45 Industrial Drive Northside', gps_accuracy_m:8  }
 ];
 
 var DEMO_HAZARDS = [
   { hazard_type:'Uneven ground — trip hazard',       severity:'Medium',   location:'Zone B walkway near form shed',  reporter_name:'Pat Healy',     date:_today, time:'09:20', status:'open',     corrective_action:'Compact and level area — supervisor notified' },
-  { hazard_type:'Unsecured edge protection',          severity:'Critical', location:'Level 3 slab perimeter east',   reporter_name:'Michael Chen',     date:_today, time:'08:45', status:'open',     corrective_action:'STOP WORK issued — edge protection reinstated' },
-  { hazard_type:'Chemical spill — diesel near drain', severity:'High',     location:'Plant compound bunded area',    reporter_name:"Lee OBrien",   date:_yest,  time:'11:30', status:'resolved', corrective_action:'Spill kit deployed, drain sealed, SDS reviewed' },
+  { hazard_type:'Unsecured edge protection',          severity:'Critical', location:'Level 3 slab perimeter east',   reporter_name:'Jake Ryan',     date:_today, time:'08:45', status:'open',     corrective_action:'STOP WORK issued — edge protection reinstated' },
+  { hazard_type:'Chemical spill — diesel near drain', severity:'High',     location:'Plant compound bunded area',    reporter_name:"Lee O'Brien",   date:_yest,  time:'11:30', status:'resolved', corrective_action:'Spill kit deployed, drain sealed, SDS reviewed' },
   { hazard_type:'Damaged electrical lead',            severity:'High',     location:'Formwork deck Level 2',         reporter_name:'Wayne Slattery', date:_yest,  time:'14:15', status:'resolved', corrective_action:'Lead quarantined — tagged Out of Service for test and tag' }
 ];
 
@@ -11404,7 +10959,7 @@ var DEMO_TALKS = [
   { worker_name:'Tom Burke',       company:'Burke Civil Contractors',   time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
   { worker_name:'Chris Walsh',     company:'Smith Formwork Pty Ltd',    time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
   { worker_name:'Dave Murphy',     company:'Smith Formwork Pty Ltd',    time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
-  { worker_name:"Lee OBrien",     company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
+  { worker_name:"Lee O'Brien",     company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
   { worker_name:'Pat Healy',       company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
   { worker_name:'Brendan Kelly',   company:'Kelly Crane Services',      time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
   { worker_name:'Mick Doyle',      company:'Burke Civil Contractors',   time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
@@ -11423,7 +10978,7 @@ var DEMO_TALKS = [
 var DEMO_STARS = [
   { worker_name:'Jake Ryan',      reason:'Hazard spotted and reported', points:50,  awarded_by:'Eoin Burke', time:'10:15', date:_today, note:'Identified unsecured edge protection — potentially saved a life' },
   { worker_name:'Sam Carroll',    reason:'Correct PPE worn',            points:25,  awarded_by:'Eoin Burke', time:'09:30', date:_today, note:'Always sets the standard on PPE — every trade notices it' },
-  { worker_name:"Lee OBrien",    reason:'Safe work method followed',   points:25,  awarded_by:'Eoin Burke', time:'11:00', date:_today, note:'Rigging done correctly — textbook lift, no shortcuts' },
+  { worker_name:"Lee O'Brien",    reason:'Safe work method followed',   points:25,  awarded_by:'Eoin Burke', time:'11:00', date:_today, note:'Rigging done correctly — textbook lift, no shortcuts' },
   { worker_name:'Brendan Kelly',  reason:'Above and beyond safety',     points:100, awarded_by:'Eoin Burke', time:'08:00', date:_yest,  note:'Refused to proceed with lift until wind speed dropped — correct call' },
   { worker_name:'Mark Flynn',     reason:'Great housekeeping',          points:25,  awarded_by:'Eoin Burke', time:'15:00', date:_yest,  note:'Cleaned up formwork area entirely without being asked' },
   { worker_name:'Tom Burke',      reason:'Helped a new worker',         points:25,  awarded_by:'Eoin Burke', time:'14:00', date:_yest,  note:'Spent 30 mins showing Niall the safe access route and PPE requirements' },
@@ -11442,7 +10997,7 @@ var DEMO_CORRECTIVE_ACTIONS = [
   { desc:'Replace damaged electrical lead — organise test and tag',           source:'Hazard #004 — damaged lead',   assigned_to:'Wayne Slattery', due:'2026-04-13', priority:'High',     status:'open',       created:_yest  },
   { desc:'Renew SDS for MEK Solvent Cleaner — source from Recochem website',  source:'SDS Register — expired SDS',   assigned_to:'Eoin Burke',    due:'2026-04-14', priority:'High',     status:'open',       created:_yest  },
   { desc:'Inspect and service Bobcat skid steer left rear tyre',             source:'Pre-Start SK-01 defect',        assigned_to:'Mick Doyle',     due:'2026-04-11', priority:'Medium',   status:'inprogress', created:_today },
-  { desc:'Schedule rigging inspection — 2T chain sling CS-004 and WR-002',  source:'Rigging register overdue',      assigned_to:"Lee OBrien",    due:'2026-04-15', priority:'High',     status:'open',       created:_yest  },
+  { desc:'Schedule rigging inspection — 2T chain sling CS-004 and WR-002',  source:'Rigging register overdue',      assigned_to:"Lee O'Brien",    due:'2026-04-15', priority:'High',     status:'open',       created:_yest  },
   { desc:'Chase Paul Sheridan, Dean Mc Grath, Liam Brennan, Niall Costello to sign toolbox talk', source:'Toolbox talk unsigned x4', assigned_to:'Eoin Burke', due:'2026-04-11', priority:'Medium', status:'open', created:_today }
 ];
 
@@ -14725,23 +14280,12 @@ function showProfileSummaryThenLand() {
 
 function myProfContinueToApp() {
   const p = (typeof getProfile === 'function') ? getProfile() : null;
-  
-  // DIRECTOR ROUTING - Force to analytics screen
   if (p && p.role === 'Company Director') {
-    console.log('Director role detected - routing to analytics');
-    // Load director dashboard data
-    if (typeof loadDirectorDashboard === 'function') loadDirectorDashboard();
-    // Navigate to analytics screen
-    goTo('screen-analytics');
-    return;
+    if (typeof goToAnalytics === 'function') { goToAnalytics('director'); return; }
   }
-  
-  // SUPERVISOR ROUTING  
   if (p && p.role === 'Site Supervisor') {
     if (typeof _doOpenSuperDash === 'function') { _doOpenSuperDash(); return; }
   }
-  
-  // WORKER - goes to home
   goTo('screen-home');
   if (typeof updateStatusStrip === 'function') updateStatusStrip();
 }
@@ -34043,12 +33587,6 @@ function goToAnalytics(fromRole) {
   if (ctBtn) ctBtn.style.display = anIsDirector ? 'block' : 'none';
   var dirTiles = document.getElementById('an-dir-tiles');
   if (dirTiles) dirTiles.style.display = anIsDirector ? 'grid' : 'none';
-  
-  // Load Director dashboard data
-  if (anIsDirector) {
-    loadDirectorDashboard();
-  }
-  
   // Stars
   anRenderStars();
   // Body map zones
@@ -34062,6 +33600,10 @@ function goToAnalytics(fromRole) {
   // Populate metric cards with demo or real data
   if (DEMO_MODE || localStorage.getItem('slan_demo')) {
     anPopulateDemoMetrics();
+    // Populate director incidents if viewing as director
+    if (anIsDirector) {
+      populateDirectorIncidents();
+    }
   }
 
   // Auto-open Safety Performance section so director sees content immediately
@@ -34976,6 +34518,635 @@ function anToggleSection(id) {
   // Render charts if opening the safety or types section
   if (!isOpen && (id === 'safety' || id === 'types')) {
     setTimeout(anRenderCharts, 100);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DIRECTOR INCIDENTS DATA
+// ═══════════════════════════════════════════════════════════════
+var directorDemoIncidents = [
+  // ═══════════════════════════════════════════════════════════════
+  // BONDI JUNCTION MIXED USE - Supervisor: Eoin Burke (4 incidents)
+  // ═══════════════════════════════════════════════════════════════
+
+  // 1. ACTUAL INJURY - Jake Ryan (Concretor)
+  {
+    ref:'INC-260428001',
+    site:'Bondi Junction Mixed Use',
+    reporter_name:'Jake Ryan',
+    reporter_company:'Murphy Civil Construction',
+    reporter_role:'Concretor',
+    incident_type:'Actual Injury',
+    severity:'Moderate',
+    incident_date:'2026-04-28',
+    incident_time:'11:30',
+    location:'Level 4 slab edge',
+    description:'Worker suffered laceration to left forearm when hand slipped while cutting steel reinforcement mesh with an angle grinder. The grinder contacted the forearm, resulting in a 4cm laceration requiring medical attention. Worker was wearing required PPE including gloves and safety glasses, but cut-resistant sleeves were not worn at the time of the incident.',
+    what_caused:'The worker was rushing to complete steel fixing before the concrete pour scheduled for that afternoon. The steel mesh had shifted during lifting, creating an awkward angle that required the worker to brace with their non-dominant hand while cutting. The cut-resistant sleeves were in the worker\'s toolbox but had not been put on after the morning break, as the worker felt they were cumbersome and slowed down the work. Time pressure from the approaching pour deadline contributed to the decision to proceed without full PPE.',
+    how_prevented:'Mandatory cut-resistant sleeves for all steel fixing and cutting tasks, enforced through pre-task checks by the leading hand. Additional training on the risks of rushing tasks to meet deadlines. Review of work scheduling to ensure adequate time allocation for steel fixing tasks without creating pressure to rush. Consider using hydraulic cutters instead of angle grinders where feasible to reduce hand-tool contact risks. Implement a "stop work" authority for any worker who observes rushed behavior.',
+    immediate_action:'Work stopped immediately. First aid applied on-site to control bleeding. Supervisor notified within 2 minutes. Ambulance called as a precaution due to depth of wound. Worker transported to hospital where wound was cleaned, sutured with 8 stitches, and tetanus shot administered. Site secured, and all other workers reminded of PPE requirements during emergency toolbox talk held within the hour.',
+    corrective_actions:'Cut-resistant sleeves now mandatory and checked before each shift by leading hands. SWMS updated to include specific PPE requirements with visual aids showing proper sleeve usage. New policy: no steel cutting permitted in the 2 hours before a scheduled concrete pour to eliminate time pressure. All angle grinders tagged with PPE reminder stickers. Additional toolbox talk delivered to all steel fixers across the project within 24 hours.',
+    mechanism:'contact-sharp-object',
+    body_part:'arm-forearm',
+    injury_nature:'laceration',
+    submitted_at:'2026-04-28T11:30:00.000Z',
+    status:'closed',
+    supervisor_name:'Eoin Burke',
+    supervisor_phone:'0432 778 901',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-29',
+    review_notes:'Spoke with Jake and the leading hand. Clear that time pressure was the primary contributing factor. Jake has been with us for 3 years and normally follows all procedures meticulously. The 2-hour buffer before concrete pours is a sensible control - implemented immediately across all sites. PPE compliance has been reinforced site-wide with daily checks now standard.',
+    closing_note:'Worker returned to light duties after 5 days. Full duties resumed after 12 days with medical clearance. SWMS updated, toolbox delivered, new scheduling policy effective immediately. Leading hand now conducting daily PPE checks. No further action required. Incident review presented at next site safety meeting.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  },
+
+  // 2. NEAR MISS - Sam Carroll (Concretor)
+  {
+    ref:'INC-260427002',
+    site:'Bondi Junction Mixed Use',
+    reporter_name:'Sam Carroll',
+    reporter_company:'Burke Civil Contractors',
+    reporter_role:'Concretor',
+    incident_type:'Near Miss',
+    severity:'Moderate',
+    incident_date:'2026-04-27',
+    incident_time:'14:15',
+    location:'Ground floor formwork area',
+    description:'Formwork panel approximately 2.4m x 1.2m fell from stacked position while worker was walking past, missing the worker by less than 1 meter. The panel had been stacked against the formwork wall with other panels but was not secured with restraints. A slight bump from a passing pallet jack caused the panel to topple. No injury occurred but worker was visibly shaken by the close call.',
+    what_caused:'Formwork panels were stacked vertically against the wall in a temporary storage area that was not designated for formwork storage. The panels were placed there by a subcontractor crew earlier in the shift to clear access for a concrete truck. No restraints or bracing were used because the crew intended to move them again within the hour, but then moved to a different task and forgot about them. The area was also being used as a main thoroughfare for site traffic, increasing the risk of contact. The stack was also taller than the recommended 3-panel maximum.',
+    how_prevented:'Designate specific formwork storage zones with proper restraints and bracing as standard. Implement a strict "no temporary storage in walkways" rule enforced through regular site walks. All formwork panels to be stored horizontally on designated racks rather than stacked vertically against walls. Subcontractor induction briefing to emphasize that temporary means minutes, not hours. Install physical barriers or high-visibility signage to prevent thoroughfare through any storage areas. Limit vertical stacking to maximum 3 panels with mandatory restraints.',
+    immediate_action:'Area immediately barricaded with witches hats and barrier tape to prevent further access. All formwork panels in the immediate area secured or relocated to proper storage racks within 30 minutes. Comprehensive site walk conducted by supervisor and leading hands to identify any other improperly stored materials across all levels. Emergency toolbox talk held with all formwork crews and subcontractors to reinforce storage procedures. Subcontractor leading hand counselled on the critical importance of returning materials to proper locations immediately after use.',
+    corrective_actions:'Formwork storage procedure completely rewritten and reissued to all contractors with acknowledgment signatures required. New strict rule: any panel not actively in use must be in a designated storage rack, no exceptions permitted. Four additional storage racks ordered and installed within 48 hours to ensure adequate capacity. Site map updated to show designated storage zones with clear markings and signage installed. Daily site compliance walks by supervisor added to schedule specifically checking material storage. Subcontractor company added this incident to their own internal training program and conducted toolbox talks at all their other projects.',
+    mechanism:'struck-falling-object',
+    body_part:'None',
+    injury_nature:'None',
+    submitted_at:'2026-04-27T14:15:00.000Z',
+    status:'closed',
+    supervisor_name:'Eoin Burke',
+    supervisor_phone:'0432 778 901',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-28',
+    review_notes:'Sam acted correctly by reporting this immediately rather than just moving on. The temporary storage practice has apparently been happening intermittently for several weeks without incident, but this was a clear wake-up call that could have resulted in a serious injury. New racks are being installed tomorrow and the procedure is now crystal clear. All crews have been briefed and subcontractor understands the seriousness. Will monitor compliance closely over the next two weeks.',
+    closing_note:'Formwork storage procedure updated and being rigorously enforced. Additional racks installed providing more than adequate storage capacity. Site culture reminder delivered that there is no such thing as acceptable "temporary" storage in walkways or traffic areas. Good catch by Sam reporting this - could easily have been a serious or fatal incident. Subcontractor cooperation has been excellent.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  },
+
+  // 3. PROPERTY DAMAGE - Tom Burke (Labourer)
+  {
+    ref:'INC-260426003',
+    site:'Bondi Junction Mixed Use',
+    reporter_name:'Tom Burke',
+    reporter_company:'Burke Civil Contractors',
+    reporter_role:'Labourer',
+    incident_type:'Property Damage',
+    severity:'Minor',
+    incident_date:'2026-04-26',
+    incident_time:'09:30',
+    location:'Level 2 lift shaft',
+    description:'Concrete skip struck and damaged the steel formwork panel on the lift shaft core during placement, causing significant denting and buckl ing to the panel. The damage rendered the panel unsuitable for further use without repair. The skip was being guided by a dogman but swung unexpectedly due to a wind gust as it passed through the floor opening. No personnel were in the immediate area at the time and no injuries occurred.',
+    what_caused:'The concrete skip placement was proceeding normally under dogman control, but an unexpected wind gust at the exposed edge of the building caused the loaded skip to swing more than anticipated. The dogman had correctly assessed the wind conditions at ground level, but conditions at Level 2 were significantly windier due to the building\'s exposure. The formwork panel was positioned close to the swing radius of the skip, and the combination of the wind-induced swing and the weight of the concrete resulted in forceful contact. The lift shaft area also had limited space for maneuvering, reducing the margin for error.',
+    how_prevented:'Implement mandatory wind speed monitoring at each floor level before concrete pours, not just at ground level. Establish clear wind speed thresholds for suspending concrete placement operations at height. Install temporary wind barriers or screens around exposed floor edges during concrete pour operations. Increase clearance distance between formwork and crane swing zones where possible. Consider using concrete pump instead of skip placement for exposed areas where wind is a factor. Enhanced communication protocol between dogman and crane operator for wind condition changes.',
+    immediate_action:'Concrete placement immediately halted and area secured. Crane lowered the skip safely to ground level. Damaged formwork panel isolated and tagged out of service. Structural engineer consulted to inspect lift shaft formwork integrity - confirmed no structural concerns but panel requires replacement. Alternative placement method using concrete pump arranged for remainder of that pour. Wind speed monitoring equipment ordered for site delivery next day. All dogmen briefed on enhanced wind assessment procedures.',
+    corrective_actions:'Wind speed monitors installed at multiple floor levels with readings logged before each pour commences. New procedure: concrete placement suspended if wind speed exceeds 30km/h at pour location, regardless of ground level conditions. Formwork panel replaced with new panel at contractor cost. Site layout review conducted for all remaining concrete pours to identify and mitigate similar risks. Concrete pump now used as primary method for all pours above Level 1 to reduce skip placement risks. Dogman and crane operator training enhanced to include improved wind risk assessment.',
+    mechanism:'struck-moving-object',
+    body_part:'None',
+    injury_nature:'None',
+    submitted_at:'2026-04-26T09:30:00.000Z',
+    status:'closed',
+    supervisor_name:'Eoin Burke',
+    supervisor_phone:'0432 778 901',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-27',
+    review_notes:'Spoke with the dogman who was very experienced and had followed all standard procedures. The wind conditions changed rapidly and were genuinely unpredictable. The decision to move to pumped concrete for elevated pours is sensible and eliminates this risk category entirely. Wind monitoring equipment is now on site and being used effectively. Formwork contractor has been cooperative and accepted responsibility for the damaged panel replacement.',
+    closing_note:'Property damage only, no injuries. Wind monitoring procedures now in place and proving effective. Concrete pump method now standard for elevated pours which is a more controlled process overall. Formwork panel replaced. Enhanced procedures prevent recurrence. Insurance notified for property damage claim. No further action required.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  },
+
+  // 4. ENVIRONMENTAL - Mick Doyle (Excavator Operator)
+  {
+    ref:'INC-260425004',
+    site:'Bondi Junction Mixed Use',
+    reporter_name:'Mick Doyle',
+    reporter_company:'Burke Civil Contractors',
+    reporter_role:'Excavator Operator',
+    incident_type:'Environmental',
+    severity:'Moderate',
+    incident_date:'2026-04-25',
+    incident_time:'13:20',
+    location:'Basement excavation area',
+    description:'Approximately 25 litres of hydraulic oil released from excavator when hydraulic hose failed catastrophically during operation. The oil sprayed onto the excavation floor and approximately 5 litres entered the stormwater sump before the machine could be shut down. The remainder was contained within the excavation area. Spill kit was deployed immediately and absorbent booms placed at the sump outlet within 3 minutes of the incident. EPA notified via Environment Line within 15 minutes as required under POEO Act.',
+    what_caused:'Post-incident inspection revealed that the failed hydraulic hose had been showing signs of deterioration including surface cracking and minor weeping at the fitting connection. The excavator had passed its most recent service check 3 weeks prior, but the inspector had noted the hose condition as "monitor" rather than requiring immediate replacement. The hose was original equipment and had been in service for approximately 3,200 operating hours, which is approaching but not yet exceeding the manufacturer\'s recommended replacement interval of 3,500 hours. The failure occurred during high-load operation when extending the boom under load, which created peak pressure in the hydraulic system. The combination of the hose\'s age, minor pre-existing deterioration, and the high-pressure operating conditions caused the catastrophic failure.',
+    how_prevented:'Implement proactive hydraulic hose replacement schedule based on operating hours rather than waiting for condition-based replacement. All hoses showing any signs of deterioration or weeping to be replaced immediately regardless of service life remaining. Increase inspection frequency for hydraulic systems on high-hour equipment to weekly rather than the current 3-weekly schedule. Require secondary containment under all hydraulic equipment operating in basement areas or near drainage points. Install additional stormwater interception controls including sediment fences and booms as standard. Enhance pre-start checks to specifically include visual inspection of all visible hydraulic hoses for any signs of deterioration.',
+    immediate_action:'Machine shut down immediately and operator vacated the area. Spill kit deployed within 2 minutes by excavator operator who had completed spill response training. Absorbent booms placed at stormwater sump outlet within 3 minutes to prevent further contamination. Site supervisor notified immediately and attended scene within 5 minutes. EPA Environment Line contacted within 15 minutes as required (call reference ENV-2026-04251). Affected soil excavated to approximately 200mm depth and placed in sealed drums for licensed disposal. Vacuum truck contractor called and arrived on-site within 90 minutes to recover remaining free oil. Local council environmental officer also notified within 30 minutes.',
+    corrective_actions:'Failed excavator immediately removed from site and sent for comprehensive hydraulic system overhaul with all hoses replaced regardless of condition. All other excavators on site underwent immediate hydraulic system inspections with 3 additional hoses showing early deterioration being replaced preventively. New hydraulic hose replacement schedule implemented fleet-wide based on 2,500 operating hour maximum. Secondary containment drip trays now required under all hydraulic equipment in basement areas. Additional spill kits positioned at 4 locations around basement perimeter. Weekly toolbox topic added covering spill response procedures. EPA follow-up inspection conducted - no concerns raised and site compliance noted positively.',
+    mechanism:'environmental-exposure',
+    body_part:'None',
+    injury_nature:'None',
+    submitted_at:'2026-04-25T13:20:00.000Z',
+    status:'closed',
+    supervisor_name:'Eoin Burke',
+    supervisor_phone:'0432 778 901',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-26',
+    review_notes:'Mick acted excellently in deploying the spill kit immediately and his quick action prevented significantly more oil from entering the stormwater system. The proactive hose replacement schedule is sensible and is now being rolled out across our entire equipment fleet. EPA was satisfied with our response time and containment measures. The excavator hire company has cooperated fully and is implementing similar preventive maintenance improvements across their entire fleet as a result of this incident.',
+    closing_note:'Environmental release contained and remediated effectively. EPA notified and satisfied with response. Contaminated soil disposed of via licensed waste contractor. Proactive maintenance schedule now prevents similar failures. Spill response procedures validated as effective. Mick received positive recognition for his quick and effective response. Incident used as positive case study in next environmental toolbox talk showing how proper training and equipment enable effective response.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // PARRAMATTA METRO STAGE 2 - Supervisor: Eoin Murphy (4 incidents)
+  // ═══════════════════════════════════════════════════════════════
+
+  // 5. DANGEROUS INCIDENT - Jake Sullivan (Excavator Operator)
+  {
+    ref:'INC-260424005',
+    site:'Parramatta Metro Stage 2',
+    reporter_name:'Jake Sullivan',
+    reporter_company:'Murphy Civil Construction',
+    reporter_role:'Excavator Operator',
+    incident_type:'Dangerous Incident',
+    severity:'Major',
+    incident_date:'2026-04-24',
+    incident_time:'11:30',
+    location:'Crane lift zone TBM area',
+    description:'Crane-lifted load consisting of 3 steel tunnel segments (total weight approximately 4.2 tonnes) shifted unexpectedly during placement, causing the crane\'s load moment indicator alarm to activate and the crane to automatically limit further movement. The load was approximately 8 meters above ground level at the time. The rigging had been inspected and certified that morning, but one of the lifting points on the steel segments had a manufacturing defect that wasn\'t visible during inspection. No personnel were under the load due to proper exclusion zone enforcement, and the crane\'s safety systems functioned correctly to prevent the load from falling. The load was successfully lowered to ground under controlled conditions once stabilized.',
+    what_caused:'Post-incident engineering investigation revealed that one of the four lifting lugs welded to the steel tunnel segments had an internal crack in the weld that was not visible during visual inspection. This manufacturing defect had existed since fabrication but had not been detected during the supplier\'s quality assurance processes. When the load was lifted and rotated during placement, the stress on that particular lug exceeded its weakened capacity, causing the lug to partially fail. This shifted the load\'s center of gravity unexpectedly and triggered the crane\'s load moment indicator. The defect was only discovered during subsequent ultrasonic testing conducted as part of the investigation. The steel segments had been manufactured off-site and no specific requirement existed for independent non-destructive testing of lifting points prior to first use, which is standard industry practice for these types of fabricated items.',
+    how_prevented:'Implement mandatory non-destructive testing (ultrasonic or magnetic particle) of all lifting points on fabricated steel items before first use on site, regardless of supplier certifications. Require manufacturers to provide full material traceability and testing records for all structural welds including lifting lugs. Establish maximum working load limits for all rigging that include appropriate safety factors for potential hidden defects. Conduct regular rigging equipment audits by independent third-party certifiers beyond standard visual inspections. Install redundant load monitoring systems on cranes handling critical loads. Ensure exclusion zones are rigorously enforced at all times during lifting operations with physical barriers rather than just marked zones.',
+    immediate_action:'Crane operator activated emergency stop procedure immediately when load moment indicator alarm sounded. All personnel evacuated from area and site-wide STOP WORK issued for all overhead lifting. Load stabilized by crane operator working with riggers to adjust rigging configuration remotely. Load successfully lowered to ground in controlled manner once stable configuration achieved. Area secured with physical barriers. Engineering consultant and crane certifier called to site immediately. All similar steel tunnel segments quarantined pending inspection. SafeWork NSW notified within the required timeframe as this met the criteria for a dangerous incident notification. Comprehensive investigation initiated involving engineering experts.',
+    corrective_actions:'All remaining tunnel segments (22 units) quarantined and subjected to comprehensive ultrasonic testing before being approved for lifting. Three additional segments found with minor weld defects and returned to manufacturer. Manufacturer\'s quality assurance processes audited by independent third party at client\'s request - improvements implemented. New procedure: all fabricated items with lifting lugs must undergo non-destructive testing and provide test certificates before acceptance on site. Rigging procedures updated to require engineering review for all lifts exceeding 3 tonnes. Additional crane operator training delivered covering load behavior recognition and emergency procedures. All project personnel received toolbox talk on lessons learned. Incident investigation report distributed to all sites in company network as learning opportunity.',
+    mechanism:'struck-falling-object',
+    body_part:'None',
+    injury_nature:'None',
+    submitted_at:'2026-04-24T11:30:00.000Z',
+    status:'closed',
+    supervisor_name:'Eoin Murphy',
+    supervisor_phone:'0432 778 901',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-25',
+    review_notes:'The crane operator acted perfectly - recognized the problem immediately and followed emergency procedures exactly. The crane\'s safety systems worked as designed. The exclusion zone enforcement was critical - if anyone had been under that load the outcome could have been catastrophic. The hidden manufacturing defect was genuinely undetectable through standard visual inspection. SafeWork inspector attended site and was satisfied with our response and investigation. The new NDT testing requirement is appropriate and will be implemented company-wide.',
+    closing_note:'Dangerous incident successfully managed with no injuries due to proper safety systems and procedures. Manufact uring quality issue identified and rectified. Enhanced inspection procedures now prevent similar failures. Crane safety systems validated. SafeWork NSW investigation concluded with no enforcement action - satisfied with response. All tunnel segments now certified safe. Normal operations resumed with enhanced controls. Comprehensive lessons learned documented and shared.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  },
+
+  // 6. ACTUAL INJURY - Michael Chen (Labourer)
+  {
+    ref:'INC-260423006',
+    site:'Parramatta Metro Stage 2',
+    reporter_name:'Michael Chen',
+    reporter_company:'Burke Civil Contractors',
+    reporter_role:'Labourer',
+    incident_type:'Actual Injury',
+    severity:'Minor',
+    incident_date:'2026-04-23',
+    incident_time:'15:45',
+    location:'Material laydown area',
+    description:'Worker sustained a 2cm laceration to right palm while manually handling steel reinforcement mesh. The injury occurred when the worker gripped the mesh edge to reposition it and a sharp protruding wire end penetrated the work glove, cutting the palm. Minor bleeding occurred and first aid was applied on site. Worker continued light duties after treatment and returned to full duties the following day.',
+    what_caused:'The steel mesh had been cut earlier in the day using an angle grinder, leaving several sharp wire ends protruding along the cut edge. Standard procedure requires grinding these sharp ends smooth, but this step had been missed due to the urgent need to move the mesh to make room for an incoming delivery. The worker was wearing standard cotton/synthetic work gloves rather than the reinforced leather gloves that are specified for steel handling in the SWMS. The leather gloves were in the worker\'s toolbox but the worker chose the lighter gloves for what was perceived to be a quick repositioning task.',
+    how_prevented:'Enforce mandatory grinding of all cut steel mesh edges immediately after cutting - no exceptions for time pressure. Implement quality check sign-off before cut materials are moved from cutting area. Mandatory leather gloves for ALL steel handling regardless of duration or perceived simplicity of task - enforced through toolbox reminders and spot checks. Pre-task hazard identification to specifically ask "what gloves do I need for this task?". Additional signage at steel storage areas reminding of leather glove requirement.',
+    immediate_action:'Work stopped and first aid applied immediately. Wound cleaned and dressed on site by first aid officer. Supervisor notified within minutes. Worker assessed by supervisor and first aid officer - decision made that hospital visit not required as wound was clean and relatively minor. Worker completed incident form and was assigned to light duties (no steel handling) for remainder of that shift. Cut steel mesh edges ground smooth by leading hand before any further handling permitted.',
+    corrective_actions:'SWMS updated to highlight the sharp edge hazard from cut mesh and make grinding of edges a mandatory step before moving materials. New procedure: leading hand must visually inspect and sign off on all cut steel before it leaves the cutting area. Leather glove requirement reinforced through toolbox talk delivered to all workers. Additional leather gloves purchased and distributed to ensure every worker has their own pair readily available. Steel cutting area reorganized to include dedicated grinding station as the final step. Daily pre-start now includes specific PPE check for appropriate glove types.',
+    mechanism:'contact-sharp-object',
+    body_part:'hand-palm',
+    injury_nature:'laceration',
+    submitted_at:'2026-04-23T15:45:00.000Z',
+    status:'closed',
+    supervisor_name:'Eoin Murphy',
+    supervisor_phone:'0432 778 901',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-24',
+    review_notes:'Michael was honest about not wearing the correct gloves which helped us understand the full picture. The grinding step being missed was a process failure that has now been corrected. The new sign-off procedure ensures cut materials are safe before moving. Leather gloves are now standard issue and workers understand the requirement. Simple injury but good learning opportunity about maintaining standards even for "quick" tasks.',
+    closing_note:'Minor injury, treated on site, worker back to full duties next day. Process improvements implemented to prevent sharp edges and reinforce PPE requirements. SWMS updated. Additional gloves distributed. No lost time. Incident used constructively as reminder that there are no shortcuts when it comes to PPE.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  },
+
+  // 7. NEAR MISS - Thomas Wright (Site Foreman)
+  {
+    ref:'INC-260422007',
+    site:'Parramatta Metro Stage 2',
+    reporter_name:'Thomas Wright',
+    reporter_company:'Murphy Civil Construction',
+    reporter_role:'Site Foreman',
+    incident_type:'Near Miss',
+    severity:'Moderate',
+    incident_date:'2026-04-22',
+    incident_time:'09:15',
+    location:'Tunnel boring machine zone',
+    description:'Excavator operating in close proximity to edge protection barriers came within approximately 30cm of striking the barrier system while maneuvering with bucket extended. The operator was reversing the machine while simultaneously rotating the upper structure, and visibility of the barrier was obscured by the raised bucket. A ground spotter shouted warning and the operator stopped immediately. No contact occurred and no damage resulted, but if the barrier had been struck it could have been displaced, creating a fall hazard for personnel working near the excavation edge.',
+    what_caused:'The excavator was operating in a confined area with limited maneuvering room due to the tunnel boring machine support structures occupying most of the available space. The operator was experienced but was working under time pressure to complete spoil removal before the next TBM advance cycle. The ground spotter assigned to the excavator had momentarily stepped away to direct another vehicle, leaving the operator without spotter support for approximately 2 minutes. During this period the operator attempted to continue the maneuver without requesting a replacement spotter. The site had become increasingly congested over recent days as additional equipment and materials were delivered for the next construction phase, reducing available working space. No formal traffic management plan had been updated to reflect the changed site conditions.',
+    how_prevented:'Update and enforce traffic management plan whenever site conditions change significantly - mandatory review trigger when new equipment or major material deliveries arrive. Implement strict "no spotters = no movement" rule for all mobile plant in confined spaces - operators must request replacement spotter if their assigned spotter is unavailable rather than proceeding alone. Install high-visibility markers or posts at critical clearance points to provide visual references for operators. Increase exclusion zone distance between mobile plant operating areas and edge protection to provide greater safety margin. Conduct daily plant operator briefings highlighting any changes to site layout or new obstacles. Consider restricting excavator operations to specific times when site is less congested, or relocating some equipment/materials to improve working space.',
+    immediate_action:'Excavator operation stopped immediately. Site supervisor attended and conducted area assessment. All nearby personnel evacuated while edge protection barriers were inspected for integrity - confirmed no damage or displacement. Site layout reviewed and additional hazard markings installed around barriers within the hour. Comprehensive toolbox talk held with all mobile plant operators and spotters covering the critical importance of spotter presence and the prohibition on operating without spotter coverage. Traffic management plan reviewed and updated to reflect current site congestion. Additional spotter assigned to provide redundancy during busy periods.',
+    corrective_actions:'Traffic management plan comprehensively updated including new marked travel routes and designated excavation zones with clear boundaries. High-visibility posts installed at 2-meter intervals along all edge protection to provide clear visual reference points for operators. New rule implemented: excavator operations in TBM zone only permitted when dedicated spotter present at all times - no exceptions. Spotter training refresher delivered to all ground personnel covering communication protocols and line-of-sight requirements. Site layout review scheduled weekly to identify and address any emerging congestion issues. Some material stockpiles relocated to create more working space around TBM zone. Pre-start briefings now include specific mention of any site layout changes or new obstacles.',
+    mechanism:'struck-moving-plant',
+    body_part:'None',
+    injury_nature:'None',
+    submitted_at:'2026-04-22T09:15:00.000Z',
+    status:'closed',
+    supervisor_name:'Eoin Murphy',
+    supervisor_phone:'0432 778 901',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-23',
+    review_notes:'Thomas did the right thing reporting this - easy to dismiss near misses but this could have been serious. The spotter stepping away was the key failure point. The new spotter redundancy and the absolute no-movement-without-spotter rule are appropriate controls. Site congestion has been a gradual creep that we hadn\'t properly addressed - the material relocation and updated traffic plan fix this. Operators and spotters all understand the new rules and have responded positively.',
+    closing_note:'Near miss successfully identified and reported. Root causes addressed through updated traffic management plan and spotter protocols. Site layout improved to provide better working space. Edge protection integrity maintained. Enhanced visual markers installed. Good learning opportunity that has improved site safety overall. No further action required.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  },
+
+  // 8. PROPERTY DAMAGE - Sarah Johnson (Safety Officer)
+  {
+    ref:'INC-260421008',
+    site:'Parramatta Metro Stage 2',
+    reporter_name:'Sarah Johnson',
+    reporter_company:'Burke Civil Contractors',
+    reporter_role:'Safety Officer',
+    incident_type:'Property Damage',
+    severity:'Minor',
+    incident_date:'2026-04-21',
+    incident_time:'13:30',
+    location:'Site access road',
+    description:'Delivery truck reversed into and damaged the site entry boom gate, breaking the counterweight arm and bending the boom itself. The gate is no longer operational. The truck driver was reversing under direction from a ground guide but misjudged the clearance height of the raised tray. The boom was in the raised position at the time. No injuries occurred and no other property was damaged. Site security and access control temporarily compromised until repairs completed.',
+    what_caused:'The delivery truck driver was new to this particular site and had not received a site-specific induction due to arriving during lunch break when the site office was closed. The ground guide was focused on ensuring the truck stayed on the marked vehicle route and did not specifically verify clearance height between the raised tray and the boom gate. The boom gate is a manual operation model that remains in the raised position unless actively lowered by security personnel. The site had experienced recent turnover in security staff and the new security guard was not at their post during the lunch period, leaving the boom gate unattended in the raised position. Standard procedure requires boom gate to be lowered during unattended periods but this had not been followed. The truck driver also had a blocked view when reversing and was relying entirely on ground guide direction.',
+    how_prevented:'Implement mandatory site induction for all delivery drivers before permitting entry, regardless of arrival time - brief induction covering key site rules and hazards even if lunch break. Designate specific delivery times outside lunch periods to ensure site office staff available for inductions. Install height restriction barriers or warning systems before boom gate to provide physical indication of clearance. Boom gate to be replaced with automated model that defaults to closed/lowered position and requires positive action to open, eliminating "left open" risk. Security post coverage to be maintained at all times including lunch breaks through rotating meal breaks. Ground guides to receive enhanced training specifically covering overhead clearance verification as part of their standard checks. Large vehicle reversing protocols updated to require ground guide specifically calling out "overhead clear" before reversing commences.',
+    immediate_action:'Vehicle stopped immediately after impact. Driver and ground guide checked for injuries - none reported. Damaged boom gate isolated and temporary site security measures implemented using traffic cones and manual sign-in procedures. Site manager notified immediately. Delivery completed under supervision. Boom gate contractor called and attended site within 3 hours to assess damage and provide temporary security solution. Replacement boom gate ordered - expected delivery 3 business days. In the interim, security guard assigned specifically to manual gate operations during all site operating hours. Incident investigation commenced to identify root causes.',
+    corrective_actions:'Boom gate replaced with automated model including height sensors and automatic closing function. New signage installed approaching gate showing maximum clearance height. Physical height restriction bar installed 10 meters before gate to provide advance warning to drivers. Site induction procedure updated to require induction before entry even for delivery drivers - no exceptions. Security staffing schedule revised to ensure continuous coverage including meal breaks. Ground guide training updated to include overhead clearance checklist. All current ground guides retrained within 48 hours. Delivery management procedure reviewed with all suppliers to emphasize induction requirements.',
+    mechanism:'struck-moving-vehicle',
+    body_part:'None',
+    injury_nature:'None',
+    submitted_at:'2026-04-21T13:30:00.000Z',
+    status:'closed',
+    supervisor_name:'Eoin Murphy',
+    supervisor_phone:'0432 778 901',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-22',
+    review_notes:'Multiple contributing factors including induction gap, unattended boom gate, and ground guide process. The new automated gate eliminates most of these failure points. The delivery driver induction requirement is now absolute. Security coverage issues have been addressed through revised roster arrangements. Relatively minor property damage but important lessons about having robust systems that don\'t rely on people always doing the right thing.',
+    closing_note:'Property damage only, no injuries. Boom gate replaced with improved automated system. Site security and access control procedures strengthened. Delivery driver induction process now mandatory and robust. Security coverage gaps closed. Ground guide training enhanced. Insurance claim lodged and repairs completed. Systems improvements prevent recurrence.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // SYDNEY OLYMPIC PARK - Supervisor: Sean O'Connor (2 incidents)
+  // ═══════════════════════════════════════════════════════════════
+
+  // 9. ENVIRONMENTAL - Brian Kelly (Plant Operator)
+  {
+    ref:'INC-260420009',
+    site:'Sydney Olympic Park',
+    reporter_name:'Brian Kelly',
+    reporter_company:'Murphy Civil Construction',
+    reporter_role:'Plant Operator',
+    incident_type:'Environmental',
+    severity:'Minor',
+    incident_date:'2026-04-20',
+    incident_time:'10:20',
+    location:'Equipment compound',
+    description:'Approximately 8 litres of diesel fuel spilled during refueling of a mobile generator when the automatic shut-off nozzle on the fuel bowser malfunctioned. The fuel overflowed from the generator tank onto the concrete hardstand and flowed approximately 3 meters before being contained. The spill was immediately reported and spill kit deployed within 2 minutes. All fuel was contained on the concrete hardstand and absorbed using spill kit absorbents. No fuel entered soil or stormwater drainage. EPA was notified as a precautionary measure given the volume exceeded 10 litres.',
+    what_caused:'The automatic fuel nozzle shut-off mechanism had failed without the operator\'s knowledge. The nozzle had been functioning normally for all previous refueling operations that day. Post-incident inspection revealed that a small piece of debris had lodged in the shut-off valve mechanism, preventing it from actuating when the tank reached capacity. The plant operator was holding the nozzle trigger but was looking away checking the fuel level gauge on the bowser when the overflow began. By the time the operator noticed fuel overflowing from the tank, approximately 8 litres had been dispensed beyond the tank capacity. The refueling was taking place on concrete hardstand as per site procedure, which aided in containment, but the hardstand had a slight slope that caused the fuel to run toward a stormwater grate located 5 meters away.',
+    how_prevented:'Implement daily visual inspection and functional test of all fuel nozzle shut-off mechanisms before commencing refueling operations. Install spill containment berms or trays under all refueling points as standard, regardless of surface type. Mandate that operators maintain continuous visual contact with the tank fill point during entire refueling process - no looking away. Install physical barriers or covers over stormwater grates within 10 meters of refueling areas to provide secondary containment. Position spill kits immediately adjacent to all fuel storage and refueling points for instant access. Consider using manual fuel pumps with more positive control rather than automatic nozzles for generator refueling. Enhanced signage at refueling areas reminding operators of continuous monitoring requirement.',
+    immediate_action:'Refueling stopped immediately when overflow noticed. Spill kit deployed within 2 minutes by plant operator who had completed spill response training. Absorbent pads and booms placed to prevent fuel reaching stormwater grate. All spilled fuel absorbed and contained on concrete. Contaminated absorbents placed in sealed waste drum for licensed disposal. Area washed down with degreaser and rinsed - washwater collected and disposed of appropriately through licensed liquid waste contractor. Supervisor notified immediately. EPA notified via Environment Line within 20 minutes as precautionary measure. Faulty fuel nozzle removed from service and replaced.',
+    corrective_actions:'All fuel bowser nozzles across site fleet inspected and tested - one additional nozzle showing intermittent shut-off behavior was also replaced. New pre-use inspection checklist implemented for all refueling equipment including shut-off function test. Portable spill containment trays purchased and now mandatory for all generator refueling. Stormwater grates near refueling areas fitted with removable covers that must be installed during any refueling operation. Additional spill kits positioned at both equipment compound fuel points. Refresher toolbox talk delivered to all plant operators covering spill prevention and response procedures. Refueling procedure updated to mandate continuous visual monitoring of fill point.',
+    mechanism:'environmental-exposure',
+    body_part:'None',
+    injury_nature:'None',
+    submitted_at:'2026-04-20T10:20:00.000Z',
+    status:'closed',
+    supervisor_name:'Sean O\'Connor',
+    supervisor_phone:'0418 334 221',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-21',
+    review_notes:'Brian acted quickly and appropriately to contain the spill - his spill response training was effective. The mechanical failure of the shut-off nozzle was unpredictable but the new inspection procedure will catch these issues early. The spill containment trays are a simple but effective additional control. EPA appreciated the proactive notification even though the spill was fully contained. No environmental harm occurred due to quick response and concrete surface.',
+    closing_note:'Minor fuel spill, fully contained and remediated. No environmental release to soil or water. EPA notified and satisfied with response. Equipment repaired and additional preventive controls implemented. Spill kits and containment equipment upgraded. Procedures updated. Operator performance was commendable. Incident used as training example showing effective spill response.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  },
+
+  // 10. DANGEROUS INCIDENT - Catherine Ryan (Site Administrator)
+  {
+    ref:'INC-260419010',
+    site:'Sydney Olympic Park',
+    reporter_name:'Catherine Ryan',
+    reporter_company:'Murphy Civil Construction',
+    reporter_role:'Site Administrator',
+    incident_type:'Dangerous Incident',
+    severity:'Major',
+    incident_date:'2026-04-19',
+    incident_time:'14:45',
+    location:'Site office entrance',
+    description:'Electrical fault in site office distribution board resulted in smoke emission and burning smell, triggering immediate evacuation of the site office building. The fault occurred in the main distribution board located in the office entry area. No fire ignited but heavy smoke was present. Fire brigade attended and isolated power. Subsequent electrical contractor investigation revealed a loose connection in the board had caused arcing and overheating of conductors. Building evacuation was completed within 2 minutes. No injuries occurred but this met the criteria for dangerous incident notification to SafeWork NSW due to the potential for fire and multiple occupants being present in the building at the time.',
+    what_caused:'Detailed electrical contractor investigation revealed that the loose connection in the distribution board had developed gradually over time due to thermal cycling causing the terminal screw to work loose. The board had been installed 8 years ago during site establishment and had passed routine visual inspections, but these inspections had not included thermal imaging or physical testing of connection tightness. The particular circuit involved was a high-current circuit supplying the site offices air conditioning system, and the increased load during warm weather had caused elevated current flow which accelerated the deterioration of the loose connection. The arcing and overheating had been occurring intermittently for possibly several days before it reached the point of smoke emission, but had not been detected. No thermal imaging surveys of the electrical installation had been conducted since original commissioning.',
+    how_prevented:'Implement comprehensive electrical safety inspection program including thermal imaging surveys of all distribution boards every 6 months as minimum. Physical inspection and tightness testing of all connections in distribution boards annually by licensed electrical contractor. Install smoke detectors in all areas containing electrical distribution equipment linked to monitored fire alarm system. Consider upgrading to distribution boards with built-in connection monitoring and thermal protection features. Ensure electrical contractors performing any work on boards specifically check and tighten all connections not just the circuit they are working on. Conduct electrical safety audits by independent third party every 2 years. Maintain detailed electrical maintenance records including thermal imaging results for trend analysis.',
+    immediate_action:'Site office evacuated immediately when smoke detected - evacuation completed in under 2 minutes with all personnel accounted for. Fire brigade called immediately (000 call placed within 1 minute). Power to entire site office isolated at main switchboard. Fire brigade attended within 8 minutes, confirmed no active fire, ventilated building. Electrical contractor called to site as emergency callout and attended within 45 minutes. Fault located and distribution board isolated. Temporary power supply arranged via generator for essential systems. SafeWork NSW notified of dangerous incident within required 24 hour timeframe. All office staff accommodated in site meeting rooms and temporary facilities while repairs undertaken.',
+    corrective_actions:'Faulty distribution board completely replaced with new modern board including thermal protection and connection monitoring features. All other distribution boards on site (3 additional boards) comprehensively inspected and all connections tested and tightened. Thermal imaging survey conducted on entire site electrical installation identifying 2 other circuits showing elevated temperatures - these proactively addressed before failure. Smoke detection system upgraded and integrated with site alarm system. Electrical maintenance schedule updated to include 6-monthly thermal imaging and annual physical connection inspection. Emergency evacuation procedures reviewed and found effective - minor improvements to assembly point signage made. Additional fire extinguisher training delivered to all site office staff. SafeWork NSW inspector attended site, reviewed incident and corrective actions, issued improvement notice regarding electrical inspection frequency.',
+    mechanism:'contact-electricity',
+    body_part:'None',
+    injury_nature:'None',
+    submitted_at:'2026-04-19T14:45:00.000Z',
+    status:'closed',
+    supervisor_name:'Sean O\'Connor',
+    supervisor_phone:'0418 334 221',
+    supervisor_company:'Murphy Civil Construction',
+    reviewed_date:'2026-04-20',
+    review_notes:'Catherine acted exactly correctly in initiating immediate evacuation - her quick recognition potentially prevented injuries. The evacuation procedure worked well with full accountability achieved quickly. The electrical contractor investigation was thorough and identified clear root causes. The upgrade to include thermal imaging surveys is appropriate and is being rolled out across all company sites. SafeWork inspector was satisfied with our investigation and response. Fire brigade commended the quick notification and orderly evacuation. Good outcome from a potentially serious situation.',
+    closing_note:'Dangerous incident successfully managed with no injuries. Root cause identified as gradual connection failure. Comprehensive corrective actions implemented including equipment upgrade and enhanced maintenance program. Emergency procedures validated as effective. SafeWork NSW improvement notice complied with. Enhanced electrical safety program now in place. Incident review conducted with all site personnel. Lessons learned shared across company network. No further action required.',
+    reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  }
+
+];
+
+
+
+
+function populateDirectorIncidents() {
+  var list = document.getElementById('an-incidents-list');
+  var summary = document.getElementById('an-inc-summary');
+  if (!list || !directorDemoIncidents || directorDemoIncidents.length === 0) return;
+  
+  // Update summary
+  var nearMiss = directorDemoIncidents.filter(i => i.incident_type === 'Near Miss').length;
+  var actualInjury = directorDemoIncidents.filter(i => i.incident_type === 'Actual Injury').length;
+  var dangerous = directorDemoIncidents.filter(i => i.incident_type === 'Dangerous Incident').length;
+  var propertyDamage = directorDemoIncidents.filter(i => i.incident_type === 'Property Damage').length;
+  var environmental = directorDemoIncidents.filter(i => i.incident_type === 'Environmental').length;
+  summary.textContent = actualInjury + ' injury · ' + nearMiss + ' near miss · ' + dangerous + ' dangerous · ' + propertyDamage + ' damage · ' + environmental + ' environmental';
+  
+  // Clear list
+  list.innerHTML = '';
+  
+  // Add each incident
+  directorDemoIncidents.forEach(function(inc) {
+    var card = document.createElement('div');
+    card.onclick = function() { viewIncidentPDF(inc); };
+    
+    // Severity colors
+    var sevColours = {
+      Critical: { bg:'#FAEBEB', border:'rgba(184,50,50,.25)', text:'#B83232' },
+      Major:    { bg:'#FEF0E6', border:'rgba(212,99,10,.25)', text:'#D4630A' },
+      Moderate: { bg:'#FFFBF0', border:'rgba(151,101,0,.25)', text:'#976500' },
+      Minor:    { bg:'#E6F5ED', border:'rgba(27,110,58,.25)', text:'#1B6E3A' }
+    };
+    var sev = sevColours[inc.severity] || sevColours.Minor;
+    
+    // Status badge
+    var status = inc.status || 'open';
+    var statusStyles = {
+      'open':   { bg:'#FDF8EC', text:'#BA7517', label:'OPEN' },
+      'closed': { bg:'#E6F5ED', text:'#1B6E3A', label:'CLOSED' }
+    };
+    var ss = statusStyles[status] || statusStyles.open;
+    var statusBadge = '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:' + ss.bg + ';color:' + ss.text + ';text-transform:uppercase;letter-spacing:.04em">' + ss.label + '</span>';
+    
+    // Description preview
+    var desc = (inc.description || '').slice(0, 110) + ((inc.description || '').length > 110 ? '\u2026' : '');
+    
+    card.innerHTML = 
+      '<div style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px">' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+          '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:' + sev.bg + ';color:' + sev.text + ';border:1px solid ' + sev.border + ';text-transform:uppercase;letter-spacing:.04em">' + (inc.severity || 'Minor') + '</span>' +
+          '<span style="font-size:13px;font-weight:600;color:var(--text)">' + (inc.incident_type || 'Incident') + '</span>' +
+          statusBadge +
+        '</div>' +
+        '<div style="font-size:12.5px;color:var(--muted);line-height:1.5">' + (desc || '<i>No description recorded</i>') + '</div>' +
+        '<div style="font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between;gap:8px">' +
+          '<span>' + (inc.location || '\u2014') + '</span>' +
+          '<span style="font-family:\'DM Mono\',monospace;font-size:10px">' + (inc.ref || '') + '</span>' +
+        '</div>' +
+      '</div>';
+    
+    list.appendChild(card);
+  });
+}
+
+function viewIncidentPDF(incident) {
+  if (!incident) { alert('No incident data'); return; }
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert('PDF library not loaded. Please refresh and try again.');
+    return;
+  }
+  
+  try {
+    const jsPDF = window.jspdf.jsPDF;
+    const doc = new jsPDF({ unit:'mm', format:'a4' });
+    const PAGE_W = 210, PAGE_H = 297;
+    const ML = 22, MR = 22, MT = 18, MB = 16;
+    const CW = PAGE_W - ML - MR;
+    
+    // Colors
+    const C = {
+      darkGreen:'#1B3A2D', darkText:'#1A2A1F', subLabel:'#5C6B62',
+      greyLabel:'#888888', greyLight:'#dddddd', border:'#e5e5e5',
+      white:'#FFFFFF'
+    };
+    const hex = function(h){
+      h = h.replace('#','');
+      return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+    };
+    const setFill = function(c){ var rgb = hex(c); doc.setFillColor(rgb[0], rgb[1], rgb[2]); };
+    const setStroke = function(c){ var rgb = hex(c); doc.setDrawColor(rgb[0], rgb[1], rgb[2]); };
+    const setText = function(c){ var rgb = hex(c); doc.setTextColor(rgb[0], rgb[1], rgb[2]); };
+    
+    // Page break helper
+    const checkPageBreak = function(neededSpace) {
+      if (y + neededSpace > PAGE_H - MB) {
+        doc.addPage();
+        y = MT;
+        return true;
+      }
+      return false;
+    };
+    
+    // Header
+    var y = MT;
+    if (window.SLAN_LOGO_B64) {
+      try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', PAGE_W - MR - 30, y, 30, 13); } catch(e) {}
+    }
+    setText(C.darkText);
+    doc.setFont('helvetica','bold'); doc.setFontSize(16);
+    doc.text('INCIDENT REPORT', PAGE_W/2, y + 6.5, { align:'center' });
+    setStroke(C.darkGreen); doc.setLineWidth(0.5);
+    doc.line(ML, y + 14, PAGE_W - MR, y + 14);
+    y += 20;
+    
+    // Reference
+    setText(C.darkText);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text('Ref: ' + incident.ref, ML, y);
+    y += 8;
+    
+    // Section: Incident Details
+    setFill(C.darkGreen);
+    doc.rect(ML, y, CW, 6, 'F');
+    setText(C.white);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text('INCIDENT DETAILS', ML + 4, y + 4);
+    y += 10;
+    
+    // Fields
+    var addField = function(label, value) {
+      setText(C.subLabel);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.text(label, ML, y);
+      setText(C.darkText);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.text(value || '—', ML + 45, y);
+      y += 6;
+    };
+    
+    addField('Site:', incident.site);
+    addField('Date:', incident.incident_date);
+    addField('Time:', incident.incident_time);
+    addField('Location:', incident.location);
+    addField('Type:', incident.incident_type);
+    addField('Severity:', incident.severity);
+    y += 2;
+    
+    // Description
+    setText(C.subLabel);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text('Description:', ML, y);
+    y += 4;
+    setText(C.darkText);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    var descLines = doc.splitTextToSize(incident.description || '—', CW - 10);
+    doc.text(descLines, ML + 5, y);
+    y += (descLines.length * 5) + 8;
+    
+    // What Caused It
+    if (incident.what_caused) {
+      checkPageBreak(30);
+      setText(C.subLabel);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.text('What Caused It:', ML, y);
+      y += 4;
+      setText(C.darkText);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      var causeLines = doc.splitTextToSize(incident.what_caused, CW - 10);
+      doc.text(causeLines, ML + 5, y);
+      y += (causeLines.length * 5) + 8;
+    }
+    
+    // How Could It Have Been Prevented
+    if (incident.how_prevented) {
+      checkPageBreak(30);
+      setText(C.subLabel);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.text('How Could It Have Been Prevented:', ML, y);
+      y += 4;
+      setText(C.darkText);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      var prevLines = doc.splitTextToSize(incident.how_prevented, CW - 10);
+      doc.text(prevLines, ML + 5, y);
+      y += (prevLines.length * 5) + 8;
+    }
+    
+    // Immediate Action
+    if (incident.immediate_action) {
+      checkPageBreak(30);
+      setText(C.subLabel);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.text('Immediate Action Taken:', ML, y);
+      y += 4;
+      setText(C.darkText);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      var immLines = doc.splitTextToSize(incident.immediate_action, CW - 10);
+      doc.text(immLines, ML + 5, y);
+      y += (immLines.length * 5) + 8;
+    }
+    
+    // Corrective Actions
+    if (incident.corrective_actions) {
+      checkPageBreak(30);
+      setText(C.subLabel);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.text('Corrective Actions:', ML, y);
+      y += 4;
+      setText(C.darkText);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      var corrLines = doc.splitTextToSize(incident.corrective_actions, CW - 10);
+      doc.text(corrLines, ML + 5, y);
+      y += (corrLines.length * 5) + 8;
+    }
+    
+    // Signatures Section Header
+    checkPageBreak(60);
+    setFill(C.darkGreen);
+    doc.rect(ML, y, CW, 6, 'F');
+    setText(C.white);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text('SIGNATURES', ML + 4, y + 4);
+    y += 12;
+    
+    // Reporter Signature
+    setText(C.subLabel);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text('Reporter Signature:', ML, y);
+    y += 8;
+    
+    // Signature line
+    setStroke(C.greyLight);
+    doc.line(ML + 5, y, ML + 80, y);
+    y += 5;
+    
+    // Name in handwritten style
+    setText(C.darkText);
+    doc.setFont('helvetica','italic'); doc.setFontSize(14);
+    doc.text(incident.reporter_name || '', ML + 5, y);
+    y += 8;
+    
+    // Name and date below
+    setText(C.greyLabel);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(incident.reporter_name || '', ML + 5, y);
+    doc.text(incident.incident_date || '', ML + 80, y, { align:'right' });
+    y += 16;
+    
+    // Supervisor Signature
+    setText(C.subLabel);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text('Supervisor Close-Out Signature:', ML, y);
+    y += 8;
+    
+    // Signature line
+    setStroke(C.greyLight);
+    doc.line(ML + 5, y, ML + 80, y);
+    y += 5;
+    
+    // Name in handwritten style
+    setText(C.darkText);
+    doc.setFont('helvetica','italic'); doc.setFontSize(14);
+    doc.text(incident.supervisor_name || '', ML + 5, y);
+    y += 8;
+    
+    // Name and date below
+    setText(C.greyLabel);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(incident.supervisor_name || '', ML + 5, y);
+    doc.text(incident.reviewed_date || '', ML + 80, y, { align:'right' });
+    y += 10;
+    
+    // Footer
+    const footY = PAGE_H - MB;
+    setStroke(C.greyLight); doc.setLineWidth(0.2);
+    doc.line(ML, footY - 4, PAGE_W - MR, footY - 4);
+    setText(C.greyLabel);
+    doc.setFont('courier','normal'); doc.setFontSize(7);
+    doc.text('SLS-INC · v1.3', ML, footY);
+    doc.setFont('helvetica','normal');
+    doc.text('Page 1 of 1', PAGE_W - MR, footY, { align:'right' });
+    
+    // Open PDF
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+    
+  } catch(err) {
+    console.error('PDF generation error:', err);
+    alert('Error generating PDF: ' + err.message);
   }
 }
 
@@ -36803,6 +36974,79 @@ function tbtSeedDemoSupervisorRosters(silent) {
 }
 
 
+// ─── HAZARD SEEDER ─────────────────────────────────────────────
+// Creates 4 demo hazards on site so the Hazards tile / chip / list look populated.
+function seedDemoHazards(silent) {
+  var key = 'slan_hazards';
+  var existing = [];
+  try { existing = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  var now = Date.now();
+  var demos = [
+    {
+      id: 'HAZ-DEMO-01',
+      title: 'Damaged edge protection on Level 4 north',
+      description: 'Top rail removed for material delivery, not yet reinstated. Approximately 6 m exposed.',
+      location: 'Level 4 north slab edge',
+      severity: 'High',
+      status: 'open',
+      reporter_name: 'Jake Ryan',
+      reporter_company: 'Murphy Civil Construction',
+      reported_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+      photos: []
+    },
+    {
+      id: 'HAZ-DEMO-02',
+      title: 'Slip hazard \u2014 oil leak from compactor',
+      description: 'Hydraulic oil pooled near the south compound gate. Absorbent has been put down but spread is approx. 1.5 m².',
+      location: 'South compound, near gate',
+      severity: 'Medium',
+      status: 'open',
+      reporter_name: 'Mark Flynn',
+      reporter_company: 'Murphy Civil Construction',
+      reported_at: new Date(now - 5 * 60 * 60 * 1000).toISOString(),
+      photos: []
+    },
+    {
+      id: 'HAZ-DEMO-03',
+      title: 'Frayed extension lead in plant room',
+      description: 'Live 240V lead with damaged outer sheath approximately 200mm from plug end. Tagged out.',
+      location: 'Plant room \u2014 ground floor',
+      severity: 'High',
+      status: 'resolved',
+      reporter_name: 'Wayne Slattery',
+      reporter_company: 'Sparks Electrical',
+      reported_at: new Date(now - 26 * 60 * 60 * 1000).toISOString(),
+      resolved_at: new Date(now - 22 * 60 * 60 * 1000).toISOString(),
+      resolution: 'Lead removed from service and replaced. New PAT-tested lead in place.',
+      photos: []
+    },
+    {
+      id: 'HAZ-DEMO-04',
+      title: 'Trip hazard \u2014 cable run across walkway',
+      description: 'Welding leads running across the main pedestrian route to the eastern compound. Need ramps.',
+      location: 'Pedestrian walkway \u2014 east boundary',
+      severity: 'Low',
+      status: 'open',
+      reporter_name: 'Tom Burke',
+      reporter_company: 'Murphy Civil Construction',
+      reported_at: new Date(now - 8 * 60 * 60 * 1000).toISOString(),
+      photos: []
+    }
+  ];
+  var added = 0;
+  demos.forEach(function(d) {
+    if (existing.some(function(x) { return x.id === d.id; })) return;
+    existing.push(d);
+    added++;
+  });
+  try { localStorage.setItem(key, JSON.stringify(existing)); } catch(e) {}
+  if (!silent) {
+    if (typeof slanToast === 'function') slanToast('Loaded ' + added + ' demo hazards.');
+    else slanAlert('Demo data loaded', 'Loaded ' + added + ' demo hazards.', 'info');
+  }
+  return added;
+}
+
 // ─── INCIDENT DEMO SEEDER ───────────────────────────────────────
 // Adds 5 representative incident reports across a mix of types, severities
 // and statuses so the supervisor (and worker) can see what a populated
@@ -36901,7 +37145,7 @@ function incSeedDemoIncidents(silent) {
       working_overtime: 'no',
       normal_duty: 'yes',
       relationship: 'worker',
-      witnesses: [{ name: "Lee OBrien", phone: "0411 111 007", company: "Murphy Civil Construction", source: 'roster' }, { name: "Sam Carroll", phone: "0411 111 003", company: "Burke Civil Contractors", source: 'roster' }],
+      witnesses: [{ name: "Lee O'Brien", phone: "0411 111 007", company: "Murphy Civil Construction", source: 'roster' }, { name: "Sam Carroll", phone: "0411 111 003", company: "Burke Civil Contractors", source: 'roster' }],
       supervisor_phone: '0432 778 901',
       supervisor_company: 'Murphy Civil Construction',
       register_target: 'SLS-REG-006'
@@ -37531,11 +37775,11 @@ function toggleCheck(id) {
 
 // --- DEMO PERMITS ----------------------------------------------------------
 const DEMO_PERMITS = [
-  { type:'Hot Works',          ref:'HW-001',  date:'2026-04-11', location:'Level 2 \u2014 welding to steel column connections', workers:"Lee OBrien, Shane Connolly", status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-11' },
+  { type:'Hot Works',          ref:'HW-001',  date:'2026-04-11', location:'Level 2 \u2014 welding to steel column connections', workers:"Lee O'Brien, Shane Connolly", status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-11' },
   { type:'Working at Heights', ref:'WAH-003', date:'2026-04-11', location:'Scaffold erection \u2014 north elevation perimeter',  workers:'Jake Ryan, Tom Burke, Pat Healy', status:'open', filedBy:'Pending', filedAt:null },
-  { type:'Crane Lift',         ref:'CL-002',  date:'2026-04-10', location:'Precast panels \u2014 Grid B Level 1',                workers:"Brendan Kelly, Lee OBrien",  status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-10' },
+  { type:'Crane Lift',         ref:'CL-002',  date:'2026-04-10', location:'Precast panels \u2014 Grid B Level 1',                workers:"Brendan Kelly, Lee O'Brien",  status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-10' },
   { type:'Excavation',         ref:'EX-001',  date:'2026-04-09', location:'Trench for stormwater \u2014 car park zone C',        workers:'Mick Doyle, Kevin Nash',      status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-09' },
-  { type:'Hot Works',          ref:'HW-002',  date:'2026-04-08', location:'Roof level \u2014 cutting and grinding to steel',     workers:"Lee OBrien, Shane Connolly", status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-08' }
+  { type:'Hot Works',          ref:'HW-002',  date:'2026-04-08', location:'Roof level \u2014 cutting and grinding to steel',     workers:"Lee O'Brien, Shane Connolly", status:'closed', filedBy:'Sl\u00e1n Safety', filedAt:'2026-04-08' }
 ];
 
 // --- PERMITS TO WORK -------------------------------------------------------
@@ -37806,12 +38050,8 @@ function goToSdsLookup() {
   }
   
   // Show worker's own submitted reports for workers
-  var workerCard = document.getElementById('sds-worker-reports-card');
   if (_sdsFromRole === 'worker') {
-    if (workerCard) workerCard.style.display = 'block';
     sdsRenderWorkerReports();
-  } else {
-    if (workerCard) workerCard.style.display = 'none';
   }
   
   // Hide "Site Supervisor" contact line when viewing as supervisor
@@ -37877,9 +38117,6 @@ function sdsReportMissing() {
   
   if (!name || !name.value.trim()) { slanAlert('Please enter the chemical name before continuing.'); return; }
   
-  // Set submission flag to prevent re-enable
-  sdsSubmitting = true;
-  
   // Prevent double-click
   if (btn) {
     if (btn.disabled) return; // Already submitting
@@ -37890,20 +38127,15 @@ function sdsReportMissing() {
   
   var p = getProfile();
   
-  // Stamp photos with final chemical name NOW before saving
-  var chemName = name.value.trim();
-  var finalPhotos = [];
-  for (var i = 0; i < sdsPhotosOriginal.length; i++) {
-    if (!sdsPhotosOriginal[i]) continue;
-    finalPhotos.push(sdsStampPhotoSync(sdsPhotosOriginal[i], chemName));
-  }
+  // Filter out null photos
+  var photosToSave = sdsPhotos.filter(function(p) { return p !== null; });
   
   var payload = {
     id: Date.now() + '_' + Math.random().toString(36).substr(2, 9), // Unique ID
     form_type: 'sds_missing_report',
-    chemical_name: chemName,
+    chemical_name: name.value.trim(),
     usage: usage ? usage.value.trim() : '',
-    photos: finalPhotos,
+    photos: photosToSave,
     reported_by: p ? p.name : 'Unknown',
     reported_at: new Date().toISOString(),
     status: 'pending'
@@ -37915,20 +38147,9 @@ function sdsReportMissing() {
     existing = JSON.parse(localStorage.getItem('sds_missing') || '[]');
   } catch(e) {}
   
-  // Deduplicate: check if this exact payload already exists (by chemical_name + reported_by + timestamp within 2 seconds)
-  var isDuplicate = existing.some(function(r) {
-    if (r.chemical_name !== payload.chemical_name) return false;
-    if (r.reported_by !== payload.reported_by) return false;
-    var timeDiff = Math.abs(new Date(r.reported_at).getTime() - new Date(payload.reported_at).getTime());
-    return timeDiff < 2000; // Within 2 seconds = duplicate
-  });
-  
-  if (!isDuplicate) {
-    existing.push(payload);
-    localStorage.setItem('sds_missing', JSON.stringify(existing));
-  } else {
-    console.warn('Duplicate SDS report blocked');
-  }
+  // Add to array (duplicate check not needed as each submission has unique ID)
+  existing.push(payload);
+  localStorage.setItem('sds_missing', JSON.stringify(existing));
   
   // Clear form
   if (name) name.value = '';
@@ -37945,11 +38166,6 @@ function sdsReportMissing() {
   document.getElementById('sds-success-time').textContent = timeText;
   goTo('screen-sds-success');
   
-  // Reset submission flag after navigation
-  setTimeout(function() {
-    sdsSubmitting = false;
-  }, 500);
-  
   // Update notification badge and activity pills
   if (typeof updateSdsNotif === 'function') updateSdsNotif();
   if (typeof updateStatusStrip === 'function') updateStatusStrip();
@@ -37961,16 +38177,12 @@ function sdsReportMissing() {
 
 // SDS photo handling - stores up to 2 photos with timestamps
 var sdsPhotos = [null, null];
-var sdsSubmitting = false; // Flag to prevent double-submit
 
 function sdsValidateForm() {
   var name = document.getElementById('sds-missing-name');
   var usage = document.getElementById('sds-missing-usage');
   var btn = document.getElementById('sds-submit-btn');
   if (!btn) return;
-  
-  // Don't re-enable button if we're currently submitting
-  if (sdsSubmitting) return;
   
   // Require: name filled, usage filled, AND both photos uploaded
   var nameValid = name && name.value.trim().length > 0;
@@ -37992,57 +38204,6 @@ function sdsValidateForm() {
   }
 }
 
-// Store original photos without stamping
-var sdsPhotosOriginal = [null, null];
-
-function sdsStampPhotoSync(photoBase64, chemName) {
-  // Create image and canvas synchronously
-  var img = new window.Image();
-  img.src = photoBase64;
-  
-  // Note: This assumes image is already loaded from base64 (instant for data URIs)
-  var canvas = document.createElement('canvas');
-  canvas.width = img.width;
-  canvas.height = img.height;
-  var ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0);
-  
-  var w = canvas.width;
-  var h = canvas.height;
-  var now = new Date();
-  var timestamp = now.toLocaleString('en-AU', { 
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit', hour12: true 
-  });
-  
-  var padding = 8;
-  var fontSize = Math.max(14, Math.floor(w / 45));
-  ctx.font = '600 ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  
-  // Chemical name at top
-  var chemText = chemName.length > 30 ? chemName.substring(0, 27) + '...' : chemName;
-  var chemMetrics = ctx.measureText(chemText);
-  var chemWidth = chemMetrics.width + (padding * 2);
-  var chemHeight = fontSize + (padding * 2);
-  
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-  ctx.fillRect(8, 8, chemWidth, chemHeight);
-  ctx.fillStyle = '#fff';
-  ctx.fillText(chemText, 8 + padding, 8 + padding + (fontSize * 0.75));
-  
-  // Timestamp at bottom
-  var timeMetrics = ctx.measureText(timestamp);
-  var timeWidth = timeMetrics.width + (padding * 2);
-  var timeHeight = fontSize + (padding * 2);
-  
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-  ctx.fillRect(8, h - timeHeight - 8, timeWidth, timeHeight);
-  ctx.fillStyle = '#fff';
-  ctx.fillText(timestamp, 8 + padding, h - 8 - (fontSize * 0.25));
-  
-  return canvas.toDataURL('image/jpeg', 0.7);
-}
-
 function handleSdsPhoto(idx, e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -38062,12 +38223,9 @@ function handleSdsPhoto(idx, e) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
       const compressed = canvas.toDataURL('image/jpeg', 0.7);
-      
-      // Store original without stamping (will stamp at submit time)
-      sdsPhotosOriginal[idx] = compressed;
-      sdsPhotos[idx] = compressed; // Also store in sdsPhotos for validation
-      
-      // Display the photo
+      sdsPhotos[idx] = compressed;
+
+      // Replace slot content with image
       const slot = document.getElementById('sds-slot-' + idx);
       if (slot) {
         slot.innerHTML = `<img src="${compressed}" alt="SDS photo" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
@@ -38082,10 +38240,8 @@ function handleSdsPhoto(idx, e) {
   reader.readAsDataURL(file);
 }
 
-
 function handleSdsPhotoRemove(idx) {
   sdsPhotos[idx] = null;
-  sdsPhotosOriginal[idx] = null;
   const slot = document.getElementById('sds-slot-' + idx);
   const input = document.getElementById('sds-photo-input-' + idx);
   
@@ -38252,26 +38408,21 @@ function sdsRenderPendingReports() {
       photoHtml = '<div onclick="sdsViewReportPhoto(' + idx + ', 0)" style="cursor:pointer;margin-top:8px"><img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></div>';
     }
     
-    return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px;cursor:pointer" onclick="toggleSdsSupCard(' + idx + ')">' +
-      '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:6px"><strong>Chemical/Product Name:</strong> ' + r.chemical_name + '</div>' +
-      (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
+    return '<div class="fcard-body" style="background:#fff;border:1.5px solid rgba(184,50,50,.2);border-radius:var(--rs);padding:12px">' +
+      '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">' + r.chemical_name + '</div>' +
+      (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:10px">Where being used: ' + r.usage + '</div>' : '') +
       '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date + '</div>' +
-      '<div id="sds-sup-detail-' + idx + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' +
       photoHtml +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px">' +
-        '<button onclick="event.stopPropagation(); sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
-        '<button onclick="event.stopPropagation(); sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
-      '</div>' +
+        '<button onclick="sdsCloseReport(' + idx + ', \'added\')" style="padding:10px;border-radius:6px;border:none;background:#1B6E3A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Added to Register</button>' +
+        '<button onclick="sdsCloseReport(' + idx + ', \'dismiss\')" style="padding:10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Dismiss</button>' +
       '</div>' +
     '</div>';
   }).join('');
 }
 
 function toggleSdsSupCard(idx) {
-  var detail = document.getElementById('sds-sup-detail-' + idx);
-  if (detail) {
-    detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
-  }
+  // Not needed anymore - cards don't collapse
 }
 
 function sdsRenderWorkerReports() {
@@ -38323,13 +38474,13 @@ function sdsRenderWorkerReports() {
     }
     
     return '<div class="fcard-body" style="background:#fff;border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;cursor:pointer" onclick="toggleSdsWorkerCard(' + idx + ')">' +
-      '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:6px"><strong>Chemical/Product Name:</strong> ' + r.chemical_name + '</div>' +
-      (r.usage ? '<div style="font-size:13px;color:var(--text);line-height:1.4;margin-bottom:8px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
-      '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Reported by ' + (r.reported_by || 'Unknown') + ' · ' + date + '</div>' +
-      '<div style="display:flex;justify-content:flex-end;margin-top:8px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
+        '<div style="font-size:15px;font-weight:700;color:var(--text)">' + r.chemical_name + '</div>' +
         '<div style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:' + statusBg + ';color:' + statusColor + ';white-space:nowrap">' + statusText + '</div>' +
       '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px">' + date + '</div>' +
       '<div id="sds-worker-detail-' + idx + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' +
+        (r.usage ? '<div style="font-size:12px;color:var(--text);line-height:1.4;margin-bottom:8px"><strong>Where being used:</strong> ' + r.usage + '</div>' : '') +
         photoHtml +
       '</div>' +
     '</div>';
@@ -40971,1155 +41122,6 @@ document.addEventListener('DOMContentLoaded', slanWireNumericInputs);
     goTo._slanWired = true;
   }
 })();
-
-// ═══════════════════ DIRECTOR DASHBOARD ═══
-function loadDirectorDashboard() {
-  // Fetch weather
-  fetchDirectorWeather();
-  
-  // Load data from localStorage
-  var incidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-  var hazards = JSON.parse(localStorage.getItem('hazards') || '[]');
-  var toolbox = JSON.parse(localStorage.getItem('toolbox_talks') || '[]');
-  var permits = JSON.parse(localStorage.getItem('permits') || '[]');
-  var sdsReports = JSON.parse(localStorage.getItem('sds_missing_reports') || '[]');
-  var prestarts = JSON.parse(localStorage.getItem('prestart_records') || '[]');
-  var signins = JSON.parse(localStorage.getItem('signin_records') || '[]');
-  
-  // Filter to selected period (default 30 days)
-  var periodDays = 30;
-  var cutoff = Date.now() - (periodDays * 24 * 60 * 60 * 1000);
-  
-  // Count incidents in period
-  var incidentsInPeriod = incidents.filter(function(i) {
-    var t = i.submitted_at || i.reported_at;
-    return t && new Date(t).getTime() > cutoff;
-  }).length;
-  
-  // Count open hazards
-  var openHazards = hazards.filter(function(h) {
-    return h.status !== 'closed' && h.status !== 'resolved';
-  }).length;
-  
-  // Count toolbox talks in period
-  var toolboxInPeriod = toolbox.filter(function(t) {
-    return t.timestamp && new Date(t.timestamp).getTime() > cutoff;
-  }).length;
-  
-  // Count active permits
-  var activePermits = permits.filter(function(p) {
-    return p.status === 'active' || p.status === 'pending';
-  }).length;
-  
-  // Count pending SDS reports
-  var pendingSds = sdsReports.filter(function(s) {
-    return s.status === 'pending' || !s.status;
-  }).length;
-  
-  // Count today's prestarts
-  var today = new Date().toDateString();
-  var todayPrestarts = prestarts.filter(function(p) {
-    return p.timestamp && new Date(p.timestamp).toDateString() === today;
-  }).length;
-  
-  // Count today's sign-ins
-  var todaySignins = signins.filter(function(s) {
-    return s.timestamp && new Date(s.timestamp).toDateString() === today;
-  }).length;
-  
-  // Calculate LTI-free days
-  var ltiDays = calculateLTIDays(incidents);
-  
-  // Update "Today at a glance"
-  var signin = document.getElementById('an-live-signin');
-  var prestart = document.getElementById('an-live-prestart');
-  var hazard = document.getElementById('an-live-hazards');
-  var lti = document.getElementById('an-live-lti');
-  var incident = document.getElementById('an-live-incidents');
-  
-  if (signin) signin.textContent = todaySignins;
-  if (prestart) prestart.textContent = todayPrestarts;
-  if (hazard) hazard.textContent = openHazards;
-  if (lti) lti.textContent = ltiDays;
-  if (incident) incident.textContent = incidentsInPeriod;
-  
-  // Update tile badges
-  var toolboxBadge = document.getElementById('dir-toolbox-badge');
-  var permitsBadge = document.getElementById('dir-permits-badge');
-  var incidentsBadge = document.getElementById('dir-incidents-badge');
-  var hazardsBadge = document.getElementById('dir-hazards-badge');
-  var sdsBadge = document.getElementById('dir-sds-badge');
-  var prestartsBadge = document.getElementById('dir-prestarts-badge');
-  
-  if (toolboxBadge) toolboxBadge.textContent = toolboxInPeriod;
-  if (permitsBadge) permitsBadge.textContent = activePermits;
-  if (incidentsBadge) incidentsBadge.textContent = incidentsInPeriod;
-  if (hazardsBadge) hazardsBadge.textContent = openHazards;
-  if (sdsBadge) sdsBadge.textContent = pendingSds;
-  if (prestartsBadge) prestartsBadge.textContent = todayPrestarts;
-}
-
-function calculateLTIDays(incidents) {
-  // Find most recent LTI
-  var ltiIncidents = incidents.filter(function(i) {
-    return i.severity === 'lti' || i.severity === 'lost-time-injury';
-  });
-  
-  if (ltiIncidents.length === 0) return 47; // Default demo value
-  
-  // Sort by timestamp, most recent first
-  ltiIncidents.sort(function(a, b) {
-    var aTime = new Date(a.timestamp || a.reported_at).getTime();
-    var bTime = new Date(b.timestamp || b.reported_at).getTime();
-    return bTime - aTime;
-  });
-  
-  var mostRecent = ltiIncidents[0];
-  var ltiDate = new Date(mostRecent.timestamp || mostRecent.reported_at);
-  var today = new Date();
-  var diff = today - ltiDate;
-  var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
-  return days;
-}
-
-function fetchDirectorWeather() {
-  // Get location - use Tralee, Kerry as default
-  var lat = 52.2593;
-  var lon = -9.6993;
-  
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code&timezone=auto')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var temp = Math.round(data.current.temperature_2m);
-      var code = data.current.weather_code;
-      
-      // Weather code to icon mapping
-      var icon = '☀️';
-      var desc = 'Clear';
-      if (code >= 1 && code <= 3) { icon = '⛅'; desc = 'Partly cloudy'; }
-      else if (code >= 45 && code <= 48) { icon = '🌫️'; desc = 'Foggy'; }
-      else if (code >= 51 && code <= 67) { icon = '🌧️'; desc = 'Rainy'; }
-      else if (code >= 71 && code <= 77) { icon = '🌨️'; desc = 'Snow'; }
-      else if (code >= 80 && code <= 99) { icon = '⛈️'; desc = 'Stormy'; }
-      
-      // Update weather display
-      var iconEl = document.getElementById('dir-weather-icon');
-      var tempEl = document.getElementById('dir-weather-temp');
-      var locEl = document.getElementById('dir-weather-loc');
-      var displayEl = document.getElementById('dir-weather-display');
-      
-      if (iconEl) iconEl.textContent = icon;
-      if (tempEl) tempEl.textContent = temp + '°C · ' + desc;
-      if (locEl) locEl.textContent = 'Tralee, Kerry';
-      if (displayEl) displayEl.textContent = temp + '°';
-    })
-    .catch(function(err) {
-      console.error('Weather fetch failed:', err);
-    });
-}
-
-function dirOpenTile(tileName) {
-  // Navigate to detail screens
-  if (tileName === 'incidents') {
-    goTo('screen-dir-incidents');
-    loadDirectorIncidents();
-  } else if (tileName === 'toolbox') {
-    alert('Toolbox detail screen - coming in next phase');
-  } else if (tileName === 'permits') {
-    alert('Permits detail screen - coming in next phase');
-  } else if (tileName === 'hazards') {
-    alert('Hazards detail screen - coming in next phase');
-  } else if (tileName === 'sds') {
-    alert('SDS detail screen - coming in next phase');
-  } else if (tileName === 'prestarts') {
-    alert('Pre-starts detail screen - coming in next phase');
-  }
-}
-
-function dirDrillDown(statType) {
-  // Handle clicks on "Today at a glance" stats
-  if (statType === 'signins') {
-    showDrillDownPanel('Signed In Today', 
-      'Showing all workers signed in today:<br><br>' +
-      '• Jake Ryan (7:15 AM)<br>' +
-      '• Tom Chen (7:22 AM)<br>' +
-      '• Sarah O\'Brien (7:45 AM)<br>' +
-      '• Mike Johnson (7:50 AM)<br>' +
-      '• Emma Wilson (8:00 AM)<br><br>' +
-      '<span style="color:var(--muted);font-size:12px">Full version will show detailed list with times, sites, and contact info.</span>');
-  } else if (statType === 'prestarts') {
-    showDrillDownPanel('Pre-starts Today', 
-      'Showing all pre-start checks completed:<br><br>' +
-      '• EWP - Jake Ryan (8:00 AM)<br>' +
-      '• Excavator - Tom Chen (7:30 AM)<br>' +
-      '• Forklift - Sarah O\'Brien (8:15 AM)<br>' +
-      '• Crane - Mike Johnson (7:45 AM)<br><br>' +
-      '<span style="color:var(--muted);font-size:12px">Full version will show detailed pre-start records.</span>');
-  } else if (statType === 'hazards') {
-    showDrillDownPanel('Open Hazards', 
-      'Would navigate to Hazards screen filtered to show only open/unresolved hazards.<br><br>' +
-      '<span style="color:var(--muted);font-size:12px">Coming in next phase.</span>');
-  } else if (statType === 'lti') {
-    showDrillDownPanel('LTI-Free Days: 47', 
-      '<strong>Last LTI:</strong> 15 Mar 2026<br>' +
-      '<strong>Worker:</strong> [Name]<br>' +
-      '<strong>Incident:</strong> [Description]<br><br>' +
-      '<strong>Company record:</strong> 156 days<br>' +
-      '<strong>Industry average:</strong> 32 days<br><br>' +
-      '<span style="color:var(--muted);font-size:12px">Full version will show LTI history and safety milestones.</span>');
-  } else if (statType === 'incidents') {
-    // Navigate to Incidents screen
-    goTo('screen-dir-incidents');
-    loadDirectorIncidents();
-  }
-}
-
-function showDrillDownPanel(title, content) {
-  // Create overlay
-  var overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
-  
-  // Create panel
-  var panel = document.createElement('div');
-  panel.style.cssText = 'background:var(--card);border-radius:12px;padding:20px;max-width:400px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.3)';
-  
-  panel.innerHTML = 
-    '<div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:14px">' + title + '</div>' +
-    '<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:18px">' + content + '</div>' +
-    '<button onclick="this.parentElement.parentElement.remove()" style="background:var(--deep);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;width:100%;font-family:inherit">OK</button>';
-  
-  overlay.appendChild(panel);
-  document.body.appendChild(overlay);
-  
-  // Click overlay to close
-  overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) {
-      overlay.remove();
-    }
-  });
-}
-
-// Global demo incidents data for director portal
-// ═══════════════════════════════════════════════════════════════════════════
-// UNIFIED DEMO DATA - Uses SAME structure as supervisor/worker portals
-// ═══════════════════════════════════════════════════════════════════════════
-
-function prepopulateDemoIncidents() {
-  var existing = incLoadAll();
-  
-  // FORCE RELOAD: Clear any old demo data and load the new 25 incidents
-  if (existing && existing.length > 0) {
-    console.log('Clearing old incidents and loading new demo data...');
-    localStorage.removeItem('slan_incidents_v1');
-  }
-  
-  var demos = [
-    {ref:'INC-260428001',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Jake Ryan',reporter_company:'Murphy Civil Construction',reporter_role:'Concretor',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-28',incident_time:'14:30',location:'Platform level excavation',description:'Slip on wet floor near dewatering area',mechanism:'slip-trip',body_part:'Knee',injury_nature:'Bruise',submitted_at:'2026-04-28T14:30:00.000Z',status:'open'},
-    {ref:'INC-260422002',site:SITE||'Parramatta Metro Stage 2',reporter_name:'David Zhang',reporter_company:'Burke Civil Contractors',reporter_role:'Plant Operator',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-04-22',incident_time:'09:15',location:'Tunnel boring machine zone',description:'Excavator operating too close to edge protection',mechanism:'struck-moving-plant',body_part:'None',injury_nature:'None',submitted_at:'2026-04-22T09:15:00.000Z',status:'open'},
-    {ref:'INC-260415003',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Sarah Thompson',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-15',incident_time:'11:45',location:'Concourse level formwork',description:'Cut hand on steel reinforcement bar',mechanism:'other',body_part:'Right Hand',injury_nature:'Laceration',submitted_at:'2026-04-15T11:45:00.000Z',status:'open'},
-    {ref:'INC-260405004',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Michael Patel',reporter_company:'Murphy Civil Construction',reporter_role:'Site Supervisor',incident_type:'Near Miss',severity:'Major',incident_date:'2026-04-05',incident_time:'15:20',location:'Ventilation shaft',description:'Unsecured load on crane hook nearly fell',mechanism:'struck-falling-object',body_part:'Head',injury_nature:'None',submitted_at:'2026-04-05T15:20:00.000Z',status:'open'},
-    {ref:'INC-260326005',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Mark Flynn',reporter_company:'Murphy Civil Construction',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-26',incident_time:'10:30',location:'Station box formwork',description:'Pinched finger between formwork panels',mechanism:'caught-in-between',body_part:'Left Hand',injury_nature:'Crush',submitted_at:'2026-03-26T10:30:00.000Z',status:'open'},
-    {ref:'INC-260312006',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Lisa Nguyen',reporter_company:'Burke Civil Contractors',reporter_role:'Engineer',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-03-12',incident_time:'08:15',location:'Access ramp',description:'Trip hazard - unsecured cable across walkway',mechanism:'slip-trip',body_part:'Ankle',injury_nature:'None',submitted_at:'2026-03-12T08:15:00.000Z',status:'open'},
-    {ref:'INC-260221007',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Tom Burke',reporter_company:'Burke Civil Contractors',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Major',incident_date:'2026-02-21',incident_time:'14:10',location:'Platform level',description:'Fall from scaffold - 2.5m height, ankle fracture (LTI)',mechanism:'fall-from-height',body_part:'Right Ankle',injury_nature:'Fracture',submitted_at:'2026-02-21T14:10:00.000Z',status:'open'},
-    {ref:'INC-260205008',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Shane Connolly',reporter_company:'Murphy Civil Construction',reporter_role:'Steelfixer',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2026-02-05',incident_time:'11:20',location:'Rebar cage assembly',description:'Hand strain from repetitive bending',mechanism:'overexertion-manual',body_part:'Right Hand',injury_nature:'Strain',submitted_at:'2026-02-05T11:20:00.000Z',status:'open'},
-    {ref:'INC-260122009',site:SITE||'Parramatta Metro Stage 2',reporter_name:'James Anderson',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Carpenter',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-01-22',incident_time:'16:20',location:'Temporary works',description:'Formwork prop found unsecured',mechanism:'struck-falling-object',body_part:'None',injury_nature:'None',submitted_at:'2026-01-22T16:20:00.000Z',status:'open'},
-    {ref:'INC-260108010',site:SITE||'Parramatta Metro Stage 2',reporter_name:'Lee OBrien',reporter_company:'Murphy Civil Construction',reporter_role:'Rigger',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-01-08',incident_time:'09:30',location:'Crane lift zone',description:'Minor burn from grinding spark',mechanism:'other',body_part:'Left Forearm',injury_nature:'Burn',submitted_at:'2026-01-08T09:30:00.000Z',status:'open'},
-    {ref:'INC-260420011',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Emma Williams',reporter_company:'Murphy Civil Construction',reporter_role:'Site Manager',incident_type:'Near Miss',severity:'Major',incident_date:'2026-04-20',incident_time:'10:45',location:'Tower crane radius',description:'Pedestrian entered exclusion zone during lift',mechanism:'struck-moving-plant',body_part:'None',injury_nature:'None',submitted_at:'2026-04-20T10:45:00.000Z',status:'open'},
-    {ref:'INC-260410012',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Pat Healy',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-04-10',incident_time:'13:25',location:'Ground floor slab',description:'Concrete splashback to face',mechanism:'other',body_part:'Face',injury_nature:'Chemical irritation',submitted_at:'2026-04-10T13:25:00.000Z',status:'open'},
-    {ref:'INC-260328013',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Chris Mitchell',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-28',incident_time:'11:10',location:'Level 3 slab edge',description:'Hit head on protruding rebar',mechanism:'hit-against-object',body_part:'Head',injury_nature:'Laceration',submitted_at:'2026-03-28T11:10:00.000Z',status:'open'},
-    {ref:'INC-260315014',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Mick Doyle',reporter_company:'Burke Civil Contractors',reporter_role:'Excavator Operator',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-03-15',incident_time:'08:50',location:'Basement excavation',description:'Service strike near miss - stopped before hitting water main',mechanism:'other',body_part:'None',injury_nature:'None',submitted_at:'2026-03-15T08:50:00.000Z',status:'open'},
-    {ref:'INC-260228015',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Rachel Cooper',reporter_company:'Murphy Civil Construction',reporter_role:'Safety Officer',incident_type:'Actual Injury',severity:'Critical',incident_date:'2026-02-28',incident_time:'15:00',location:'Level 5 formwork',description:'Crushed finger in formwork clamp (LTI)',mechanism:'caught-in-between',body_part:'Left Index Finger',injury_nature:'Crush',submitted_at:'2026-02-28T15:00:00.000Z',status:'open'},
-    {ref:'INC-260210016',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Sam Carroll',reporter_company:'Burke Civil Contractors',reporter_role:'Concretor',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2026-02-10',incident_time:'14:40',location:'Basement pour',description:'Back strain from shoveling concrete',mechanism:'overexertion-manual',body_part:'Lower Back',injury_nature:'Strain',submitted_at:'2026-02-10T14:40:00.000Z',status:'open'},
-    {ref:'INC-260125017',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Wei Chen',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Labourer',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-01-25',incident_time:'12:15',location:'Material laydown',description:'Forklift reversing without spotter',mechanism:'struck-moving-plant',body_part:'None',injury_nature:'None',submitted_at:'2026-01-25T12:15:00.000Z',status:'open'},
-    {ref:'INC-251218018',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Brendan Kelly',reporter_company:'Kelly Crane Services',reporter_role:'Crane Operator',incident_type:'Actual Injury',severity:'Minor',incident_date:'2025-12-18',incident_time:'09:45',location:'Tower crane cab',description:'Minor cut from sharp edge on controls',mechanism:'other',body_part:'Right Hand',injury_nature:'Laceration',submitted_at:'2025-12-18T09:45:00.000Z',status:'open'},
-    {ref:'INC-251205019',site:SITE||'Bondi Junction Mixed Use Development',reporter_name:'Dave Murphy',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Carpenter',incident_type:'Actual Injury',severity:'Minor',incident_date:'2025-12-05',incident_time:'10:20',location:'Stairwell formwork',description:'Splinter from timber handling',mechanism:'other',body_part:'Left Palm',injury_nature:'Penetrating',submitted_at:'2025-12-05T10:20:00.000Z',status:'open'},
-    {ref:'INC-260418020',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Aaron Farrell',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Formworker',incident_type:'Near Miss',severity:'Moderate',incident_date:'2026-04-18',incident_time:'14:50',location:'Grandstand structure',description:'Dropped tool from height - no one below',mechanism:'struck-falling-object',body_part:'None',injury_nature:'None',submitted_at:'2026-04-18T14:50:00.000Z',status:'open'},
-    {ref:'INC-260330021',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Gary Tully',reporter_company:'Tully Plumbing',reporter_role:'Plumber',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-03-30',incident_time:'11:30',location:'Amenities plumbing',description:'Minor burn from hot pipe',mechanism:'other',body_part:'Right Hand',injury_nature:'Burn',submitted_at:'2026-03-30T11:30:00.000Z',status:'open'},
-    {ref:'INC-260308022',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Daniel Gibson',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Near Miss',severity:'Major',incident_date:'2026-03-08',incident_time:'08:30',location:'Roof steelwork',description:'Working at heights without harness attached',mechanism:'fall-from-height',body_part:'None',injury_nature:'None',submitted_at:'2026-03-08T08:30:00.000Z',status:'open'},
-    {ref:'INC-260218023',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Chris Walsh',reporter_company:'Smith Formwork Pty Ltd',reporter_role:'Formworker',incident_type:'Actual Injury',severity:'Moderate',incident_date:'2026-02-18',incident_time:'13:15',location:'Seating tier formwork',description:'Eye irritation from concrete dust',mechanism:'other',body_part:'Both Eyes',injury_nature:'Foreign object',submitted_at:'2026-02-18T13:15:00.000Z',status:'open'},
-    {ref:'INC-260129024',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Sophie Martin',reporter_company:'Murphy Civil Construction',reporter_role:'Engineer',incident_type:'Actual Injury',severity:'Minor',incident_date:'2026-01-29',incident_time:'15:45',location:'Site office stairs',description:'Twisted ankle on uneven surface',mechanism:'slip-trip',body_part:'Left Ankle',injury_nature:'Sprain',submitted_at:'2026-01-29T15:45:00.000Z',status:'open'},
-    {ref:'INC-251211025',site:SITE||'Sydney Olympic Park Sports Complex',reporter_name:'Liam Brennan',reporter_company:'Murphy Civil Construction',reporter_role:'Labourer',incident_type:'Near Miss',severity:'Major',incident_date:'2025-12-11',incident_time:'10:00',location:'External works',description:'Overhead powerline contacted by equipment boom',mechanism:'electrical',body_part:'None',injury_nature:'None',submitted_at:'2025-12-11T10:00:00.000Z',status:'open'},
-  ]
-  
-  demos.forEach(function(inc){incSaveRecord(inc);});
-  console.log('✓ Prepopulated ' + demos.length + ' demo incidents');
-}
-
-// Initialize when director portal loads
-if (typeof window !== 'undefined') {
-  setTimeout(function(){
-    if (document.getElementById('screen-director-incidents')) prepopulateDemoIncidents();
-  }, 500);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SEVERITY MAPPING - Convert supervisor values to director display
-// ═══════════════════════════════════════════════════════════════════════════
-
-function mapSeverityForDirector(incident) {
-  var severity = (incident.severity || '').toLowerCase();
-  var incidentType = (incident.incident_type || '').toLowerCase();
-  
-  // LTI = Major or Critical severity actual injuries
-  if (incidentType.includes('injury') && (severity === 'major' || severity === 'critical')) {
-    return {label: 'LTI', color: '#FAEEDA', textColor: '#854F0B', icon: '🚨'};
-  }
-  
-  // Near Miss
-  if (incidentType.includes('near miss') || incidentType.includes('nearmiss')) {
-    return {label: 'Near Miss', color: '#E6F5ED', textColor: '#1B6E3A', icon: '⚠️'};
-  }
-  
-  // First Aid = Minor or Moderate injuries
-  return {label: 'First Aid', color: '#FCEBEB', textColor: '#A32D2D', icon: '🩹'};
-}
-
-
-
-
-// ═══════════════════════════════════════════════════════════════════════════
-// LOAD DIRECTOR DEMO INCIDENTS - Force load 25 demo incidents
-// ═══════════════════════════════════════════════════════════════════════════
-
-function loadDirectorDemoIncidents() {
-  // Clear existing incidents
-  console.log('🗑️ Clearing old incidents...');
-  localStorage.removeItem('slan_incidents_v1');
-  
-  // Force load the 25 demo incidents
-  console.log('📊 Loading 25 demo incidents across 3 sites...');
-  prepopulateDemoIncidents();
-  
-  // Reload the screen
-  loadDirectorIncidents();
-  
-  // Show success message
-  if (typeof slanToast === 'function') {
-    slanToast('✓ Loaded 25 demo incidents across 3 Australian sites');
-  } else {
-    alert('✓ Loaded 25 demo incidents across 3 sites');
-  }
-}
-
-function loadDirectorIncidents(customIncidents) {
-  // Set logo
-  var logo = document.getElementById('dir-inc-logo');
-  if (logo) {
-    var allLogos = document.querySelectorAll('.tbar-logo img');
-    for (var i = 0; i < allLogos.length; i++) {
-      if (allLogos[i] !== logo && allLogos[i].src) {
-        logo.src = allLogos[i].src;
-        break;
-      }
-    }
-  }
-  
-  // Load incidents from localStorage or use demo data
-  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-  var incidents = customIncidents || (storedIncidents.length > 0 ? storedIncidents : incLoadAll());
-  
-  // Filter to last 6 months (180 days) to show all demo data
-  var cutoff = Date.now() - (180 * 24 * 60 * 60 * 1000);
-  var recentIncidents = incidents.filter(function(i) {
-    var t = i.submitted_at || i.reported_at;
-    return t && new Date(t).getTime() > cutoff;
-  });
-  
-  // Update stats
-  var totalEl = document.getElementById('dir-inc-total');
-  var ltiEl = document.getElementById('dir-inc-lti');
-  var trendEl = document.getElementById('dir-inc-trend');
-  
-  // Use actual count
-  var displayCount = recentIncidents.length;
-  
-  if (totalEl) totalEl.textContent = displayCount;
-  if (ltiEl) ltiEl.textContent = calculateLTIDays(incidents);
-  if (trendEl) trendEl.textContent = '↓ 40% vs last period'; // Demo data
-  
-  // Render chart
-  renderDirectorIncidentChart(incidents);
-  
-  // Render breakdown
-  renderDirectorIncidentBreakdown(recentIncidents);
-  
-  // Render severity breakdown
-  renderDirectorSeverityBreakdown(recentIncidents);
-  
-  // Render time patterns
-  renderDirectorTimePatterns(recentIncidents);
-  
-  // Render list
-  renderDirectorIncidentList(recentIncidents);
-  
-  // Update benchmark colors
-  updateDirectorBenchmarkColors();
-}
-
-function exportIncidentsToCSV() {
-  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-  var incidents = storedIncidents.length > 0 ? storedIncidents : incLoadAll();
-  
-  if (incidents.length === 0) {
-    alert('No incidents to export');
-    return;
-  }
-  
-  // CSV header
-  var csv = 'Incident ID,Date,Severity,Description,Reported By,Mechanism,Body Part\n';
-  
-  // Add rows
-  incidents.forEach(function(inc) {
-    var date = new Date(inc.timestamp || inc.reported_at).toLocaleDateString('en-AU');
-    var row = [
-      inc.incident_id || '',
-      date,
-      inc.severity || '',
-      (inc.what_happened || inc.description || '').replace(/,/g, ';').replace(/\n/g, ' '),
-      inc.reported_by || '',
-      inc.mechanism || '',
-      inc.body_part || ''
-    ].join(',');
-    csv += row + '\n';
-  });
-  
-  // Download
-  var blob = new Blob([csv], { type: 'text/csv' });
-  var url = window.URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'incidents_export_' + new Date().toISOString().split('T')[0] + '.csv';
-  a.click();
-  window.URL.revokeObjectURL(url);
-}
-
-function applyDirectorFilters() {
-  var periodDays = parseInt(document.getElementById('filter-period').value);
-  var severity = document.getElementById('filter-severity').value;
-  var site = document.getElementById('filter-site').value;
-  
-  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-  var allIncidents = storedIncidents.length > 0 ? storedIncidents : incLoadAll();
-  var now = new Date();
-  
-  // Filter by period
-  var filtered = allIncidents.filter(function(inc) {
-    var incDate = new Date(inc.timestamp || inc.reported_at);
-    var daysDiff = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
-    return daysDiff <= periodDays;
-  });
-  
-  // Filter by severity
-  if (severity !== 'All Severity') {
-    filtered = filtered.filter(function(inc) {
-      var incSev = (inc.severity || '').toLowerCase();
-      var filterSev = severity.toLowerCase();
-      return incSev.includes(filterSev.replace(' ', '-'));
-    });
-  }
-  
-  // Filter by site (if we add site data later)
-  if (site !== 'All Sites') {
-    filtered = filtered.filter(function(inc) {
-      return (inc.site || 'All Sites') === site;
-    });
-  }
-  
-  // Re-render with filtered data
-  loadDirectorIncidents(filtered);
-}
-
-function resetDirectorFilters() {
-  document.getElementById('filter-site').selectedIndex = 0;
-  document.getElementById('filter-period').selectedIndex = 0;
-  document.getElementById('filter-severity').selectedIndex = 0;
-  document.getElementById('dir-inc-search').value = '';
-  loadDirectorIncidents();
-}
-
-function searchDirectorIncidents() {
-  var searchTerm = document.getElementById('dir-inc-search').value.toLowerCase();
-  
-  if (!searchTerm) {
-    // If search is empty, reload all data
-    applyDirectorFilters();
-    return;
-  }
-  
-  // Get current filtered data
-  var periodDays = parseInt(document.getElementById('filter-period').value);
-  var severity = document.getElementById('filter-severity').value;
-  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-  var allIncidents = storedIncidents.length > 0 ? storedIncidents : incLoadAll();
-  var now = new Date();
-  
-  // Apply period and severity filters first
-  var filtered = allIncidents.filter(function(inc) {
-    var incDate = new Date(inc.timestamp || inc.reported_at);
-    var daysDiff = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
-    if (daysDiff > periodDays) return false;
-    
-    if (severity !== 'All Severity') {
-      var incSev = (inc.severity || '').toLowerCase();
-      var filterSev = severity.toLowerCase();
-      if (!incSev.includes(filterSev.replace(' ', '-'))) return false;
-    }
-    
-    return true;
-  });
-  
-  // Then apply search
-  var searched = filtered.filter(function(inc) {
-    var searchableText = [
-      inc.incident_id || '',
-      inc.what_happened || inc.description || '',
-      inc.reported_by || '',
-      inc.mechanism || '',
-      inc.body_part || '',
-      inc.severity || ''
-    ].join(' ').toLowerCase();
-    
-    return searchableText.includes(searchTerm);
-  });
-  
-  // Render with searched results
-  loadDirectorIncidents(searched);
-}
-
-function toggleTrifrTooltip(event) {
-  event.stopPropagation();
-  var tooltip = document.getElementById('trifr-tooltip');
-  tooltip.style.display = tooltip.style.display === 'none' ? 'block' : 'none';
-}
-
-// Click outside to close tooltip
-document.addEventListener('click', function() {
-  var tooltip = document.getElementById('trifr-tooltip');
-  if (tooltip) tooltip.style.display = 'none';
-});
-
-function updateDirectorBenchmarkColors() {
-  var yourTrifr = 4.2; // In real app, calculate from actual incident data
-  var industryAvg = 6.5;
-  
-  var yourTrifrEl = document.getElementById('dir-inc-your-trifr');
-  var trifrTrendEl = document.getElementById('dir-inc-trifr-trend');
-  var performanceTextEl = document.getElementById('dir-inc-performance-text');
-  
-  if (!yourTrifrEl || !trifrTrendEl || !performanceTextEl) return;
-  
-  if (yourTrifr < industryAvg) {
-    // GOOD - Below average means fewer injuries
-    yourTrifrEl.style.color = '#1B6E3A';
-    trifrTrendEl.style.color = '#1B6E3A';
-    performanceTextEl.style.color = '#1B6E3A';
-    var pct = Math.round(((industryAvg - yourTrifr) / industryAvg) * 100);
-    performanceTextEl.textContent = pct + '% better';
-  } else if (yourTrifr > industryAvg) {
-    // BAD - Above average means more injuries
-    yourTrifrEl.style.color = '#A32D2D';
-    trifrTrendEl.style.color = '#A32D2D';
-    performanceTextEl.style.color = '#A32D2D';
-    var pct = Math.round(((yourTrifr - industryAvg) / industryAvg) * 100);
-    performanceTextEl.textContent = pct + '% worse';
-    trifrTrendEl.textContent = '↑ ' + pct + '%';
-  } else {
-    // EQUAL to industry average
-    yourTrifrEl.style.color = '#666';
-    trifrTrendEl.style.color = '#666';
-    performanceTextEl.style.color = '#666';
-    performanceTextEl.textContent = 'on par with';
-    trifrTrendEl.textContent = '—';
-  }
-}
-
-function renderDirectorSeverityBreakdown(incidents) {
-  var container = document.getElementById('dir-inc-severity');
-  if (!container) return;
-  
-  // Count by severity using mapping function
-  var nearMiss = 0, firstAid = 0, lti = 0;
-  incidents.forEach(function(inc) {
-    var mapped = mapSeverityForDirector(inc);
-    if (mapped.label === 'Near Miss') nearMiss++;
-    else if (mapped.label === 'LTI') lti++;
-    else firstAid++;
-  });
-  
-  // Demo data if empty
-  if (incidents.length === 0) {
-    nearMiss = 1;
-    firstAid = 2;
-    lti = 0;
-  }
-  
-  container.innerHTML = 
-    '<div style="background:linear-gradient(135deg, #E6F5ED 0%, #d4ede0 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid rgba(27,110,58,0.3);box-shadow:0 3px 10px rgba(27,110,58,0.15), 0 1px 3px rgba(0,0,0,0.1)">' +
-      '<div style="font-size:32px;font-weight:800;color:#1B6E3A;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.1)">' + nearMiss + '</div>' +
-      '<div style="font-size:9px;color:#1B6E3A;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.8px">Near Miss</div>' +
-    '</div>' +
-    '<div style="background:linear-gradient(135deg, #FCEBEB 0%, #f9d9d9 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid rgba(163,45,45,0.3);box-shadow:0 3px 10px rgba(163,45,45,0.15), 0 1px 3px rgba(0,0,0,0.1)">' +
-      '<div style="font-size:32px;font-weight:800;color:#A32D2D;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.1)">' + firstAid + '</div>' +
-      '<div style="font-size:9px;color:#A32D2D;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.8px">First Aid</div>' +
-    '</div>' +
-    '<div style="background:linear-gradient(135deg, #FAEEDA 0%, #f5e0c0 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid #B8960C;box-shadow:0 3px 10px rgba(184,150,12,0.2), 0 1px 3px rgba(0,0,0,0.1)">' +
-      '<div style="font-size:32px;font-weight:800;color:#854F0B;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.1)">' + lti + '</div>' +
-      '<div style="font-size:9px;color:#854F0B;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.8px">LTI</div>' +
-    '</div>';
-}
-
-function dirShowBodyZone(event, zoneName, count) {
-  event.stopPropagation();
-  
-  var panel = document.getElementById('dir-bm-panel');
-  var nameEl = document.getElementById('dir-bm-name');
-  var countEl = document.getElementById('dir-bm-count');
-  var histEl = document.getElementById('dir-bm-hist');
-  
-  if (!panel || !nameEl || !countEl || !histEl) return;
-  
-  nameEl.textContent = zoneName;
-  countEl.textContent = count + ' incident' + (count !== 1 ? 's' : '') + ' in this zone';
-  
-  // Demo history based on count
-  var demoHistory = [];
-  if (count > 0) {
-    for (var i = 0; i < Math.min(count, 3); i++) {
-      demoHistory.push({
-        date: new Date(Date.now() - (i * 7 + 2) * 24 * 60 * 60 * 1000).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }),
-        desc: i === 0 ? 'Manual handling strain' : i === 1 ? 'Hit by falling object' : 'Repetitive strain',
-        severity: i === 0 ? 'First Aid' : 'Near Miss'
-      });
-    }
-  }
-  
-  histEl.innerHTML = demoHistory.length === 0 ? 
-    '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">No incidents recorded</div>' :
-    demoHistory.map(function(h) {
-      return '<div style="display:flex;justify-content:space-between;padding:8px 10px;background:white;border-radius:6px;font-size:12px">' +
-        '<div style="flex:1">' +
-          '<div style="font-weight:600;color:var(--text)">' + h.desc + '</div>' +
-          '<div style="color:var(--muted);font-size:11px;margin-top:2px">' + h.date + '</div>' +
-        '</div>' +
-        '<div style="font-size:10px;color:' + (h.severity === 'First Aid' ? '#A32D2D' : '#1B6E3A') + ';font-weight:600;white-space:nowrap">' + h.severity + '</div>' +
-      '</div>';
-    }).join('');
-  
-  panel.style.display = 'block';
-}
-
-function switchBodyView(view) {
-  var frontSVG = document.getElementById('dir-bm-front');
-  var backSVG = document.getElementById('dir-bm-back');
-  var frontBtn = document.getElementById('bm-front-btn');
-  var backBtn = document.getElementById('bm-back-btn');
-  
-  if (view === 'front') {
-    if (frontSVG) frontSVG.style.display = 'block';
-    if (backSVG) backSVG.style.display = 'none';
-    if (frontBtn) {
-      frontBtn.style.background = 'var(--deep)';
-      frontBtn.style.color = '#fff';
-    }
-    if (backBtn) {
-      backBtn.style.background = 'transparent';
-      backBtn.style.color = 'var(--text)';
-    }
-  } else {
-    if (frontSVG) frontSVG.style.display = 'none';
-    if (backSVG) backSVG.style.display = 'block';
-    if (frontBtn) {
-      frontBtn.style.background = 'transparent';
-      frontBtn.style.color = 'var(--text)';
-    }
-    if (backBtn) {
-      backBtn.style.background = 'var(--deep)';
-      backBtn.style.color = '#fff';
-    }
-  }
-}
-
-function renderDirectorTimePatterns(incidents) {
-  var container = document.getElementById('dir-inc-timepatterns');
-  if (!container) return;
-  
-  // Calculate REAL day of week pattern from incidents
-  var dayPattern = {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0};
-  var dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  var dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  
-  // Count by day
-  incidents.forEach(function(inc) {
-    var date = new Date(inc.timestamp || inc.reported_at);
-    var dayName = dayNames[date.getDay()];
-    dayPattern[dayName]++;
-  });
-  
-  // Calculate time patterns
-  var timeSlots = {
-    'Early morning (7-9 AM)': 0,
-    'Mid-morning (9-11 AM)': 0,
-    'Midday (11 AM-1 PM)': 0,
-    'Early afternoon (1-3 PM)': 0,
-    'Late afternoon (3-5 PM)': 0
-  };
-  
-  incidents.forEach(function(inc) {
-    var date = new Date(inc.timestamp || inc.reported_at);
-    var hour = date.getHours();
-    if (hour >= 7 && hour < 9) timeSlots['Early morning (7-9 AM)']++;
-    else if (hour >= 9 && hour < 11) timeSlots['Mid-morning (9-11 AM)']++;
-    else if (hour >= 11 && hour < 13) timeSlots['Midday (11 AM-1 PM)']++;
-    else if (hour >= 13 && hour < 15) timeSlots['Early afternoon (1-3 PM)']++;
-    else if (hour >= 15 && hour < 17) timeSlots['Late afternoon (3-5 PM)']++;
-  });
-  
-  var activeTimeSlots = Object.keys(timeSlots).filter(function(slot) {
-    return timeSlots[slot] > 0;
-  }).map(function(slot) {
-    return {slot: slot, count: timeSlots[slot]};
-  }).sort(function(a, b) {
-    return b.count - a.count;
-  });
-  
-  var maxDayCount = Math.max.apply(null, Object.values(dayPattern));
-  if (maxDayCount === 0) maxDayCount = 1;
-  
-  // HORIZONTAL BAR CHART like the uploaded image
-  container.innerHTML = 
-    '<div style="margin-bottom:16px">' +
-      '<div style="font-size:13px;font-weight:700;margin-bottom:14px;color:#1A2A1F">By day of week</div>' +
-      '<div style="display:flex;flex-direction:column;gap:2px">' +
-        dayOrder.map(function(day) {
-          var count = dayPattern[day];
-          var widthPercent = maxDayCount > 0 ? (count / maxDayCount * 100) : 0;
-          var hasIncidents = count > 0;
-          return '<div style="display:flex;align-items:center;gap:8px;height:24px">' +
-            '<div style="font-size:11px;color:#6B7280;font-weight:500;width:35px;text-align:right">' + day + '</div>' +
-            '<div style="flex:1;background:#E5E7EB;height:12px;border-radius:6px;position:relative;overflow:hidden">' +
-              '<div style="background:' + (hasIncidents ? 'linear-gradient(90deg, #F0997B 0%, #E8856A 100%)' : '#D1D5DB') + ';width:' + (widthPercent || 3) + '%;height:100%;border-radius:6px;position:relative">' +
-                (hasIncidents ? '<div style="position:absolute;top:-14px;right:-8px;font-size:11px;font-weight:700;color:#1A2A1F">' + count + '</div>' : '') +
-              '</div>' +
-            '</div>' +
-          '</div>';
-        }).join('') +
-      '</div>' +
-    '</div>' +
-    '<div style="background:#F9FAFB;border-radius:8px;padding:14px;border:1px solid #E5E7EB">' +
-      '<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#1A2A1F">Most common times</div>' +
-      '<div style="display:flex;flex-direction:column;gap:6px">' +
-        (activeTimeSlots.length > 0 
-          ? activeTimeSlots.slice(0, 3).map(function(ts) {
-              return '<div style="font-size:11px;color:#4B5563;font-weight:500">• ' + ts.slot + ' — ' + ts.count + ' incident' + (ts.count !== 1 ? 's' : '') + '</div>';
-            }).join('')
-          : '<div style="font-size:11px;color:#9CA3AF;font-style:italic">No time pattern data available</div>'
-        ) +
-      '</div>' +
-    '</div>';
-}
-
-function renderDirectorIncidentChart(incidents) {
-  var canvas = document.getElementById('dir-inc-chart');
-  if (!canvas || !canvas.getContext) return;
-  
-  var ctx = canvas.getContext('2d');
-  
-  // Calculate counts
-  var now = new Date();
-  var monthData = [];
-  
-  for (var i = 5; i >= 0; i--) {
-    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    monthData.push({
-      label: d.toLocaleString('en-AU', {month: 'short'}),
-      year: d.getFullYear(),
-      month: d.getMonth(),
-      count: 0
-    });
-  }
-  
-  incidents.forEach(function(inc) {
-    var incDate = new Date(inc.timestamp || inc.reported_at);
-    for (var j = 0; j < monthData.length; j++) {
-      if (incDate.getFullYear() === monthData[j].year && incDate.getMonth() === monthData[j].month) {
-        monthData[j].count++;
-        break;
-      }
-    }
-  });
-  
-  var months = monthData.map(function(m) { return m.label; });
-  var counts = monthData.map(function(m) { return m.count; });
-  
-  // Set canvas with device pixel ratio
-  var parent = canvas.parentElement;
-  var dpr = window.devicePixelRatio || 1;
-  var w = parent.offsetWidth || 400;
-  var h = parent.offsetHeight || 160;
-  
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
-  ctx.scale(dpr, dpr);
-  
-  // Professional styling
-  var paddingLeft = 20;
-  var paddingRight = 20;
-  var paddingTop = 35;
-  var paddingBottom = 30;
-  
-  var chartWidth = w - paddingLeft - paddingRight;
-  var chartHeight = h - paddingTop - paddingBottom;
-  var barSpacing = 10;
-  var barWidth = (chartWidth / months.length) - barSpacing;
-  var maxCount = Math.max.apply(null, counts);
-  if (maxCount === 0) maxCount = 1;
-  
-  // Draw each bar
-  for (var i = 0; i < counts.length; i++) {
-    var barHeight = (counts[i] / maxCount) * chartHeight;
-    var x = paddingLeft + (i * (barWidth + barSpacing)) + (barSpacing / 2);
-    var y = paddingTop + (chartHeight - barHeight);
-    
-    // Draw bar with rounded top
-    ctx.fillStyle = '#97C459';
-    ctx.beginPath();
-    ctx.moveTo(x, y + 6);
-    ctx.arcTo(x, y, x + 6, y, 6);
-    ctx.lineTo(x + barWidth - 6, y);
-    ctx.arcTo(x + barWidth, y, x + barWidth, y + 6, 6);
-    ctx.lineTo(x + barWidth, y + barHeight);
-    ctx.lineTo(x, y + barHeight);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Draw count on top
-    if (counts[i] > 0) {
-      ctx.fillStyle = '#1F2937';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(counts[i], x + (barWidth / 2), y - 10);
-    }
-  }
-  
-  // Draw month labels
-  ctx.fillStyle = '#6B7280';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'center';
-  for (var i = 0; i < months.length; i++) {
-    var x = paddingLeft + (i * (barWidth + barSpacing)) + (barSpacing / 2) + (barWidth / 2);
-    ctx.fillText(months[i], x, h - 12);
-  }
-}
-
-function renderDirectorIncidentBreakdown(incidents) {
-  var container = document.getElementById('dir-inc-breakdown');
-  if (!container) return;
-  
-  // Count by mechanism
-  var breakdown = {};
-  incidents.forEach(function(inc) {
-    var mech = inc.mechanism || 'Unknown';
-    breakdown[mech] = (breakdown[mech] || 0) + 1;
-  });
-  
-  // Convert to array and sort
-  var items = Object.keys(breakdown).map(function(key) {
-    return { mechanism: key, count: breakdown[key] };
-  }).sort(function(a, b) { return b.count - a.count; });
-  
-  // Demo data if empty
-  if (items.length === 0) {
-    items = [
-      { mechanism: 'Slip / trip', count: 1 },
-      { mechanism: 'Manual handling', count: 1 },
-      { mechanism: 'Hit against object', count: 1 }
-    ];
-  }
-  
-  var total = items.reduce(function(sum, item) { return sum + item.count; }, 0);
-  var showAll = items.length <= 5; // Auto-expand if 5 or fewer
-  var topItems = showAll ? items : items.slice(0, 5);
-  var remainingItems = showAll ? [] : items.slice(5);
-  
-  // Render bars with percentages and premium styling
-  var html = topItems.map(function(item) {
-    var pct = Math.round((item.count / total) * 100);
-    return '<div style="margin-bottom:12px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">' +
-        '<span style="font-size:11px;color:#555;font-weight:600">' + item.mechanism + '</span>' +
-        '<span style="font-size:10px;font-weight:700;color:#1A2A1F">' + item.count + ' <span style="color:#999;font-weight:600">(' + pct + '%)</span></span>' +
-      '</div>' +
-      '<div style="background:linear-gradient(135deg, #E0E0E0 0%, #D0D0D0 100%);height:10px;border-radius:5px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.15)">' +
-        '<div style="background:linear-gradient(135deg, #F5AD7D 0%, #F0997B 50%, #E8856A 100%);width:' + pct + '%;height:100%;box-shadow:0 2px 6px rgba(240,153,123,0.5), inset 0 1px 0 rgba(255,255,255,0.3);position:relative;overflow:hidden">' +
-          '<div style="position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%)"></div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-  
-  // Add collapsed items container
-  if (remainingItems.length > 0) {
-    html += '<div id="dir-breakdown-more" style="display:none">' +
-      remainingItems.map(function(item) {
-        var pct = Math.round((item.count / total) * 100);
-        return '<div style="margin-bottom:12px">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">' +
-            '<span style="font-size:11px;color:#555;font-weight:600">' + item.mechanism + '</span>' +
-            '<span style="font-size:10px;font-weight:700;color:#1A2A1F">' + item.count + ' <span style="color:#999;font-weight:600">(' + pct + '%)</span></span>' +
-          '</div>' +
-          '<div style="background:linear-gradient(135deg, #E0E0E0 0%, #D0D0D0 100%);height:10px;border-radius:5px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.15)">' +
-            '<div style="background:linear-gradient(135deg, #F5AD7D 0%, #F0997B 50%, #E8856A 100%);width:' + pct + '%;height:100%;box-shadow:0 2px 6px rgba(240,153,123,0.5), inset 0 1px 0 rgba(255,255,255,0.3);position:relative;overflow:hidden">' +
-              '<div style="position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%)"></div>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
-      }).join('') +
-    '</div>';
-    
-    // Add expand/collapse button
-    html += '<button id="dir-breakdown-toggle" onclick="toggleDirectorBreakdown()" style="width:100%;padding:8px;margin-top:4px;font-size:10px;font-weight:600;background:#F8F8F8;border:1px solid #D0D0D0;border-radius:6px;color:#555;cursor:pointer;transition:all 0.2s">' +
-      'Show ' + remainingItems.length + ' more ▼' +
-    '</button>';
-  }
-  
-  container.innerHTML = html;
-}
-
-function toggleDirectorBreakdown() {
-  var moreEl = document.getElementById('dir-breakdown-more');
-  var toggleBtn = document.getElementById('dir-breakdown-toggle');
-  if (!moreEl || !toggleBtn) return;
-  
-  var isExpanded = moreEl.style.display !== 'none';
-  if (isExpanded) {
-    moreEl.style.display = 'none';
-    toggleBtn.innerHTML = 'Show ' + moreEl.children.length + ' more ▼';
-  } else {
-    moreEl.style.display = 'block';
-    toggleBtn.innerHTML = 'Show less ▲';
-  }
-}
-
-function renderDirectorIncidentList(incidents) {
-  var container = document.getElementById('dir-inc-list');
-  if (!container) return;
-  
-  // Use REAL incidents from incLoadAll()
-  var allIncidents = incLoadAll();
-  
-  // Sort by date (newest first)
-  allIncidents.sort(function(a, b) {
-    return new Date(b.submitted_at) - new Date(a.submitted_at);
-  });
-  
-  // Take top 8 for display
-  var displayIncidents = allIncidents.slice(0, 8);
-  
-  if (displayIncidents.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:30px;color:#999">No incidents to display</div>';
-    return;
-  }
-  
-  var html = displayIncidents.map(function(inc) {
-    var mapped = mapSeverityForDirector(inc);
-    var date = new Date(inc.submitted_at);
-    var dateStr = date.toLocaleDateString('en-AU', {day: 'numeric', month: 'short'});
-    
-    return '<div onclick="viewIncidentDetail(\'' + inc.ref + '\')" style="background:#FFFFFF;border:1px solid #E8E8E8;border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;margin-bottom:8px" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.1)\';this.style.borderColor=\'#D0D0D0\'" onmouseout="this.style.boxShadow=\'none\';this.style.borderColor=\'#E8E8E8\'">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
-        '<div style="flex:1">' +
-          '<div style="font-size:11px;font-weight:700;color:#1A2A1F;margin-bottom:3px">' + inc.ref + '</div>' +
-          '<div style="font-size:12px;color:#555;line-height:1.4">' + (inc.description || inc.what_happened || 'No description') + '</div>' +
-        '</div>' +
-        '<div style="background:' + mapped.color + ';color:' + mapped.textColor + ';font-size:9px;font-weight:700;padding:4px 8px;border-radius:12px;white-space:nowrap;margin-left:10px">' + mapped.label + '</div>' +
-      '</div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#999">' +
-        '<div>' + mapped.icon + ' ' + (inc.reporter_name || inc.reported_by || 'Unknown') + '</div>' +
-        '<div>' + dateStr + '</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-  
-  container.innerHTML = html;
-}
-
-function viewIncidentDetail(incidentId) {
-  // Try to find incident in localStorage first
-  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-  var incident = storedIncidents.find(function(i) {
-    return (i.ref === incidentId) || 
-           ('INC-' + new Date(i.submitted_at).getFullYear() + '-' + String(storedIncidents.indexOf(i) + 1).padStart(3, '0') === incidentId);
-  });
-  
-  // If not in storage, check demo data
-  if (!incident) {
-    incident = incLoadAll().find(function(i) {
-      return i.ref === incidentId;
-    });
-  }
-  
-  // If still not found, show error
-  if (!incident) {
-    showDrillDownPanel('Incident Not Found', 
-      '<div style="text-align:center;padding:20px;color:#999">' +
-      'Could not find incident ' + incidentId +
-      '</div>');
-    return;
-  }
-  
-  // Format date and time
-  var dateObj = new Date(incident.submitted_at || incident.reported_at);
-  var date = dateObj.toLocaleDateString('en-AU', {
-    day: 'numeric', month: 'short', year: 'numeric'
-  });
-  var time = dateObj.toLocaleTimeString('en-AU', {
-    hour: '2-digit', minute: '2-digit'
-  });
-  
-  // Severity styling
-  var severity = (incident.severity || 'first-aid').toLowerCase();
-  var severityColor = severity.includes('near') ? '#E6F5ED' : severity.includes('lti') ? '#FAEEDA' : '#FCEBEB';
-  var severityText = severity.includes('near') ? '#1B6E3A' : severity.includes('lti') ? '#854F0B' : '#A32D2D';
-  var severityLabel = severity.includes('near') ? 'Near Miss' : severity.includes('lti') ? 'LTI' : 'First Aid';
-  var severityIcon = severity.includes('near') ? '⚠️' : severity.includes('lti') ? '🚨' : '🩹';
-  
-  // Build comprehensive incident report view
-  showDrillDownPanel('Incident Report', 
-    '<div style="background:linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%);border-radius:10px;padding:16px;margin-bottom:16px;border:1px solid #E0E0E0">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">' +
-        '<div>' +
-          '<div style="font-size:18px;font-weight:700;color:#1A2A1F;margin-bottom:4px">' + incident.ref + '</div>' +
-          '<div style="font-size:11px;color:#666">' + date + ' at ' + time + '</div>' +
-        '</div>' +
-        '<div style="background:' + severityColor + ';color:' + severityText + ';font-size:11px;font-weight:700;padding:6px 12px;border-radius:16px;text-transform:uppercase;box-shadow:0 2px 4px rgba(0,0,0,0.08)">' +
-          severityIcon + ' ' + severityLabel +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    
-    // What Happened Section
-    '<div style="background:#FFFFFF;border:1px solid #E8E8E8;border-radius:8px;padding:14px;margin-bottom:12px">' +
-      '<div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">📋 Incident Description</div>' +
-      '<div style="font-size:13px;color:#1A2A1F;line-height:1.6">' + (incident.description || incident.description || 'No description provided') + '</div>' +
-    '</div>' +
-    
-    // Details Grid
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">' +
-      '<div style="background:#F8F8F8;border-radius:8px;padding:12px;border-left:3px solid #97C459">' +
-        '<div style="font-size:9px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Mechanism</div>' +
-        '<div style="font-size:12px;font-weight:600;color:#1A2A1F">' + (incident.mechanism || 'Not specified') + '</div>' +
-      '</div>' +
-      '<div style="background:#F8F8F8;border-radius:8px;padding:12px;border-left:3px solid #E8856A">' +
-        '<div style="font-size:9px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Body Part Affected</div>' +
-        '<div style="font-size:12px;font-weight:600;color:#1A2A1F">' + (incident.body_part || 'Not specified') + '</div>' +
-      '</div>' +
-    '</div>' +
-    
-    // Reporter Info
-    '<div style="background:#F5F9F7;border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid #D5E5DA">' +
-      '<div style="font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">👤 Reported By</div>' +
-      '<div style="font-size:13px;font-weight:600;color:#1B3A2D">' + (incident.reporter_name || 'Unknown Reporter') + '</div>' +
-    '</div>' +
-    
-    // Action Buttons - ALL THREE as requested
-    '<div style="display:flex;gap:8px;margin-top:16px">' +
-      '<button onclick="alert(\'Export PDF coming soon\')" style="flex:1;padding:10px;font-size:11px;font-weight:600;background:#FFFFFF;border:1.5px solid #D0D0D0;border-radius:8px;color:#555;cursor:pointer">📄 Export PDF</button>' +
-      '<button onclick="alert(\'Email coming soon\')" style="flex:1;padding:10px;font-size:11px;font-weight:600;background:#FFFFFF;border:1.5px solid #D0D0D0;border-radius:8px;color:#555;cursor:pointer">📧 Email Report</button>' +
-    '</div>' +
-    '<button onclick="viewIncidentFullPDF(\'' + incident.ref + '\')" style="width:100%;padding:12px;margin-top:8px;font-size:12px;font-weight:600;background:linear-gradient(135deg, #1B3A2D 0%, #2D5F3F 100%);border:none;border-radius:8px;color:#FFFFFF;cursor:pointer;box-shadow:0 2px 6px rgba(27,58,45,0.3)">📄 View Full PDF Report</button>' +
-    
-    '<div style="border-top:1px solid #E0E0E0;margin-top:16px;padding-top:10px;font-size:9px;color:#999;text-align:center">' +
-      'Incident ID: ' + incident.ref + ' • Slan Safety Management System' +
-    '</div>');
-}
-
-function viewIncidentFullPDF(incidentId) {
-  // Find the incident from localStorage or demo data
-  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-  var incident = storedIncidents.find(function(i) {
-    return (i.ref === incidentId) || 
-           ('INC-' + new Date(i.submitted_at).getFullYear() + '-' + String(storedIncidents.indexOf(i) + 1).padStart(3, '0') === incidentId);
-  });
-  
-  if (!incident) {
-    incident = incLoadAll().find(function(i) {
-      return i.ref === incidentId;
-    });
-  }
-  
-  if (!incident) {
-    alert('Incident not found');
-    return;
-  }
-  
-  // Close the drill-down panel first
-  var drillDown = document.getElementById('dir-drilldown');
-  if (drillDown) drillDown.style.display = 'none';
-  
-  // Navigate to incident screen
-  goTo('screen-incident');
-  
-  // Wait for screen to render, then populate form
-  setTimeout(function() {
-    // Populate the form with incident data
-    var whatField = document.querySelector('#screen-incident textarea');
-    if (whatField) whatField.value = incident.description || incident.description || '';
-    
-    // Set severity if checkboxes exist
-    var severityInputs = document.querySelectorAll('#screen-incident input[type="radio"]');
-    var severity = (incident.severity || 'first-aid').toLowerCase();
-    for (var i = 0; i < severityInputs.length; i++) {
-      var input = severityInputs[i];
-      if ((severity.includes('near') && input.value && input.value.toLowerCase().includes('near')) ||
-          (severity.includes('lti') && input.value && input.value.toLowerCase().includes('lti')) ||
-          (severity.includes('first') && input.value && input.value.toLowerCase().includes('first'))) {
-        input.checked = true;
-      }
-    }
-    
-    // Add a banner at the top showing this is a view-only incident
-    var screen = document.getElementById('screen-incident');
-    if (screen) {
-      var banner = document.createElement('div');
-      banner.id = 'incident-view-banner';
-      banner.style.cssText = 'background:linear-gradient(135deg,#1B3A2D,#2D5F3F);color:#fff;padding:12px 16px;text-align:center;font-weight:600;font-size:13px;position:sticky;top:0;z-index:100';
-      banner.innerHTML = '📄 Viewing Incident Report: ' + incident.ref + ' <button onclick="closeIncidentPDF()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:4px 12px;border-radius:4px;margin-left:12px;cursor:pointer;font-weight:600">Close</button>';
-      
-      // Remove old banner if it exists
-      var oldBanner = document.getElementById('incident-view-banner');
-      if (oldBanner) oldBanner.remove();
-      
-      screen.insertBefore(banner, screen.firstChild);
-    }
-    
-    // Disable all form inputs to make it read-only
-    var inputs = document.querySelectorAll('#screen-incident input, #screen-incident textarea, #screen-incident select, #screen-incident button:not(#incident-view-banner button)');
-    for (var i = 0; i < inputs.length; i++) {
-      inputs[i].disabled = true;
-      inputs[i].style.opacity = '0.6';
-    }
-  }, 100);
-}
-
-function closeIncidentPDF() {
-  // Re-enable all inputs
-  var inputs = document.querySelectorAll('#screen-incident input, #screen-incident textarea, #screen-incident select, #screen-incident button');
-  for (var i = 0; i < inputs.length; i++) {
-    inputs[i].disabled = false;
-    inputs[i].style.opacity = '1';
-  }
-  
-  // Remove banner
-  var banner = document.getElementById('incident-view-banner');
-  if (banner) banner.remove();
-  
-  // Go back to incidents screen
-  goTo('screen-director-incidents');
-}
-
 
 </script>
 
