@@ -34935,15 +34935,17 @@ function viewIncidentPDF(incident) {
     const PAGE_W = 210, PAGE_H = 297;
     const ML = 20, MR = 20, MT = 20, MB = 20;
     const CW = PAGE_W - ML - MR;
-    let pageCount = 1;
+    let pageNum = 1;
+    let y = MT;
     
-    // Colors matching example PDF
+    // Colors
     const C = {
-      darkGreen:'#1B3A2D',
-      darkText:'#1A2A1F',
-      labelGrey:'#888888',
-      lightGrey:'#F5F5F5',
-      borderGrey:'#DDDDDD'
+      darkGreen: '#1B3A2D',
+      darkText: '#1A2A1F',
+      labelGrey: '#888888',
+      lightGrey: '#F5F5F5',
+      borderGrey: '#DDDDDD',
+      white: '#FFFFFF'
     };
     
     const hex = (h) => {
@@ -34954,22 +34956,8 @@ function viewIncidentPDF(incident) {
     const setStroke = (c) => { const rgb = hex(c); doc.setDrawColor(rgb[0], rgb[1], rgb[2]); };
     const setText = (c) => { const rgb = hex(c); doc.setTextColor(rgb[0], rgb[1], rgb[2]); };
     
-    let y = MT;
+    // ========== HELPER FUNCTIONS ==========
     
-    // Page break helper
-    const checkPageBreak = (neededSpace) => {
-      if (y + neededSpace > PAGE_H - MB - 10) {
-        addFooter();
-        doc.addPage();
-        pageCount++;
-        y = MT;
-        addHeader();
-        return true;
-      }
-      return false;
-    };
-    
-    // Header on each page
     const addHeader = () => {
       // Logo
       if (window.SLAN_LOGO_B64) {
@@ -34977,44 +34965,72 @@ function viewIncidentPDF(incident) {
       }
       // Title
       setText(C.darkText);
-      doc.setFont('helvetica','bold'); doc.setFontSize(18);
+      doc.setFont('helvetica','bold'); 
+      doc.setFontSize(18);
       doc.text('INCIDENT REPORT', ML, y + 10);
       // Line
-      setStroke(C.darkGreen); doc.setLineWidth(0.8);
+      setStroke(C.darkGreen); 
+      doc.setLineWidth(0.8);
       doc.line(ML, y + 15, PAGE_W - MR, y + 15);
       y += 22;
     };
     
-    // Footer on each page
     const addFooter = () => {
       const footY = PAGE_H - MB + 5;
       setText(C.labelGrey);
-      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.setFont('helvetica','normal'); 
+      doc.setFontSize(8);
       doc.text('SLS-INC · v1.0', ML, footY);
-      doc.text('Page ' + pageCount + ' of __TP__', PAGE_W - MR, footY, {align:'right'});
+      doc.text('Page ' + pageNum + ' of __TP__', PAGE_W - MR, footY, {align:'right'});
     };
     
-    // Section header (dark green bar)
+    const checkPageBreak = (neededSpace) => {
+      if (y + neededSpace > PAGE_H - MB - 10) {
+        addFooter();
+        doc.addPage();
+        pageNum++;
+        y = MT;
+        addHeader();
+        return true;
+      }
+      return false;
+    };
+    
+    // SECTION = Dark green bar
     const addSection = (title) => {
       checkPageBreak(15);
       setFill(C.darkGreen);
       doc.rect(ML, y, CW, 7, 'F');
-      setText('#FFFFFF');
-      doc.setFont('helvetica','bold'); doc.setFontSize(10);
+      setText(C.white);
+      doc.setFont('helvetica','bold'); 
+      doc.setFontSize(10);
       doc.text(title, ML + 3, y + 5);
       y += 10;
     };
     
-    // Table row (grey background with label and value)
-    const addTableRow = (label, value, isFirst = false) => {
+    // SUBSECTION = Bold text heading (no bar)
+    const addSubsection = (title) => {
+      checkPageBreak(10);
+      setText(C.labelGrey);
+      doc.setFont('helvetica','bold'); 
+      doc.setFontSize(9);
+      doc.text(title, ML, y);
+      y += 5;
+    };
+    
+    // Grey table row
+    const addRow = (label, value, isFirst = false) => {
+      checkPageBreak(10);
       if (!isFirst) y += 0.5;
       setFill(C.lightGrey);
       doc.rect(ML, y, CW, 6, 'F');
       setText(C.labelGrey);
-      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.setFont('helvetica','normal'); 
+      doc.setFontSize(9);
       doc.text(label, ML + 3, y + 4);
       setText(C.darkText);
-      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.setFont('helvetica','normal'); 
+      doc.setFontSize(9);
       doc.text(String(value || '—'), ML + 60, y + 4);
       y += 6;
     };
@@ -35024,52 +35040,108 @@ function viewIncidentPDF(incident) {
       if (!text) return;
       checkPageBreak(20);
       setText(C.darkText);
-      doc.setFont('helvetica','bold'); doc.setFontSize(9);
+      doc.setFont('helvetica','bold'); 
+      doc.setFontSize(9);
       doc.text(heading, ML, y);
       y += 5;
       setText(C.darkText);
-      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.setFont('helvetica','normal'); 
+      doc.setFontSize(9);
       const lines = doc.splitTextToSize(text, CW - 6);
       doc.text(lines, ML + 3, y);
-      y += (lines.length * 4.5) + 4;
+      y += (lines.length * 4.5) + 6;
     };
     
-    // Start PDF
+    // ========== START PDF ==========
+    
     addHeader();
     
-    // INCIDENT DETAILS SECTION
+    // SECTION 1: INCIDENT DETAILS
     addSection('INCIDENT DETAILS');
     
-    // INCIDENT REFERENCE subsection
-    setText(C.labelGrey);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text('INCIDENT REFERENCE', ML, y);
-    y += 5;
-    
-    addTableRow('Reference', incident.ref, true);
-    addTableRow('Date', incident.incident_date + ' ' + (incident.incident_time || ''));
-    addTableRow('Status', (incident.status || 'open').toUpperCase());
+    // Subsection: INCIDENT REFERENCE
+    addSubsection('INCIDENT REFERENCE');
+    addRow('Reference', incident.ref, true);
+    addRow('Date', (incident.incident_date || '') + ' ' + (incident.incident_time || ''));
+    addRow('Status', (incident.status || 'OPEN').toUpperCase());
     y += 3;
     
-    addTableRow('Type of report', incident.incident_type, true);
-    addTableRow('Severity', incident.severity);
-    addTableRow('Date', incident.incident_date);
-    addTableRow('Time', incident.incident_time || '—');
-    addTableRow('Location', incident.location);
-    addTableRow('Site', incident.site);
+    // More incident details
+    addRow('Type of report', incident.incident_type, true);
+    addRow('Severity', incident.severity);
+    addRow('Date', incident.incident_date);
+    addRow('Time', incident.incident_time);
+    addRow('Location', incident.location);
+    addRow('Site', incident.site);
     y += 6;
     
-    // REPORTER & PERSON INVOLVED
+    // SECTION 2: REPORTER & PERSON INVOLVED
     addSection('REPORTER & PERSON INVOLVED');
-    addTableRow('Reporter', incident.reporter_name, true);
-    addTableRow('Reporter company', incident.reporter_company);
-    addTableRow('Role in event', incident.reporter_role || 'Reporter');
+    addRow('Reporter', incident.reporter_name, true);
+    addRow('Reporter company', incident.reporter_company);
+    addRow('Role in event', incident.reporter_role || 'Reporter');
+    addRow('Relationship to business', incident.relationship || 'Employee');
+    addRow('Supervisor phone', incident.supervisor_phone);
+    addRow('Supervisor company', incident.supervisor_company);
+    addRow('Supervisor present', incident.supervisor_present || 'yes');
+    
+    // Subsection: WITNESSES (if any)
+    if (incident.witnesses && incident.witnesses.length > 0) {
+      y += 3;
+      addSubsection('WITNESSES');
+      incident.witnesses.forEach((w, idx) => {
+        addRow(w.name, w.phone + ' · ' + w.company, idx === 0);
+      });
+    }
     y += 6;
     
-    // WHAT HAPPENED
-    checkPageBreak(30);
+    // SECTION 3: WORK CONTEXT & INJURY
+    addSection('WORK CONTEXT & INJURY');
+    addRow('Activity at the time', incident.activity || '—', true);
+    addRow('Briefing received', incident.briefing || '—');
+    addRow('Shift start', incident.shift_start || '—');
+    addRow('Days worked since last day off', incident.days_worked || '—');
+    addRow('Years of industry experience', incident.experience || '—');
+    addRow('Working overtime', incident.overtime || 'no');
+    addRow('Task part of normal duties', incident.normal_duties || 'yes');
+    addRow('Weather at the time', incident.weather || '—');
+    y += 6;
+    
+    // SECTION 4: TYPE-SPECIFIC DETAILS
+    addSection('TYPE-SPECIFIC DETAILS');
+    
+    // Type-specific fields based on incident type
+    if (incident.incident_type === 'Actual Injury') {
+      checkPageBreak(30);
+      addRow('Body part injured', incident.body_part || '—', true);
+      addRow('Nature of injury', incident.injury_nature || '—');
+      addRow('Treatment received', incident.treatment || '—');
+    } else if (incident.incident_type === 'Environmental') {
+      checkPageBreak(40);
+      addRow('Substance released', incident.substance || '—', true);
+      addRow('Estimated volume', incident.volume || '—');
+      addRow('Where it went', incident.where_went || '—');
+      addRow('Authorities notified', incident.authorities || '—');
+      y += 3;
+      if (incident.containment_action) {
+        addTextBlock('CONTAINMENT / CLEAN-UP ACTION (POEO s150)', incident.containment_action);
+      }
+    } else if (incident.incident_type === 'Property Damage') {
+      checkPageBreak(30);
+      addRow('Item damaged', incident.item_damaged || '—', true);
+      addRow('Estimated cost', incident.damage_cost || '—');
+      addRow('Owner notified', incident.owner_notified || '—');
+    } else if (incident.incident_type === 'Dangerous Incident') {
+      checkPageBreak(30);
+      addRow('Type of dangerous occurrence', incident.dangerous_type || '—', true);
+      addRow('Potential consequence', incident.potential_consequence || '—');
+    }
+    y += 6;
+    
+    // SECTION 5: WHAT HAPPENED
+    checkPageBreak(40);
     addSection('WHAT HAPPENED');
-    addTableRow('Event mechanism', incident.mechanism || 'Incident', true);
+    addRow('Event mechanism', incident.mechanism || '—', true);
     y += 3;
     
     addTextBlock('DESCRIPTION', incident.description);
@@ -35078,33 +35150,54 @@ function viewIncidentPDF(incident) {
     addTextBlock('IMMEDIATE ACTION', incident.immediate_action);
     addTextBlock('CORRECTIVE ACTIONS', incident.corrective_actions);
     
-    // SUPERVISOR CLOSE-OUT (only if closed)
+    // SECTION 6: NOTIFIABLE ASSESSMENT
+    checkPageBreak(35);
+    addSection('NOTIFIABLE ASSESSMENT');
+    addRow('Reporter said', incident.notifiable_reporter || 'No', true);
+    addRow('Supervisor confirmed', incident.notifiable_supervisor || 'No');
+    addRow('SWMS update required', incident.swms_update || 'no');
+    addRow('Work resumed', incident.work_resumed || 'yes');
+    addRow('Submitted', (incident.incident_date || '') + ' ' + (incident.incident_time || ''));
+    y += 6;
+    
+    // SECTION 7: SUPERVISOR CLOSE-OUT (if closed)
     if (incident.status === 'closed') {
-      checkPageBreak(40);
+      checkPageBreak(45);
       addSection('SUPERVISOR CLOSE-OUT');
-      addTableRow('Closed by', incident.supervisor_name, true);
-      addTableRow('Closed at', incident.reviewed_date);
+      addRow('Closed by', incident.supervisor_name, true);
+      addRow('Closed at', incident.reviewed_date);
+      addRow('Notifiable confirmed', incident.notifiable_confirmed || 'No');
+      addRow('Corrective action', incident.corrective_status || 'Yes — actioned');
       y += 3;
       
+      addTextBlock('CORRECTIVE ACTION DETAIL', incident.corrective_detail);
       addTextBlock('REVIEW NOTES', incident.review_notes);
       addTextBlock('CLOSING NOTE', incident.closing_note);
     }
     
-    // DECLARATION SECTION
-    checkPageBreak(60);
+    // SECTION 8: PHOTO EVIDENCE
+    checkPageBreak(20);
+    addSection('PHOTO EVIDENCE');
+    setText(C.labelGrey);
+    doc.setFont('helvetica','italic'); 
+    doc.setFontSize(9);
+    doc.text('No photos uploaded — reporter explicitly skipped photo capture.', ML, y);
+    y += 8;
+    
+    // SECTION 9: DECLARATION
+    checkPageBreak(80);
     addSection('DECLARATION');
     setText(C.darkText);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setFont('helvetica','normal'); 
+    doc.setFontSize(9);
     const declText = 'I confirm this report is accurate to the best of my knowledge. This report will be filed for review within 24 hours as required under WHS Act 2011.';
     const declLines = doc.splitTextToSize(declText, CW - 6);
     doc.text(declLines, ML, y);
     y += (declLines.length * 4.5) + 8;
     
-    // REPORTER SIGNATURE
-    setText(C.labelGrey);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text('REPORTER SIGNATURE', ML, y);
-    y += 8;
+    // Subsection: REPORTER SIGNATURE
+    addSubsection('REPORTER SIGNATURE');
+    y += 5;
     
     // Signature line
     setStroke(C.borderGrey);
@@ -35114,24 +35207,24 @@ function viewIncidentPDF(incident) {
     
     // Handwritten name
     setText(C.darkText);
-    doc.setFont('helvetica','italic'); doc.setFontSize(16);
+    doc.setFont('helvetica','italic'); 
+    doc.setFontSize(16);
     doc.text(incident.reporter_name || '', ML + 2, y);
     y += 6;
     
     // Printed name and date
     setText(C.labelGrey);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.setFont('helvetica','normal'); 
+    doc.setFontSize(8);
     doc.text(incident.reporter_name || '', ML, y);
     doc.text(incident.incident_date || '', ML + 90, y, {align:'right'});
     y += 12;
     
-    // SUPERVISOR CLOSE-OUT SIGNATURE (if closed)
+    // Subsection: SUPERVISOR CLOSE-OUT SIGNATURE (if closed)
     if (incident.status === 'closed') {
-      checkPageBreak(30);
-      setText(C.labelGrey);
-      doc.setFont('helvetica','bold'); doc.setFontSize(9);
-      doc.text('SUPERVISOR CLOSE-OUT SIGNATURE', ML, y);
-      y += 8;
+      checkPageBreak(35);
+      addSubsection('SUPERVISOR CLOSE-OUT SIGNATURE');
+      y += 5;
       
       // Signature line
       setStroke(C.borderGrey);
@@ -35141,13 +35234,15 @@ function viewIncidentPDF(incident) {
       
       // Handwritten name
       setText(C.darkText);
-      doc.setFont('helvetica','italic'); doc.setFontSize(16);
+      doc.setFont('helvetica','italic'); 
+      doc.setFontSize(16);
       doc.text(incident.supervisor_name || '', ML + 2, y);
       y += 6;
       
       // Printed name and date
       setText(C.labelGrey);
-      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.setFont('helvetica','normal'); 
+      doc.setFontSize(8);
       doc.text(incident.supervisor_name || '', ML, y);
       doc.text(incident.reviewed_date || '', ML + 90, y, {align:'right'});
     }
@@ -35165,6 +35260,7 @@ function viewIncidentPDF(incident) {
     alert('Error generating PDF: ' + err.message);
   }
 }
+
 
 
 // ═══════════════════════════════════════════════════════════════
