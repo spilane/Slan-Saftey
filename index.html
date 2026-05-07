@@ -34554,8 +34554,20 @@ var directorDemoIncidents = [
     supervisor_name:'Eoin Burke',
     supervisor_phone:'0432 778 901',
     supervisor_company:'Murphy Civil Construction',
+    activity:'Cutting steel with angle grinder',
+    briefing:'prestart, swms, toolbox',
+    shift_start:'07:00',
+    days_worked:'3',
+    experience:'8 years',
+    overtime:'no',
+    normal_duties:'yes',
+    weather:'Clear · Mild · Daylight',
+    relationship:'Employee',
+    supervisor_present:'yes',
+    treatment:'Hospital - 8 stitches, tetanus shot',
     reviewed_date:'2026-04-29',
     review_notes:'Spoke with Jake and the leading hand. Clear that time pressure was the primary contributing factor. Jake has been with us for 3 years and normally follows all procedures meticulously. The 2-hour buffer before concrete pours is a sensible control - implemented immediately across all sites. PPE compliance has been reinforced site-wide with daily checks now standard.',
+    corrective_detail:'Cut-resistant sleeves now mandatory and checked before each shift by leading hands. SWMS updated to include specific PPE requirements with visual aids. New policy: no steel cutting permitted in the 2 hours before a scheduled concrete pour. All angle grinders tagged with PPE reminder stickers. Toolbox talk delivered to all steel fixers within 24 hours.',
     closing_note:'Worker returned to light duties after 5 days. Full duties resumed after 12 days with medical clearance. SWMS updated, toolbox delivered, new scheduling policy effective immediately. Leading hand now conducting daily PPE checks. No further action required. Incident review presented at next site safety meeting.',
     reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
     closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
@@ -34586,8 +34598,19 @@ var directorDemoIncidents = [
     supervisor_name:'Eoin Burke',
     supervisor_phone:'0432 778 901',
     supervisor_company:'Murphy Civil Construction',
+    activity:'Walking past formwork storage area',
+    briefing:'prestart, swms',
+    shift_start:'07:00',
+    days_worked:'5',
+    experience:'12 years',
+    overtime:'no',
+    normal_duties:'yes',
+    weather:'Partly cloudy · Cool · Daylight',
+    relationship:'Subcontractor',
+    supervisor_present:'no',
     reviewed_date:'2026-04-28',
     review_notes:'Sam acted correctly by reporting this immediately rather than just moving on. The temporary storage practice has apparently been happening intermittently for several weeks without incident, but this was a clear wake-up call that could have resulted in a serious injury. New racks are being installed tomorrow and the procedure is now crystal clear. All crews have been briefed and subcontractor understands the seriousness. Will monitor compliance closely over the next two weeks.',
+    corrective_detail:'Formwork storage procedure completely rewritten and reissued to all contractors with acknowledgment signatures required. Four additional storage racks ordered and installed within 48 hours. Site map updated to show designated storage zones with clear markings. Daily site compliance walks added to schedule. Subcontractor company conducted toolbox talks at all their other projects.',
     closing_note:'Formwork storage procedure updated and being rigorously enforced. Additional racks installed providing more than adequate storage capacity. Site culture reminder delivered that there is no such thing as acceptable "temporary" storage in walkways or traffic areas. Good catch by Sam reporting this - could easily have been a serious or fatal incident. Subcontractor cooperation has been excellent.',
     reporter_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
     closer_signature:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
@@ -35038,18 +35061,23 @@ function viewIncidentPDF(incident) {
     // Text block with heading
     const addTextBlock = (heading, text) => {
       if (!text) return;
-      checkPageBreak(20);
+      checkPageBreak(25);
+      // Heading in bold
       setText(C.darkText);
       doc.setFont('helvetica','bold'); 
       doc.setFontSize(9);
       doc.text(heading, ML, y);
       y += 5;
+      // Text in grey box
       setText(C.darkText);
       doc.setFont('helvetica','normal'); 
       doc.setFontSize(9);
-      const lines = doc.splitTextToSize(text, CW - 6);
-      doc.text(lines, ML + 3, y);
-      y += (lines.length * 4.5) + 6;
+      const lines = doc.splitTextToSize(text, CW - 10);
+      const boxHeight = (lines.length * 4.5) + 4;
+      setFill(C.lightGrey);
+      doc.rect(ML, y - 2, CW, boxHeight, 'F');
+      doc.text(lines, ML + 3, y + 2);
+      y += boxHeight + 4;
     };
     
     // ========== START PDF ==========
@@ -35197,22 +35225,21 @@ function viewIncidentPDF(incident) {
     
     // Subsection: REPORTER SIGNATURE
     addSubsection('REPORTER SIGNATURE');
-    y += 5;
+    y += 8;
     
-    // Signature line
+    // Handwritten signature ON the line
+    setText(C.darkText);
+    doc.setFont('times','italic'); 
+    doc.setFontSize(20);
+    doc.text(incident.reporter_name || '', ML, y);
+    
+    // Signature line UNDER the signature
     setStroke(C.borderGrey);
     doc.setLineWidth(0.3);
-    doc.line(ML, y, ML + 90, y);
-    y += 2;
+    doc.line(ML, y + 2, ML + 90, y + 2);
+    y += 8;
     
-    // Handwritten name
-    setText(C.darkText);
-    doc.setFont('helvetica','italic'); 
-    doc.setFontSize(16);
-    doc.text(incident.reporter_name || '', ML + 2, y);
-    y += 6;
-    
-    // Printed name and date
+    // Printed name and date below
     setText(C.labelGrey);
     doc.setFont('helvetica','normal'); 
     doc.setFontSize(8);
@@ -35224,22 +35251,21 @@ function viewIncidentPDF(incident) {
     if (incident.status === 'closed') {
       checkPageBreak(35);
       addSubsection('SUPERVISOR CLOSE-OUT SIGNATURE');
-      y += 5;
+      y += 8;
       
-      // Signature line
+      // Handwritten signature ON the line
+      setText(C.darkText);
+      doc.setFont('times','italic'); 
+      doc.setFontSize(20);
+      doc.text(incident.supervisor_name || '', ML, y);
+      
+      // Signature line UNDER the signature
       setStroke(C.borderGrey);
       doc.setLineWidth(0.3);
-      doc.line(ML, y, ML + 90, y);
-      y += 2;
+      doc.line(ML, y + 2, ML + 90, y + 2);
+      y += 8;
       
-      // Handwritten name
-      setText(C.darkText);
-      doc.setFont('helvetica','italic'); 
-      doc.setFontSize(16);
-      doc.text(incident.supervisor_name || '', ML + 2, y);
-      y += 6;
-      
-      // Printed name and date
+      // Printed name and date below
       setText(C.labelGrey);
       doc.setFont('helvetica','normal'); 
       doc.setFontSize(8);
