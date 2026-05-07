@@ -34546,9 +34546,9 @@ var directorDemoIncidents = [
     how_prevented:'Mandatory cut-resistant sleeves for all steel fixing and cutting tasks, enforced through pre-task checks by the leading hand. Additional training on the risks of rushing tasks to meet deadlines. Review of work scheduling to ensure adequate time allocation for steel fixing tasks without creating pressure to rush. Consider using hydraulic cutters instead of angle grinders where feasible to reduce hand-tool contact risks. Implement a "stop work" authority for any worker who observes rushed behavior.',
     immediate_action:'Work stopped immediately. First aid applied on-site to control bleeding. Supervisor notified within 2 minutes. Ambulance called as a precaution due to depth of wound. Worker transported to hospital where wound was cleaned, sutured with 8 stitches, and tetanus shot administered. Site secured, and all other workers reminded of PPE requirements during emergency toolbox talk held within the hour.',
     corrective_actions:'Cut-resistant sleeves now mandatory and checked before each shift by leading hands. SWMS updated to include specific PPE requirements with visual aids showing proper sleeve usage. New policy: no steel cutting permitted in the 2 hours before a scheduled concrete pour to eliminate time pressure. All angle grinders tagged with PPE reminder stickers. Additional toolbox talk delivered to all steel fixers across the project within 24 hours.',
-    mechanism:'contact-sharp-object',
-    body_part:'arm-forearm',
-    injury_nature:'laceration',
+    mechanism:'Body stressing',
+    body_part:'Left forearm',
+    injury_nature:'Laceration (4cm, requiring sutures)',
     submitted_at:'2026-04-28T11:30:00.000Z',
     status:'closed',
     supervisor_name:'Eoin Burke',
@@ -34564,6 +34564,9 @@ var directorDemoIncidents = [
     weather:'Clear · Mild · Daylight',
     relationship:'Employee',
     supervisor_present:'yes',
+    witnesses:[
+      {name:'Sam Carroll', phone:'0411 222 333', company:'Burke Civil Contractors'}
+    ],
     treatment:'Hospital - 8 stitches, tetanus shot',
     reviewed_date:'2026-04-29',
     review_notes:'Spoke with Jake and the leading hand. Clear that time pressure was the primary contributing factor. Jake has been with us for 3 years and normally follows all procedures meticulously. The 2-hour buffer before concrete pours is a sensible control - implemented immediately across all sites. PPE compliance has been reinforced site-wide with daily checks now standard.',
@@ -34590,7 +34593,7 @@ var directorDemoIncidents = [
     how_prevented:'Designate specific formwork storage zones with proper restraints and bracing as standard. Implement a strict "no temporary storage in walkways" rule enforced through regular site walks. All formwork panels to be stored horizontally on designated racks rather than stacked vertically against walls. Subcontractor induction briefing to emphasize that temporary means minutes, not hours. Install physical barriers or high-visibility signage to prevent thoroughfare through any storage areas. Limit vertical stacking to maximum 3 panels with mandatory restraints.',
     immediate_action:'Area immediately barricaded with witches hats and barrier tape to prevent further access. All formwork panels in the immediate area secured or relocated to proper storage racks within 30 minutes. Comprehensive site walk conducted by supervisor and leading hands to identify any other improperly stored materials across all levels. Emergency toolbox talk held with all formwork crews and subcontractors to reinforce storage procedures. Subcontractor leading hand counselled on the critical importance of returning materials to proper locations immediately after use.',
     corrective_actions:'Formwork storage procedure completely rewritten and reissued to all contractors with acknowledgment signatures required. New strict rule: any panel not actively in use must be in a designated storage rack, no exceptions permitted. Four additional storage racks ordered and installed within 48 hours to ensure adequate capacity. Site map updated to show designated storage zones with clear markings and signage installed. Daily site compliance walks by supervisor added to schedule specifically checking material storage. Subcontractor company added this incident to their own internal training program and conducted toolbox talks at all their other projects.',
-    mechanism:'struck-falling-object',
+    mechanism:'Struck by falling object',
     body_part:'None',
     injury_nature:'None',
     submitted_at:'2026-04-27T14:15:00.000Z',
@@ -34608,6 +34611,9 @@ var directorDemoIncidents = [
     weather:'Partly cloudy · Cool · Daylight',
     relationship:'Subcontractor',
     supervisor_present:'no',
+    witnesses:[
+      {name:'Tom Burke', phone:'0411 444 555', company:'Murphy Civil Construction'}
+    ],
     reviewed_date:'2026-04-28',
     review_notes:'Sam acted correctly by reporting this immediately rather than just moving on. The temporary storage practice has apparently been happening intermittently for several weeks without incident, but this was a clear wake-up call that could have resulted in a serious injury. New racks are being installed tomorrow and the procedure is now crystal clear. All crews have been briefed and subcontractor understands the seriousness. Will monitor compliance closely over the next two weeks.',
     corrective_detail:'Formwork storage procedure completely rewritten and reissued to all contractors with acknowledgment signatures required. Four additional storage racks ordered and installed within 48 hours. Site map updated to show designated storage zones with clear markings. Daily site compliance walks added to schedule. Subcontractor company conducted toolbox talks at all their other projects.',
@@ -35163,6 +35169,14 @@ function viewIncidentPDF(incident) {
       checkPageBreak(30);
       addRow('Type of dangerous occurrence', incident.dangerous_type || '—', true);
       addRow('Potential consequence', incident.potential_consequence || '—');
+    } else {
+      // Near Miss or other types without specific fields
+      checkPageBreak(15);
+      setText(C.labelGrey);
+      doc.setFont('helvetica','italic'); 
+      doc.setFontSize(9);
+      doc.text('No additional type-specific details required for this incident type.', ML + 3, y);
+      y += 6;
     }
     y += 6;
     
