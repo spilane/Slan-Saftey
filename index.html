@@ -36273,6 +36273,7 @@ var incChartsInitialized = false;
 var incChartInstances = {};
 
 var dincCurrentFilter = 'open'; // open, closed, all
+var dincCurrentIncident = null; // Store current incident for modal
 
 function goToDirectorIncidents() {
   goTo('screen-director-incidents');
@@ -36280,6 +36281,65 @@ function goToDirectorIncidents() {
   setTimeout(function() {
     dincRenderList();
   }, 100);
+}
+
+function dincShowIncidentModal(incident) {
+  if (!incident) return;
+  dincCurrentIncident = incident;
+  
+  var modal = document.getElementById('dinc-detail-modal');
+  if (!modal) return;
+  
+  // Populate modal
+  document.getElementById('dinc-modal-ref').textContent = incident.ref || '—';
+  document.getElementById('dinc-modal-date').textContent = (incident.incident_date || '') + ' at ' + (incident.incident_time || '12:00 am');
+  document.getElementById('dinc-modal-description').textContent = incident.description || 'No description provided';
+  document.getElementById('dinc-modal-mechanism').textContent = formatMechanism(incident.mechanism) || 'Not specified';
+  document.getElementById('dinc-modal-bodypart').textContent = formatBodyPart(incident.body_part) || 'None';
+  document.getElementById('dinc-modal-reporter').textContent = incident.reporter_name || '—';
+  document.getElementById('dinc-modal-footer').textContent = 'Incident ID: ' + (incident.ref || '—') + ' • Slán Safety Management System';
+  
+  // Badge
+  var badge = document.getElementById('dinc-modal-badge');
+  var sevColours = {
+    Critical: { bg:'#FAEBEB', text:'#B83232' },
+    Major:    { bg:'#FEF0E6', text:'#D4630A' },
+    Moderate: { bg:'#FFFBF0', text:'#976500' },
+    Minor:    { bg:'#E6F5ED', text:'#1B6E3A' }
+  };
+  var sev = sevColours[incident.severity] || sevColours.Minor;
+  badge.style.background = sev.bg;
+  badge.style.color = sev.text;
+  badge.textContent = (incident.severity || 'MINOR').toUpperCase();
+  
+  // Show modal
+  modal.style.display = 'flex';
+}
+
+function dincCloseModal() {
+  var modal = document.getElementById('dinc-detail-modal');
+  if (modal) modal.style.display = 'none';
+  dincCurrentIncident = null;
+}
+
+function dincModalExportPDF() {
+  if (dincCurrentIncident) {
+    viewIncidentPDF(dincCurrentIncident);
+  }
+}
+
+function dincModalEmailReport() {
+  alert('Email functionality coming soon');
+}
+
+function formatMechanism(mech) {
+  if (!mech) return 'Not specified';
+  return mech.replace(/-/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); });
+}
+
+function formatBodyPart(bp) {
+  if (!bp) return 'None';
+  return bp.replace(/-/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); });
 }
 
 function dincSetFilter(filter) {
@@ -36358,7 +36418,7 @@ function dincRenderList() {
   // Render cards
   filtered.forEach(function(inc) {
     var card = document.createElement('div');
-    card.onclick = function() { viewIncidentPDF(inc); };
+    card.onclick = function() { dincShowIncidentModal(inc); };
     
     // Severity colors
     var sevColours = {
@@ -42786,6 +42846,86 @@ document.addEventListener('DOMContentLoaded', slanWireNumericInputs);
       Your permit will be submitted to your supervisor with a TFB flag.
     </div>
     <button onclick="tfbCloseSubmitBlockModal()" style="width:100%;padding:13px;background:#1B3A2D;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;font-family:\'DM Sans\',sans-serif">OK</button>
+  </div>
+</div>
+
+<!-- TFB demo toggle is accessible from My Profile screen — no floating FAB needed -->
+
+<!-- ═══════════════════ DIRECTOR INCIDENT DETAIL MODAL ═══ -->
+<div id="dinc-detail-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px;box-sizing:border-box">
+  <div style="background:white;border-radius:14px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;padding:0">
+    
+    <!-- Header -->
+    <div style="padding:20px 22px 16px 22px;border-bottom:1px solid #E5E5E5">
+      <div style="font-size:18px;font-weight:700;color:#1A2A1F">Incident Report</div>
+    </div>
+    
+    <!-- Content -->
+    <div style="padding:20px 22px">
+      
+      <!-- Ref + Badge -->
+      <div style="background:#F5F5F5;border-radius:10px;padding:16px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">
+          <div style="font-size:20px;font-weight:700;color:#1A2A1F" id="dinc-modal-ref">—</div>
+          <div id="dinc-modal-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;background:#E6F5ED;color:#1B6E3A;text-transform:uppercase;letter-spacing:.05em">MINOR</div>
+        </div>
+        <div style="font-size:13px;color:#5C6B62" id="dinc-modal-date">—</div>
+      </div>
+      
+      <!-- Incident Description -->
+      <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.08em">Incident Description</div>
+        </div>
+        <div style="font-size:14px;color:#1A2A1F;line-height:1.5" id="dinc-modal-description">—</div>
+      </div>
+      
+      <!-- Mechanism + Body Part -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div style="border-left:3px solid #D4A574;padding-left:12px">
+          <div style="font-size:11px;color:#888;margin-bottom:4px">MECHANISM</div>
+          <div style="font-size:14px;font-weight:600;color:#1A2A1F" id="dinc-modal-mechanism">—</div>
+        </div>
+        <div style="border-left:3px solid #D4887A;padding-left:12px">
+          <div style="font-size:11px;color:#888;margin-bottom:4px">BODY PART AFFECTED</div>
+          <div style="font-size:14px;font-weight:600;color:#1A2A1F" id="dinc-modal-bodypart">—</div>
+        </div>
+      </div>
+      
+      <!-- Reported By -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.08em">Reported By</div>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:#1A2A1F" id="dinc-modal-reporter">—</div>
+      </div>
+      
+      <!-- Buttons -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <button onclick="dincModalExportPDF()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border:1.5px solid #E5E5E5;border-radius:10px;background:white;font-size:13px;font-weight:600;color:#1A2A1F;cursor:pointer;font-family:'DM Sans',sans-serif">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export PDF
+        </button>
+        <button onclick="dincModalEmailReport()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border:1.5px solid #E5E5E5;border-radius:10px;background:white;font-size:13px;font-weight:600;color:#1A2A1F;cursor:pointer;font-family:'DM Sans',sans-serif">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email Report
+        </button>
+      </div>
+      
+      <!-- Footer -->
+      <div style="font-size:11px;color:#888;text-align:center;margin-bottom:16px" id="dinc-modal-footer">—</div>
+      
+    </div>
+    
+    <!-- OK Button -->
+    <div style="padding:0 22px 20px 22px">
+      <button onclick="dincCloseModal()" style="width:100%;padding:13px;border-radius:10px;background:#1B6E3A;border:none;color:white;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+        OK
+      </button>
+    </div>
+    
   </div>
 </div>
 
