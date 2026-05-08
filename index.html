@@ -9404,7 +9404,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- Incidents (Director Only) -->
     <div class="fcard" style="overflow:hidden;padding:0">
-      <div onclick="anToggleSection('incidents')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer">
+      <div onclick="goToDirectorIncidents()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer">
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:36px;height:36px;border-radius:10px;background:#FAEBEB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -9414,12 +9414,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <div style="font-size:11px;color:var(--muted);margin-top:1px" id="an-inc-summary">Loading incidents...</div>
           </div>
         </div>
-        <svg id="an-arrow-incidents" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px;transition:transform .25s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <div id="an-section-incidents" style="display:none;border-top:1px solid var(--border);padding:14px 16px">
-        <div id="an-incidents-list" style="display:flex;flex-direction:column;gap:8px">
-          <div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">No incidents to display</div>
-        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </div>
 
@@ -9733,6 +9728,98 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   </div>
 </div>
+
+<!-- ═══════════════════ DIRECTOR INCIDENTS SCREEN ═══ -->
+<div id="screen-director-incidents" class="screen">
+  <div class="sb"></div>
+  
+  <!-- Topbar -->
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goToAnalytics('director')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="dinc-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="form-greeting">
+      <h1>Incidents</h1>
+      <p id="dinc-subtitle">Company-wide incident reporting</p>
+    </div>
+  </div>
+
+  <!-- View Toggle: Cards or Charts -->
+  <div style="padding:0 16px 8px 16px">
+    <div style="display:flex;gap:8px">
+      <button id="dinc-btn-cards" onclick="dincShowView('cards')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:var(--primary);color:white;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif">
+        📋 Incidents
+      </button>
+      <button id="dinc-btn-charts" onclick="dincShowView('charts')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:white;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif">
+        📊 Analytics
+      </button>
+    </div>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="tiles" style="padding-bottom:90px">
+
+    <!-- CARDS VIEW (Default) -->
+    <div id="dinc-view-cards" style="display:block;padding:0 16px">
+      <div id="dinc-incidents-list" style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13px;color:var(--muted);text-align:center;padding:40px 20px">No incidents to display</div>
+      </div>
+    </div>
+
+    <!-- CHARTS VIEW -->
+    <div id="dinc-view-charts" style="display:none;padding:0 16px">
+      
+      <!-- Stats Summary Row -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Total</div>
+          <div style="font-size:28px;font-weight:700;color:var(--text)" id="dinc-chart-total">0</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Open</div>
+          <div style="font-size:28px;font-weight:700;color:#BA7517" id="dinc-chart-open">0</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Closed</div>
+          <div style="font-size:28px;font-weight:700;color:#1B6E3A" id="dinc-chart-closed">0</div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        
+        <!-- Incidents by Type -->
+        <div style="background:white;border:1.5px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">Incidents by Type</div>
+          <canvas id="dinc-chart-by-type" style="max-height:220px"></canvas>
+        </div>
+
+        <!-- Incidents by Site -->
+        <div style="background:white;border:1.5px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">Incidents by Site</div>
+          <canvas id="dinc-chart-by-site" style="max-height:200px"></canvas>
+        </div>
+
+        <!-- Incidents by Severity -->
+        <div style="background:white;border:1.5px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">Incidents by Severity</div>
+          <canvas id="dinc-chart-by-severity" style="max-height:220px"></canvas>
+        </div>
+
+        <!-- Timeline -->
+        <div style="background:white;border:1.5px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">Incidents Over Time</div>
+          <canvas id="dinc-chart-timeline" style="max-height:200px"></canvas>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ═══════════════════ EMERGENCY CONTACTS ═══ -->
 <div id="screen-emergency" class="screen">
   <div class="sb"></div>
@@ -35753,7 +35840,7 @@ var directorDemoIncidents = [
 
 function populateDirectorIncidents() {
   // ═══════════════════════════════════════════════════════════════
-  var list = document.getElementById('an-incidents-list');
+  var list = document.getElementById('dinc-incidents-list');
   var summary = document.getElementById('an-inc-summary');
   if (!list || !directorDemoIncidents || directorDemoIncidents.length === 0) return;
   
@@ -36162,6 +36249,340 @@ function viewIncidentPDF(incident) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// INCIDENTS ANALYTICS / CHARTS VIEW
+// ═══════════════════════════════════════════════════════════════
+
+var incChartsInitialized = false;
+var incChartInstances = {};
+
+function goToDirectorIncidents() {
+  goTo('screen-director-incidents');
+  if (!incChartsInitialized) {
+    // Populate cards when screen opens
+    setTimeout(function() {
+      populateDirectorIncidents();
+    }, 100);
+  }
+}
+
+function dincShowView(view) {
+  var cardsBtn = document.getElementById('dinc-btn-cards');
+  var chartsBtn = document.getElementById('dinc-btn-charts');
+  var cardsView = document.getElementById('dinc-view-cards');
+  var chartsView = document.getElementById('dinc-view-charts');
+  
+  if (!cardsBtn || !chartsBtn || !cardsView || !chartsView) return;
+  
+  if (view === 'cards') {
+    cardsBtn.style.background = 'var(--primary)';
+    cardsBtn.style.color = 'white';
+    chartsBtn.style.background = 'white';
+    chartsBtn.style.color = 'var(--text)';
+    cardsView.style.display = 'block';
+    chartsView.style.display = 'none';
+  } else if (view === 'charts') {
+    chartsBtn.style.background = 'var(--primary)';
+    chartsBtn.style.color = 'white';
+    cardsBtn.style.background = 'white';
+    cardsBtn.style.color = 'var(--text)';
+    chartsView.style.display = 'block';
+    cardsView.style.display = 'none';
+    
+    // Initialize charts on first view
+    if (!incChartsInitialized) {
+      setTimeout(function() {
+        dincInitCharts();
+      }, 100);
+      incChartsInitialized = true;
+    }
+  }
+}
+
+function dincInitCharts() {
+  if (!directorDemoIncidents || directorDemoIncidents.length === 0) return;
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js not loaded');
+    return;
+  }
+  
+  var data = directorDemoIncidents;
+  
+  // Update stats summary
+  var totalEl = document.getElementById('dinc-chart-total');
+  var openEl = document.getElementById('dinc-chart-open');
+  var closedEl = document.getElementById('dinc-chart-closed');
+  
+  var openCount = data.filter(function(i) { return (i.status || 'open') === 'open'; }).length;
+  var closedCount = data.filter(function(i) { return i.status === 'closed'; }).length;
+  
+  if (totalEl) totalEl.textContent = data.length;
+  if (openEl) openEl.textContent = openCount;
+  if (closedEl) closedEl.textContent = closedCount;
+  
+  // Destroy existing charts if they exist
+  Object.keys(incChartInstances).forEach(function(key) {
+    if (incChartInstances[key]) {
+      incChartInstances[key].destroy();
+    }
+  });
+  incChartInstances = {};
+  
+  // Chart colors
+  var colors = {
+    'Actual Injury': '#B83232',
+    'Near Miss': '#976500',
+    'Dangerous Incident': '#D4630A',
+    'Property Damage': '#5B21B6',
+    'Environmental': '#047857',
+    'Minor': '#1B6E3A',
+    'Moderate': '#976500',
+    'Major': '#D4630A',
+    'Critical': '#B83232'
+  };
+  
+  // 1. INCIDENTS BY TYPE (Pie Chart)
+  var typeCanvas = document.getElementById('dinc-chart-by-type');
+  if (typeCanvas) {
+    var typeCounts = {};
+    data.forEach(function(inc) {
+      var type = inc.incident_type || 'Unknown';
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+    
+    var typeLabels = Object.keys(typeCounts);
+    var typeValues = Object.values(typeCounts);
+    var typeColors = typeLabels.map(function(t) { return colors[t] || '#6B7280'; });
+    
+    incChartInstances.byType = new Chart(typeCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: typeLabels,
+        datasets: [{
+          data: typeValues,
+          backgroundColor: typeColors,
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { 
+              padding: 12,
+              font: { size: 11 },
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                var percentage = Math.round((context.parsed / total) * 100);
+                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  // 2. INCIDENTS BY SITE (Bar Chart)
+  var siteCanvas = document.getElementById('dinc-chart-by-site');
+  if (siteCanvas) {
+    var siteCounts = {};
+    data.forEach(function(inc) {
+      var site = inc.site || 'Unknown';
+      // Shorten site names
+      if (site === 'Bondi Junction Mixed Use') site = 'Bondi Junction';
+      if (site === 'Parramatta Metro Stage 2') site = 'Parramatta Metro';
+      siteCounts[site] = (siteCounts[site] || 0) + 1;
+    });
+    
+    var siteLabels = Object.keys(siteCounts);
+    var siteValues = Object.values(siteCounts);
+    
+    incChartInstances.bySite = new Chart(siteCanvas, {
+      type: 'bar',
+      data: {
+        labels: siteLabels,
+        datasets: [{
+          label: 'Incidents',
+          data: siteValues,
+          backgroundColor: 'rgba(37, 99, 235, 0.8)',
+          borderColor: 'rgb(37, 99, 235)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.parsed.y + ' incidents';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { 
+              stepSize: 1,
+              font: { size: 11 }
+            },
+            grid: { color: '#F0F2F0' }
+          },
+          x: {
+            ticks: { font: { size: 11 } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+  
+  // 3. INCIDENTS BY SEVERITY (Doughnut Chart)
+  var severityCanvas = document.getElementById('dinc-chart-by-severity');
+  if (severityCanvas) {
+    var sevCounts = {};
+    data.forEach(function(inc) {
+      var sev = inc.severity || 'Minor';
+      sevCounts[sev] = (sevCounts[sev] || 0) + 1;
+    });
+    
+    // Order: Critical, Major, Moderate, Minor
+    var sevOrder = ['Critical', 'Major', 'Moderate', 'Minor'];
+    var sevLabels = [];
+    var sevValues = [];
+    var sevColors = [];
+    
+    sevOrder.forEach(function(sev) {
+      if (sevCounts[sev]) {
+        sevLabels.push(sev);
+        sevValues.push(sevCounts[sev]);
+        sevColors.push(colors[sev]);
+      }
+    });
+    
+    incChartInstances.bySeverity = new Chart(severityCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: sevLabels,
+        datasets: [{
+          data: sevValues,
+          backgroundColor: sevColors,
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { 
+              padding: 12,
+              font: { size: 11 },
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                var percentage = Math.round((context.parsed / total) * 100);
+                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  // 4. INCIDENTS OVER TIME (Line Chart)
+  var timelineCanvas = document.getElementById('dinc-chart-timeline');
+  if (timelineCanvas) {
+    // Group by date
+    var dateCounts = {};
+    data.forEach(function(inc) {
+      var date = inc.incident_date || '';
+      if (date) {
+        dateCounts[date] = (dateCounts[date] || 0) + 1;
+      }
+    });
+    
+    // Sort dates
+    var dates = Object.keys(dateCounts).sort();
+    var counts = dates.map(function(d) { return dateCounts[d]; });
+    
+    // Format labels (e.g., "28 Apr")
+    var labels = dates.map(function(d) {
+      var dateObj = new Date(d);
+      return dateObj.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+    });
+    
+    incChartInstances.timeline = new Chart(timelineCanvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Incidents',
+          data: counts,
+          borderColor: 'rgb(37, 99, 235)',
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          tension: 0.3,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: 'rgb(37, 99, 235)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.parsed.y + ' incident' + (context.parsed.y === 1 ? '' : 's');
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { 
+              stepSize: 1,
+              font: { size: 11 }
+            },
+            grid: { color: '#F0F2F0' }
+          },
+          x: {
+            ticks: { 
+              font: { size: 10 },
+              maxRotation: 45,
+              minRotation: 45
+            },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+}
 
 
 // ═══════════════════════════════════════════════════════════════
