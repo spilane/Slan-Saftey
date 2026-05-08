@@ -9746,16 +9746,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
-  <!-- View Toggle: Cards or Charts -->
-  <div style="padding:0 16px 8px 16px">
-    <div style="display:flex;gap:8px">
-      <button id="dinc-btn-cards" onclick="dincShowView('cards')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:var(--primary);color:white;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif">
-        📋 Incidents
-      </button>
-      <button id="dinc-btn-charts" onclick="dincShowView('charts')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:white;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif">
-        📊 Analytics
-      </button>
-    </div>
+  <!-- View Toggle: Just Analytics Button -->
+  <div style="padding:0 16px 12px 16px">
+    <button id="dinc-btn-charts" onclick="dincShowView('charts')" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:white;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif">
+      📊 View Analytics Dashboard
+    </button>
   </div>
 
   <!-- Scrollable content -->
@@ -9763,6 +9758,27 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- CARDS VIEW (Default) -->
     <div id="dinc-view-cards" style="display:block;padding:0 16px">
+      
+      <!-- Title & Summary -->
+      <div style="padding:0 0 8px">
+        <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">All Incidents</div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="dinc-list-summary">Company-wide incident records</div>
+      </div>
+
+      <!-- Tab filter: Open vs Closed vs All -->
+      <div style="display:flex;gap:6px;background:#F2F0E8;border-radius:10px;padding:4px;margin-bottom:10px" id="dinc-tabs">
+        <button onclick="dincSetFilter('open')" id="dinc-tab-open" style="flex:1;padding:8px 6px;border:none;border-radius:7px;background:#fff;color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Open</button>
+        <button onclick="dincSetFilter('closed')" id="dinc-tab-closed" style="flex:1;padding:8px 6px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Closed</button>
+        <button onclick="dincSetFilter('all')" id="dinc-tab-all" style="flex:1;padding:8px 6px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">All</button>
+      </div>
+
+      <!-- Search -->
+      <div style="position:relative;margin-bottom:10px">
+        <input type="text" id="dinc-search" placeholder="Search by reference, type, reporter, site..." oninput="dincRenderList()" style="padding:11px 13px 11px 36px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;width:100%;outline:none;color:var(--text);box-sizing:border-box;background:#fff">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;pointer-events:none"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </div>
+
+      <!-- Cards Container -->
       <div id="dinc-incidents-list" style="display:flex;flex-direction:column;gap:8px">
         <div style="font-size:13px;color:var(--muted);text-align:center;padding:40px 20px">No incidents to display</div>
       </div>
@@ -36256,36 +36272,155 @@ function viewIncidentPDF(incident) {
 var incChartsInitialized = false;
 var incChartInstances = {};
 
+var dincCurrentFilter = 'open'; // open, closed, all
+
 function goToDirectorIncidents() {
   goTo('screen-director-incidents');
-  if (!incChartsInitialized) {
-    // Populate cards when screen opens
-    setTimeout(function() {
-      populateDirectorIncidents();
-    }, 100);
+  // Populate cards when screen opens
+  setTimeout(function() {
+    dincRenderList();
+  }, 100);
+}
+
+function dincSetFilter(filter) {
+  dincCurrentFilter = filter;
+  
+  // Update button styles
+  var openBtn = document.getElementById('dinc-tab-open');
+  var closedBtn = document.getElementById('dinc-tab-closed');
+  var allBtn = document.getElementById('dinc-tab-all');
+  
+  if (openBtn) openBtn.style.background = filter === 'open' ? '#fff' : 'transparent';
+  if (openBtn) openBtn.style.color = filter === 'open' ? 'var(--text)' : 'var(--muted)';
+  if (closedBtn) closedBtn.style.background = filter === 'closed' ? '#fff' : 'transparent';
+  if (closedBtn) closedBtn.style.color = filter === 'closed' ? 'var(--text)' : 'var(--muted)';
+  if (allBtn) allBtn.style.background = filter === 'all' ? '#fff' : 'transparent';
+  if (allBtn) allBtn.style.color = filter === 'all' ? 'var(--text)' : 'var(--muted)';
+  
+  dincRenderList();
+}
+
+function dincRenderList() {
+  var list = document.getElementById('dinc-incidents-list');
+  var summary = document.getElementById('dinc-list-summary');
+  var searchInput = document.getElementById('dinc-search');
+  
+  if (!list || !directorDemoIncidents || directorDemoIncidents.length === 0) return;
+  
+  var searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
+  
+  // Filter by status
+  var filtered = directorDemoIncidents.filter(function(inc) {
+    var status = inc.status || 'open';
+    if (dincCurrentFilter !== 'all' && status !== dincCurrentFilter) return false;
+    
+    // Filter by search
+    if (searchQuery) {
+      var searchable = [
+        inc.ref || '',
+        inc.incident_type || '',
+        inc.reporter_name || '',
+        inc.site || '',
+        inc.location || '',
+        inc.description || ''
+      ].join(' ').toLowerCase();
+      
+      if (searchable.indexOf(searchQuery) === -1) return false;
+    }
+    
+    return true;
+  });
+  
+  // Update summary
+  var openCount = directorDemoIncidents.filter(function(i) { return (i.status || 'open') === 'open'; }).length;
+  var closedCount = directorDemoIncidents.filter(function(i) { return i.status === 'closed'; }).length;
+  
+  if (summary) {
+    if (searchQuery) {
+      summary.textContent = filtered.length + ' incident' + (filtered.length === 1 ? '' : 's') + ' match "' + searchQuery + '"';
+    } else {
+      summary.textContent = openCount + ' open · ' + closedCount + ' closed · ' + directorDemoIncidents.length + ' total';
+    }
   }
+  
+  // Clear list
+  list.innerHTML = '';
+  
+  // Show empty state
+  if (filtered.length === 0) {
+    var emptyMsg = 'No incidents';
+    if (searchQuery) emptyMsg += ' match "' + searchQuery + '"';
+    if (dincCurrentFilter !== 'all') emptyMsg += ' in the ' + dincCurrentFilter + ' tab';
+    list.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:40px 20px">' + emptyMsg + '</div>';
+    return;
+  }
+  
+  // Render cards
+  filtered.forEach(function(inc) {
+    var card = document.createElement('div');
+    card.onclick = function() { viewIncidentPDF(inc); };
+    
+    // Severity colors
+    var sevColours = {
+      Critical: { bg:'#FAEBEB', border:'rgba(184,50,50,.25)', text:'#B83232' },
+      Major:    { bg:'#FEF0E6', border:'rgba(212,99,10,.25)', text:'#D4630A' },
+      Moderate: { bg:'#FFFBF0', border:'rgba(151,101,0,.25)', text:'#976500' },
+      Minor:    { bg:'#E6F5ED', border:'rgba(27,110,58,.25)', text:'#1B6E3A' }
+    };
+    var sev = sevColours[inc.severity] || sevColours.Minor;
+    
+    // Status badge
+    var status = inc.status || 'open';
+    var statusStyles = {
+      'open':   { bg:'#FDF8EC', text:'#BA7517', label:'OPEN' },
+      'closed': { bg:'#E6F5ED', text:'#1B6E3A', label:'CLOSED' }
+    };
+    var ss = statusStyles[status] || statusStyles.open;
+    var statusBadge = '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:' + ss.bg + ';color:' + ss.text + ';text-transform:uppercase;letter-spacing:.04em">' + ss.label + '</span>';
+    
+    // Description preview
+    var desc = (inc.description || '').slice(0, 110) + ((inc.description || '').length > 110 ? '…' : '');
+    
+    // Site name (shortened)
+    var siteName = inc.site || '';
+    if (siteName === 'Bondi Junction Mixed Use') siteName = 'Bondi Junction';
+    if (siteName === 'Parramatta Metro Stage 2') siteName = 'Parramatta Metro';
+    
+    card.innerHTML = 
+      '<div style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px">' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+          '<span style="display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:' + sev.bg + ';color:' + sev.text + ';border:1px solid ' + sev.border + ';text-transform:uppercase;letter-spacing:.04em">' + (inc.severity || 'Minor') + '</span>' +
+          '<span style="font-size:13px;font-weight:600;color:var(--text)">' + (inc.incident_type || 'Incident') + '</span>' +
+          statusBadge +
+        '</div>' +
+        '<div style="font-size:12.5px;color:var(--muted);line-height:1.5">' + (desc || '<i>No description recorded</i>') + '</div>' +
+        '<div style="font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
+          '<span>📍 ' + siteName + '</span>' +
+          '<span style="font-family:\'DM Mono\',monospace;font-size:10px">' + (inc.ref || '') + '</span>' +
+        '</div>' +
+      '</div>';
+    
+    list.appendChild(card);
+  });
 }
 
 function dincShowView(view) {
-  var cardsBtn = document.getElementById('dinc-btn-cards');
   var chartsBtn = document.getElementById('dinc-btn-charts');
   var cardsView = document.getElementById('dinc-view-cards');
   var chartsView = document.getElementById('dinc-view-charts');
   
-  if (!cardsBtn || !chartsBtn || !cardsView || !chartsView) return;
+  if (!chartsBtn || !cardsView || !chartsView) return;
   
   if (view === 'cards') {
-    cardsBtn.style.background = 'var(--primary)';
-    cardsBtn.style.color = 'white';
+    chartsBtn.textContent = '📊 View Analytics Dashboard';
     chartsBtn.style.background = 'white';
     chartsBtn.style.color = 'var(--text)';
     cardsView.style.display = 'block';
     chartsView.style.display = 'none';
   } else if (view === 'charts') {
+    chartsBtn.textContent = '📋 Back to Incidents';
     chartsBtn.style.background = 'var(--primary)';
     chartsBtn.style.color = 'white';
-    cardsBtn.style.background = 'white';
-    cardsBtn.style.color = 'var(--text)';
     chartsView.style.display = 'block';
     cardsView.style.display = 'none';
     
