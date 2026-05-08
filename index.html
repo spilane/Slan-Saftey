@@ -9746,7 +9746,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
-  <!-- View Toggle: Just Analytics Button -->
+  <!-- View Toggle: Analytics Button -->
   <div style="padding:0 16px 12px 16px">
     <button id="dinc-btn-charts" onclick="dincShowView('charts')" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:white;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif">
       📊 View Analytics Dashboard
@@ -9756,13 +9756,92 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <!-- Scrollable content -->
   <div class="tiles" style="padding-bottom:90px">
 
-    <!-- CARDS VIEW (Default) -->
+    <!-- CARDS VIEW (Default) - New Dashboard Layout -->
     <div id="dinc-view-cards" style="display:block;padding:0 16px">
       
-      <!-- Title & Summary -->
+      <!-- SECTION 1: FILTER DATA -->
+      <div style="background:#1B3A2D;border-radius:10px;padding:14px 16px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:#D4A574;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Filter Data</div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+          <select id="dinc-filter-site" onchange="dincApplyFilters()" style="padding:8px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.1);color:white;font-size:12px;font-family:'DM Sans',sans-serif">
+            <option value="all">All Sites</option>
+            <option value="Bondi Junction Mixed Use">Bondi Junction</option>
+            <option value="Parramatta Metro Stage 2">Parramatta Metro</option>
+            <option value="Sydney Olympic Park">Sydney Olympic</option>
+          </select>
+          
+          <select id="dinc-filter-period" onchange="dincApplyFilters()" style="padding:8px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.1);color:white;font-size:12px;font-family:'DM Sans',sans-serif">
+            <option value="6">Last 6 months</option>
+            <option value="3">Last 3 months</option>
+            <option value="1">Last month</option>
+            <option value="12">Last year</option>
+          </select>
+          
+          <select id="dinc-filter-severity" onchange="dincApplyFilters()" style="padding:8px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.1);color:white;font-size:12px;font-family:'DM Sans',sans-serif">
+            <option value="all">All Severity</option>
+            <option value="Critical">Critical</option>
+            <option value="Major">Major</option>
+            <option value="Moderate">Moderate</option>
+            <option value="Minor">Minor</option>
+          </select>
+        </div>
+        
+        <button onclick="dincResetFilters()" style="padding:6px 12px;border:1px solid rgba(255,255,255,.3);border-radius:6px;background:transparent;color:rgba(255,255,255,.8);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+          Reset
+        </button>
+      </div>
+
+      <!-- SECTION 1: INDUSTRY BENCHMARK -->
+      <div style="background:#1B3A2D;border-radius:10px;padding:14px 16px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:#D4A574;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Industry Benchmark</div>
+        
+        <div style="background:rgba(212,165,116,.15);border-radius:8px;padding:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="text-align:center">
+              <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:4px">Your TRIFR</div>
+              <div style="display:flex;align-items:baseline;justify-content:center;gap:4px">
+                <div style="font-size:32px;font-weight:700;color:#D4A574">4.2</div>
+                <div style="font-size:14px;font-weight:600;color:#5CDB95">↓35%</div>
+              </div>
+            </div>
+            <div style="text-align:center;padding-left:20px;border-left:1px solid rgba(255,255,255,.2)">
+              <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:4px">Industry Avg</div>
+              <div style="font-size:32px;font-weight:700;color:rgba(255,255,255,.5)">6.5</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:8px;background:rgba(92,219,149,.15);border-radius:6px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5CDB95" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div style="font-size:11px;color:rgba(255,255,255,.9);line-height:1.4">You're performing <strong>35% better</strong> than the construction industry average (Safe Work Australia 2025)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: KEY METRICS -->
+      <div style="background:#1B3A2D;border-radius:10px;padding:14px 16px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:#D4A574;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Key Metrics</div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <!-- Total Incidents -->
+          <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:16px;text-align:center">
+            <div style="font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Total Incidents</div>
+            <div style="font-size:40px;font-weight:700;color:white;line-height:1;margin-bottom:4px" id="dinc-total-count">25</div>
+            <div style="font-size:11px;color:#E85555;font-weight:600" id="dinc-total-change">↑ 40% vs last period</div>
+          </div>
+          
+          <!-- LTI-Free Days -->
+          <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:16px;text-align:center">
+            <div style="font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">LTI-Free Days</div>
+            <div style="font-size:40px;font-weight:700;color:#5CDB95;line-height:1;margin-bottom:4px">47</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600">Running total</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Title & Summary (for incident list below) -->
       <div style="padding:0 0 8px">
-        <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">All Incidents</div>
-        <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="dinc-list-summary">Company-wide incident records</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Recent Incidents</div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="dinc-list-summary">Showing all incidents</div>
       </div>
 
       <!-- Tab filter: Open vs Closed vs All -->
@@ -36329,7 +36408,44 @@ function dincModalExportPDF() {
 }
 
 function dincModalEmailReport() {
-  alert('Email functionality coming soon');
+  if (!dincCurrentIncident) {
+    alert('No incident data available');
+    return;
+  }
+  
+  var inc = dincCurrentIncident;
+  
+  // Build email content
+  var subject = 'Incident Report: ' + (inc.ref || 'Report') + ' - ' + (inc.incident_type || 'Incident');
+  var body = 'INCIDENT REPORT\\n\\n';
+  body += 'Reference: ' + (inc.ref || '—') + '\\n';
+  body += 'Type: ' + (inc.incident_type || '—') + '\\n';
+  body += 'Severity: ' + (inc.severity || '—') + '\\n';
+  body += 'Date: ' + (inc.incident_date || '—') + ' at ' + (inc.incident_time || '—') + '\\n';
+  body += 'Location: ' + (inc.location || '—') + '\\n';
+  body += 'Site: ' + (inc.site || '—') + '\\n\\n';
+  body += 'DESCRIPTION:\\n' + (inc.description || 'No description provided') + '\\n\\n';
+  body += 'MECHANISM: ' + formatMechanism(inc.mechanism) + '\\n';
+  body += 'BODY PART: ' + formatBodyPart(inc.body_part) + '\\n\\n';
+  body += 'REPORTED BY: ' + (inc.reporter_name || '—') + '\\n';
+  body += 'COMPANY: ' + (inc.reporter_company || '—') + '\\n\\n';
+  
+  if (inc.what_caused) {
+    body += 'WHAT CAUSED IT:\\n' + inc.what_caused + '\\n\\n';
+  }
+  if (inc.immediate_action) {
+    body += 'IMMEDIATE ACTION:\\n' + inc.immediate_action + '\\n\\n';
+  }
+  
+  body += '---\\n';
+  body += 'This incident report was generated from Slán Safety Management System\\n';
+  body += 'For full details, please export the PDF report.\\n';
+  
+  // Create mailto link
+  var mailtoLink = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  
+  // Open email client
+  window.location.href = mailtoLink;
 }
 
 function formatMechanism(mech) {
@@ -36360,6 +36476,17 @@ function dincSetFilter(filter) {
   dincRenderList();
 }
 
+function dincApplyFilters() {
+  dincRenderList();
+}
+
+function dincResetFilters() {
+  document.getElementById('dinc-filter-site').value = 'all';
+  document.getElementById('dinc-filter-period').value = '6';
+  document.getElementById('dinc-filter-severity').value = 'all';
+  dincRenderList();
+}
+
 function dincRenderList() {
   var list = document.getElementById('dinc-incidents-list');
   var summary = document.getElementById('dinc-list-summary');
@@ -36369,10 +36496,20 @@ function dincRenderList() {
   
   var searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
   
-  // Filter by status
+  // Get dropdown filter values
+  var siteFilter = document.getElementById('dinc-filter-site') ? document.getElementById('dinc-filter-site').value : 'all';
+  var severityFilter = document.getElementById('dinc-filter-severity') ? document.getElementById('dinc-filter-severity').value : 'all';
+  
+  // Filter by status, site, severity, and search
   var filtered = directorDemoIncidents.filter(function(inc) {
     var status = inc.status || 'open';
     if (dincCurrentFilter !== 'all' && status !== dincCurrentFilter) return false;
+    
+    // Filter by site
+    if (siteFilter !== 'all' && inc.site !== siteFilter) return false;
+    
+    // Filter by severity
+    if (severityFilter !== 'all' && inc.severity !== severityFilter) return false;
     
     // Filter by search
     if (searchQuery) {
@@ -36395,12 +36532,12 @@ function dincRenderList() {
   var openCount = directorDemoIncidents.filter(function(i) { return (i.status || 'open') === 'open'; }).length;
   var closedCount = directorDemoIncidents.filter(function(i) { return i.status === 'closed'; }).length;
   
+  // Update total count in Key Metrics
+  var totalCountEl = document.getElementById('dinc-total-count');
+  if (totalCountEl) totalCountEl.textContent = directorDemoIncidents.length;
+  
   if (summary) {
-    if (searchQuery) {
-      summary.textContent = filtered.length + ' incident' + (filtered.length === 1 ? '' : 's') + ' match "' + searchQuery + '"';
-    } else {
-      summary.textContent = openCount + ' open · ' + closedCount + ' closed · ' + directorDemoIncidents.length + ' total';
-    }
+    summary.textContent = 'Showing ' + filtered.length + ' of ' + directorDemoIncidents.length + ' incidents';
   }
   
   // Clear list
