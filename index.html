@@ -43766,9 +43766,22 @@ function viewIncidentFullPDF(incidentId) {
     return; 
   }
   
+  // Map fields to match what the PDF generator expects
+  incident.cause_text = incident.what_caused || incident.cause_text || '';
+  incident.prevention_text = incident.how_prevented || incident.prevention_text || '';
+  incident.review_notes_text = incident.review_notes || incident.review_notes_text || '';
+  
   // Close drill-down panel
   var drillDown = document.getElementById('dir-drilldown');
   if (drillDown) drillDown.style.display = 'none';
+  
+  // Temporarily save the mapped incident back
+  var allInc = incLoadAll();
+  var idx = allInc.findIndex(function(i) { return i.ref === incidentId; });
+  if (idx >= 0) {
+    allInc[idx] = incident;
+    localStorage.setItem('slan_incidents_v1', JSON.stringify(allInc));
+  }
   
   // Set the active incident reference for the PDF generator
   window._incActiveRef = incident.ref;
@@ -43778,6 +43791,7 @@ function viewIncidentFullPDF(incidentId) {
     downloadIncidentPdf();
   } else {
     alert('PDF function not available. Please refresh the page.');
+  }
   }
 }
 
