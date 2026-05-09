@@ -43306,8 +43306,7 @@ function loadDirectorIncidents(customIncidents) {
   }
   
   // Load incidents from localStorage or use demo data
-  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
-  var incidents = customIncidents || (storedIncidents.length > 0 ? storedIncidents : incLoadAll());
+  var incidents = customIncidents || incLoadAll();
   
   // Filter to last 6 months (180 days) to show all demo data
   var cutoff = Date.now() - (180 * 24 * 60 * 60 * 1000);
