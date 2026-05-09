@@ -22148,7 +22148,7 @@ function downloadIncidentPdf() {
       ensure(12);
       y = drawSubLabel(y, label);
       const lines = doc.splitTextToSize(String(value), CW - 6);
-      const blockH = Math.max(8, lines.length * 4.2 + 5);
+      const blockH = Math.max(10, lines.length * 4.5 + 6); // Increased line height and padding
       ensure(blockH + 1);
       drawCard(y, blockH, C.neutralBg, C.border);
       setText(C.darkText);
@@ -22512,16 +22512,16 @@ function downloadIncidentPdf() {
       } catch(e) {}
       
       // If no valid signature image, render name in fancy script font
-      if (!csigRendered && r.closed_by) {
+      if (!csigRendered && (r.closed_by || r.supervisor_name)) {
         setText(C.darkText);
         doc.setFont('times', 'italic');
         doc.setFontSize(16);
-        doc.text(r.closed_by, ML + 4, y + 13);
+        doc.text(r.closed_by || r.supervisor_name, ML + 4, y + 13);
       }
       
       setText(C.subLabel);
       doc.setFont('helvetica','normal'); doc.setFontSize(8);
-      doc.text(String(r.closed_by || ''), ML + 2, y + 25);
+      doc.text(String(r.closed_by || r.supervisor_name || ''), ML + 2, y + 25);
       doc.text(r.closed_at ? new Date(r.closed_at).toLocaleDateString('en-AU') : '', PAGE_W - MR - 2, y + 25, { align:'right' });
       y += 28;
     }
@@ -22540,7 +22540,16 @@ function downloadIncidentPdf() {
     }
 
     const filename = 'Incident_' + (r.ref || 'report').replace(/[^A-Z0-9-]/gi,'_') + '.pdf';
-    doc.save(filename);
+    
+    // Open PDF in new tab instead of downloading
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+    
+    // Clean up the URL after a delay
+    setTimeout(function() {
+      URL.revokeObjectURL(pdfUrl);
+    }, 1000);
   } catch (e) {
     console.error('Incident PDF generation failed:', e);
     slanAlert('Could not generate PDF', 'Something went wrong building the PDF. Please try again or contact support.');
@@ -35978,21 +35987,30 @@ function populateDirectorIncidents() {
   // ═══════════════════════════════════════════════════════════════
   var list = document.getElementById('dinc-incidents-list');
   var summary = document.getElementById('an-inc-summary');
-  if (!list || !directorDemoIncidents || directorDemoIncidents.length === 0) return;
+  if (!list) return;
   
-  // Update summary
-  var nearMiss = directorDemoIncidents.filter(i => i.incident_type === 'Near Miss').length;
-  var actualInjury = directorDemoIncidents.filter(i => i.incident_type === 'Actual Injury').length;
-  var dangerous = directorDemoIncidents.filter(i => i.incident_type === 'Dangerous Incident').length;
-  var propertyDamage = directorDemoIncidents.filter(i => i.incident_type === 'Property Damage').length;
-  var environmental = directorDemoIncidents.filter(i => i.incident_type === 'Environmental').length;
-  summary.textContent = actualInjury + ' injury · ' + nearMiss + ' near miss · ' + dangerous + ' dangerous · ' + propertyDamage + ' damage · ' + environmental + ' environmental';
+  // Load incidents from storage (prepopulates demo if empty)
+  var incidents = incLoadAll();
+  if (incidents.length === 0) {
+    prepopulateDemoIncidents();
+    incidents = incLoadAll();
+  }
+  
+  // Update summary with actual counts
+  if (summary && incidents.length > 0) {
+    var nearMiss = incidents.filter(i => i.incident_type === 'Near Miss').length;
+    var actualInjury = incidents.filter(i => i.incident_type === 'Actual Injury').length;
+    var dangerous = incidents.filter(i => i.incident_type === 'Dangerous Incident').length;
+    var propertyDamage = incidents.filter(i => i.incident_type === 'Property Damage').length;
+    var environmental = incidents.filter(i => i.incident_type === 'Environmental').length;
+    summary.textContent = actualInjury + ' injury · ' + nearMiss + ' near miss · ' + dangerous + ' dangerous · ' + propertyDamage + ' damage · ' + environmental + ' environmental';
+  }
   
   // Clear list
   list.innerHTML = '';
   
-  // Add each incident
-  directorDemoIncidents.forEach(function(inc) {
+  // Add each incident (use actual incidents, not just demo)
+  incidents.forEach(function(inc) {
     var card = document.createElement('div');
     card.onclick = function() { viewIncidentPDF(inc); };
     
