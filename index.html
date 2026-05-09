@@ -43189,6 +43189,24 @@ function updateDirectorBenchmarkColors() {
   }
 }
 
+function mapSeverityForDirector(incident) {
+  var severity = (incident.severity || '').toLowerCase();
+  var incidentType = (incident.incident_type || '').toLowerCase();
+  
+  // LTI = Major or Critical severity actual injuries
+  if (incidentType.includes('injury') && (severity === 'major' || severity === 'critical')) {
+    return {label: 'LTI', color: '#FAEEDA', textColor: '#854F0B', icon: '🚨'};
+  }
+  
+  // Near Miss
+  if (incidentType.includes('near miss') || incidentType.includes('nearmiss')) {
+    return {label: 'Near Miss', color: '#E6F5ED', textColor: '#1B6E3A', icon: '⚠️'};
+  }
+  
+  // First Aid = Minor or Moderate injuries
+  return {label: 'First Aid', color: '#FCEBEB', textColor: '#A32D2D', icon: '🩹'};
+}
+
 function renderDirectorSeverityBreakdown(incidents) {
   var container = document.getElementById('dir-inc-severity');
   if (!container) return;
