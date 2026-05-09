@@ -22147,13 +22147,14 @@ function downloadIncidentPdf() {
       if (!value) return;
       ensure(12);
       y = drawSubLabel(y, label);
-      const lines = doc.splitTextToSize(String(value), CW - 6);
-      const blockH = Math.max(10, lines.length * 4.5 + 6); // Increased line height and padding
+      // Use CW - 10 to ensure text stays well within box boundaries
+      const lines = doc.splitTextToSize(String(value), CW - 10);
+      const blockH = Math.max(10, lines.length * 4.8 + 8); // Extra padding for safety
       ensure(blockH + 1);
       drawCard(y, blockH, C.neutralBg, C.border);
       setText(C.darkText);
       doc.setFont('helvetica','normal'); doc.setFontSize(9);
-      doc.text(lines, ML + 3, y + 5);
+      doc.text(lines, ML + 4, y + 6);
       y += blockH + 3;
     }
 
@@ -35062,6 +35063,13 @@ function goToAnalytics(fromRole) {
       populateDirectorIncidents();
     }
   }
+  
+  // Always update incident summary for directors (even if not in demo mode)
+  if (anIsDirector) {
+    setTimeout(function() {
+      populateDirectorIncidents();
+    }, 300);
+  }
 
   // Auto-open Safety Performance section so director sees content immediately
   setTimeout(function() {
@@ -35987,7 +35995,6 @@ function populateDirectorIncidents() {
   // ═══════════════════════════════════════════════════════════════
   var list = document.getElementById('dinc-incidents-list');
   var summary = document.getElementById('an-inc-summary');
-  if (!list) return;
   
   // Load incidents from storage (prepopulates demo if empty)
   var incidents = incLoadAll();
@@ -35996,7 +36003,7 @@ function populateDirectorIncidents() {
     incidents = incLoadAll();
   }
   
-  // Update summary with actual counts
+  // Update summary with actual counts - do this even if list doesn't exist
   if (summary && incidents.length > 0) {
     var nearMiss = incidents.filter(i => i.incident_type === 'Near Miss').length;
     var actualInjury = incidents.filter(i => i.incident_type === 'Actual Injury').length;
@@ -36005,6 +36012,8 @@ function populateDirectorIncidents() {
     var environmental = incidents.filter(i => i.incident_type === 'Environmental').length;
     summary.textContent = actualInjury + ' injury · ' + nearMiss + ' near miss · ' + dangerous + ' dangerous · ' + propertyDamage + ' damage · ' + environmental + ' environmental';
   }
+  
+  if (!list) return;
   
   // Clear list
   list.innerHTML = '';
