@@ -43795,7 +43795,7 @@ function viewIncidentFullPDF(incidentId) {
 }
 
 
-// Export Director Incidents Summary as PDF
+// Export Director Incidents - FULL COMPREHENSIVE REPORT
 function exportDirectorIncidentsPDF() {
   var incidents = incLoadAll();
   if (incidents.length === 0) {
@@ -43803,6 +43803,22 @@ function exportDirectorIncidentsPDF() {
     return;
   }
   
+  // Sort by date, newest first
+  incidents.sort(function(a, b) {
+    return new Date(b.submitted_at) - new Date(a.submitted_at);
+  });
+  
+  // Map fields for each incident
+  incidents.forEach(function(inc) {
+    inc.cause_text = inc.what_caused || inc.cause_text || '';
+    inc.prevention_text = inc.how_prevented || inc.prevention_text || '';
+    inc.review_notes_text = inc.review_notes || inc.review_notes_text || '';
+  });
+  
+  // Save all incidents temporarily
+  localStorage.setItem('slan_incidents_v1', JSON.stringify(incidents));
+  
+  // Generate comprehensive PDF with all incidents
   if (!window.jspdf || !window.jspdf.jsPDF) {
     alert('PDF library not loaded. Please refresh and try again.');
     return;
@@ -43811,14 +43827,18 @@ function exportDirectorIncidentsPDF() {
   var jsPDF = window.jspdf.jsPDF;
   var doc = new jsPDF({ unit:'mm', format:'a4' });
   
-  // Header
+  // Cover page
   doc.setFont('helvetica','bold');
-  doc.setFontSize(16);
-  doc.text('Incidents Summary Report', 105, 20, { align:'center' });
+  doc.setFontSize(20);
+  doc.text('COMPREHENSIVE INCIDENT REPORT', 105, 40, { align:'center' });
   
-  doc.setFontSize(10);
+  doc.setFontSize(14);
   doc.setFont('helvetica','normal');
-  doc.text('Generated: ' + new Date().toLocaleDateString('en-AU'), 105, 28, { align:'center' });
+  doc.text('All Incidents - Full Details', 105, 50, { align:'center' });
+  
+  doc.setFontSize(11);
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-AU'), 105, 60, { align:'center' });
+  doc.text('Total Incidents: ' + incidents.length, 105, 67, { align:'center' });
   
   // Summary stats
   var nearMiss = 0, firstAid = 0, lti = 0;
@@ -43829,13 +43849,142 @@ function exportDirectorIncidentsPDF() {
     else firstAid++;
   });
   
-  doc.setFontSize(11);
-  doc.text('Total Incidents: ' + incidents.length, 20, 40);
-  doc.text('Near Miss: ' + nearMiss + ' | First Aid: ' + firstAid + ' | LTI: ' + lti, 20, 47);
+  doc.text('Near Miss: ' + nearMiss + ' | First Aid: ' + firstAid + ' | LTI: ' + lti, 105, 74, { align:'center' });
+  
+  // Index of incidents
+  doc.setFontSize(12);
+  doc.setFont('helvetica','bold');
+  doc.text('INCIDENT INDEX:', 20, 90);
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica','normal');
+  var yPos = 98;
+  incidents.forEach(function(inc, idx) {
+    if (yPos > 270) {
+      doc.addPage();
+      yPos = 20;
+    }
+    var mapped = mapSeverityForDirector(inc);
+    var dateStr = new Date(inc.submitted_at).toLocaleDateString('en-AU');
+    doc.text((idx + 1) + '. ' + inc.ref + ' - ' + mapped.label + ' - ' + dateStr, 22, yPos);
+    doc.setFontSize(8);
+    doc.text('   ' + (inc.description || 'No description').substring(0, 80), 22, yPos + 3);
+    doc.setFontSize(9);
+    yPos += 8;
+  });
+  
+  // Now generate full detail for each incident
+  incidents.forEach(function(incident, index) {
+    doc.addPage();
+    
+    // Set active incident and call the full PDF generator logic
+    window._incActiveRef = incident.ref;
+    
+    // Generate incident detail page (simplified inline version)
+    var y = 20;
+    
+    // Header
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(16);
+    doc.text('INCIDENT REPORT ' + (index + 1) + ' of ' + incidents.length, 105, y, { align:'center' });
+    y += 10;
+    
+    // Incident ref
+    doc.setFontSize(14);
+    doc.text(incident.ref, 105, y, { align:'center' });
+    y += 10;
+    
+    // Date and severity
+    doc.setFontSize(10);
+    doc.setFont('helvetica','normal');
+    var dateStr = new Date(incident.submitted_at).toLocaleDateString('en-AU');
+    doc.text('Date: ' + dateStr, 20, y);
+    var mapped = mapSeverityForDirector(incident);
+    doc.text('Severity: ' + mapped.label, 120, y);
+    y += 8;
+    
+    // Description
+    doc.setFont('helvetica','bold');
+    doc.text('DESCRIPTION:', 20, y);
+    y += 5;
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    var descLines = doc.splitTextToSize(incident.description || 'No description', 170);
+    doc.text(descLines, 20, y);
+    y += descLines.length * 4 + 5;
+    
+    // What caused it
+    if (incident.cause_text || incident.what_caused) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFontSize(10);
+      doc.setFont('helvetica','bold');
+      doc.text('WHAT CAUSED IT:', 20, y);
+      y += 5;
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      var causeLines = doc.splitTextToSize(incident.cause_text || incident.what_caused || '', 170);
+      doc.text(causeLines, 20, y);
+      y += causeLines.length * 4 + 5;
+    }
+    
+    // How to prevent
+    if (incident.prevention_text || incident.how_prevented) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFontSize(10);
+      doc.setFont('helvetica','bold');
+      doc.text('HOW TO PREVENT:', 20, y);
+      y += 5;
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      var prevLines = doc.splitTextToSize(incident.prevention_text || incident.how_prevented || '', 170);
+      doc.text(prevLines, 20, y);
+      y += prevLines.length * 4 + 5;
+    }
+    
+    // Corrective actions
+    if (incident.corrective_actions) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFontSize(10);
+      doc.setFont('helvetica','bold');
+      doc.text('CORRECTIVE ACTIONS:', 20, y);
+      y += 5;
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      var corrLines = doc.splitTextToSize(incident.corrective_actions, 170);
+      doc.text(corrLines, 20, y);
+      y += corrLines.length * 4 + 5;
+    }
+    
+    // Review notes
+    if (incident.review_notes_text || incident.review_notes) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFontSize(10);
+      doc.setFont('helvetica','bold');
+      doc.text('SUPERVISOR REVIEW:', 20, y);
+      y += 5;
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      var reviewLines = doc.splitTextToSize(incident.review_notes_text || incident.review_notes || '', 170);
+      doc.text(reviewLines, 20, y);
+      y += reviewLines.length * 4 + 5;
+    }
+    
+    // Reporter and supervisor
+    if (y > 270) { doc.addPage(); y = 20; }
+    doc.setFontSize(9);
+    doc.setFont('helvetica','bold');
+    doc.text('Reporter: ' + (incident.reporter_name || 'Unknown'), 20, y);
+    doc.text('Supervisor: ' + (incident.supervisor_name || 'Not assigned'), 120, y);
+  });
   
   // Download
-  doc.save('incidents-summary-' + new Date().toISOString().split('T')[0] + '.pdf');
-  slanToast('✓ PDF exported');
+  doc.save('comprehensive-incidents-report-' + new Date().toISOString().split('T')[0] + '.pdf');
+  
+  if (typeof slanToast === 'function') {
+    slanToast('✓ Comprehensive PDF exported with all ' + incidents.length + ' incidents');
+  } else {
+    alert('✓ Comprehensive PDF exported with all ' + incidents.length + ' incidents');
+  }
 }
 
 // Email Director Incidents Report
@@ -43846,6 +43995,12 @@ function emailDirectorIncidentsReport() {
     return;
   }
   
+  // Sort by date
+  incidents.sort(function(a, b) {
+    return new Date(b.submitted_at) - new Date(a.submitted_at);
+  });
+  
+  // Calculate stats
   var nearMiss = 0, firstAid = 0, lti = 0;
   incidents.forEach(function(inc) {
     var mapped = mapSeverityForDirector(inc);
@@ -43854,13 +44009,61 @@ function emailDirectorIncidentsReport() {
     else firstAid++;
   });
   
-  var subject = 'Incidents Summary Report - ' + new Date().toLocaleDateString('en-AU');
-  var body = 'Incidents Summary Report\n\n' +
-    'Total Incidents: ' + incidents.length + '\n' +
-    'Near Miss: ' + nearMiss + '\n' +
-    'First Aid: ' + firstAid + '\n' +
-    'LTI: ' + lti + '\n\n' +
-    'Generated: ' + new Date().toLocaleString('en-AU');
+  var subject = 'Comprehensive Incident Report - ' + new Date().toLocaleDateString('en-AU');
+  
+  // Build comprehensive email body with all incident details
+  var body = 'COMPREHENSIVE INCIDENT REPORT\n';
+  body += '================================\n\n';
+  body += 'Generated: ' + new Date().toLocaleString('en-AU') + '\n\n';
+  body += 'SUMMARY:\n';
+  body += 'Total Incidents: ' + incidents.length + '\n';
+  body += 'Near Miss: ' + nearMiss + '\n';
+  body += 'First Aid: ' + firstAid + '\n';
+  body += 'LTI: ' + lti + '\n\n';
+  body += '================================\n\n';
+  
+  // Add each incident detail
+  incidents.forEach(function(inc, index) {
+    var mapped = mapSeverityForDirector(inc);
+    var dateStr = new Date(inc.submitted_at).toLocaleDateString('en-AU');
+    
+    body += 'INCIDENT ' + (index + 1) + ' of ' + incidents.length + '\n';
+    body += '--------------------------------\n';
+    body += 'Reference: ' + inc.ref + '\n';
+    body += 'Date: ' + dateStr + '\n';
+    body += 'Severity: ' + mapped.label + '\n';
+    body += 'Site: ' + (inc.site || 'Not specified') + '\n';
+    body += 'Reporter: ' + (inc.reporter_name || 'Unknown') + '\n\n';
+    
+    body += 'DESCRIPTION:\n';
+    body += (inc.description || 'No description') + '\n\n';
+    
+    if (inc.what_caused || inc.cause_text) {
+      body += 'WHAT CAUSED IT:\n';
+      body += (inc.what_caused || inc.cause_text) + '\n\n';
+    }
+    
+    if (inc.how_prevented || inc.prevention_text) {
+      body += 'HOW TO PREVENT:\n';
+      body += (inc.how_prevented || inc.prevention_text) + '\n\n';
+    }
+    
+    if (inc.corrective_actions) {
+      body += 'CORRECTIVE ACTIONS:\n';
+      body += inc.corrective_actions + '\n\n';
+    }
+    
+    if (inc.review_notes || inc.review_notes_text) {
+      body += 'SUPERVISOR REVIEW:\n';
+      body += (inc.review_notes || inc.review_notes_text) + '\n\n';
+    }
+    
+    body += 'Supervisor: ' + (inc.supervisor_name || 'Not assigned') + '\n';
+    body += 'Status: ' + (inc.status || 'Open') + '\n';
+    body += '\n================================\n\n';
+  });
+  
+  body += 'End of Report';
   
   var mailtoLink = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
   window.location.href = mailtoLink;
