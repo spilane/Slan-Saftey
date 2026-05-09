@@ -11016,7 +11016,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <!-- Demo Data Button -->
-    <button id="dir-inc-demo-btn" onclick="loadDirectorDemoIncidents()" style="display:block;width:100%;padding:10px;margin-bottom:12px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">⚡ Load 25 demo incidents across 3 sites</button>
+    <button id="dir-inc-demo-btn" onclick="loadDirectorDemoIncidents()" style="display:none;width:100%;padding:10px;margin-bottom:12px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">⚡ Load 25 demo incidents across 3 sites</button>
 
     <!-- Industry Benchmark -->
     <div class="fcard">
@@ -42975,6 +42975,12 @@ function loadDirectorIncidents(customIncidents) {
   // Load incidents from localStorage or use demo data
   var incidents = customIncidents || incLoadAll();
   
+  // Auto-populate with demo data if empty
+  if (incidents.length === 0) {
+    prepopulateDemoIncidents();
+    incidents = incLoadAll();
+  }
+  
   // Filter to last 6 months (180 days) to show all demo data
   var cutoff = Date.now() - (180 * 24 * 60 * 60 * 1000);
   var recentIncidents = incidents.filter(function(i) {
@@ -43593,13 +43599,14 @@ function renderDirectorIncidentList(incidents) {
     return new Date(b.submitted_at) - new Date(a.submitted_at);
   });
   
-  // Take top 8 for display
-  var displayIncidents = allIncidents.slice(0, 8);
-  
-  if (displayIncidents.length === 0) {
+  if (allIncidents.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:30px;color:#999">No incidents to display</div>';
     return;
   }
+  
+  // Check if we should show all (stored in a global flag)
+  var showAll = window._dirShowAllIncidents || false;
+  var displayIncidents = showAll ? allIncidents : allIncidents.slice(0, 10);
   
   var html = displayIncidents.map(function(inc) {
     var mapped = mapSeverityForDirector(inc);
@@ -43621,7 +43628,19 @@ function renderDirectorIncidentList(incidents) {
     '</div>';
   }).join('');
   
+  // Add "Show all" button if there are more than 10 incidents
+  if (allIncidents.length > 10 && !showAll) {
+    html += '<button onclick="toggleShowAllIncidents()" style="width:100%;padding:10px;margin-top:8px;background:#F8F8F8;border:1px solid #D0D0D0;border-radius:8px;font-size:11px;font-weight:600;color:#555;cursor:pointer;transition:all 0.2s;font-family:inherit" onmouseover="this.style.background=\'#F0F0F0\'" onmouseout="this.style.background=\'#F8F8F8\'">Show all ' + allIncidents.length + ' incidents ▼</button>';
+  } else if (showAll) {
+    html += '<button onclick="toggleShowAllIncidents()" style="width:100%;padding:10px;margin-top:8px;background:#F8F8F8;border:1px solid #D0D0D0;border-radius:8px;font-size:11px;font-weight:600;color:#555;cursor:pointer;transition:all 0.2s;font-family:inherit" onmouseover="this.style.background=\'#F0F0F0\'" onmouseout="this.style.background=\'#F8F8F8\'">Show less ▲</button>';
+  }
+  
   container.innerHTML = html;
+}
+
+function toggleShowAllIncidents() {
+  window._dirShowAllIncidents = !window._dirShowAllIncidents;
+  loadDirectorIncidents();
 }
 
 function showDrillDownPanel(title, content) {
