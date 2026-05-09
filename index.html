@@ -43261,6 +43261,868 @@ document.addEventListener('DOMContentLoaded', slanWireNumericInputs);
   }
 })();
 
+
+function loadDirectorDemoIncidents() {
+  // Clear existing incidents
+  console.log('🗑️ Clearing old incidents...');
+  localStorage.removeItem('slan_incidents_v1');
+  
+  // Force load the 25 demo incidents
+  console.log('📊 Loading 25 demo incidents across 3 sites...');
+  prepopulateDemoIncidents();
+  
+  // Reload the screen
+  loadDirectorIncidents();
+  
+  // Show success message
+  if (typeof slanToast === 'function') {
+    slanToast('✓ Loaded 25 demo incidents across 3 Australian sites');
+  } else {
+    alert('✓ Loaded 25 demo incidents across 3 sites');
+  }
+}
+
+function loadDirectorIncidents(customIncidents) {
+  // Set logo
+  var logo = document.getElementById('dir-inc-logo');
+  if (logo) {
+    var allLogos = document.querySelectorAll('.tbar-logo img');
+    for (var i = 0; i < allLogos.length; i++) {
+      if (allLogos[i] !== logo && allLogos[i].src) {
+        logo.src = allLogos[i].src;
+        break;
+      }
+    }
+  }
+  
+  // Load incidents from localStorage or use demo data
+  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  var incidents = customIncidents || (storedIncidents.length > 0 ? storedIncidents : incLoadAll());
+  
+  // Filter to last 6 months (180 days) to show all demo data
+  var cutoff = Date.now() - (180 * 24 * 60 * 60 * 1000);
+  var recentIncidents = incidents.filter(function(i) {
+    var t = i.submitted_at || i.reported_at;
+    return t && new Date(t).getTime() > cutoff;
+  });
+  
+  // Update stats
+  var totalEl = document.getElementById('dir-inc-total');
+  var ltiEl = document.getElementById('dir-inc-lti');
+  var trendEl = document.getElementById('dir-inc-trend');
+  
+  // Use actual count
+  var displayCount = recentIncidents.length;
+  
+  if (totalEl) totalEl.textContent = displayCount;
+  if (ltiEl) ltiEl.textContent = calculateLTIDays(incidents);
+  if (trendEl) trendEl.textContent = '↓ 40% vs last period'; // Demo data
+  
+  // Render chart
+  renderDirectorIncidentChart(incidents);
+  
+  // Render breakdown
+  renderDirectorIncidentBreakdown(recentIncidents);
+  
+  // Render severity breakdown
+  renderDirectorSeverityBreakdown(recentIncidents);
+  
+  // Render time patterns
+  renderDirectorTimePatterns(recentIncidents);
+  
+  // Render list
+  renderDirectorIncidentList(recentIncidents);
+  
+  // Update benchmark colors
+  updateDirectorBenchmarkColors();
+}
+
+function exportIncidentsToCSV() {
+  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  var incidents = storedIncidents.length > 0 ? storedIncidents : incLoadAll();
+  
+  if (incidents.length === 0) {
+    alert('No incidents to export');
+    return;
+  }
+  
+  // CSV header
+  var csv = 'Incident ID,Date,Severity,Description,Reported By,Mechanism,Body Part\n';
+  
+  // Add rows
+  incidents.forEach(function(inc) {
+    var date = new Date(inc.submitted_at || inc.reported_at || inc.timestamp).toLocaleDateString('en-AU');
+    var row = [
+      inc.incident_id || '',
+      date,
+      inc.severity || '',
+      (inc.what_happened || inc.description || '').replace(/,/g, ';').replace(/\n/g, ' '),
+      inc.reported_by || '',
+      inc.mechanism || '',
+      inc.body_part || ''
+    ].join(',');
+    csv += row + '\n';
+  });
+  
+  // Download
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = window.URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'incidents_export_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+function applyDirectorFilters() {
+  var periodDays = parseInt(document.getElementById('filter-period').value);
+  var severity = document.getElementById('filter-severity').value;
+  var site = document.getElementById('filter-site').value;
+  
+  // Use correct storage key
+  var allIncidents = incLoadAll();
+  var now = new Date();
+  
+  // Filter by period
+  var filtered = allIncidents.filter(function(inc) {
+    var incDate = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    var daysDiff = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
+    return daysDiff <= periodDays;
+  });
+  
+  // Filter by site
+  if (site !== 'All Sites') {
+    filtered = filtered.filter(function(inc) {
+      return inc.site === site;
+    });
+  }
+  
+  // Filter by severity using mapping function
+  if (severity !== 'All Severity') {
+    filtered = filtered.filter(function(inc) {
+      var mapped = mapSeverityForDirector(inc);
+      return mapped.label === severity;
+    });
+  }
+  
+  // Reload with filtered data
+  loadDirectorIncidents(filtered);
+}
+
+function resetDirectorFilters() {
+  document.getElementById('filter-site').selectedIndex = 0;
+  document.getElementById('filter-period').selectedIndex = 0;
+  document.getElementById('filter-severity').selectedIndex = 0;
+  document.getElementById('dir-inc-search').value = '';
+  loadDirectorIncidents();
+}
+
+function searchDirectorIncidents() {
+  var searchTerm = document.getElementById('dir-inc-search').value.toLowerCase();
+  
+  if (!searchTerm) {
+    // If search is empty, reload all data
+    applyDirectorFilters();
+    return;
+  }
+  
+  // Get current filtered data
+  var periodDays = parseInt(document.getElementById('filter-period').value);
+  var severity = document.getElementById('filter-severity').value;
+  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  var allIncidents = storedIncidents.length > 0 ? storedIncidents : incLoadAll();
+  var now = new Date();
+  
+  // Apply period and severity filters first
+  var filtered = allIncidents.filter(function(inc) {
+    var incDate = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    var daysDiff = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
+    if (daysDiff > periodDays) return false;
+    
+    if (severity !== 'All Severity') {
+      var incSev = (inc.severity || '').toLowerCase();
+      var filterSev = severity.toLowerCase();
+      if (!incSev.includes(filterSev.replace(' ', '-'))) return false;
+    }
+    
+    return true;
+  });
+  
+  // Then apply search
+  var searched = filtered.filter(function(inc) {
+    var searchableText = [
+      inc.incident_id || '',
+      inc.what_happened || inc.description || '',
+      inc.reported_by || '',
+      inc.mechanism || '',
+      inc.body_part || '',
+      inc.severity || ''
+    ].join(' ').toLowerCase();
+    
+    return searchableText.includes(searchTerm);
+  });
+  
+  // Render with searched results
+  loadDirectorIncidents(searched);
+}
+
+function toggleTrifrTooltip(event) {
+  event.stopPropagation();
+  var tooltip = document.getElementById('trifr-tooltip');
+  tooltip.style.display = tooltip.style.display === 'none' ? 'block' : 'none';
+}
+
+// Click outside to close tooltip
+document.addEventListener('click', function() {
+  var tooltip = document.getElementById('trifr-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
+});
+
+function updateDirectorBenchmarkColors() {
+  var yourTrifr = 4.2; // In real app, calculate from actual incident data
+  var industryAvg = 6.5;
+  
+  var yourTrifrEl = document.getElementById('dir-inc-your-trifr');
+  var trifrTrendEl = document.getElementById('dir-inc-trifr-trend');
+  var performanceTextEl = document.getElementById('dir-inc-performance-text');
+  
+  if (!yourTrifrEl || !trifrTrendEl || !performanceTextEl) return;
+  
+  if (yourTrifr < industryAvg) {
+    // GOOD - Below average means fewer injuries
+    yourTrifrEl.style.color = '#1B6E3A';
+    trifrTrendEl.style.color = '#1B6E3A';
+    performanceTextEl.style.color = '#1B6E3A';
+    var pct = Math.round(((industryAvg - yourTrifr) / industryAvg) * 100);
+    performanceTextEl.textContent = pct + '% better';
+  } else if (yourTrifr > industryAvg) {
+    // BAD - Above average means more injuries
+    yourTrifrEl.style.color = '#A32D2D';
+    trifrTrendEl.style.color = '#A32D2D';
+    performanceTextEl.style.color = '#A32D2D';
+    var pct = Math.round(((yourTrifr - industryAvg) / industryAvg) * 100);
+    performanceTextEl.textContent = pct + '% worse';
+    trifrTrendEl.textContent = '↑ ' + pct + '%';
+  } else {
+    // EQUAL to industry average
+    yourTrifrEl.style.color = '#666';
+    trifrTrendEl.style.color = '#666';
+    performanceTextEl.style.color = '#666';
+    performanceTextEl.textContent = 'on par with';
+    trifrTrendEl.textContent = '—';
+  }
+}
+
+function renderDirectorSeverityBreakdown(incidents) {
+  var container = document.getElementById('dir-inc-severity');
+  if (!container) return;
+  
+  // Count by severity using mapping function
+  var nearMiss = 0, firstAid = 0, lti = 0;
+  incidents.forEach(function(inc) {
+    var mapped = mapSeverityForDirector(inc);
+    if (mapped.label === 'Near Miss') nearMiss++;
+    else if (mapped.label === 'LTI') lti++;
+    else firstAid++;
+  });
+  
+  // Demo data if empty
+  if (incidents.length === 0) {
+    nearMiss = 1;
+    firstAid = 2;
+    lti = 0;
+  }
+  
+  container.innerHTML = 
+    '<div style="background:linear-gradient(135deg, #E6F5ED 0%, #d4ede0 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid rgba(27,110,58,0.3);box-shadow:0 3px 10px rgba(27,110,58,0.15), 0 1px 3px rgba(0,0,0,0.1)">' +
+      '<div style="font-size:32px;font-weight:800;color:#1B6E3A;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.1)">' + nearMiss + '</div>' +
+      '<div style="font-size:9px;color:#1B6E3A;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.8px">Near Miss</div>' +
+    '</div>' +
+    '<div style="background:linear-gradient(135deg, #FCEBEB 0%, #f9d9d9 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid rgba(163,45,45,0.3);box-shadow:0 3px 10px rgba(163,45,45,0.15), 0 1px 3px rgba(0,0,0,0.1)">' +
+      '<div style="font-size:32px;font-weight:800;color:#A32D2D;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.1)">' + firstAid + '</div>' +
+      '<div style="font-size:9px;color:#A32D2D;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.8px">First Aid</div>' +
+    '</div>' +
+    '<div style="background:linear-gradient(135deg, #FAEEDA 0%, #f5e0c0 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid #B8960C;box-shadow:0 3px 10px rgba(184,150,12,0.2), 0 1px 3px rgba(0,0,0,0.1)">' +
+      '<div style="font-size:32px;font-weight:800;color:#854F0B;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.1)">' + lti + '</div>' +
+      '<div style="font-size:9px;color:#854F0B;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.8px">LTI</div>' +
+    '</div>';
+}
+
+function dirShowBodyZone(event, zoneName, count) {
+  event.stopPropagation();
+  
+  var panel = document.getElementById('dir-bm-panel');
+  var nameEl = document.getElementById('dir-bm-name');
+  var countEl = document.getElementById('dir-bm-count');
+  var histEl = document.getElementById('dir-bm-hist');
+  
+  if (!panel || !nameEl || !countEl || !histEl) return;
+  
+  nameEl.textContent = zoneName;
+  countEl.textContent = count + ' incident' + (count !== 1 ? 's' : '') + ' in this zone';
+  
+  // Demo history based on count
+  var demoHistory = [];
+  if (count > 0) {
+    for (var i = 0; i < Math.min(count, 3); i++) {
+      demoHistory.push({
+        date: new Date(Date.now() - (i * 7 + 2) * 24 * 60 * 60 * 1000).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }),
+        desc: i === 0 ? 'Manual handling strain' : i === 1 ? 'Hit by falling object' : 'Repetitive strain',
+        severity: i === 0 ? 'First Aid' : 'Near Miss'
+      });
+    }
+  }
+  
+  histEl.innerHTML = demoHistory.length === 0 ? 
+    '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">No incidents recorded</div>' :
+    demoHistory.map(function(h) {
+      return '<div style="display:flex;justify-content:space-between;padding:8px 10px;background:white;border-radius:6px;font-size:12px">' +
+        '<div style="flex:1">' +
+          '<div style="font-weight:600;color:var(--text)">' + h.desc + '</div>' +
+          '<div style="color:var(--muted);font-size:11px;margin-top:2px">' + h.date + '</div>' +
+        '</div>' +
+        '<div style="font-size:10px;color:' + (h.severity === 'First Aid' ? '#A32D2D' : '#1B6E3A') + ';font-weight:600;white-space:nowrap">' + h.severity + '</div>' +
+      '</div>';
+    }).join('');
+  
+  panel.style.display = 'block';
+}
+
+function switchBodyView(view) {
+  var frontSVG = document.getElementById('dir-bm-front');
+  var backSVG = document.getElementById('dir-bm-back');
+  var frontBtn = document.getElementById('bm-front-btn');
+  var backBtn = document.getElementById('bm-back-btn');
+  
+  if (view === 'front') {
+    if (frontSVG) frontSVG.style.display = 'block';
+    if (backSVG) backSVG.style.display = 'none';
+    if (frontBtn) {
+      frontBtn.style.background = 'var(--deep)';
+      frontBtn.style.color = '#fff';
+    }
+    if (backBtn) {
+      backBtn.style.background = 'transparent';
+      backBtn.style.color = 'var(--text)';
+    }
+  } else {
+    if (frontSVG) frontSVG.style.display = 'none';
+    if (backSVG) backSVG.style.display = 'block';
+    if (frontBtn) {
+      frontBtn.style.background = 'transparent';
+      frontBtn.style.color = 'var(--text)';
+    }
+    if (backBtn) {
+      backBtn.style.background = 'var(--deep)';
+      backBtn.style.color = '#fff';
+    }
+  }
+}
+
+function renderDirectorTimePatterns(incidents) {
+  var container = document.getElementById('dir-inc-timepatterns');
+  if (!container) return;
+  
+  // Calculate REAL day of week pattern from incidents
+  var dayPattern = {'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0};
+  var dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  
+  // Count by day
+  incidents.forEach(function(inc) {
+    var date = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    var dayName = dayNames[date.getDay()];
+    dayPattern[dayName]++;
+  });
+  
+  // Calculate time patterns
+  var timeSlots = {
+    'Early morning (7-9 AM)': 0,
+    'Mid-morning (9-11 AM)': 0,
+    'Midday (11 AM-1 PM)': 0,
+    'Early afternoon (1-3 PM)': 0,
+    'Late afternoon (3-5 PM)': 0
+  };
+  
+  incidents.forEach(function(inc) {
+    var date = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    var hour = date.getHours();
+    if (hour >= 7 && hour < 9) timeSlots['Early morning (7-9 AM)']++;
+    else if (hour >= 9 && hour < 11) timeSlots['Mid-morning (9-11 AM)']++;
+    else if (hour >= 11 && hour < 13) timeSlots['Midday (11 AM-1 PM)']++;
+    else if (hour >= 13 && hour < 15) timeSlots['Early afternoon (1-3 PM)']++;
+    else if (hour >= 15 && hour < 17) timeSlots['Late afternoon (3-5 PM)']++;
+  });
+  
+  var activeTimeSlots = Object.keys(timeSlots).filter(function(slot) {
+    return timeSlots[slot] > 0;
+  }).map(function(slot) {
+    return {slot: slot, count: timeSlots[slot]};
+  }).sort(function(a, b) {
+    return b.count - a.count;
+  });
+  
+  var maxDayCount = Math.max.apply(null, Object.values(dayPattern));
+  if (maxDayCount === 0) maxDayCount = 1;
+  
+  // HORIZONTAL BAR CHART like the uploaded image
+  container.innerHTML = 
+    '<div style="margin-bottom:16px">' +
+      '<div style="font-size:13px;font-weight:700;margin-bottom:14px;color:#1A2A1F">By day of week</div>' +
+      '<div style="display:flex;flex-direction:column;gap:2px">' +
+        dayOrder.map(function(day) {
+          var count = dayPattern[day];
+          var totalIncidents = Object.values(dayPattern).reduce(function(sum, val) { return sum + val; }, 0);
+          var widthPercent = maxDayCount > 0 ? (count / maxDayCount * 100) : 0;
+          var actualPercent = totalIncidents > 0 ? Math.round((count / totalIncidents) * 100) : 0;
+          var hasIncidents = count > 0;
+          return '<div style="display:flex;align-items:center;gap:8px;height:24px">' +
+            '<div style="font-size:11px;color:#6B7280;font-weight:500;width:35px;text-align:right">' + day + '</div>' +
+            '<div style="flex:1;background:#E5E7EB;height:12px;border-radius:6px;position:relative;overflow:hidden">' +
+              '<div style="background:' + (hasIncidents ? 'linear-gradient(90deg, #F0997B 0%, #E8856A 100%)' : '#D1D5DB') + ';width:' + (widthPercent || 3) + '%;height:100%;border-radius:6px;position:relative">' +
+                (hasIncidents ? '<div style="position:absolute;top:-14px;right:-8px;font-size:11px;font-weight:700;color:#1A2A1F">' + count + ' (' + actualPercent + '%)</div>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+    '</div>' +
+    '<div style="background:#F9FAFB;border-radius:8px;padding:14px;border:1px solid #E5E7EB">' +
+      '<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#1A2A1F">Most common times</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' +
+        (activeTimeSlots.length > 0 
+          ? activeTimeSlots.map(function(ts) {
+              
+              var totalTime = activeTimeSlots.reduce(function(sum, t) { return sum + t.count; }, 0);
+              var percent = totalTime > 0 ? Math.round((ts.count / totalTime) * 100) : 0;
+              return '<div style="font-size:11px;color:#4B5563;font-weight:500">• ' + ts.slot + ' — ' + ts.count + ' incident' + (ts.count !== 1 ? 's' : '') + ' (' + percent + '%)</div>';
+            }).join('')
+          : '<div style="font-size:11px;color:#9CA3AF;font-style:italic">No time pattern data available</div>'
+        ) +
+      '</div>' +
+    '</div>';
+}
+
+function renderDirectorIncidentChart(incidents) {
+  var canvas = document.getElementById('dir-inc-chart');
+  if (!canvas || !canvas.getContext) return;
+  
+  var ctx = canvas.getContext('2d');
+  
+  // Calculate counts
+  var now = new Date();
+  var monthData = [];
+  
+  for (var i = 5; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    monthData.push({
+      label: d.toLocaleString('en-AU', {month: 'short'}),
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      count: 0
+    });
+  }
+  
+  incidents.forEach(function(inc) {
+    var incDate = new Date(inc.submitted_at || inc.reported_at || inc.timestamp);
+    for (var j = 0; j < monthData.length; j++) {
+      if (incDate.getFullYear() === monthData[j].year && incDate.getMonth() === monthData[j].month) {
+        monthData[j].count++;
+        break;
+      }
+    }
+  });
+  
+  var months = monthData.map(function(m) { return m.label; });
+  var counts = monthData.map(function(m) { return m.count; });
+  
+  // Set canvas with device pixel ratio
+  var parent = canvas.parentElement;
+  var dpr = window.devicePixelRatio || 1;
+  var w = parent.offsetWidth || 400;
+  var h = parent.offsetHeight || 160;
+  
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+  
+  // Professional styling
+  var paddingLeft = 20;
+  var paddingRight = 20;
+  var paddingTop = 35;
+  var paddingBottom = 30;
+  
+  var chartWidth = w - paddingLeft - paddingRight;
+  var chartHeight = h - paddingTop - paddingBottom;
+  var barSpacing = 10;
+  var barWidth = (chartWidth / months.length) - barSpacing;
+  var maxCount = Math.max.apply(null, counts);
+  if (maxCount === 0) maxCount = 1;
+  
+  // Draw each bar
+  for (var i = 0; i < counts.length; i++) {
+    var barHeight = (counts[i] / maxCount) * chartHeight;
+    var x = paddingLeft + (i * (barWidth + barSpacing)) + (barSpacing / 2);
+    var y = paddingTop + (chartHeight - barHeight);
+    
+    // Draw bar with rounded top
+    ctx.fillStyle = '#97C459';
+    ctx.beginPath();
+    ctx.moveTo(x, y + 6);
+    ctx.arcTo(x, y, x + 6, y, 6);
+    ctx.lineTo(x + barWidth - 6, y);
+    ctx.arcTo(x + barWidth, y, x + barWidth, y + 6, 6);
+    ctx.lineTo(x + barWidth, y + barHeight);
+    ctx.lineTo(x, y + barHeight);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw count on top
+    if (counts[i] > 0) {
+      ctx.fillStyle = '#1F2937';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(counts[i], x + (barWidth / 2), y - 10);
+    }
+  }
+  
+  // Draw month labels
+  ctx.fillStyle = '#6B7280';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  for (var i = 0; i < months.length; i++) {
+    var x = paddingLeft + (i * (barWidth + barSpacing)) + (barSpacing / 2) + (barWidth / 2);
+    ctx.fillText(months[i], x, h - 12);
+  }
+}
+
+function renderDirectorIncidentBreakdown(incidents) {
+  var container = document.getElementById('dir-inc-breakdown');
+  if (!container) return;
+  
+  // Count by mechanism
+  var breakdown = {};
+  incidents.forEach(function(inc) {
+    var mech = inc.mechanism || 'Unknown';
+    breakdown[mech] = (breakdown[mech] || 0) + 1;
+  });
+  
+  // Convert to array and sort
+  var items = Object.keys(breakdown).map(function(key) {
+    return { mechanism: key, count: breakdown[key] };
+  }).sort(function(a, b) { return b.count - a.count; });
+  
+  // Demo data if empty
+  if (items.length === 0) {
+    items = [
+      { mechanism: 'Slip / trip', count: 1 },
+      { mechanism: 'Manual handling', count: 1 },
+      { mechanism: 'Hit against object', count: 1 }
+    ];
+  }
+  
+  var total = items.reduce(function(sum, item) { return sum + item.count; }, 0);
+  var showAll = items.length <= 5; // Auto-expand if 5 or fewer
+  var topItems = showAll ? items : items.slice(0, 5);
+  var remainingItems = showAll ? [] : items.slice(5);
+  
+  // Render bars with percentages and premium styling
+  var html = topItems.map(function(item) {
+    var pct = Math.round((item.count / total) * 100);
+    return '<div style="margin-bottom:12px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">' +
+        '<span style="font-size:11px;color:#555;font-weight:600">' + item.mechanism + '</span>' +
+        '<span style="font-size:10px;font-weight:700;color:#1A2A1F">' + item.count + ' <span style="color:#999;font-weight:600">(' + pct + '%)</span></span>' +
+      '</div>' +
+      '<div style="background:linear-gradient(135deg, #E0E0E0 0%, #D0D0D0 100%);height:10px;border-radius:5px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.15)">' +
+        '<div style="background:linear-gradient(135deg, #F5AD7D 0%, #F0997B 50%, #E8856A 100%);width:' + pct + '%;height:100%;box-shadow:0 2px 6px rgba(240,153,123,0.5), inset 0 1px 0 rgba(255,255,255,0.3);position:relative;overflow:hidden">' +
+          '<div style="position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%)"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  
+  // Add collapsed items container
+  if (remainingItems.length > 0) {
+    html += '<div id="dir-breakdown-more" style="display:none">' +
+      remainingItems.map(function(item) {
+        var pct = Math.round((item.count / total) * 100);
+        return '<div style="margin-bottom:12px">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">' +
+            '<span style="font-size:11px;color:#555;font-weight:600">' + item.mechanism + '</span>' +
+            '<span style="font-size:10px;font-weight:700;color:#1A2A1F">' + item.count + ' <span style="color:#999;font-weight:600">(' + pct + '%)</span></span>' +
+          '</div>' +
+          '<div style="background:linear-gradient(135deg, #E0E0E0 0%, #D0D0D0 100%);height:10px;border-radius:5px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.15)">' +
+            '<div style="background:linear-gradient(135deg, #F5AD7D 0%, #F0997B 50%, #E8856A 100%);width:' + pct + '%;height:100%;box-shadow:0 2px 6px rgba(240,153,123,0.5), inset 0 1px 0 rgba(255,255,255,0.3);position:relative;overflow:hidden">' +
+              '<div style="position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%)"></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+    
+    // Add expand/collapse button
+    html += '<button id="dir-breakdown-toggle" onclick="toggleDirectorBreakdown()" style="width:100%;padding:8px;margin-top:4px;font-size:10px;font-weight:600;background:#F8F8F8;border:1px solid #D0D0D0;border-radius:6px;color:#555;cursor:pointer;transition:all 0.2s">' +
+      'Show ' + remainingItems.length + ' more ▼' +
+    '</button>';
+  }
+  
+  container.innerHTML = html;
+}
+
+function toggleDirectorBreakdown() {
+  var moreEl = document.getElementById('dir-breakdown-more');
+  var toggleBtn = document.getElementById('dir-breakdown-toggle');
+  if (!moreEl || !toggleBtn) return;
+  
+  var isExpanded = moreEl.style.display !== 'none';
+  if (isExpanded) {
+    moreEl.style.display = 'none';
+    toggleBtn.innerHTML = 'Show ' + moreEl.children.length + ' more ▼';
+  } else {
+    moreEl.style.display = 'block';
+    toggleBtn.innerHTML = 'Show less ▲';
+  }
+}
+
+function renderDirectorIncidentList(incidents) {
+  var container = document.getElementById('dir-inc-list');
+  if (!container) return;
+  
+  // Use provided incidents (from filters) or load all
+  var allIncidents = incidents || incLoadAll();
+  
+  // Sort by date (newest first)
+  allIncidents.sort(function(a, b) {
+    return new Date(b.submitted_at) - new Date(a.submitted_at);
+  });
+  
+  // Take top 8 for display
+  var displayIncidents = allIncidents.slice(0, 8);
+  
+  if (displayIncidents.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:#999">No incidents to display</div>';
+    return;
+  }
+  
+  var html = displayIncidents.map(function(inc) {
+    var mapped = mapSeverityForDirector(inc);
+    var date = new Date(inc.submitted_at);
+    var dateStr = date.toLocaleDateString('en-AU', {day: 'numeric', month: 'short'});
+    
+    return '<div onclick="viewIncidentDetail(\'' + inc.ref + '\')" style="background:#FFFFFF;border:1px solid #E8E8E8;border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;margin-bottom:8px" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.1)\';this.style.borderColor=\'#D0D0D0\'" onmouseout="this.style.boxShadow=\'none\';this.style.borderColor=\'#E8E8E8\'">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
+        '<div style="flex:1">' +
+          '<div style="font-size:11px;font-weight:700;color:#1A2A1F;margin-bottom:3px">' + inc.ref + '</div>' +
+          '<div style="font-size:12px;color:#555;line-height:1.4">' + (inc.description || inc.what_happened || 'No description') + '</div>' +
+        '</div>' +
+        '<div style="background:' + mapped.color + ';color:' + mapped.textColor + ';font-size:9px;font-weight:700;padding:4px 8px;border-radius:12px;white-space:nowrap;margin-left:10px">' + mapped.label + '</div>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#999">' +
+        '<div>' + mapped.icon + ' ' + (inc.reporter_name || inc.reported_by || 'Unknown') + '</div>' +
+        '<div>' + dateStr + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  
+  container.innerHTML = html;
+}
+
+function viewIncidentDetail(incidentId) {
+  // Try to find incident in localStorage first
+  var storedIncidents = JSON.parse(localStorage.getItem('incidents') || '[]');
+  var incident = storedIncidents.find(function(i) {
+    return (i.ref === incidentId) || 
+           ('INC-' + new Date(i.submitted_at).getFullYear() + '-' + String(storedIncidents.indexOf(i) + 1).padStart(3, '0') === incidentId);
+  });
+  
+  // If not in storage, check demo data
+  if (!incident) {
+    incident = incLoadAll().find(function(i) {
+      return i.ref === incidentId;
+    });
+  }
+  
+  // If still not found, show error
+  if (!incident) {
+    showDrillDownPanel('Incident Not Found', 
+      '<div style="text-align:center;padding:20px;color:#999">' +
+      'Could not find incident ' + incidentId +
+      '</div>');
+    return;
+  }
+  
+  // Format date and time
+  var dateObj = new Date(incident.submitted_at || incident.reported_at);
+  var date = dateObj.toLocaleDateString('en-AU', {
+    day: 'numeric', month: 'short', year: 'numeric'
+  });
+  var time = dateObj.toLocaleTimeString('en-AU', {
+    hour: '2-digit', minute: '2-digit'
+  });
+  
+  // Severity styling
+  var severity = (incident.severity || 'first-aid').toLowerCase();
+  var severityColor = severity.includes('near') ? '#E6F5ED' : severity.includes('lti') ? '#FAEEDA' : '#FCEBEB';
+  var severityText = severity.includes('near') ? '#1B6E3A' : severity.includes('lti') ? '#854F0B' : '#A32D2D';
+  var severityLabel = severity.includes('near') ? 'Near Miss' : severity.includes('lti') ? 'LTI' : 'First Aid';
+  var severityIcon = severity.includes('near') ? '⚠️' : severity.includes('lti') ? '🚨' : '🩹';
+  
+  // Build comprehensive incident report view
+  showDrillDownPanel('Incident Report', 
+    '<div style="background:linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%);border-radius:10px;padding:16px;margin-bottom:16px;border:1px solid #E0E0E0">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">' +
+        '<div>' +
+          '<div style="font-size:18px;font-weight:700;color:#1A2A1F;margin-bottom:4px">' + incident.ref + '</div>' +
+          '<div style="font-size:11px;color:#666">' + date + ' at ' + time + '</div>' +
+        '</div>' +
+        '<div style="background:' + severityColor + ';color:' + severityText + ';font-size:11px;font-weight:700;padding:6px 12px;border-radius:16px;text-transform:uppercase;box-shadow:0 2px 4px rgba(0,0,0,0.08)">' +
+          severityIcon + ' ' + severityLabel +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    
+    // What Happened Section
+    '<div style="background:#FFFFFF;border:1px solid #E8E8E8;border-radius:8px;padding:14px;margin-bottom:12px">' +
+      '<div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">📋 Incident Description</div>' +
+      '<div style="font-size:13px;color:#1A2A1F;line-height:1.6">' + (incident.description || incident.description || 'No description provided') + '</div>' +
+    '</div>' +
+    
+    // Details Grid
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">' +
+      '<div style="background:#F8F8F8;border-radius:8px;padding:12px;border-left:3px solid #97C459">' +
+        '<div style="font-size:9px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Mechanism</div>' +
+        '<div style="font-size:12px;font-weight:600;color:#1A2A1F">' + (incident.mechanism || 'Not specified') + '</div>' +
+      '</div>' +
+      '<div style="background:#F8F8F8;border-radius:8px;padding:12px;border-left:3px solid #E8856A">' +
+        '<div style="font-size:9px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Body Part Affected</div>' +
+        '<div style="font-size:12px;font-weight:600;color:#1A2A1F">' + (incident.body_part || 'Not specified') + '</div>' +
+      '</div>' +
+    '</div>' +
+    
+    // Reporter Info
+    '<div style="background:#F5F9F7;border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid #D5E5DA">' +
+      '<div style="font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">👤 Reported By</div>' +
+      '<div style="font-size:13px;font-weight:600;color:#1B3A2D">' + (incident.reporter_name || 'Unknown Reporter') + '</div>' +
+    '</div>' +
+    
+    // Action Buttons - ALL THREE as requested
+    '<div style="display:flex;gap:8px;margin-top:16px">' +
+      '<button onclick="alert(\'Export PDF coming soon\')" style="flex:1;padding:10px;font-size:11px;font-weight:600;background:#FFFFFF;border:1.5px solid #D0D0D0;border-radius:8px;color:#555;cursor:pointer">📄 Export PDF</button>' +
+      '<button onclick="alert(\'Email coming soon\')" style="flex:1;padding:10px;font-size:11px;font-weight:600;background:#FFFFFF;border:1.5px solid #D0D0D0;border-radius:8px;color:#555;cursor:pointer">📧 Email Report</button>' +
+    '</div>' +
+    '<button onclick="viewIncidentFullPDF(\'' + incident.ref + '\')" style="width:100%;padding:12px;margin-top:8px;font-size:12px;font-weight:600;background:linear-gradient(135deg, #1B3A2D 0%, #2D5F3F 100%);border:none;border-radius:8px;color:#FFFFFF;cursor:pointer;box-shadow:0 2px 6px rgba(27,58,45,0.3)">📄 View Full PDF Report</button>' +
+    
+    '<div style="border-top:1px solid #E0E0E0;margin-top:16px;padding-top:10px;font-size:9px;color:#999;text-align:center">' +
+      'Incident ID: ' + incident.ref + ' • Slan Safety Management System' +
+    '</div>');
+}
+
+function viewIncidentFullPDF(incidentId) {
+  // Find the incident
+  var incident = incLoadAll().find(function(i) { return i.ref === incidentId; });
+  if (!incident) { 
+    alert('Incident not found: ' + incidentId); 
+    return; 
+  }
+  
+  // Close drill-down panel
+  var drillDown = document.getElementById('dir-drilldown');
+  if (drillDown) drillDown.style.display = 'none';
+  
+  // Set the active incident reference for the PDF generator
+  window._incActiveRef = incident.ref;
+  
+  // Call the existing downloadIncidentPdf function that's already in the system
+  if (typeof downloadIncidentPdf === 'function') {
+    downloadIncidentPdf();
+  } else {
+    alert('PDF function not available. Please refresh the page.');
+  }
+}
+
+
+// Export Director Incidents Summary as PDF
+function exportDirectorIncidentsPDF() {
+  var incidents = incLoadAll();
+  if (incidents.length === 0) {
+    alert('No incidents to export');
+    return;
+  }
+  
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert('PDF library not loaded. Please refresh and try again.');
+    return;
+  }
+  
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF({ unit:'mm', format:'a4' });
+  
+  // Header
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(16);
+  doc.text('Incidents Summary Report', 105, 20, { align:'center' });
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-AU'), 105, 28, { align:'center' });
+  
+  // Summary stats
+  var nearMiss = 0, firstAid = 0, lti = 0;
+  incidents.forEach(function(inc) {
+    var mapped = mapSeverityForDirector(inc);
+    if (mapped.label === 'Near Miss') nearMiss++;
+    else if (mapped.label === 'LTI') lti++;
+    else firstAid++;
+  });
+  
+  doc.setFontSize(11);
+  doc.text('Total Incidents: ' + incidents.length, 20, 40);
+  doc.text('Near Miss: ' + nearMiss + ' | First Aid: ' + firstAid + ' | LTI: ' + lti, 20, 47);
+  
+  // Download
+  doc.save('incidents-summary-' + new Date().toISOString().split('T')[0] + '.pdf');
+  slanToast('✓ PDF exported');
+}
+
+// Email Director Incidents Report
+function emailDirectorIncidentsReport() {
+  var incidents = incLoadAll();
+  if (incidents.length === 0) {
+    alert('No incidents to email');
+    return;
+  }
+  
+  var nearMiss = 0, firstAid = 0, lti = 0;
+  incidents.forEach(function(inc) {
+    var mapped = mapSeverityForDirector(inc);
+    if (mapped.label === 'Near Miss') nearMiss++;
+    else if (mapped.label === 'LTI') lti++;
+    else firstAid++;
+  });
+  
+  var subject = 'Incidents Summary Report - ' + new Date().toLocaleDateString('en-AU');
+  var body = 'Incidents Summary Report\n\n' +
+    'Total Incidents: ' + incidents.length + '\n' +
+    'Near Miss: ' + nearMiss + '\n' +
+    'First Aid: ' + firstAid + '\n' +
+    'LTI: ' + lti + '\n\n' +
+    'Generated: ' + new Date().toLocaleString('en-AU');
+  
+  var mailtoLink = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  window.location.href = mailtoLink;
+}
+
+function closeIncidentPDF() {
+  // This function is no longer needed with the new PDF generation
+  // But keeping it for backwards compatibility
+  goTo('screen-dir-incidents');
+}
+
+
+
 </script>
 
 <!-- TFB SUPERVISOR APPROVAL-WITH-OVERRIDE MODAL — 8 fields including extra TFB-day safety measures -->
