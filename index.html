@@ -22467,14 +22467,27 @@ function downloadIncidentPdf() {
     ensure(28);
     y = drawSubLabel(y, 'REPORTER SIGNATURE');
     drawCard(y, 22, C.white, C.greyLight);
+    let sigRendered = false;
     try {
       // Prefer the signature stored on the record at submission time (saved
       // since step19u). Fall back to the active profile if the downloader is
       // the original reporter (legacy records).
       const me = (typeof getProfile === 'function') ? getProfile() : null;
       const sig = r.reporter_signature || (me && me.sig && me.name === r.reporter_name ? me.sig : null);
-      if (sig) doc.addImage(sig, 'PNG', ML + 2, y + 2, CW - 4, 18);
+      if (sig && sig.length > 100) {
+        doc.addImage(sig, 'PNG', ML + 2, y + 2, CW - 4, 18);
+        sigRendered = true;
+      }
     } catch(e) {}
+    
+    // If no valid signature image, render name in fancy script font
+    if (!sigRendered && r.reporter_name) {
+      setText(C.darkText);
+      doc.setFont('times', 'italic');
+      doc.setFontSize(16);
+      doc.text(r.reporter_name, ML + 4, y + 13);
+    }
+    
     setText(C.subLabel);
     doc.setFont('helvetica','normal'); doc.setFontSize(8);
     doc.text(String(r.reporter_name || ''), ML + 2, y + 25);
@@ -22486,13 +22499,26 @@ function downloadIncidentPdf() {
       ensure(28);
       y = drawSubLabel(y, 'SUPERVISOR CLOSE-OUT SIGNATURE');
       drawCard(y, 22, C.white, C.greyLight);
+      let csigRendered = false;
       try {
         const me = (typeof getProfile === 'function') ? getProfile() : null;
         // Prefer signature stored on the record at close-out. Fall back to
         // active profile only if the downloader is the closer (legacy).
         const csig = r.closer_signature || (me && me.sig && me.name === r.closed_by ? me.sig : null);
-        if (csig) doc.addImage(csig, 'PNG', ML + 2, y + 2, CW - 4, 18);
+        if (csig && csig.length > 100) {
+          doc.addImage(csig, 'PNG', ML + 2, y + 2, CW - 4, 18);
+          csigRendered = true;
+        }
       } catch(e) {}
+      
+      // If no valid signature image, render name in fancy script font
+      if (!csigRendered && r.closed_by) {
+        setText(C.darkText);
+        doc.setFont('times', 'italic');
+        doc.setFontSize(16);
+        doc.text(r.closed_by, ML + 4, y + 13);
+      }
+      
       setText(C.subLabel);
       doc.setFont('helvetica','normal'); doc.setFontSize(8);
       doc.text(String(r.closed_by || ''), ML + 2, y + 25);
@@ -43751,6 +43777,7 @@ function viewIncidentDetail(incidentId) {
       '<button onclick="viewIncidentFullPDF(\'' + incident.ref + '\')" style="flex:1;padding:10px;font-size:11px;font-weight:600;background:#FFFFFF;border:1.5px solid #D0D0D0;border-radius:8px;color:#555;cursor:pointer">📄 Export PDF</button>' +
       '<button onclick="emailSingleIncident(\'' + incident.ref + '\')" style="flex:1;padding:10px;font-size:11px;font-weight:600;background:#FFFFFF;border:1.5px solid #D0D0D0;border-radius:8px;color:#555;cursor:pointer">📧 Email Report</button>' +
     '</div>' +
+    '<button onclick="viewIncidentFullPDF(\'' + incident.ref + '\')" style="width:100%;padding:12px;margin-top:8px;font-size:12px;font-weight:600;background:linear-gradient(135deg, #1B3A2D 0%, #2D5F3F 100%);border:none;border-radius:8px;color:#FFFFFF;cursor:pointer;box-shadow:0 2px 6px rgba(27,58,45,0.3)">📄 View Full PDF Report</button>' +
     
     '<div style="border-top:1px solid #E0E0E0;margin-top:16px;padding-top:10px;font-size:9px;color:#999;text-align:center">' +
       'Incident ID: ' + incident.ref + ' • Slan Safety Management System' +
