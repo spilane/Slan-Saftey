@@ -22147,13 +22147,19 @@ function downloadIncidentPdf() {
       if (!value) return;
       ensure(12);
       y = drawSubLabel(y, label);
-      // Use CW - 10 to ensure text stays well within box boundaries
-      const lines = doc.splitTextToSize(String(value), CW - 10);
-      const blockH = Math.max(10, lines.length * 4.8 + 8); // Extra padding for safety
+      
+      // SET FONT FIRST so splitTextToSize knows how to calculate width properly
+      setText(C.darkText);
+      doc.setFont('helvetica','normal'); 
+      doc.setFontSize(9);
+      
+      // Now splitTextToSize will calculate correctly based on the font
+      const lines = doc.splitTextToSize(String(value), CW - 12);
+      const blockH = Math.max(12, lines.length * 5.5 + 10);
       ensure(blockH + 1);
       drawCard(y, blockH, C.neutralBg, C.border);
-      setText(C.darkText);
-      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      
+      // Render the text (font already set above)
       doc.text(lines, ML + 4, y + 6);
       y += blockH + 3;
     }
