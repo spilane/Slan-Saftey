@@ -10638,9 +10638,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="flex:1">
             <div style="font-size:14px;font-weight:600;color:var(--text)">Incidents & Near Misses</div>
             <div style="font-size:11px;color:var(--muted);margin-top:1px" id="an-inc-summary">Loading incidents...</div>
-            <div style="font-size:11px;margin-top:3px" id="an-inc-notifiable"></div>
-            <div style="font-size:11px;margin-top:2px" id="an-inc-overdue"></div>
-            <div style="font-size:11px;margin-top:3px" id="an-inc-close-time"></div>
           </div>
         </div>
         <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
@@ -10984,6 +10981,45 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="display:flex;gap:6px">
         <button onclick="exportIncidentsToCSV()" style="padding:6px 10px;font-size:10px;font-weight:600;background:#fff;border:1px solid #D0D0D0;border-radius:6px;color:#555;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08)">Export</button>
         <button onclick="goToIncidentForm()" style="padding:6px 10px;font-size:10px;font-weight:600;background:linear-gradient(135deg, #1B6E3A 0%, #2D8A4F 100%);border:none;border-radius:6px;color:#fff;cursor:pointer;box-shadow:0 2px 6px rgba(27,110,58,0.3)">+ Report Incident</button>
+      </div>
+    </div>
+
+    <!-- Incident Summary Box -->
+    <div class="fcard" style="margin-bottom:12px">
+      <div class="fcard-hdr">📊 Incident Summary</div>
+      <div style="padding:14px">
+        
+        <!-- Status Row -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #E5E5E5">
+          <div style="flex:1">
+            <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">This Month</div>
+            <div style="font-size:20px;font-weight:700;color:#1A2A1F" id="dinc-total-count">—</div>
+          </div>
+          <div style="flex:1;text-align:center">
+            <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Open</div>
+            <div style="font-size:20px;font-weight:700;color:#D97706" id="dinc-open-count">—</div>
+          </div>
+          <div style="flex:1;text-align:right">
+            <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Closed</div>
+            <div style="font-size:20px;font-weight:700;color:#15803D" id="dinc-closed-count">—</div>
+          </div>
+        </div>
+
+        <!-- Alerts Row -->
+        <div id="dinc-alerts-container" style="margin-bottom:12px"></div>
+
+        <!-- Performance Metrics -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div style="background:#F8F8F8;border-radius:6px;padding:10px">
+            <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Avg. Close Time</div>
+            <div style="font-size:16px;font-weight:700" id="dinc-avg-close">—</div>
+          </div>
+          <div style="background:#F8F8F8;border-radius:6px;padding:10px">
+            <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">By Type</div>
+            <div style="font-size:11px;font-weight:600;color:#666" id="dinc-by-type">—</div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -36008,9 +36044,6 @@ function populateDirectorIncidents() {
   // ═══════════════════════════════════════════════════════════════
   var list = document.getElementById('dinc-incidents-list');
   var summary = document.getElementById('an-inc-summary');
-  var notifiableEl = document.getElementById('an-inc-notifiable');
-  var overdueEl = document.getElementById('an-inc-overdue');
-  var closeTimeEl = document.getElementById('an-inc-close-time');
   
   // Load incidents from storage (prepopulates demo if empty)
   var incidents = incLoadAll();
@@ -36019,69 +36052,20 @@ function populateDirectorIncidents() {
     incidents = incLoadAll();
   }
   
-  // Calculate metrics - do this even if list doesn't exist
+  // Simple home tile summary - just show open count
   if (summary && incidents.length > 0) {
-    var total = incidents.length;
     var open = incidents.filter(i => i.status === 'open').length;
-    var closed = incidents.filter(i => i.status === 'closed').length;
-    
-    // Summary line - show this month's count + open
-    summary.textContent = total + ' This Month  ·  ' + open + ' Open';
-    
-    // Notifiable incidents count
-    if (notifiableEl) {
-      var notifiable = incidents.filter(i => 
-        i.potentially_notifiable === 'yes' || 
-        (i.notifiable_assessment && i.notifiable_assessment.supervisor_said === 'yes')
-      ).length;
-      if (notifiable > 0) {
-        notifiableEl.innerHTML = '<span style="color:#B83232;font-weight:600">🚨 ' + notifiable + ' Notifiable incident' + (notifiable > 1 ? 's' : '') + '</span>';
-      } else {
-        notifiableEl.textContent = '';
-      }
-    }
-    
-    // Overdue incidents (open > 7 days)
-    if (overdueEl) {
-      var overdue = incidents.filter(i => {
-        if (i.status !== 'open') return false;
-        var incDate = new Date(i.incident_date || i.submitted_at);
-        var today = new Date();
-        var daysDiff = Math.floor((today - incDate) / (1000 * 60 * 60 * 24));
-        return daysDiff > 7;
-      }).length;
-      if (overdue > 0) {
-        overdueEl.innerHTML = '<span style="color:#D97706;font-weight:600">⚠️ ' + overdue + ' overdue for review (>7 days)</span>';
-      } else {
-        overdueEl.textContent = '';
-      }
-    }
-    
-    // Average time to close (for closed incidents)
-    if (closeTimeEl) {
-      var closedIncidents = incidents.filter(i => i.status === 'closed' && i.closed_at && i.incident_date);
-      if (closedIncidents.length > 0) {
-        var totalDays = 0;
-        closedIncidents.forEach(function(inc) {
-          var incDate = new Date(inc.incident_date);
-          var closeDate = new Date(inc.closed_at);
-          var days = Math.floor((closeDate - incDate) / (1000 * 60 * 60 * 24));
-          totalDays += days;
-        });
-        var avgDays = (totalDays / closedIncidents.length).toFixed(1);
-        
-        // Color coding: green <7, yellow 7-14, red >14
-        var color = avgDays < 7 ? '#15803D' : avgDays <= 14 ? '#D97706' : '#B83232';
-        var emoji = avgDays < 7 ? '🟢' : avgDays <= 14 ? '🟡' : '🔴';
-        
-        closeTimeEl.innerHTML = '<span style="color:' + color + ';font-weight:600">Avg. Close Time: ' + avgDays + ' days ' + emoji + '</span>';
-      } else {
-        closeTimeEl.textContent = '';
-      }
+    if (open > 0) {
+      summary.textContent = open + ' incident' + (open !== 1 ? 's' : '') + ' open';
+    } else {
+      summary.textContent = 'All incidents closed';
     }
   }
   
   if (!list) return;
+  
+  // Populate summary box if on incidents screen
+  updateIncidentSummaryBox(incidents);
   
   // Clear list
   list.innerHTML = '';
@@ -36128,6 +36112,96 @@ function populateDirectorIncidents() {
     
     list.appendChild(card);
   });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UPDATE INCIDENT SUMMARY BOX (inside incidents screen)
+// ═══════════════════════════════════════════════════════════════
+
+function updateIncidentSummaryBox(incidents) {
+  if (!incidents || incidents.length === 0) return;
+  
+  // Total, Open, Closed counts
+  var totalEl = document.getElementById('dinc-total-count');
+  var openEl = document.getElementById('dinc-open-count');
+  var closedEl = document.getElementById('dinc-closed-count');
+  
+  var total = incidents.length;
+  var open = incidents.filter(i => i.status === 'open').length;
+  var closed = incidents.filter(i => i.status === 'closed').length;
+  
+  if (totalEl) totalEl.textContent = total;
+  if (openEl) openEl.textContent = open;
+  if (closedEl) closedEl.textContent = closed;
+  
+  // Alerts container
+  var alertsEl = document.getElementById('dinc-alerts-container');
+  if (alertsEl) {
+    var alerts = [];
+    
+    // Notifiable incidents
+    var notifiable = incidents.filter(i => 
+      i.potentially_notifiable === 'yes' || 
+      (i.notifiable_assessment && i.notifiable_assessment.supervisor_said === 'yes')
+    ).length;
+    if (notifiable > 0) {
+      alerts.push('<div style="padding:8px 10px;background:#FEE2E2;border-left:3px solid #B83232;border-radius:4px;margin-bottom:6px"><span style="color:#B83232;font-weight:600;font-size:11px">🚨 ' + notifiable + ' Notifiable incident' + (notifiable !== 1 ? 's' : '') + ' (requires regulator notification)</span></div>');
+    }
+    
+    // Overdue incidents
+    var overdue = incidents.filter(i => {
+      if (i.status !== 'open') return false;
+      var incDate = new Date(i.incident_date || i.submitted_at);
+      var today = new Date();
+      var daysDiff = Math.floor((today - incDate) / (1000 * 60 * 60 * 24));
+      return daysDiff > 7;
+    }).length;
+    if (overdue > 0) {
+      alerts.push('<div style="padding:8px 10px;background:#FEF3C7;border-left:3px solid #D97706;border-radius:4px;margin-bottom:6px"><span style="color:#D97706;font-weight:600;font-size:11px">⚠️ ' + overdue + ' incident' + (overdue !== 1 ? 's' : '') + ' overdue for review (>7 days)</span></div>');
+    }
+    
+    alertsEl.innerHTML = alerts.length > 0 ? alerts.join('') : '';
+  }
+  
+  // Average close time
+  var avgCloseEl = document.getElementById('dinc-avg-close');
+  if (avgCloseEl) {
+    var closedIncidents = incidents.filter(i => i.status === 'closed' && i.closed_at && i.incident_date);
+    if (closedIncidents.length > 0) {
+      var totalDays = 0;
+      closedIncidents.forEach(function(inc) {
+        var incDate = new Date(inc.incident_date);
+        var closeDate = new Date(inc.closed_at);
+        var days = Math.floor((closeDate - incDate) / (1000 * 60 * 60 * 24));
+        totalDays += days;
+      });
+      var avgDays = (totalDays / closedIncidents.length).toFixed(1);
+      var color = avgDays < 7 ? '#15803D' : avgDays <= 14 ? '#D97706' : '#B83232';
+      var emoji = avgDays < 7 ? '🟢' : avgDays <= 14 ? '🟡' : '🔴';
+      avgCloseEl.innerHTML = '<span style="color:' + color + '">' + avgDays + ' days ' + emoji + '</span>';
+    } else {
+      avgCloseEl.textContent = 'No closed';
+    }
+  }
+  
+  // By type breakdown
+  var byTypeEl = document.getElementById('dinc-by-type');
+  if (byTypeEl) {
+    var nearMiss = incidents.filter(i => i.incident_type === 'Near Miss').length;
+    var actualInjury = incidents.filter(i => i.incident_type === 'Actual Injury').length;
+    var dangerous = incidents.filter(i => i.incident_type === 'Dangerous Incident').length;
+    var propertyDamage = incidents.filter(i => i.incident_type === 'Property Damage').length;
+    var environmental = incidents.filter(i => i.incident_type === 'Environmental').length;
+    
+    var types = [];
+    if (actualInjury > 0) types.push(actualInjury + ' injury');
+    if (nearMiss > 0) types.push(nearMiss + ' near miss');
+    if (dangerous > 0) types.push(dangerous + ' dangerous');
+    if (propertyDamage > 0) types.push(propertyDamage + ' damage');
+    if (environmental > 0) types.push(environmental + ' environ');
+    
+    byTypeEl.textContent = types.join(' · ');
+  }
 }
 
 function viewIncidentPDF(incident) {
