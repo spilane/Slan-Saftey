@@ -22149,7 +22149,6 @@ function downloadIncidentPdf() {
       y = drawSubLabel(y, label);
       
       // SET FONT FIRST so splitTextToSize knows how to calculate width properly
-      setText(C.darkText);
       doc.setFont('helvetica','normal'); 
       doc.setFontSize(9);
       
@@ -22159,7 +22158,10 @@ function downloadIncidentPdf() {
       ensure(blockH + 1);
       drawCard(y, blockH, C.neutralBg, C.border);
       
-      // Render the text (font already set above)
+      // Set font and color again RIGHT before rendering (matching drawCardRow pattern)
+      setText(C.darkText);
+      doc.setFont('helvetica','normal'); 
+      doc.setFontSize(9);
       doc.text(lines, ML + 4, y + 6);
       y += blockH + 3;
     }
