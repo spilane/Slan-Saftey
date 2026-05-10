@@ -36177,16 +36177,17 @@ function updateIncidentSummaryBox(incidents) {
   var avgCloseEl = document.getElementById('dinc-avg-close');
   if (avgCloseEl) {
     var closedThisMonth = thisMonthIncidents.filter(function(i) {
-      return i.status === 'closed' && i.closed_at && i.incident_date;
+      return i.status === 'closed' && i.incident_date && (i.closed_at || i.reviewed_date);
     });
     
     if (closedThisMonth.length > 0) {
       var totalDays = 0;
       closedThisMonth.forEach(function(inc) {
         var incDate = new Date(inc.incident_date);
-        var closeDate = new Date(inc.closed_at);
+        // Use closed_at if available, otherwise use reviewed_date
+        var closeDate = new Date(inc.closed_at || inc.reviewed_date);
         var days = Math.floor((closeDate - incDate) / (1000 * 60 * 60 * 24));
-        totalDays += days;
+        if (days >= 0) totalDays += days; // Only count positive values
       });
       var avgDays = (totalDays / closedThisMonth.length).toFixed(1);
       var color = avgDays < 7 ? '#15803D' : avgDays <= 14 ? '#D97706' : '#B83232';
