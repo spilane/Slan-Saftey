@@ -36121,39 +36121,49 @@ function populateDirectorIncidents() {
 function updateIncidentSummaryBox(incidents) {
   if (!incidents || incidents.length === 0) return;
   
-  // Total, Open, Closed counts
+  // Filter to current month only (May 2026)
+  var today = new Date();
+  var currentMonth = today.getMonth(); // 0-11
+  var currentYear = today.getFullYear();
+  
+  var thisMonthIncidents = incidents.filter(function(i) {
+    var incDate = new Date(i.incident_date || i.submitted_at);
+    return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
+  });
+  
+  // Total, Open, Closed counts (for THIS MONTH only)
   var totalEl = document.getElementById('dinc-total-count');
   var openEl = document.getElementById('dinc-open-count');
   var closedEl = document.getElementById('dinc-closed-count');
   
-  var total = incidents.length;
-  var open = incidents.filter(i => i.status === 'open').length;
-  var closed = incidents.filter(i => i.status === 'closed').length;
+  var total = thisMonthIncidents.length;
+  var open = thisMonthIncidents.filter(function(i) { return i.status === 'open'; }).length;
+  var closed = thisMonthIncidents.filter(function(i) { return i.status === 'closed'; }).length;
   
   if (totalEl) totalEl.textContent = total;
   if (openEl) openEl.textContent = open;
   if (closedEl) closedEl.textContent = closed;
   
-  // Alerts container
+  // Alerts container (check ALL incidents, not just this month)
   var alertsEl = document.getElementById('dinc-alerts-container');
   if (alertsEl) {
     var alerts = [];
     
-    // Notifiable incidents
-    var notifiable = incidents.filter(i => 
-      i.potentially_notifiable === 'yes' || 
-      (i.notifiable_assessment && i.notifiable_assessment.supervisor_said === 'yes')
-    ).length;
+    // Notifiable incidents (ALL time, not just this month)
+    var notifiable = incidents.filter(function(i) {
+      return i.potentially_notifiable === 'yes' || 
+             (i.notifiable_assessment && i.notifiable_assessment.supervisor_said === 'yes');
+    }).length;
     if (notifiable > 0) {
       alerts.push('<div style="padding:8px 10px;background:#FEE2E2;border-left:3px solid #B83232;border-radius:4px;margin-bottom:6px"><span style="color:#B83232;font-weight:600;font-size:11px">🚨 ' + notifiable + ' Notifiable incident' + (notifiable !== 1 ? 's' : '') + ' (requires regulator notification)</span></div>');
     }
     
-    // Overdue incidents
-    var overdue = incidents.filter(i => {
+    // Overdue incidents (ALL time, not just this month)
+    var overdue = incidents.filter(function(i) {
       if (i.status !== 'open') return false;
       var incDate = new Date(i.incident_date || i.submitted_at);
-      var today = new Date();
-      var daysDiff = Math.floor((today - incDate) / (1000 * 60 * 60 * 24));
+      var todayTime = new Date();
+      var daysDiff = Math.floor((todayTime - incDate) / (1000 * 60 * 60 * 24));
       return daysDiff > 7;
     }).length;
     if (overdue > 0) {
@@ -36163,35 +36173,38 @@ function updateIncidentSummaryBox(incidents) {
     alertsEl.innerHTML = alerts.length > 0 ? alerts.join('') : '';
   }
   
-  // Average close time
+  // Average close time (for THIS MONTH only)
   var avgCloseEl = document.getElementById('dinc-avg-close');
   if (avgCloseEl) {
-    var closedIncidents = incidents.filter(i => i.status === 'closed' && i.closed_at && i.incident_date);
-    if (closedIncidents.length > 0) {
+    var closedThisMonth = thisMonthIncidents.filter(function(i) {
+      return i.status === 'closed' && i.closed_at && i.incident_date;
+    });
+    
+    if (closedThisMonth.length > 0) {
       var totalDays = 0;
-      closedIncidents.forEach(function(inc) {
+      closedThisMonth.forEach(function(inc) {
         var incDate = new Date(inc.incident_date);
         var closeDate = new Date(inc.closed_at);
         var days = Math.floor((closeDate - incDate) / (1000 * 60 * 60 * 24));
         totalDays += days;
       });
-      var avgDays = (totalDays / closedIncidents.length).toFixed(1);
+      var avgDays = (totalDays / closedThisMonth.length).toFixed(1);
       var color = avgDays < 7 ? '#15803D' : avgDays <= 14 ? '#D97706' : '#B83232';
       var emoji = avgDays < 7 ? '🟢' : avgDays <= 14 ? '🟡' : '🔴';
       avgCloseEl.innerHTML = '<span style="color:' + color + '">' + avgDays + ' days ' + emoji + '</span>';
     } else {
-      avgCloseEl.textContent = 'No closed';
+      avgCloseEl.innerHTML = '<span style="color:#999">—</span>';
     }
   }
   
-  // By type breakdown
+  // By type breakdown (for THIS MONTH only)
   var byTypeEl = document.getElementById('dinc-by-type');
   if (byTypeEl) {
-    var nearMiss = incidents.filter(i => i.incident_type === 'Near Miss').length;
-    var actualInjury = incidents.filter(i => i.incident_type === 'Actual Injury').length;
-    var dangerous = incidents.filter(i => i.incident_type === 'Dangerous Incident').length;
-    var propertyDamage = incidents.filter(i => i.incident_type === 'Property Damage').length;
-    var environmental = incidents.filter(i => i.incident_type === 'Environmental').length;
+    var nearMiss = thisMonthIncidents.filter(function(i) { return i.incident_type === 'Near Miss'; }).length;
+    var actualInjury = thisMonthIncidents.filter(function(i) { return i.incident_type === 'Actual Injury'; }).length;
+    var dangerous = thisMonthIncidents.filter(function(i) { return i.incident_type === 'Dangerous Incident'; }).length;
+    var propertyDamage = thisMonthIncidents.filter(function(i) { return i.incident_type === 'Property Damage'; }).length;
+    var environmental = thisMonthIncidents.filter(function(i) { return i.incident_type === 'Environmental'; }).length;
     
     var types = [];
     if (actualInjury > 0) types.push(actualInjury + ' injury');
@@ -36200,7 +36213,7 @@ function updateIncidentSummaryBox(incidents) {
     if (propertyDamage > 0) types.push(propertyDamage + ' damage');
     if (environmental > 0) types.push(environmental + ' environ');
     
-    byTypeEl.textContent = types.join(' · ');
+    byTypeEl.textContent = types.length > 0 ? types.join(' · ') : '—';
   }
 }
 
