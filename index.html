@@ -10984,40 +10984,93 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <!-- Incident Summary Box (matching Key Metrics style) -->
+    <!-- Incident Summary Box with TABS -->
     <div class="fcard" style="margin-bottom:12px">
       <div class="fcard-hdr">📊 Incident Summary</div>
       <div style="padding:10px">
         
-        <!-- Status Grid (matching Key Metrics with GOLD borders) -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-          <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-            <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">This Month</div>
-            <div style="font-size:28px;font-weight:800;color:#1A2A1F;line-height:1;background:linear-gradient(135deg, #1A2A1F 0%, #2D5F3F 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="dinc-total-count">—</div>
-          </div>
-          <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-            <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Open</div>
-            <div style="font-size:28px;font-weight:800;color:#D97706;line-height:1" id="dinc-open-count">—</div>
-          </div>
-          <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-            <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Closed</div>
-            <div style="font-size:28px;font-weight:800;color:#15803D;line-height:1" id="dinc-closed-count">—</div>
-          </div>
+        <!-- Tab Navigation -->
+        <div style="display:flex;gap:4px;margin-bottom:12px;border-bottom:2px solid #E8E8E8">
+          <button id="tab-summary" onclick="switchIncidentTab('summary')" style="flex:1;padding:10px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:6px 6px 0 0;font-weight:600;font-size:11px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1)">
+            Summary
+          </button>
+          <button id="tab-analytics" onclick="switchIncidentTab('analytics')" style="flex:1;padding:10px;background:#f5f5f5;color:#666;border:none;border-radius:6px 6px 0 0;font-weight:600;font-size:11px;cursor:pointer">
+            Analytics
+          </button>
         </div>
 
-        <!-- Alerts Row -->
-        <div id="dinc-alerts-container" style="margin-bottom:10px"></div>
+        <!-- TAB 1: SUMMARY -->
+        <div id="incident-tab-summary">
+        
+          <!-- Status Grid -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">This Month</div>
+              <div style="font-size:28px;font-weight:800;color:#1A2A1F;line-height:1;background:linear-gradient(135deg, #1A2A1F 0%, #2D5F3F 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="dinc-total-count">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Open</div>
+              <div style="font-size:28px;font-weight:800;color:#D97706;line-height:1" id="dinc-open-count">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Closed</div>
+              <div style="font-size:28px;font-weight:800;color:#15803D;line-height:1" id="dinc-closed-count">—</div>
+            </div>
+          </div>
 
-        <!-- Performance Metrics Grid (matching Key Metrics with GOLD borders) -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-            <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Avg Close Time</div>
-            <div style="font-size:20px;font-weight:700;line-height:1" id="dinc-avg-close">—</div>
+          <!-- Alerts (Always Show) -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div style="padding:10px;background:#FEE2E2;border-left:3px solid #B83232;border-radius:6px">
+              <div style="font-size:10px;color:#B83232;font-weight:600;margin-bottom:3px">🚨 NOTIFIABLE</div>
+              <div style="font-size:20px;font-weight:800;color:#B83232" id="dinc-notifiable-count">—</div>
+              <div style="font-size:9px;color:#B83232;margin-top:2px" id="dinc-notifiable-label">—</div>
+            </div>
+            <div style="padding:10px;background:#FEF3C7;border-left:3px solid #D97706;border-radius:6px">
+              <div style="font-size:10px;color:#D97706;font-weight:600;margin-bottom:3px">⚠️ OVERDUE</div>
+              <div style="font-size:20px;font-weight:800;color:#D97706" id="dinc-overdue-count">—</div>
+              <div style="font-size:9px;color:#D97706;margin-top:2px" id="dinc-overdue-label">—</div>
+            </div>
           </div>
-          <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-            <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">By Type</div>
-            <div style="font-size:11px;font-weight:600;color:#666;line-height:1.4" id="dinc-by-type">—</div>
+
+          <!-- Performance Metrics -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Avg Close Time</div>
+              <div style="font-size:20px;font-weight:700;line-height:1" id="dinc-avg-close">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">By Type</div>
+              <div style="font-size:11px;font-weight:600;color:#666;line-height:1.4" id="dinc-by-type">—</div>
+            </div>
           </div>
+
+        </div>
+
+        <!-- TAB 2: ANALYTICS -->
+        <div id="incident-tab-analytics" style="display:none">
+          
+          <!-- Trend Chart -->
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;font-weight:600;color:#1A2A1F;margin-bottom:8px">📈 Trend (Last 6 Months)</div>
+            <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #E8E8E8">
+              <canvas id="dinc-trend-chart" style="max-height:180px"></canvas>
+            </div>
+          </div>
+
+          <!-- Type Breakdown -->
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;font-weight:600;color:#1A2A1F;margin-bottom:8px">📊 By Type</div>
+            <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #E8E8E8">
+              <canvas id="dinc-type-chart" style="max-height:180px"></canvas>
+            </div>
+          </div>
+
+          <!-- Top Root Causes -->
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#1A2A1F;margin-bottom:8px">🎯 Top 5 Root Causes</div>
+            <div id="dinc-root-causes" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+
         </div>
 
       </div>
@@ -36144,42 +36197,35 @@ function updateIncidentSummaryBox(incidents) {
   if (openEl) openEl.textContent = open;
   if (closedEl) closedEl.textContent = closed;
   
-  // Alerts container (check ALL incidents, not just this month)
-  var alertsEl = document.getElementById('dinc-alerts-container');
-  if (alertsEl) {
-    var alerts = [];
-    
-    // Notifiable incidents (ALL time, not just this month)
-    var notifiable = incidents.filter(function(i) {
-      return i.potentially_notifiable === 'yes' || 
-             (i.notifiable_assessment && i.notifiable_assessment.supervisor_said === 'yes');
-    }).length;
-    
-    console.log('DEBUG: Notifiable count =', notifiable);
-    
-    if (notifiable > 0) {
-      alerts.push('<div style="padding:8px 10px;background:#FEE2E2;border-left:3px solid #B83232;border-radius:4px;margin-bottom:6px"><span style="color:#B83232;font-weight:600;font-size:11px">🚨 ' + notifiable + ' Notifiable incident' + (notifiable !== 1 ? 's' : '') + ' (requires regulator notification)</span></div>');
-    }
-    
-    // Overdue incidents (ALL time, not just this month)
-    var overdue = incidents.filter(function(i) {
-      if (i.status !== 'open') return false;
-      var incDate = new Date(i.incident_date || i.submitted_at);
-      var todayTime = new Date();
-      var daysDiff = Math.floor((todayTime - incDate) / (1000 * 60 * 60 * 24));
-      return daysDiff > 7;
-    }).length;
-    
-    console.log('DEBUG: Overdue count =', overdue);
-    console.log('DEBUG: Total incidents =', incidents.length);
-    console.log('DEBUG: Open incidents =', incidents.filter(function(i) { return i.status === 'open'; }).length);
-    
-    if (overdue > 0) {
-      alerts.push('<div style="padding:8px 10px;background:#FEF3C7;border-left:3px solid #D97706;border-radius:4px;margin-bottom:6px"><span style="color:#D97706;font-weight:600;font-size:11px">⚠️ ' + overdue + ' incident' + (overdue !== 1 ? 's' : '') + ' overdue for review (>7 days)</span></div>');
-    }
-    
-    console.log('DEBUG: Alerts HTML =', alerts.join(''));
-    alertsEl.innerHTML = alerts.length > 0 ? alerts.join('') : '';
+  // ALWAYS-SHOW ALERTS (check ALL incidents, not just this month)
+  var notifiableCountEl = document.getElementById('dinc-notifiable-count');
+  var notifiableLabelEl = document.getElementById('dinc-notifiable-label');
+  var overdueCountEl = document.getElementById('dinc-overdue-count');
+  var overdueLabelEl = document.getElementById('dinc-overdue-label');
+  
+  // Notifiable incidents (ALL time)
+  var notifiable = incidents.filter(function(i) {
+    return i.potentially_notifiable === 'yes' || 
+           (i.notifiable_assessment && i.notifiable_assessment.supervisor_said === 'yes');
+  }).length;
+  
+  if (notifiableCountEl) notifiableCountEl.textContent = notifiable;
+  if (notifiableLabelEl) {
+    notifiableLabelEl.textContent = notifiable === 0 ? 'All clear ✓' : 'Requires notification';
+  }
+  
+  // Overdue incidents (ALL time)
+  var overdue = incidents.filter(function(i) {
+    if (i.status !== 'open') return false;
+    var incDate = new Date(i.incident_date || i.submitted_at);
+    var todayTime = new Date();
+    var daysDiff = Math.floor((todayTime - incDate) / (1000 * 60 * 60 * 24));
+    return daysDiff > 7;
+  }).length;
+  
+  if (overdueCountEl) overdueCountEl.textContent = overdue;
+  if (overdueLabelEl) {
+    overdueLabelEl.textContent = overdue === 0 ? 'All on track ✓' : 'Need review (>7 days)';
   }
   
   // Average close time (for THIS MONTH only)
@@ -36193,10 +36239,9 @@ function updateIncidentSummaryBox(incidents) {
       var totalDays = 0;
       closedThisMonth.forEach(function(inc) {
         var incDate = new Date(inc.incident_date);
-        // Use closed_at if available, otherwise use reviewed_date
         var closeDate = new Date(inc.closed_at || inc.reviewed_date);
         var days = Math.floor((closeDate - incDate) / (1000 * 60 * 60 * 24));
-        if (days >= 0) totalDays += days; // Only count positive values
+        if (days >= 0) totalDays += days;
       });
       var avgDays = (totalDays / closedThisMonth.length).toFixed(1);
       var color = avgDays < 7 ? '#15803D' : avgDays <= 14 ? '#D97706' : '#B83232';
@@ -36224,6 +36269,188 @@ function updateIncidentSummaryBox(incidents) {
     if (environmental > 0) types.push(environmental + ' environ');
     
     byTypeEl.textContent = types.length > 0 ? types.join(' · ') : '—';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SWITCH INCIDENT TAB (Summary / Analytics)
+// ═══════════════════════════════════════════════════════════════
+
+function switchIncidentTab(tabName) {
+  // Hide all tabs
+  var summaryTab = document.getElementById('incident-tab-summary');
+  var analyticsTab = document.getElementById('incident-tab-analytics');
+  
+  // Update buttons
+  var summaryBtn = document.getElementById('tab-summary');
+  var analyticsBtn = document.getElementById('tab-analytics');
+  
+  if (tabName === 'summary') {
+    if (summaryTab) summaryTab.style.display = 'block';
+    if (analyticsTab) analyticsTab.style.display = 'none';
+    if (summaryBtn) {
+      summaryBtn.style.background = 'linear-gradient(135deg, #B8960C 0%, #D4A72C 100%)';
+      summaryBtn.style.color = '#fff';
+      summaryBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+    }
+    if (analyticsBtn) {
+      analyticsBtn.style.background = '#f5f5f5';
+      analyticsBtn.style.color = '#666';
+      analyticsBtn.style.boxShadow = 'none';
+    }
+  } else if (tabName === 'analytics') {
+    if (summaryTab) summaryTab.style.display = 'none';
+    if (analyticsTab) analyticsTab.style.display = 'block';
+    if (summaryBtn) {
+      summaryBtn.style.background = '#f5f5f5';
+      summaryBtn.style.color = '#666';
+      summaryBtn.style.boxShadow = 'none';
+    }
+    if (analyticsBtn) {
+      analyticsBtn.style.background = 'linear-gradient(135deg, #B8960C 0%, #D4A72C 100%)';
+      analyticsBtn.style.color = '#fff';
+      analyticsBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+    }
+    
+    // Populate analytics when tab is opened
+    var incidents = incLoadAll();
+    populateIncidentAnalytics(incidents);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// POPULATE INCIDENT ANALYTICS (Charts & Trends)
+// ═══════════════════════════════════════════════════════════════
+
+function populateIncidentAnalytics(incidents) {
+  if (!incidents || incidents.length === 0) return;
+  
+  // 1. TREND CHART (Last 6 months)
+  var trendCanvas = document.getElementById('dinc-trend-chart');
+  if (trendCanvas && window.Chart) {
+    var ctx = trendCanvas.getContext('2d');
+    
+    // Get last 6 months of data
+    var monthsData = {};
+    var today = new Date();
+    
+    for (var i = 5; i >= 0; i--) {
+      var d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      var monthKey = d.toLocaleString('default', { month: 'short' }) + ' ' + d.getFullYear();
+      monthsData[monthKey] = 0;
+    }
+    
+    incidents.forEach(function(inc) {
+      var incDate = new Date(inc.incident_date || inc.submitted_at);
+      var monthKey = incDate.toLocaleString('default', { month: 'short' }) + ' ' + incDate.getFullYear();
+      if (monthsData.hasOwnProperty(monthKey)) {
+        monthsData[monthKey]++;
+      }
+    });
+    
+    var labels = Object.keys(monthsData);
+    var data = Object.values(monthsData);
+    
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Incidents',
+          data: data,
+          borderColor: '#B8960C',
+          backgroundColor: 'rgba(184, 150, 12, 0.1)',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+      }
+    });
+  }
+  
+  // 2. TYPE BREAKDOWN CHART
+  var typeCanvas = document.getElementById('dinc-type-chart');
+  if (typeCanvas && window.Chart) {
+    var ctxType = typeCanvas.getContext('2d');
+    
+    var typeCounts = {
+      'Actual Injury': 0,
+      'Near Miss': 0,
+      'Dangerous Incident': 0,
+      'Property Damage': 0,
+      'Environmental': 0
+    };
+    
+    incidents.forEach(function(inc) {
+      if (typeCounts.hasOwnProperty(inc.incident_type)) {
+        typeCounts[inc.incident_type]++;
+      }
+    });
+    
+    var typeLabels = [];
+    var typeData = [];
+    Object.keys(typeCounts).forEach(function(key) {
+      if (typeCounts[key] > 0) {
+        typeLabels.push(key);
+        typeData.push(typeCounts[key]);
+      }
+    });
+    
+    new Chart(ctxType, {
+      type: 'doughnut',
+      data: {
+        labels: typeLabels,
+        datasets: [{
+          data: typeData,
+          backgroundColor: ['#B83232', '#D97706', '#B8960C', '#666', '#15803D']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { fontSize: 10 } }
+        }
+      }
+    });
+  }
+  
+  // 3. TOP ROOT CAUSES
+  var rootCausesEl = document.getElementById('dinc-root-causes');
+  if (rootCausesEl) {
+    var causes = {};
+    incidents.forEach(function(inc) {
+      if (inc.what_caused) {
+        var cause = inc.what_caused.substring(0, 50);
+        causes[cause] = (causes[cause] || 0) + 1;
+      }
+    });
+    
+    var sortedCauses = Object.keys(causes).sort(function(a, b) {
+      return causes[b] - causes[a];
+    }).slice(0, 5);
+    
+    var html = '';
+    sortedCauses.forEach(function(cause, index) {
+      var count = causes[cause];
+      var percent = Math.round((count / incidents.length) * 100);
+      html += '<div style="background:#F8F8F8;padding:8px 10px;border-radius:6px;border-left:3px solid #B8960C">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+      html += '<div style="font-size:11px;color:#1A2A1F;font-weight:600">' + (index + 1) + '. ' + cause + '...</div>';
+      html += '<div style="font-size:11px;color:#B8960C;font-weight:700">' + count + ' (' + percent + '%)</div>';
+      html += '</div></div>';
+    });
+    
+    rootCausesEl.innerHTML = html || '<div style="text-align:center;color:#999;padding:20px">No root cause data available</div>';
   }
 }
 
