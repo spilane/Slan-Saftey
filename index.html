@@ -22369,8 +22369,8 @@ function downloadIncidentPdf() {
       drawCardBlock('OTHER MECHANISM DESCRIPTION', r.mechanism_other_detail);
     }
     drawCardBlock('DESCRIPTION',                       r.description);
-    drawCardBlock('WHAT CAUSED IT (REPORTER\u2019S VIEW)', r.cause_text);
-    drawCardBlock('HOW COULD IT HAVE BEEN PREVENTED',  r.prevention_text);
+    drawCardBlock('WHAT CAUSED IT (REPORTER\u2019S VIEW)', r.what_caused);
+    drawCardBlock('HOW COULD IT HAVE BEEN PREVENTED',  r.how_prevented);
     drawCardBlock('IMMEDIATE ACTION',                  r.immediate_action);
     drawCardBlock('CORRECTIVE ACTIONS',                r.corrective_actions);
 
@@ -22394,16 +22394,18 @@ function downloadIncidentPdf() {
     // rather than silently omitting the section)
     y = drawMajorBanner(y, 'SUPERVISOR CLOSE-OUT');
     if (status === 'closed') {
-      drawCardRow('Closed by',     r.closed_by);
+      drawCardRow('Closed by',     r.closed_by || r.supervisor_name);
       drawCardRow('Closed at',     r.closed_at ? new Date(r.closed_at).toLocaleString('en-AU') : '');
       drawCardRow('Notifiable confirmed', (function(){
         const v = r.notifiable_assessment && r.notifiable_assessment.supervisor_said;
         return v === 'yes' ? 'Yes' : v === 'no' ? 'No' : v === 'unsure' ? 'Unsure' : '';
       })());
-      drawCardRow('Corrective action', r.corrective_action_complete ? 'Yes \u2014 actioned' : 'No \u2014 still pending');
-      if (r.corrective_action_detail) drawCardBlock('CORRECTIVE ACTION DETAIL', r.corrective_action_detail);
-      if (r.review_notes_text)        drawCardBlock('REVIEW NOTES',  r.review_notes_text);
-      if (r.close_note)               drawCardBlock('CLOSING NOTE',  r.close_note);
+      // If status is closed AND corrective actions exist, consider them actioned
+      const corrective_status = (status === 'closed' && r.corrective_actions) ? 'Yes \u2014 actioned' : 'No \u2014 still pending';
+      drawCardRow('Corrective action', corrective_status);
+      if (r.corrective_detail) drawCardBlock('CORRECTIVE DETAIL', r.corrective_detail);
+      if (r.review_notes)      drawCardBlock('REVIEW NOTES', r.review_notes);
+      if (r.closing_note)      drawCardBlock('CLOSING NOTE', r.closing_note);
     } else {
       // Status open — explicit pending state for audit
       ensure(14);
