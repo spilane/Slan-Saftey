@@ -10635,9 +10635,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="width:36px;height:36px;border-radius:10px;background:#FAEBEB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           </div>
-          <div>
-            <div style="font-size:14px;font-weight:600;color:var(--text)">Incidents</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--text)">Incidents & Near Misses</div>
             <div style="font-size:11px;color:var(--muted);margin-top:1px" id="an-inc-summary">Loading incidents...</div>
+            <div style="font-size:11px;margin-top:3px" id="an-inc-notifiable"></div>
+            <div style="font-size:11px;margin-top:2px" id="an-inc-overdue"></div>
+            <div style="font-size:11px;margin-top:3px" id="an-inc-close-time"></div>
           </div>
         </div>
         <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
@@ -21534,11 +21537,11 @@ function goToIncidentDetail(ref) {
       html += '<div style="display:flex;gap:10px;padding:8px 0"><div style="width:6px;height:6px;border-radius:50%;background:#1B6E3A;margin-top:7px;flex-shrink:0"></div><div style="flex:1;font-size:12.5px;line-height:1.6">' +
         '<div style="color:var(--muted)">' + new Date(r.closed_at).toLocaleString('en-AU') + ' \u00b7 ' + String(r.closed_by || 'Supervisor').replace(/</g,'&lt;') + '</div>' +
         '<div style="color:var(--text);font-weight:600;margin-bottom:4px">Incident closed.</div>' +
-        (r.review_notes_text ? '<div style="margin-bottom:4px"><span style="color:var(--muted);font-size:11.5px">Review notes:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.review_notes_text).replace(/</g,'&lt;') + '</div></div>' : '') +
+        (r.review_notes || r.review_notes_text ? '<div style="margin-bottom:4px"><span style="color:var(--muted);font-size:11.5px">Review notes:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.review_notes || r.review_notes_text).replace(/</g,'&lt;') + '</div></div>' : '') +
         (supNotif ? '<div style="margin-bottom:2px"><span style="color:var(--muted);font-size:11.5px">Notifiable:</span> <b>' + (labels[supNotif] || supNotif) + '</b></div>' : '') +
         '<div style="margin-bottom:2px"><span style="color:var(--muted);font-size:11.5px">Corrective action:</span> ' + corrective + '</div>' +
-        (r.corrective_action_detail ? '<div style="margin-bottom:4px;padding-left:0"><span style="color:var(--muted);font-size:11.5px">What was done:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.corrective_action_detail).replace(/</g,'&lt;') + '</div></div>' : '') +
-        (r.close_note ? '<div style="margin-top:4px"><span style="color:var(--muted);font-size:11.5px">Closing note:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.close_note).replace(/</g,'&lt;') + '</div></div>' : '') +
+        (r.corrective_detail || r.corrective_action_detail ? '<div style="margin-bottom:4px;padding-left:0"><span style="color:var(--muted);font-size:11.5px">What was done:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.corrective_detail || r.corrective_action_detail).replace(/</g,'&lt;') + '</div></div>' : '') +
+        (r.closing_note || r.close_note ? '<div style="margin-top:4px"><span style="color:var(--muted);font-size:11.5px">Closing note:</span><div style="color:var(--text);white-space:pre-wrap">' + String(r.closing_note || r.close_note).replace(/</g,'&lt;') + '</div></div>' : '') +
       '</div></div>';
     }
     return html;
@@ -22371,8 +22374,8 @@ function downloadIncidentPdf() {
       drawCardBlock('OTHER MECHANISM DESCRIPTION', r.mechanism_other_detail);
     }
     drawCardBlock('DESCRIPTION',                       r.description);
-    drawCardBlock('WHAT CAUSED IT (REPORTER\u2019S VIEW)', r.what_caused);
-    drawCardBlock('HOW COULD IT HAVE BEEN PREVENTED',  r.how_prevented);
+    drawCardBlock('WHAT CAUSED IT (REPORTER\u2019S VIEW)', r.what_caused || r.cause_text);
+    drawCardBlock('HOW COULD IT HAVE BEEN PREVENTED',  r.how_prevented || r.prevention_text);
     drawCardBlock('IMMEDIATE ACTION',                  r.immediate_action);
     drawCardBlock('CORRECTIVE ACTIONS',                r.corrective_actions);
 
@@ -22405,9 +22408,9 @@ function downloadIncidentPdf() {
       // If status is closed AND corrective actions exist, consider them actioned
       const corrective_status = (status === 'closed' && r.corrective_actions) ? 'Yes \u2014 actioned' : 'No \u2014 still pending';
       drawCardRow('Corrective action', corrective_status);
-      if (r.corrective_detail) drawCardBlock('CORRECTIVE DETAIL', r.corrective_detail);
-      if (r.review_notes)      drawCardBlock('REVIEW NOTES', r.review_notes);
-      if (r.closing_note)      drawCardBlock('CLOSING NOTE', r.closing_note);
+      if (r.corrective_detail || r.corrective_action_detail) drawCardBlock('CORRECTIVE DETAIL', r.corrective_detail || r.corrective_action_detail);
+      if (r.review_notes || r.review_notes_text)           drawCardBlock('REVIEW NOTES', r.review_notes || r.review_notes_text);
+      if (r.closing_note || r.close_note)                  drawCardBlock('CLOSING NOTE', r.closing_note || r.close_note);
     } else {
       // Status open — explicit pending state for audit
       ensure(14);
@@ -36005,6 +36008,9 @@ function populateDirectorIncidents() {
   // ═══════════════════════════════════════════════════════════════
   var list = document.getElementById('dinc-incidents-list');
   var summary = document.getElementById('an-inc-summary');
+  var notifiableEl = document.getElementById('an-inc-notifiable');
+  var overdueEl = document.getElementById('an-inc-overdue');
+  var closeTimeEl = document.getElementById('an-inc-close-time');
   
   // Load incidents from storage (prepopulates demo if empty)
   var incidents = incLoadAll();
@@ -36013,14 +36019,66 @@ function populateDirectorIncidents() {
     incidents = incLoadAll();
   }
   
-  // Update summary with actual counts - do this even if list doesn't exist
+  // Calculate metrics - do this even if list doesn't exist
   if (summary && incidents.length > 0) {
-    var nearMiss = incidents.filter(i => i.incident_type === 'Near Miss').length;
-    var actualInjury = incidents.filter(i => i.incident_type === 'Actual Injury').length;
-    var dangerous = incidents.filter(i => i.incident_type === 'Dangerous Incident').length;
-    var propertyDamage = incidents.filter(i => i.incident_type === 'Property Damage').length;
-    var environmental = incidents.filter(i => i.incident_type === 'Environmental').length;
-    summary.textContent = actualInjury + ' injury · ' + nearMiss + ' near miss · ' + dangerous + ' dangerous · ' + propertyDamage + ' damage · ' + environmental + ' environmental';
+    var total = incidents.length;
+    var open = incidents.filter(i => i.status === 'open').length;
+    var closed = incidents.filter(i => i.status === 'closed').length;
+    
+    // Basic counts
+    summary.textContent = total + ' Total  ·  ' + open + ' Open  ·  ' + closed + ' Closed';
+    
+    // Notifiable incidents count
+    if (notifiableEl) {
+      var notifiable = incidents.filter(i => 
+        i.potentially_notifiable === 'yes' || 
+        (i.notifiable_assessment && i.notifiable_assessment.supervisor_said === 'yes')
+      ).length;
+      if (notifiable > 0) {
+        notifiableEl.innerHTML = '<span style="color:#B83232;font-weight:600">🚨 ' + notifiable + ' Notifiable incident' + (notifiable > 1 ? 's' : '') + '</span>';
+      } else {
+        notifiableEl.textContent = '';
+      }
+    }
+    
+    // Overdue incidents (open > 7 days)
+    if (overdueEl) {
+      var overdue = incidents.filter(i => {
+        if (i.status !== 'open') return false;
+        var incDate = new Date(i.incident_date || i.submitted_at);
+        var today = new Date();
+        var daysDiff = Math.floor((today - incDate) / (1000 * 60 * 60 * 24));
+        return daysDiff > 7;
+      }).length;
+      if (overdue > 0) {
+        overdueEl.innerHTML = '<span style="color:#D97706;font-weight:600">⚠️ ' + overdue + ' overdue for review (>7 days)</span>';
+      } else {
+        overdueEl.textContent = '';
+      }
+    }
+    
+    // Average time to close (for closed incidents)
+    if (closeTimeEl) {
+      var closedIncidents = incidents.filter(i => i.status === 'closed' && i.closed_at && i.incident_date);
+      if (closedIncidents.length > 0) {
+        var totalDays = 0;
+        closedIncidents.forEach(function(inc) {
+          var incDate = new Date(inc.incident_date);
+          var closeDate = new Date(inc.closed_at);
+          var days = Math.floor((closeDate - incDate) / (1000 * 60 * 60 * 24));
+          totalDays += days;
+        });
+        var avgDays = (totalDays / closedIncidents.length).toFixed(1);
+        
+        // Color coding: green <7, yellow 7-14, red >14
+        var color = avgDays < 7 ? '#15803D' : avgDays <= 14 ? '#D97706' : '#B83232';
+        var emoji = avgDays < 7 ? '🟢' : avgDays <= 14 ? '🟡' : '🔴';
+        
+        closeTimeEl.innerHTML = '<span style="color:' + color + ';font-weight:600">Avg. Close Time: ' + avgDays + ' days ' + emoji + '</span>';
+      } else {
+        closeTimeEl.textContent = '';
+      }
+    }
   }
   
   if (!list) return;
