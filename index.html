@@ -43477,14 +43477,53 @@ function loadDirectorIncidents(customIncidents) {
   var openCount = thisMonthIncidents.filter(function(i) { return i.status === 'Open'; }).length;
   var closedCount = thisMonthIncidents.filter(function(i) { return i.status === 'Closed'; }).length;
   
-  // Update counts
+  // Calculate LAST MONTH for trending arrows
+  var lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  var lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  
+  var lastMonthIncidents = recentIncidents.filter(function(i) {
+    var incDate = new Date(i.incident_date || i.submitted_at);
+    return incDate.getMonth() === lastMonth && incDate.getFullYear() === lastMonthYear;
+  });
+  
+  var lastMonthOpen = lastMonthIncidents.filter(function(i) { return i.status === 'Open'; }).length;
+  var lastMonthClosed = lastMonthIncidents.filter(function(i) { return i.status === 'Closed'; }).length;
+  
+  // Calculate trends
+  function getTrendHTML(current, previous, lowerIsBetter) {
+    if (previous === 0 && current === 0) return '';
+    if (previous === 0) return '<div style="font-size:10px;color:#666;margin-top:4px">New data</div>';
+    
+    var diff = current - previous;
+    var percentChange = Math.abs(Math.round((diff / previous) * 100));
+    
+    var isImproving = lowerIsBetter ? (diff < 0) : (diff > 0);
+    var arrow = diff < 0 ? '↓' : diff > 0 ? '↑' : '→';
+    var color = diff === 0 ? '#666' : (isImproving ? '#15803D' : '#B83232');
+    
+    if (diff === 0) {
+      return '<div style="font-size:10px;color:' + color + ';margin-top:4px;font-weight:600">→ No change</div>';
+    }
+    
+    return '<div style="font-size:10px;color:' + color + ';margin-top:4px;font-weight:600">' + 
+           arrow + ' ' + percentChange + '% vs last month</div>';
+  }
+  
+  // Update counts WITH trending arrows
   var totalCountEl = document.getElementById('dinc-total-count');
   var openCountEl = document.getElementById('dinc-open-count');
   var closedCountEl = document.getElementById('dinc-closed-count');
   
-  if (totalCountEl) totalCountEl.textContent = thisMonthIncidents.length;
-  if (openCountEl) openCountEl.textContent = openCount;
-  if (closedCountEl) closedCountEl.textContent = closedCount;
+  if (totalCountEl) {
+    totalCountEl.innerHTML = thisMonthIncidents.length + 
+      getTrendHTML(thisMonthIncidents.length, lastMonthIncidents.length, true);
+  }
+  if (openCountEl) {
+    openCountEl.innerHTML = openCount + getTrendHTML(openCount, lastMonthOpen, true);
+  }
+  if (closedCountEl) {
+    closedCountEl.innerHTML = closedCount + getTrendHTML(closedCount, lastMonthClosed, false);
+  }
   
   // Calculate notifiable and overdue
   var notifiableCount = recentIncidents.filter(function(i) { 
