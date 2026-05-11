@@ -43817,18 +43817,35 @@ function renderDirectorSeverityBreakdown(incidents) {
   }
   
   container.innerHTML = 
-    '<div style="background:linear-gradient(135deg, #E6F5ED 0%, #d4ede0 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid rgba(27,110,58,0.3);box-shadow:0 3px 10px rgba(27,110,58,0.15), 0 1px 3px rgba(0,0,0,0.1)">' +
+    '<div onclick="filterBySeverityAndSwitch(\'Near Miss\')" style="background:linear-gradient(135deg, #E6F5ED 0%, #d4ede0 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid rgba(27,110,58,0.3);box-shadow:0 3px 10px rgba(27,110,58,0.15), 0 1px 3px rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'translateY(0)\'">' +
       '<div style="font-size:32px;font-weight:800;color:#1B6E3A;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.1)">' + nearMiss + '</div>' +
       '<div style="font-size:9px;color:#1B6E3A;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.8px">Near Miss</div>' +
     '</div>' +
-    '<div style="background:linear-gradient(135deg, #FCEBEB 0%, #f9d9d9 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid rgba(163,45,45,0.3);box-shadow:0 3px 10px rgba(163,45,45,0.15), 0 1px 3px rgba(0,0,0,0.1)">' +
+    '<div onclick="filterBySeverityAndSwitch(\'First Aid\')" style="background:linear-gradient(135deg, #FCEBEB 0%, #f9d9d9 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid rgba(163,45,45,0.3);box-shadow:0 3px 10px rgba(163,45,45,0.15), 0 1px 3px rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'translateY(0)\'">' +
       '<div style="font-size:32px;font-weight:800;color:#A32D2D;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.1)">' + firstAid + '</div>' +
       '<div style="font-size:9px;color:#A32D2D;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.8px">First Aid</div>' +
     '</div>' +
-    '<div style="background:linear-gradient(135deg, #FAEEDA 0%, #f5e0c0 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid #B8960C;box-shadow:0 3px 10px rgba(184,150,12,0.2), 0 1px 3px rgba(0,0,0,0.1)">' +
+    '<div onclick="filterBySeverityAndSwitch(\'LTI\')" style="background:linear-gradient(135deg, #FAEEDA 0%, #f5e0c0 100%);border-radius:8px;padding:14px;text-align:center;border:2px solid #B8960C;box-shadow:0 3px 10px rgba(184,150,12,0.2), 0 1px 3px rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'translateY(0)\'">' +
       '<div style="font-size:32px;font-weight:800;color:#854F0B;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,0.1)">' + lti + '</div>' +
       '<div style="font-size:9px;color:#854F0B;font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:0.8px">LTI</div>' +
     '</div>';
+}
+
+// Function to filter by severity and switch to Details tab
+function filterBySeverityAndSwitch(severity) {
+  // Set the filter dropdown
+  var severityFilter = document.getElementById('filter-severity');
+  if (severityFilter) {
+    severityFilter.value = severity;
+  }
+  
+  // Switch to Details tab
+  switchMainIncidentTab('details');
+  
+  // Apply filters
+  setTimeout(function() {
+    applyDirectorFilters();
+  }, 100);
 }
 
 function dirShowBodyZone(event, zoneName, count) {
