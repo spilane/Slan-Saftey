@@ -11152,6 +11152,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
 
+      <!-- Site Comparison -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🏗️ Incidents By Site</div>
+        <div style="padding:10px">
+          <div id="dinc-site-comparison"></div>
+        </div>
+      </div>
+
       <!-- Industry Benchmark -->
       <div class="fcard">
         <div class="fcard-hdr">Industry Benchmark</div>
@@ -36611,6 +36619,76 @@ function populateIncidentAnalytics(incidents) {
     
     timePatternsEl.innerHTML = html;
   }
+  
+  // 6. SITE COMPARISON (Which site has most incidents?)
+  var siteComparisonEl = document.getElementById('dinc-site-comparison');
+  if (siteComparisonEl) {
+    // Count incidents by site
+    var siteCounts = {};
+    incidents.forEach(function(inc) {
+      var site = inc.site || inc.location || 'Unknown Site';
+      siteCounts[site] = (siteCounts[site] || 0) + 1;
+    });
+    
+    // Sort by count (highest first)
+    var sortedSites = Object.keys(siteCounts).sort(function(a, b) {
+      return siteCounts[b] - siteCounts[a];
+    });
+    
+    // Find max for scaling
+    var maxSiteCount = sortedSites.length > 0 ? siteCounts[sortedSites[0]] : 0;
+    
+    // Render horizontal bar chart (clickable)
+    var siteHTML = '';
+    sortedSites.forEach(function(site, index) {
+      var count = siteCounts[site];
+      var percentage = maxSiteCount > 0 ? (count / maxSiteCount) * 100 : 0;
+      
+      // Color based on position
+      var barColor = index === 0 ? '#B83232' : index === 1 ? '#D97706' : '#15803D';
+      var gradient = index === 0 ? 'linear-gradient(90deg, #B83232 0%, #DC4C4C 100%)' :
+                     index === 1 ? 'linear-gradient(90deg, #D97706 0%, #F59E0B 100%)' :
+                     'linear-gradient(90deg, #15803D 0%, #22C55E 100%)';
+      
+      siteHTML += '<div onclick="filterBySiteAndSwitch(\'' + site + '\')" style="margin-bottom:12px;cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateX(4px)\'" onmouseout="this.style.transform=\'translateX(0)\'">';
+      siteHTML += '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
+      siteHTML += '    <span style="font-size:11px;font-weight:600;color:#1a2a1f">' + site + '</span>';
+      siteHTML += '    <span style="font-size:11px;font-weight:700;color:' + barColor + '">' + count + ' incidents</span>';
+      siteHTML += '  </div>';
+      siteHTML += '  <div style="background:#f0f0f0;border-radius:6px;height:28px;position:relative;overflow:hidden">';
+      siteHTML += '    <div style="background:' + gradient + ';height:100%;width:' + percentage + '%;border-radius:6px;transition:width 0.3s"></div>';
+      siteHTML += '  </div>';
+      siteHTML += '</div>';
+    });
+    
+    if (incidents.length === 0 || sortedSites.length === 0) {
+      siteHTML = '<div style="text-align:center;color:#999;padding:30px">No site data available</div>';
+    } else {
+      // Add legend
+      siteHTML += '<div style="margin-top:16px;padding:12px;background:#f8f9fa;border-radius:6px;font-size:10px;color:#666">';
+      siteHTML += '  <strong>💡 Click a site</strong> to view only those incidents in the Details tab';
+      siteHTML += '</div>';
+    }
+    
+    siteComparisonEl.innerHTML = siteHTML;
+  }
+}
+
+// Function to filter by site and switch to Details tab
+function filterBySiteAndSwitch(siteName) {
+  // Set the site filter dropdown
+  var siteFilter = document.getElementById('filter-site');
+  if (siteFilter) {
+    siteFilter.value = siteName;
+  }
+  
+  // Switch to Details tab
+  switchMainIncidentTab('details');
+  
+  // Apply filters
+  setTimeout(function() {
+    applyDirectorFilters();
+  }, 100);
 }
 
 function viewIncidentPDF(incident) {
