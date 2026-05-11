@@ -11160,6 +11160,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
 
+      <!-- People Patterns -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">👷 People Involved Most Often</div>
+        <div style="padding:10px">
+          <div style="background:#FFF9E6;border-left:3px solid #B8960C;border-radius:6px;padding:10px;margin-bottom:12px;font-size:10px;color:#666">
+            <strong>💡 For training support:</strong> Identifying workers who may benefit from additional safety training or support
+          </div>
+          <div id="dinc-people-patterns"></div>
+        </div>
+      </div>
+
       <!-- Industry Benchmark -->
       <div class="fcard">
         <div class="fcard-hdr">Industry Benchmark</div>
@@ -36671,6 +36682,58 @@ function populateIncidentAnalytics(incidents) {
     }
     
     siteComparisonEl.innerHTML = siteHTML;
+  }
+  
+  // 7. PEOPLE PATTERNS (Who's involved most often?)
+  var peoplePatternsEl = document.getElementById('dinc-people-patterns');
+  if (peoplePatternsEl) {
+    // Count incidents by person involved
+    var peopleCounts = {};
+    incidents.forEach(function(inc) {
+      var person = inc.worker_name || inc.reported_by || inc.reporter_name || 'Unknown';
+      if (person && person !== 'Unknown' && person.trim() !== '') {
+        peopleCounts[person] = (peopleCounts[person] || 0) + 1;
+      }
+    });
+    
+    // Filter to only show people with 2+ incidents (repeat incidents)
+    var repeatIncidents = {};
+    Object.keys(peopleCounts).forEach(function(person) {
+      if (peopleCounts[person] >= 2) {
+        repeatIncidents[person] = peopleCounts[person];
+      }
+    });
+    
+    // Sort by count (highest first)
+    var sortedPeople = Object.keys(repeatIncidents).sort(function(a, b) {
+      return repeatIncidents[b] - repeatIncidents[a];
+    }).slice(0, 5); // Top 5
+    
+    // Render list
+    var peopleHTML = '';
+    if (sortedPeople.length === 0) {
+      peopleHTML = '<div style="text-align:center;padding:20px;background:#E6F5ED;border-radius:6px;color:#15803D">';
+      peopleHTML += '  <div style="font-size:28px;margin-bottom:8px">✓</div>';
+      peopleHTML += '  <div style="font-size:11px;font-weight:600">No repeat incidents</div>';
+      peopleHTML += '  <div style="font-size:10px;margin-top:4px">All workers have 0-1 incidents</div>';
+      peopleHTML += '</div>';
+    } else {
+      peopleHTML += '<div style="font-size:10px;color:#666;margin-bottom:10px">Workers with multiple incidents may benefit from additional training:</div>';
+      sortedPeople.forEach(function(person, index) {
+        var count = repeatIncidents[person];
+        var barColor = count >= 3 ? '#B83232' : count === 2 ? '#D97706' : '#B8960C';
+        var bgColor = count >= 3 ? '#FAEBEB' : count === 2 ? '#FEF0E6' : '#FFF9E6';
+        
+        peopleHTML += '<div style="background:' + bgColor + ';border-left:3px solid ' + barColor + ';border-radius:6px;padding:10px;margin-bottom:8px">';
+        peopleHTML += '  <div style="display:flex;justify-content:space-between;align-items:center">';
+        peopleHTML += '    <div style="font-size:11px;font-weight:600;color:#1a2a1f">' + person + '</div>';
+        peopleHTML += '    <div style="font-size:11px;font-weight:700;color:' + barColor + '">' + count + ' incidents</div>';
+        peopleHTML += '  </div>';
+        peopleHTML += '</div>';
+      });
+    }
+    
+    peoplePatternsEl.innerHTML = peopleHTML;
   }
 }
 
