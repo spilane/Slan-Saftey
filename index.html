@@ -36690,44 +36690,38 @@ function populateIncidentAnalytics(incidents) {
     // Count incidents by person involved
     var peopleCounts = {};
     incidents.forEach(function(inc) {
-      var person = inc.worker_name || inc.reported_by || inc.reporter_name || 'Unknown';
-      if (person && person !== 'Unknown' && person.trim() !== '') {
+      // Try multiple field names
+      var person = inc.reporter_name || inc.worker_name || inc.reported_by || '';
+      person = person.trim();
+      
+      if (person && person !== '' && person !== 'Unknown') {
         peopleCounts[person] = (peopleCounts[person] || 0) + 1;
       }
     });
     
-    // Filter to only show people with 2+ incidents (repeat incidents)
-    var repeatIncidents = {};
-    Object.keys(peopleCounts).forEach(function(person) {
-      if (peopleCounts[person] >= 2) {
-        repeatIncidents[person] = peopleCounts[person];
-      }
-    });
-    
-    // Sort by count (highest first)
-    var sortedPeople = Object.keys(repeatIncidents).sort(function(a, b) {
-      return repeatIncidents[b] - repeatIncidents[a];
-    }).slice(0, 5); // Top 5
+    // Sort by count (highest first) and take top 5
+    var sortedPeople = Object.keys(peopleCounts).sort(function(a, b) {
+      return peopleCounts[b] - peopleCounts[a];
+    }).slice(0, 5);
     
     // Render list
     var peopleHTML = '';
     if (sortedPeople.length === 0) {
       peopleHTML = '<div style="text-align:center;padding:20px;background:#E6F5ED;border-radius:6px;color:#15803D">';
       peopleHTML += '  <div style="font-size:28px;margin-bottom:8px">✓</div>';
-      peopleHTML += '  <div style="font-size:11px;font-weight:600">No repeat incidents</div>';
-      peopleHTML += '  <div style="font-size:10px;margin-top:4px">All workers have 0-1 incidents</div>';
+      peopleHTML += '  <div style="font-size:11px;font-weight:600">No incident data available</div>';
       peopleHTML += '</div>';
     } else {
-      peopleHTML += '<div style="font-size:10px;color:#666;margin-bottom:10px">Workers with multiple incidents may benefit from additional training:</div>';
+      peopleHTML += '<div style="font-size:10px;color:#666;margin-bottom:10px">Top workers by incident involvement (for training support):</div>';
       sortedPeople.forEach(function(person, index) {
-        var count = repeatIncidents[person];
+        var count = peopleCounts[person];
         var barColor = count >= 3 ? '#B83232' : count === 2 ? '#D97706' : '#B8960C';
         var bgColor = count >= 3 ? '#FAEBEB' : count === 2 ? '#FEF0E6' : '#FFF9E6';
         
         peopleHTML += '<div style="background:' + bgColor + ';border-left:3px solid ' + barColor + ';border-radius:6px;padding:10px;margin-bottom:8px">';
         peopleHTML += '  <div style="display:flex;justify-content:space-between;align-items:center">';
         peopleHTML += '    <div style="font-size:11px;font-weight:600;color:#1a2a1f">' + person + '</div>';
-        peopleHTML += '    <div style="font-size:11px;font-weight:700;color:' + barColor + '">' + count + ' incidents</div>';
+        peopleHTML += '    <div style="font-size:11px;font-weight:700;color:' + barColor + '">' + count + ' incident' + (count > 1 ? 's' : '') + '</div>';
         peopleHTML += '  </div>';
         peopleHTML += '</div>';
       });
