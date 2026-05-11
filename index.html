@@ -11144,6 +11144,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
 
+      <!-- Time Patterns -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🕐 When Do Incidents Happen?</div>
+        <div style="padding:10px">
+          <div id="dinc-time-patterns"></div>
+        </div>
+      </div>
+
       <!-- Industry Benchmark -->
       <div class="fcard">
         <div class="fcard-hdr">Industry Benchmark</div>
@@ -36536,6 +36544,72 @@ function populateIncidentAnalytics(incidents) {
     }
     
     comparisonSummaryEl.innerHTML = comparisonHTML;
+  }
+  
+  // 5. TIME PATTERNS (When do incidents happen?)
+  var timePatternsEl = document.getElementById('dinc-time-patterns');
+  if (timePatternsEl) {
+    // Count incidents by time of day
+    var timeSlots = {
+      'Early Morning\n(12am-6am)': 0,
+      'Morning\n(6am-9am)': 0,
+      'Mid-Morning\n(9am-12pm)': 0,
+      'Afternoon\n(12pm-3pm)': 0,
+      'Late Afternoon\n(3pm-6pm)': 0,
+      'Evening\n(6pm-12am)': 0
+    };
+    
+    incidents.forEach(function(inc) {
+      var time = inc.time || inc.incident_time || '';
+      if (!time) return;
+      
+      // Parse time (format could be "14:30" or "2:30 PM")
+      var hour = 0;
+      if (time.includes(':')) {
+        var parts = time.split(':');
+        hour = parseInt(parts[0]);
+        if (time.toLowerCase().includes('pm') && hour !== 12) {
+          hour += 12;
+        } else if (time.toLowerCase().includes('am') && hour === 12) {
+          hour = 0;
+        }
+      }
+      
+      // Categorize
+      if (hour >= 0 && hour < 6) timeSlots['Early Morning\n(12am-6am)']++;
+      else if (hour >= 6 && hour < 9) timeSlots['Morning\n(6am-9am)']++;
+      else if (hour >= 9 && hour < 12) timeSlots['Mid-Morning\n(9am-12pm)']++;
+      else if (hour >= 12 && hour < 15) timeSlots['Afternoon\n(12pm-3pm)']++;
+      else if (hour >= 15 && hour < 18) timeSlots['Late Afternoon\n(3pm-6pm)']++;
+      else if (hour >= 18) timeSlots['Evening\n(6pm-12am)']++;
+    });
+    
+    // Find max for scaling
+    var maxCount = Math.max.apply(null, Object.values(timeSlots));
+    
+    // Render horizontal bar chart
+    var html = '';
+    Object.keys(timeSlots).forEach(function(slot) {
+      var count = timeSlots[slot];
+      var percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+      var slotLabel = slot.replace('\\n', ' ');
+      
+      html += '<div style="margin-bottom:12px">';
+      html += '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
+      html += '    <span style="font-size:11px;font-weight:600;color:#1a2a1f">' + slotLabel + '</span>';
+      html += '    <span style="font-size:11px;font-weight:700;color:#B8960C">' + count + '</span>';
+      html += '  </div>';
+      html += '  <div style="background:#f0f0f0;border-radius:6px;height:24px;position:relative;overflow:hidden">';
+      html += '    <div style="background:linear-gradient(90deg, #B8960C 0%, #D4A72C 100%);height:100%;width:' + percentage + '%;border-radius:6px;transition:width 0.3s"></div>';
+      html += '  </div>';
+      html += '</div>';
+    });
+    
+    if (incidents.length === 0 || maxCount === 0) {
+      html = '<div style="text-align:center;color:#999;padding:30px">No time data available</div>';
+    }
+    
+    timePatternsEl.innerHTML = html;
   }
 }
 
