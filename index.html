@@ -11160,14 +11160,53 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
 
-      <!-- People Patterns -->
+      <!-- People Patterns - Split into 4 Categories -->
       <div class="fcard" style="margin-bottom:12px">
-        <div class="fcard-hdr">👷 People Involved Most Often</div>
+        <div class="fcard-hdr">👷 People Patterns - By Category</div>
         <div style="padding:10px">
           <div style="background:#FFF9E6;border-left:3px solid #B8960C;border-radius:6px;padding:10px;margin-bottom:12px;font-size:10px;color:#666">
-            <strong>💡 For training support:</strong> Identifying workers who may benefit from additional safety training or support
+            <strong>💡 Different categories need different responses:</strong> Separate tracking helps target support, recognize contributions, and encourage all types of safety reporting.
           </div>
-          <div id="dinc-people-patterns"></div>
+          
+          <!-- 1. ACTUAL INJURIES -->
+          <div style="margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:#B83232;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+              <span>🚨</span>
+              <span>ACTUAL INJURIES (Priority Support)</span>
+            </div>
+            <div id="dinc-people-injuries"></div>
+          </div>
+          
+          <!-- 2. NEAR MISSES -->
+          <div style="margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:#D97706;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+              <span>⚠️</span>
+              <span>NEAR MISSES (Pattern Review)</span>
+            </div>
+            <div id="dinc-people-nearmiss"></div>
+          </div>
+          
+          <!-- 3. PROPERTY/ENVIRONMENTAL -->
+          <div style="margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:#2563EB;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+              <span>🏗️</span>
+              <span>PROPERTY / ENVIRONMENTAL</span>
+            </div>
+            <div id="dinc-people-property"></div>
+          </div>
+          
+          <!-- 4. SAFETY CHAMPIONS (Hazard Reporters) -->
+          <div style="margin-bottom:8px">
+            <div style="font-size:12px;font-weight:700;color:#15803D;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+              <span>✅</span>
+              <span>SAFETY CHAMPIONS (Proactive Reporting)</span>
+            </div>
+            <div id="dinc-people-hazards"></div>
+          </div>
+          
+          <div style="margin-top:12px;padding:10px;background:#f8f9fa;border-radius:6px;font-size:10px;color:#666">
+            <strong>💡 Click any name</strong> to view their incident/hazard reports
+          </div>
         </div>
       </div>
 
@@ -36684,70 +36723,108 @@ function populateIncidentAnalytics(incidents) {
     siteComparisonEl.innerHTML = siteHTML;
   }
   
-  // 7. PEOPLE PATTERNS (Who's involved most often?)
-  var peoplePatternsEl = document.getElementById('dinc-people-patterns');
-  if (peoplePatternsEl) {
-    // Get ALL incidents from storage (not just filtered ones)
-    var allIncidents = incLoadAll();
+  // 7. PEOPLE PATTERNS - 4 CATEGORIES
+  
+  // Helper function to render a person list
+  function renderPeopleList(containerId, peopleCounts, themeColor, emptyMessage) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
     
-    // DEBUG: Log total incidents
-    console.log('People Patterns DEBUG: Total incidents loaded:', allIncidents.length);
-    
-    // Count incidents by person involved
-    var peopleCounts = {};
-    allIncidents.forEach(function(inc) {
-      // Try multiple field names
-      var person = inc.reporter_name || inc.worker_name || inc.reported_by || '';
-      person = person.trim();
-      
-      if (person && person !== '' && person !== 'Unknown') {
-        peopleCounts[person] = (peopleCounts[person] || 0) + 1;
-      }
-    });
-    
-    // DEBUG: Log all people with counts
-    console.log('People Patterns DEBUG: All counts:', peopleCounts);
-    
-    // Sort by count (highest first) and take top 5
     var sortedPeople = Object.keys(peopleCounts).sort(function(a, b) {
       return peopleCounts[b] - peopleCounts[a];
     }).slice(0, 5);
     
-    // DEBUG: Log sorted top 5
-    console.log('People Patterns DEBUG: Top 5:', sortedPeople.map(function(p) {
-      return p + ': ' + peopleCounts[p];
-    }));
-    
-    // Render list
-    var peopleHTML = '';
+    var html = '';
     if (sortedPeople.length === 0) {
-      peopleHTML = '<div style="text-align:center;padding:20px;background:#E6F5ED;border-radius:6px;color:#15803D">';
-      peopleHTML += '  <div style="font-size:28px;margin-bottom:8px">✓</div>';
-      peopleHTML += '  <div style="font-size:11px;font-weight:600">No incident data available</div>';
-      peopleHTML += '</div>';
+      html = '<div style="text-align:center;padding:16px;background:#f8f9fa;border-radius:6px;color:#666;font-size:10px">' + emptyMessage + '</div>';
     } else {
-      peopleHTML += '<div style="font-size:10px;color:#666;margin-bottom:10px">Top workers by incident involvement across all time (for training support):</div>';
-      sortedPeople.forEach(function(person, index) {
+      sortedPeople.forEach(function(person) {
         var count = peopleCounts[person];
-        var barColor = count >= 3 ? '#B83232' : count === 2 ? '#D97706' : '#B8960C';
-        var bgColor = count >= 3 ? '#FAEBEB' : count === 2 ? '#FEF0E6' : '#FFF9E6';
+        var bgColor = themeColor === 'red' ? '#FAEBEB' :
+                      themeColor === 'orange' ? '#FEF0E6' :
+                      themeColor === 'blue' ? '#EFF6FF' : '#E6F5ED';
+        var borderColor = themeColor === 'red' ? '#B83232' :
+                         themeColor === 'orange' ? '#D97706' :
+                         themeColor === 'blue' ? '#2563EB' : '#15803D';
         
-        peopleHTML += '<div onclick="filterByPersonAndSwitch(\'' + person.replace(/'/g, "\\'") + '\')" style="background:' + bgColor + ';border-left:3px solid ' + barColor + ';border-radius:6px;padding:10px;margin-bottom:8px;cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateX(4px)\'" onmouseout="this.style.transform=\'translateX(0)\'">';
-        peopleHTML += '  <div style="display:flex;justify-content:space-between;align-items:center">';
-        peopleHTML += '    <div style="font-size:11px;font-weight:600;color:#1a2a1f">' + person + '</div>';
-        peopleHTML += '    <div style="font-size:11px;font-weight:700;color:' + barColor + '">' + count + ' incident' + (count > 1 ? 's' : '') + '</div>';
-        peopleHTML += '  </div>';
-        peopleHTML += '</div>';
+        html += '<div onclick="filterByPersonAndSwitch(\'' + person.replace(/'/g, "\\'") + '\')" style="background:' + bgColor + ';border-left:3px solid ' + borderColor + ';border-radius:6px;padding:8px;margin-bottom:6px;cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateX(4px)\'" onmouseout="this.style.transform=\'translateX(0)\'">';
+        html += '  <div style="display:flex;justify-content:space-between;align-items:center">';
+        html += '    <div style="font-size:11px;font-weight:600;color:#1a2a1f">' + person + '</div>';
+        html += '    <div style="font-size:11px;font-weight:700;color:' + borderColor + '">' + count + '</div>';
+        html += '  </div>';
+        html += '</div>';
       });
-      
-      // Add click hint
-      peopleHTML += '<div style="margin-top:12px;padding:10px;background:#f8f9fa;border-radius:6px;font-size:10px;color:#666">';
-      peopleHTML += '  <strong>💡 Click a name</strong> to view their incidents in the Details tab';
-      peopleHTML += '</div>';
     }
     
-    peoplePatternsEl.innerHTML = peopleHTML;
+    container.innerHTML = html;
   }
+  
+  var allIncidents = incLoadAll();
+  
+  // Category 1: ACTUAL INJURIES
+  var injuryCounts = {};
+  allIncidents.forEach(function(inc) {
+    var isInjury = inc.incident_type && (
+      inc.incident_type.toLowerCase().includes('injury') ||
+      inc.incident_type.toLowerCase().includes('lti') ||
+      inc.severity === 'LTI' ||
+      inc.severity === 'First Aid' ||
+      inc.severity === 'Medical Treatment'
+    );
+    
+    if (isInjury) {
+      var person = (inc.reporter_name || inc.worker_name || inc.reported_by || '').trim();
+      if (person && person !== '' && person !== 'Unknown') {
+        injuryCounts[person] = (injuryCounts[person] || 0) + 1;
+      }
+    }
+  });
+  renderPeopleList('dinc-people-injuries', injuryCounts, 'red', '✓ No actual injuries recorded');
+  
+  // Category 2: NEAR MISSES
+  var nearMissCounts = {};
+  allIncidents.forEach(function(inc) {
+    var isNearMiss = inc.incident_type && inc.incident_type.toLowerCase().includes('near miss');
+    
+    if (isNearMiss) {
+      var person = (inc.reporter_name || inc.worker_name || inc.reported_by || '').trim();
+      if (person && person !== '' && person !== 'Unknown') {
+        nearMissCounts[person] = (nearMissCounts[person] || 0) + 1;
+      }
+    }
+  });
+  renderPeopleList('dinc-people-nearmiss', nearMissCounts, 'orange', '✓ No near misses recorded');
+  
+  // Category 3: PROPERTY/ENVIRONMENTAL
+  var propertyCounts = {};
+  allIncidents.forEach(function(inc) {
+    var isProperty = inc.incident_type && (
+      inc.incident_type.toLowerCase().includes('property') ||
+      inc.incident_type.toLowerCase().includes('damage') ||
+      inc.incident_type.toLowerCase().includes('environmental')
+    );
+    
+    if (isProperty) {
+      var person = (inc.reporter_name || inc.worker_name || inc.reported_by || '').trim();
+      if (person && person !== '' && person !== 'Unknown') {
+        propertyCounts[person] = (propertyCounts[person] || 0) + 1;
+      }
+    }
+  });
+  renderPeopleList('dinc-people-property', propertyCounts, 'blue', '✓ No property/environmental incidents');
+  
+  // Category 4: SAFETY CHAMPIONS (Hazards)
+  var hazardCounts = {};
+  var allHazards = hzLoadAll(); // Load hazards register
+  if (allHazards && allHazards.length > 0) {
+    allHazards.forEach(function(hz) {
+      var person = (hz.reporter_name || hz.reported_by || '').trim();
+      if (person && person !== '' && person !== 'Unknown') {
+        hazardCounts[person] = (hazardCounts[person] || 0) + 1;
+      }
+    });
+  }
+  renderPeopleList('dinc-people-hazards', hazardCounts, 'green', '✓ No hazards reported yet');
 }
 
 // Function to filter by site and switch to Details tab
