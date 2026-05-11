@@ -36815,15 +36815,42 @@ function populateIncidentAnalytics(incidents) {
   
   // Category 4: SAFETY CHAMPIONS (Hazards)
   var hazardCounts = {};
-  var allHazards = hzLoadAll(); // Load hazards register
-  if (allHazards && allHazards.length > 0) {
-    allHazards.forEach(function(hz) {
-      var person = (hz.reporter_name || hz.reported_by || '').trim();
-      if (person && person !== '' && person !== 'Unknown') {
-        hazardCounts[person] = (hazardCounts[person] || 0) + 1;
+  
+  // Check if hazard loading function exists
+  if (typeof hzLoadAll === 'function') {
+    try {
+      var allHazards = hzLoadAll();
+      if (allHazards && allHazards.length > 0) {
+        allHazards.forEach(function(hz) {
+          var person = (hz.reporter_name || hz.reported_by || '').trim();
+          if (person && person !== '' && person !== 'Unknown') {
+            hazardCounts[person] = (hazardCounts[person] || 0) + 1;
+          }
+        });
       }
-    });
+    } catch(e) {
+      console.log('Could not load hazards:', e);
+    }
+  } else {
+    // Try alternative - check if hazards exist in localStorage
+    try {
+      var hazardData = localStorage.getItem('slan_hazards_v1');
+      if (hazardData) {
+        var allHazards = JSON.parse(hazardData);
+        if (allHazards && allHazards.length > 0) {
+          allHazards.forEach(function(hz) {
+            var person = (hz.reporter_name || hz.reported_by || '').trim();
+            if (person && person !== '' && person !== 'Unknown') {
+              hazardCounts[person] = (hazardCounts[person] || 0) + 1;
+            }
+          });
+        }
+      }
+    } catch(e) {
+      console.log('Could not load hazards from localStorage:', e);
+    }
   }
+  
   renderPeopleList('dinc-people-hazards', hazardCounts, 'green', '✓ No hazards reported yet');
 }
 
