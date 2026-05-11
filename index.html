@@ -10962,8 +10962,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="topbar" style="padding-bottom:14px">
     <div class="topbar-row">
       <button class="back-btn" onclick="goToAnalytics('director')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
-      <div class="tbar-logo" style="padding:2px 0"><img id="dir-inc-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
-      <div class="badge" style="background:rgba(184,150,12,.2);border-color:rgba(184,150,12,.4);color:rgba(184,150,12,.95);font-size:10px">Director</div>
+      <div class="tbar-logo" style="padding:2px 0"><img id="dir-inc-logo" src="" alt="Slán Safety" style="height:60px;object-fit:contain;display:block"></div>
+      <div class="badge" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff;font-size:10px;font-weight:600">Director</div>
     </div>
     <div class="form-greeting">
       <h1 style="color:#fff">Incidents & Near Misses</h1>
@@ -10974,15 +10974,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
     
     <!-- Tab Navigation (MAIN PAGE LEVEL) -->
-    <div style="display:flex;gap:6px;margin-bottom:12px;padding:0 2px">
-      <button id="main-tab-overview" onclick="switchMainIncidentTab('overview')" style="flex:1;padding:14px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 4px 8px rgba(184,150,12,0.3);transition:all 0.3s">
-        OVERVIEW
+    <div style="display:flex;gap:4px;margin-bottom:16px;padding:4px;background:#f5f5f5;border-radius:12px">
+      <button id="main-tab-overview" onclick="switchMainIncidentTab('overview')" style="flex:1;padding:10px 16px;background:#2C6B5E;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">
+        Overview
       </button>
-      <button id="main-tab-analytics" onclick="switchMainIncidentTab('analytics')" style="flex:1;padding:14px;background:#e5e5e5;color:#999;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;transition:all 0.3s">
-        ANALYTICS
+      <button id="main-tab-analytics" onclick="switchMainIncidentTab('analytics')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:8px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">
+        Analytics
       </button>
-      <button id="main-tab-details" onclick="switchMainIncidentTab('details')" style="flex:1;padding:14px;background:#e5e5e5;color:#999;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;transition:all 0.3s">
-        DETAILS
+      <button id="main-tab-details" onclick="switchMainIncidentTab('details')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:8px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">
+        Details
       </button>
     </div>
 
@@ -36199,12 +36199,12 @@ function switchMainIncidentTab(tabName) {
     var button = document.getElementById('main-tab-' + btn);
     if (button) {
       if (btn === tabName) {
-        button.style.background = 'linear-gradient(135deg, #B8960C 0%, #D4A72C 100%)';
+        button.style.background = '#2C6B5E';
         button.style.color = '#fff';
-        button.style.boxShadow = '0 4px 8px rgba(184,150,12,0.3)';
+        button.style.boxShadow = 'none';
       } else {
-        button.style.background = '#e5e5e5';
-        button.style.color = '#999';
+        button.style.background = 'transparent';
+        button.style.color = '#666';
         button.style.boxShadow = 'none';
       }
     }
@@ -36701,21 +36701,22 @@ function populateIncidentAnalytics(incidents) {
     // Find max for scaling
     var maxCount = Math.max.apply(null, Object.values(timeSlots));
     
-    // Render horizontal bar chart
+    // Render horizontal bar chart with green theme
     var html = '';
     Object.keys(timeSlots).forEach(function(slot) {
       var count = timeSlots[slot];
       var percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
-      var slotLabel = slot.replace('\\n', ' ');
+      var slotLabel = slot.replace('\n', ' ');
       
-      html += '<div style="margin-bottom:12px">';
-      html += '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
-      html += '    <span style="font-size:11px;font-weight:600;color:#1a2a1f">' + slotLabel + '</span>';
-      html += '    <span style="font-size:11px;font-weight:700;color:#B8960C">' + count + '</span>';
+      html += '<div style="margin-bottom:14px;padding:12px;background:white;border-radius:8px;border:1px solid #e5e5e5;transition:all 0.2s" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(44,107,94,0.1)\';this.style.borderColor=\'#2C6B5E\'" onmouseout="this.style.boxShadow=\'none\';this.style.borderColor=\'#e5e5e5\'">';
+      html += '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+      html += '    <span style="font-size:12px;font-weight:600;color:#1a2a1f">' + slotLabel + '</span>';
+      html += '    <span style="font-size:11px;font-weight:700;color:#2C6B5E;background:#E6F3F0;padding:4px 12px;border-radius:12px">' + count + '</span>';
       html += '  </div>';
-      html += '  <div style="background:#f0f0f0;border-radius:6px;height:24px;position:relative;overflow:hidden">';
-      html += '    <div style="background:linear-gradient(90deg, #B8960C 0%, #D4A72C 100%);height:100%;width:' + percentage + '%;border-radius:6px;transition:width 0.3s"></div>';
+      html += '  <div style="background:#F5F5F5;border-radius:6px;height:10px;position:relative;overflow:hidden">';
+      html += '    <div style="background:linear-gradient(90deg, #2C6B5E 0%, #3A8B7A 100%);height:100%;width:' + percentage + '%;border-radius:6px;transition:width 0.4s ease;box-shadow:0 2px 4px rgba(44,107,94,0.2)"></div>';
       html += '  </div>';
+      html += '  <div style="font-size:9px;color:#999;margin-top:4px;text-align:right">' + Math.round(percentage) + '% of timed incidents</div>';
       html += '</div>';
     });
     
@@ -36744,26 +36745,25 @@ function populateIncidentAnalytics(incidents) {
     // Find max for scaling
     var maxSiteCount = sortedSites.length > 0 ? siteCounts[sortedSites[0]] : 0;
     
-    // Render horizontal bar chart (clickable)
+    // Render horizontal bar chart (clickable) - Green theme
     var siteHTML = '';
     sortedSites.forEach(function(site, index) {
       var count = siteCounts[site];
       var percentage = maxSiteCount > 0 ? (count / maxSiteCount) * 100 : 0;
       
-      // Color based on position
-      var barColor = index === 0 ? '#B83232' : index === 1 ? '#D97706' : '#15803D';
-      var gradient = index === 0 ? 'linear-gradient(90deg, #B83232 0%, #DC4C4C 100%)' :
-                     index === 1 ? 'linear-gradient(90deg, #D97706 0%, #F59E0B 100%)' :
-                     'linear-gradient(90deg, #15803D 0%, #22C55E 100%)';
+      // Green gradient for all bars (darker for higher counts)
+      var intensity = Math.max(0.5, 1 - (index * 0.15)); // Fade from 100% to 50%
+      var barColor = 'rgba(44, 107, 94, ' + intensity + ')';
       
-      siteHTML += '<div onclick="filterBySiteAndSwitch(\'' + site + '\')" style="margin-bottom:12px;cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateX(4px)\'" onmouseout="this.style.transform=\'translateX(0)\'">';
-      siteHTML += '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
-      siteHTML += '    <span style="font-size:11px;font-weight:600;color:#1a2a1f">' + site + '</span>';
-      siteHTML += '    <span style="font-size:11px;font-weight:700;color:' + barColor + '">' + count + ' incidents</span>';
+      siteHTML += '<div onclick="filterBySiteAndSwitch(\'' + site + '\')" style="margin-bottom:14px;cursor:pointer;transition:all 0.2s;padding:12px;background:white;border-radius:8px;border:1px solid #e5e5e5" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(44,107,94,0.15)\';this.style.borderColor=\'#2C6B5E\'" onmouseout="this.style.boxShadow=\'none\';this.style.borderColor=\'#e5e5e5\'">';
+      siteHTML += '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+      siteHTML += '    <span style="font-size:12px;font-weight:600;color:#1a2a1f">' + site + '</span>';
+      siteHTML += '    <span style="font-size:11px;font-weight:700;color:#2C6B5E;background:#E6F3F0;padding:4px 12px;border-radius:12px">' + count + '</span>';
       siteHTML += '  </div>';
-      siteHTML += '  <div style="background:#f0f0f0;border-radius:6px;height:28px;position:relative;overflow:hidden">';
-      siteHTML += '    <div style="background:' + gradient + ';height:100%;width:' + percentage + '%;border-radius:6px;transition:width 0.3s"></div>';
+      siteHTML += '  <div style="background:#F5F5F5;border-radius:6px;height:10px;position:relative;overflow:hidden">';
+      siteHTML += '    <div style="background:' + barColor + ';height:100%;width:' + percentage + '%;border-radius:6px;transition:width 0.4s ease"></div>';
       siteHTML += '  </div>';
+      siteHTML += '  <div style="font-size:9px;color:#999;margin-top:4px;text-align:right">' + Math.round(percentage) + '% of all incidents</div>';
       siteHTML += '</div>';
     });
     
@@ -44908,19 +44908,18 @@ function renderDirectorIncidentBreakdown(incidents) {
   var topItems = showAll ? items : items.slice(0, 5);
   var remainingItems = showAll ? [] : items.slice(5);
   
-  // Render bars with percentages and premium styling
+  // Render bars with percentages and professional green styling
   var html = topItems.map(function(item) {
     var pct = Math.round((item.count / total) * 100);
-    return '<div style="margin-bottom:12px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">' +
-        '<span style="font-size:11px;color:#555;font-weight:600">' + item.mechanism + '</span>' +
-        '<span style="font-size:10px;font-weight:700;color:#1A2A1F">' + item.count + ' <span style="color:#999;font-weight:600">(' + pct + '%)</span></span>' +
+    return '<div style="margin-bottom:10px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+        '<span style="font-size:12px;color:#1A2A1F;font-weight:600">' + item.mechanism + '</span>' +
+        '<span style="font-size:11px;font-weight:700;color:#2C6B5E;background:#E6F3F0;padding:3px 10px;border-radius:12px">' + item.count + '</span>' +
       '</div>' +
-      '<div style="background:linear-gradient(135deg, #E0E0E0 0%, #D0D0D0 100%);height:10px;border-radius:5px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.15)">' +
-        '<div style="background:linear-gradient(135deg, #F5AD7D 0%, #F0997B 50%, #E8856A 100%);width:' + pct + '%;height:100%;box-shadow:0 2px 6px rgba(240,153,123,0.5), inset 0 1px 0 rgba(255,255,255,0.3);position:relative;overflow:hidden">' +
-          '<div style="position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%)"></div>' +
-        '</div>' +
+      '<div style="background:#F5F5F5;height:8px;border-radius:6px;overflow:hidden;position:relative">' +
+        '<div style="background:linear-gradient(90deg, #2C6B5E 0%, #3A8B7A 100%);width:' + pct + '%;height:100%;border-radius:6px;box-shadow:0 2px 4px rgba(44,107,94,0.2);transition:width 0.3s ease"></div>' +
       '</div>' +
+      '<div style="font-size:9px;color:#999;margin-top:3px;text-align:right">' + pct + '% of incidents</div>' +
     '</div>';
   }).join('');
   
