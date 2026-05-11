@@ -11322,22 +11322,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <!-- Demo Data Button -->
       <button id="dir-inc-demo-btn" onclick="loadDirectorDemoIncidents()" style="display:none;width:100%;padding:10px;margin-bottom:12px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">⚡ Load 25 demo incidents across 3 sites</button>
 
-      <!-- Export Options -->
-      <div class="fcard" style="margin-bottom:12px">
-        <div class="fcard-hdr">📤 Export Options</div>
-        <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <button onclick="exportIncidentsToCSV()" style="padding:12px;background:#fff;border:1.5px solid #ddd;border-radius:8px;font-size:11px;font-weight:600;text-align:center;cursor:pointer">
-            📄 CSV
-          </button>
-          <button onclick="exportIncidentsToExcel()" style="padding:12px;background:#15803D;border:1.5px solid #15803D;border-radius:8px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;color:white">
-            📊 Excel
-          </button>
-          <button style="padding:12px;background:#fff;border:1.5px solid #ddd;border-radius:8px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;opacity:0.5" title="Coming soon">
-            📧 Email
-          </button>
-        </div>
-      </div>
-
       <!-- Full Incident List -->
       <div class="fcard">
         <div class="fcard-hdr">📋 All Incidents</div>
@@ -37044,7 +37028,8 @@ function populateIncidentAnalytics(incidents) {
     } else {
       html += '<div style="font-size:11px;color:#666;margin-bottom:10px">🚨 <strong>Systemic issues identified:</strong> These patterns indicate areas needing process improvements</div>';
       patterns.forEach(function(pattern) {
-        html += '<div style="background:#FEF0E6;border-left:3px solid ' + pattern.color + ';border-radius:6px;padding:12px;margin-bottom:8px">';
+        var searchTerm = pattern.type === 'equipment' ? pattern.label.toLowerCase() : pattern.label;
+        html += '<div onclick="filterByPatternAndSwitch(\'' + pattern.type.replace(/'/g, "\\'") + '\', \'' + searchTerm.replace(/'/g, "\\'") + '\')" style="background:#FEF0E6;border-left:3px solid ' + pattern.color + ';border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateX(4px)\'" onmouseout="this.style.transform=\'translateX(0)\'">';
         html += '  <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">';
         html += '    <div style="flex:1">';
         html += '      <div style="font-size:12px;font-weight:700;color:#1a2a1f;margin-bottom:4px">';
@@ -37058,7 +37043,7 @@ function populateIncidentAnalytics(incidents) {
       });
       
       html += '<div style="margin-top:12px;padding:12px;background:#f8f9fa;border-radius:6px;font-size:10px;color:#666">';
-      html += '  <strong>💡 Recommended Action:</strong> Investigate these patterns for systemic root causes. Consider process reviews, additional controls, or equipment upgrades.';
+      html += '  <strong>💡 Click any pattern</strong> to view those incidents in the Details tab';
       html += '</div>';
     }
     
@@ -37080,6 +37065,38 @@ function filterBySiteAndSwitch(siteName) {
   // Apply filters
   setTimeout(function() {
     applyDirectorFilters();
+  }, 100);
+}
+
+// Function to filter by pattern and switch to Details tab
+function filterByPatternAndSwitch(patternType, searchTerm) {
+  // Switch to Details tab first
+  switchMainIncidentTab('details');
+  
+  setTimeout(function() {
+    if (patternType === 'location') {
+      // Set site filter if it matches
+      var siteFilter = document.getElementById('filter-site');
+      if (siteFilter) {
+        // Try to match the location to a site
+        var options = siteFilter.options;
+        for (var i = 0; i < options.length; i++) {
+          if (options[i].value.toLowerCase().includes(searchTerm.toLowerCase()) || 
+              searchTerm.toLowerCase().includes(options[i].value.toLowerCase())) {
+            siteFilter.value = options[i].value;
+            break;
+          }
+        }
+      }
+      applyDirectorFilters();
+    } else if (patternType === 'root_cause' || patternType === 'equipment') {
+      // Use search box for root cause or equipment
+      var searchBox = document.getElementById('incident-search-box');
+      if (searchBox) {
+        searchBox.value = searchTerm;
+      }
+      applyDirectorFilters();
+    }
   }, 100);
 }
 
@@ -44396,6 +44413,7 @@ function applyDirectorFilters() {
     var dateFrom = document.getElementById('filter-date-from').value;
     var dateTo = document.getElementById('filter-date-to').value;
     
+    // Only filter if at least one date is selected
     if (dateFrom || dateTo) {
       filtered = allIncidents.filter(function(inc) {
         var incDate = new Date(inc.incident_date || inc.submitted_at || inc.reported_at || inc.timestamp);
@@ -44416,7 +44434,8 @@ function applyDirectorFilters() {
         return true;
       });
     }
-  } else {
+    // If no dates selected, keep all incidents (filtered = allIncidents)
+  } else if (periodValue && periodValue !== '9999') {
     // Preset period
     var periodDays = parseInt(periodValue);
     filtered = allIncidents.filter(function(inc) {
