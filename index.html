@@ -11119,6 +11119,31 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
 
+      <!-- Month-over-Month Comparison -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 This Month vs Last Month</div>
+        <div style="padding:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <!-- This Month -->
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #E8E8E8;border-top:3px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600" id="dinc-current-month-label">This Month</div>
+              <div style="font-size:36px;font-weight:800;color:#1A2A1F;line-height:1" id="dinc-current-month-count">—</div>
+              <div style="font-size:10px;color:#666;margin-top:6px;font-weight:500">incidents</div>
+            </div>
+            <!-- Last Month -->
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #E8E8E8;border-top:3px solid #999">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600" id="dinc-last-month-label">Last Month</div>
+              <div style="font-size:36px;font-weight:800;color:#999;line-height:1" id="dinc-last-month-count">—</div>
+              <div style="font-size:10px;color:#666;margin-top:6px;font-weight:500">incidents</div>
+            </div>
+          </div>
+          <!-- Comparison Summary -->
+          <div style="margin-top:12px;background:#f8f9fa;border-radius:6px;padding:12px;text-align:center" id="dinc-month-comparison-summary">
+            <div style="font-size:11px;color:#666">Loading comparison...</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Industry Benchmark -->
       <div class="fcard">
         <div class="fcard-hdr">Industry Benchmark</div>
@@ -36453,6 +36478,64 @@ function populateIncidentAnalytics(incidents) {
     });
     
     rootCausesEl.innerHTML = html || '<div style="text-align:center;color:#999;padding:20px">No root cause data available</div>';
+  }
+  
+  // 4. MONTH-OVER-MONTH COMPARISON
+  var currentMonthLabelEl = document.getElementById('dinc-current-month-label');
+  var currentMonthCountEl = document.getElementById('dinc-current-month-count');
+  var lastMonthLabelEl = document.getElementById('dinc-last-month-label');
+  var lastMonthCountEl = document.getElementById('dinc-last-month-count');
+  var comparisonSummaryEl = document.getElementById('dinc-month-comparison-summary');
+  
+  if (currentMonthLabelEl && currentMonthCountEl && lastMonthLabelEl && lastMonthCountEl && comparisonSummaryEl) {
+    var now = new Date();
+    var currentMonth = now.getMonth();
+    var currentYear = now.getFullYear();
+    var lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    var lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    
+    // Get month names
+    var currentMonthName = new Date(currentYear, currentMonth, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+    var lastMonthName = new Date(lastMonthYear, lastMonth, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+    
+    // Count incidents for each month
+    var thisMonthIncidents = incidents.filter(function(i) {
+      var incDate = new Date(i.incident_date || i.submitted_at);
+      return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
+    });
+    
+    var lastMonthIncidents = incidents.filter(function(i) {
+      var incDate = new Date(i.incident_date || i.submitted_at);
+      return incDate.getMonth() === lastMonth && incDate.getFullYear() === lastMonthYear;
+    });
+    
+    var thisMonthCount = thisMonthIncidents.length;
+    var lastMonthCount = lastMonthIncidents.length;
+    
+    // Update labels and counts
+    currentMonthLabelEl.textContent = currentMonthName;
+    currentMonthCountEl.textContent = thisMonthCount;
+    lastMonthLabelEl.textContent = lastMonthName;
+    lastMonthCountEl.textContent = lastMonthCount;
+    
+    // Calculate and display comparison
+    var diff = thisMonthCount - lastMonthCount;
+    var percentChange = lastMonthCount === 0 ? 0 : Math.abs(Math.round((diff / lastMonthCount) * 100));
+    
+    var comparisonHTML = '';
+    if (diff === 0) {
+      comparisonHTML = '<div style="font-size:12px;font-weight:600;color:#666">→ No change from last month</div>';
+    } else if (diff < 0) {
+      // Fewer incidents = good
+      comparisonHTML = '<div style="font-size:14px;font-weight:700;color:#15803D;margin-bottom:4px">↓ ' + Math.abs(diff) + ' fewer incidents (' + percentChange + '% decrease)</div>';
+      comparisonHTML += '<div style="font-size:10px;color:#15803D">🟢 Improvement from last month</div>';
+    } else {
+      // More incidents = bad
+      comparisonHTML = '<div style="font-size:14px;font-weight:700;color:#B83232;margin-bottom:4px">↑ ' + diff + ' more incidents (' + percentChange + '% increase)</div>';
+      comparisonHTML += '<div style="font-size:10px;color:#B83232">🔴 Needs attention</div>';
+    }
+    
+    comparisonSummaryEl.innerHTML = comparisonHTML;
   }
 }
 
