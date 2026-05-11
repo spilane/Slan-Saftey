@@ -37074,17 +37074,38 @@ function filterByPatternAndSwitch(patternType, searchTerm) {
   switchMainIncidentTab('details');
   
   setTimeout(function() {
+    // Reset period to "All time" to ensure we see all matching incidents
+    var periodFilter = document.getElementById('filter-period');
+    if (periodFilter) {
+      periodFilter.value = '9999'; // All time
+    }
+    
+    // Clear other filters
+    var severityFilter = document.getElementById('filter-severity');
+    if (severityFilter) {
+      severityFilter.selectedIndex = 0; // All Severity
+    }
+    
     if (patternType === 'location') {
       // Set site filter if it matches
       var siteFilter = document.getElementById('filter-site');
       if (siteFilter) {
         // Try to match the location to a site
         var options = siteFilter.options;
+        var matched = false;
         for (var i = 0; i < options.length; i++) {
           if (options[i].value.toLowerCase().includes(searchTerm.toLowerCase()) || 
               searchTerm.toLowerCase().includes(options[i].value.toLowerCase())) {
             siteFilter.value = options[i].value;
+            matched = true;
             break;
+          }
+        }
+        if (!matched) {
+          // If no site match, use search box instead
+          var searchBox = document.getElementById('incident-search-box');
+          if (searchBox) {
+            searchBox.value = searchTerm;
           }
         }
       }
