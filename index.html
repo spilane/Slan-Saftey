@@ -37080,6 +37080,12 @@ function filterByPatternAndSwitch(patternType, searchTerm) {
       periodFilter.value = '9999'; // All time
     }
     
+    // Hide custom date range if shown
+    var customDiv = document.getElementById('custom-date-range');
+    if (customDiv) {
+      customDiv.style.display = 'none';
+    }
+    
     // Clear other filters
     var severityFilter = document.getElementById('filter-severity');
     if (severityFilter) {
@@ -37103,20 +37109,22 @@ function filterByPatternAndSwitch(patternType, searchTerm) {
         }
         if (!matched) {
           // If no site match, use search box instead
-          var searchBox = document.getElementById('incident-search-box');
+          var searchBox = document.getElementById('dir-inc-search');
           if (searchBox) {
             searchBox.value = searchTerm;
           }
         }
       }
       applyDirectorFilters();
+      searchDirectorIncidents();
     } else if (patternType === 'root_cause' || patternType === 'equipment') {
       // Use search box for root cause or equipment
-      var searchBox = document.getElementById('incident-search-box');
+      var searchBox = document.getElementById('dir-inc-search');
       if (searchBox) {
         searchBox.value = searchTerm;
       }
       applyDirectorFilters();
+      searchDirectorIncidents();
     }
   }, 100);
 }
