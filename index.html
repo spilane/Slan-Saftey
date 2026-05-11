@@ -36690,6 +36690,9 @@ function populateIncidentAnalytics(incidents) {
     // Get ALL incidents from storage (not just filtered ones)
     var allIncidents = incLoadAll();
     
+    // DEBUG: Log total incidents
+    console.log('People Patterns DEBUG: Total incidents loaded:', allIncidents.length);
+    
     // Count incidents by person involved
     var peopleCounts = {};
     allIncidents.forEach(function(inc) {
@@ -36702,10 +36705,18 @@ function populateIncidentAnalytics(incidents) {
       }
     });
     
+    // DEBUG: Log all people with counts
+    console.log('People Patterns DEBUG: All counts:', peopleCounts);
+    
     // Sort by count (highest first) and take top 5
     var sortedPeople = Object.keys(peopleCounts).sort(function(a, b) {
       return peopleCounts[b] - peopleCounts[a];
     }).slice(0, 5);
+    
+    // DEBUG: Log sorted top 5
+    console.log('People Patterns DEBUG: Top 5:', sortedPeople.map(function(p) {
+      return p + ': ' + peopleCounts[p];
+    }));
     
     // Render list
     var peopleHTML = '';
@@ -36758,19 +36769,39 @@ function filterBySiteAndSwitch(siteName) {
 
 // Function to filter by person name and switch to Details tab
 function filterByPersonAndSwitch(personName) {
-  // Set the search box
-  var searchBox = document.getElementById('incident-search-box');
-  if (searchBox) {
-    searchBox.value = personName;
+  // Get all incidents for this person
+  var allIncidents = incLoadAll();
+  var personIncidents = allIncidents.filter(function(inc) {
+    var name = inc.reporter_name || inc.worker_name || inc.reported_by || '';
+    return name.trim() === personName;
+  });
+  
+  if (personIncidents.length === 0) {
+    alert('No incidents found for ' + personName);
+    return;
   }
   
-  // Switch to Details tab
-  switchMainIncidentTab('details');
+  // If only 1 incident, open PDF directly
+  if (personIncidents.length === 1) {
+    viewIncidentPDF(personIncidents[0]);
+    return;
+  }
   
-  // Apply filters (which will trigger search)
-  setTimeout(function() {
-    applyDirectorFilters();
-  }, 100);
+  // If multiple incidents, show choice dialog
+  var message = personName + ' has ' + personIncidents.length + ' incidents:\n\n';
+  personIncidents.forEach(function(inc, i) {
+    var date = new Date(inc.incident_date || inc.submitted_at).toLocaleDateString();
+    var type = inc.incident_type || 'Incident';
+    message += (i + 1) + '. ' + date + ' - ' + type + '\n';
+  });
+  message += '\nWhich one would you like to view? (Enter 1-' + personIncidents.length + ')';
+  
+  var choice = prompt(message);
+  var index = parseInt(choice) - 1;
+  
+  if (index >= 0 && index < personIncidents.length) {
+    viewIncidentPDF(personIncidents[index]);
+  }
 }
 
 function viewIncidentPDF(incident) {
