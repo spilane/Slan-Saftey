@@ -36687,9 +36687,12 @@ function populateIncidentAnalytics(incidents) {
   // 7. PEOPLE PATTERNS (Who's involved most often?)
   var peoplePatternsEl = document.getElementById('dinc-people-patterns');
   if (peoplePatternsEl) {
+    // Get ALL incidents from storage (not just filtered ones)
+    var allIncidents = incLoadAll();
+    
     // Count incidents by person involved
     var peopleCounts = {};
-    incidents.forEach(function(inc) {
+    allIncidents.forEach(function(inc) {
       // Try multiple field names
       var person = inc.reporter_name || inc.worker_name || inc.reported_by || '';
       person = person.trim();
@@ -36712,19 +36715,24 @@ function populateIncidentAnalytics(incidents) {
       peopleHTML += '  <div style="font-size:11px;font-weight:600">No incident data available</div>';
       peopleHTML += '</div>';
     } else {
-      peopleHTML += '<div style="font-size:10px;color:#666;margin-bottom:10px">Top workers by incident involvement (for training support):</div>';
+      peopleHTML += '<div style="font-size:10px;color:#666;margin-bottom:10px">Top workers by incident involvement across all time (for training support):</div>';
       sortedPeople.forEach(function(person, index) {
         var count = peopleCounts[person];
         var barColor = count >= 3 ? '#B83232' : count === 2 ? '#D97706' : '#B8960C';
         var bgColor = count >= 3 ? '#FAEBEB' : count === 2 ? '#FEF0E6' : '#FFF9E6';
         
-        peopleHTML += '<div style="background:' + bgColor + ';border-left:3px solid ' + barColor + ';border-radius:6px;padding:10px;margin-bottom:8px">';
+        peopleHTML += '<div onclick="filterByPersonAndSwitch(\'' + person.replace(/'/g, "\\'") + '\')" style="background:' + bgColor + ';border-left:3px solid ' + barColor + ';border-radius:6px;padding:10px;margin-bottom:8px;cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateX(4px)\'" onmouseout="this.style.transform=\'translateX(0)\'">';
         peopleHTML += '  <div style="display:flex;justify-content:space-between;align-items:center">';
         peopleHTML += '    <div style="font-size:11px;font-weight:600;color:#1a2a1f">' + person + '</div>';
         peopleHTML += '    <div style="font-size:11px;font-weight:700;color:' + barColor + '">' + count + ' incident' + (count > 1 ? 's' : '') + '</div>';
         peopleHTML += '  </div>';
         peopleHTML += '</div>';
       });
+      
+      // Add click hint
+      peopleHTML += '<div style="margin-top:12px;padding:10px;background:#f8f9fa;border-radius:6px;font-size:10px;color:#666">';
+      peopleHTML += '  <strong>💡 Click a name</strong> to view their incidents in the Details tab';
+      peopleHTML += '</div>';
     }
     
     peoplePatternsEl.innerHTML = peopleHTML;
@@ -36743,6 +36751,23 @@ function filterBySiteAndSwitch(siteName) {
   switchMainIncidentTab('details');
   
   // Apply filters
+  setTimeout(function() {
+    applyDirectorFilters();
+  }, 100);
+}
+
+// Function to filter by person name and switch to Details tab
+function filterByPersonAndSwitch(personName) {
+  // Set the search box
+  var searchBox = document.getElementById('incident-search-box');
+  if (searchBox) {
+    searchBox.value = personName;
+  }
+  
+  // Switch to Details tab
+  switchMainIncidentTab('details');
+  
+  // Apply filters (which will trigger search)
   setTimeout(function() {
     applyDirectorFilters();
   }, 100);
