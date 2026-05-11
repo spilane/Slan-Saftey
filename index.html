@@ -36220,13 +36220,17 @@ function populateOverviewTab(incidents) {
   // 1. THIS MONTH HIGHLIGHTS
   var highlightsContainer = document.getElementById('dinc-highlights');
   if (highlightsContainer) {
-    var openCount = incidents.filter(function(i) { return i.status === 'Open'; }).length;
-    var closedCount = incidents.filter(function(i) { return i.status === 'Closed'; }).length;
+    var openCount = incidents.filter(function(i) { 
+      return (i.status || '').toLowerCase() === 'open'; 
+    }).length;
+    var closedCount = incidents.filter(function(i) { 
+      return (i.status || '').toLowerCase() === 'closed'; 
+    }).length;
     var thisMonthCount = incidents.length;
     
     // Calculate average close time
     var closedIncidents = incidents.filter(function(i) { 
-      return i.status === 'Closed' && (i.closed_at || i.reviewed_date); 
+      return (i.status || '').toLowerCase() === 'closed' && (i.closed_at || i.reviewed_date); 
     });
     var avgCloseDays = 0;
     if (closedIncidents.length > 0) {
@@ -43474,8 +43478,12 @@ function loadDirectorIncidents(customIncidents) {
     return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
   });
   
-  var openCount = thisMonthIncidents.filter(function(i) { return i.status === 'Open'; }).length;
-  var closedCount = thisMonthIncidents.filter(function(i) { return i.status === 'Closed'; }).length;
+  var openCount = thisMonthIncidents.filter(function(i) { 
+    return (i.status || '').toLowerCase() === 'open'; 
+  }).length;
+  var closedCount = thisMonthIncidents.filter(function(i) { 
+    return (i.status || '').toLowerCase() === 'closed'; 
+  }).length;
   
   // Calculate LAST MONTH for trending arrows
   var lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
@@ -43486,8 +43494,12 @@ function loadDirectorIncidents(customIncidents) {
     return incDate.getMonth() === lastMonth && incDate.getFullYear() === lastMonthYear;
   });
   
-  var lastMonthOpen = lastMonthIncidents.filter(function(i) { return i.status === 'Open'; }).length;
-  var lastMonthClosed = lastMonthIncidents.filter(function(i) { return i.status === 'Closed'; }).length;
+  var lastMonthOpen = lastMonthIncidents.filter(function(i) { 
+    return (i.status || '').toLowerCase() === 'open'; 
+  }).length;
+  var lastMonthClosed = lastMonthIncidents.filter(function(i) { 
+    return (i.status || '').toLowerCase() === 'closed'; 
+  }).length;
   
   // Calculate trends
   function getTrendHTML(current, previous, lowerIsBetter) {
@@ -43531,7 +43543,7 @@ function loadDirectorIncidents(customIncidents) {
   }).length;
   
   var overdueCount = recentIncidents.filter(function(i) { 
-    if (i.status === 'Open') {
+    if ((i.status || '').toLowerCase() === 'open') {
       var incDate = new Date(i.incident_date || i.submitted_at);
       var daysSince = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
       return daysSince > 30; // Overdue if open for more than 30 days
@@ -43551,7 +43563,7 @@ function loadDirectorIncidents(customIncidents) {
   
   // Calculate average close time
   var closedIncidents = thisMonthIncidents.filter(function(i) { 
-    return i.status === 'Closed' && (i.closed_at || i.reviewed_date); 
+    return (i.status || '').toLowerCase() === 'closed' && (i.closed_at || i.reviewed_date); 
   });
   
   var avgCloseEl = document.getElementById('dinc-avg-close');
