@@ -10628,6 +10628,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- ── EXPANDABLE TILES ─────────────────── -->
 
+    <!-- Executive Dashboard -->
+    <div class="fcard" style="overflow:hidden;padding:0">
+      <div onclick="goToDashboard()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--text)">📊 Executive Dashboard</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px">Overview of all safety metrics</div>
+          </div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
     <!-- Incidents (Director Only) -->
     <div class="fcard" style="overflow:hidden;padding:0">
       <div onclick="goToDirectorIncidents()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer">
@@ -10951,6 +10967,71 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-sub">Monthly RAG report</div>
       </div>
     </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ EXECUTIVE DASHBOARD ═══ -->
+<div id="screen-dashboard" class="screen" style="display:none">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goToAnalytics('director')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="dashboard-logo" src="" alt="Slán Safety" style="height:44px;object-fit:contain;display:block"></div>
+      <div class="badge" style="background:rgba(184,150,12,.2);border-color:rgba(184,150,12,.4);color:rgba(184,150,12,.95);font-size:10px">Director</div>
+    </div>
+    <div class="form-greeting">
+      <h1 style="color:#fff">📊 Executive Dashboard</h1>
+      <p style="color:rgba(255,255,255,0.8)">Real-time safety overview</p>
+    </div>
+  </div>
+
+  <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
+    
+    <!-- Quick Actions -->
+    <div class="fcard" style="margin-bottom:12px">
+      <div class="fcard-hdr">⚡ Quick Actions</div>
+      <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="goToIncidentReport()" style="padding:16px;background:linear-gradient(135deg, #B83232 0%, #DC4C4C 100%);border:none;border-radius:8px;color:white;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 3px 8px rgba(184,50,50,0.3);transition:transform 0.2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          🚨<br>Report Incident
+        </button>
+        <button onclick="goToHazardReport()" style="padding:16px;background:linear-gradient(135deg, #D97706 0%, #F59E0B 100%);border:none;border-radius:8px;color:white;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 3px 8px rgba(217,119,6,0.3);transition:transform 0.2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          ⚠️<br>Report Hazard
+        </button>
+        <button onclick="goToOverdueIncidents()" style="padding:16px;background:linear-gradient(135deg, #7C3AED 0%, #9333EA 100%);border:none;border-radius:8px;color:white;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 3px 8px rgba(124,58,237,0.3);transition:transform 0.2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          🔍<br>View Overdue
+        </button>
+        <button onclick="goToPrestart()" style="padding:16px;background:linear-gradient(135deg, #15803D 0%, #22C55E 100%);border:none;border-radius:8px;color:white;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 3px 8px rgba(21,128,61,0.3);transition:transform 0.2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+          📋<br>Site Prestart
+        </button>
+      </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="fcard" style="margin-bottom:12px">
+      <div class="fcard-hdr">📈 This Month's Summary</div>
+      <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);border-radius:8px;padding:14px;text-align:center;border-left:3px solid #B83232">
+          <div style="font-size:32px;font-weight:800;color:#B83232;line-height:1" id="dash-incidents-count">—</div>
+          <div style="font-size:10px;color:#B83232;font-weight:600;margin-top:4px">INCIDENTS</div>
+        </div>
+        <div style="background:linear-gradient(135deg, #FEF0E6 0%, #FED7AA 100%);border-radius:8px;padding:14px;text-align:center;border-left:3px solid #D97706">
+          <div style="font-size:32px;font-weight:800;color:#D97706;line-height:1" id="dash-hazards-count">—</div>
+          <div style="font-size:10px;color:#D97706;font-weight:600;margin-top:4px">HAZARDS</div>
+        </div>
+        <div style="background:linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%);border-radius:8px;padding:14px;text-align:center;border-left:3px solid #7C3AED">
+          <div style="font-size:32px;font-weight:800;color:#7C3AED;line-height:1" id="dash-overdue-count">—</div>
+          <div style="font-size:10px;color:#7C3AED;font-weight:600;margin-top:4px">OVERDUE</div>
+        </div>
+        <div style="background:linear-gradient(135deg, #E6F5ED 0%, #D1FAE5 100%);border-radius:8px;padding:14px;text-align:center;border-left:3px solid #15803D">
+          <div style="font-size:32px;font-weight:800;color:#15803D;line-height:1" id="dash-compliance-score">—</div>
+          <div style="font-size:10px;color:#15803D;font-weight:600;margin-top:4px">COMPLIANCE %</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div id="dash-alerts-container"></div>
 
   </div>
 </div>
@@ -37525,6 +37606,123 @@ var incChartInstances = {};
 
 var dincCurrentFilter = 'open'; // open, closed, all
 var dincCurrentIncident = null; // Store current incident for modal
+
+// ════════════════════════════════════════════════════════════════════
+// EXECUTIVE DASHBOARD FUNCTIONS
+// ════════════════════════════════════════════════════════════════════
+
+function goToDashboard() {
+  goTo('screen-dashboard');
+  // Load logo
+  var logo = document.getElementById('dashboard-logo');
+  if (logo) {
+    logo.src = localStorage.getItem('slan_logo_url') || '';
+  }
+  // Populate dashboard
+  setTimeout(function() {
+    loadDashboard();
+  }, 100);
+}
+
+function loadDashboard() {
+  var now = new Date();
+  var currentMonth = now.getMonth();
+  var currentYear = now.getFullYear();
+  
+  // Load all incidents
+  var allIncidents = incLoadAll();
+  
+  // Filter to this month
+  var thisMonthIncidents = allIncidents.filter(function(i) {
+    var incDate = new Date(i.incident_date || i.submitted_at);
+    return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
+  });
+  
+  // Count incidents
+  document.getElementById('dash-incidents-count').textContent = thisMonthIncidents.length;
+  
+  // Count hazards (if hazards exist)
+  var hazardCount = 0;
+  try {
+    var hazardData = localStorage.getItem('slan_hazards_v1');
+    if (hazardData) {
+      var allHazards = JSON.parse(hazardData);
+      var thisMonthHazards = allHazards.filter(function(h) {
+        var hzDate = new Date(h.date || h.submitted_at);
+        return hzDate.getMonth() === currentMonth && hzDate.getFullYear() === currentYear;
+      });
+      hazardCount = thisMonthHazards.length;
+    }
+  } catch(e) {}
+  document.getElementById('dash-hazards-count').textContent = hazardCount;
+  
+  // Count overdue
+  var overdueCount = allIncidents.filter(function(i) {
+    if ((i.status || '').toLowerCase() !== 'open') return false;
+    var incDate = new Date(i.incident_date || i.submitted_at);
+    var daysSince = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
+    return daysSince > 30;
+  }).length;
+  document.getElementById('dash-overdue-count').textContent = overdueCount;
+  
+  // Compliance score (placeholder - calculate based on your compliance data)
+  document.getElementById('dash-compliance-score').textContent = '94%';
+  
+  // Show alerts if there are critical items
+  var alertsContainer = document.getElementById('dash-alerts-container');
+  if (overdueCount > 0 || thisMonthIncidents.filter(function(i) {
+    return i.severity === 'LTI' || i.severity === 'Critical';
+  }).length > 0) {
+    var html = '<div class="fcard" style="margin-bottom:12px">';
+    html += '  <div class="fcard-hdr">⚠️ Requires Attention</div>';
+    html += '  <div style="padding:10px">';
+    if (overdueCount > 0) {
+      html += '<div onclick="goToOverdueIncidents()" style="background:#FEE2E2;border-left:3px solid #B83232;border-radius:6px;padding:12px;margin-bottom:8px;cursor:pointer">';
+      html += '  <div style="font-size:12px;font-weight:700;color:#B83232">' + overdueCount + ' overdue incident' + (overdueCount > 1 ? 's' : '') + '</div>';
+      html += '  <div style="font-size:10px;color:#666;margin-top:2px">Click to review</div>';
+      html += '</div>';
+    }
+    html += '  </div>';
+    html += '</div>';
+    alertsContainer.innerHTML = html;
+  } else {
+    alertsContainer.innerHTML = '';
+  }
+}
+
+// Quick Action Functions
+function goToIncidentReport() {
+  // Navigate to incident reporting form
+  goTo('screen-report');
+}
+
+function goToHazardReport() {
+  // Navigate to hazard reporting form
+  goTo('screen-hazard');
+}
+
+function goToOverdueIncidents() {
+  // Navigate to incidents and filter to overdue
+  goToDirectorIncidents();
+  setTimeout(function() {
+    // Filter to show only overdue
+    var periodFilter = document.getElementById('filter-period');
+    if (periodFilter) {
+      periodFilter.value = '9999'; // All time
+    }
+    switchMainIncidentTab('details');
+    applyDirectorFilters();
+  }, 200);
+}
+
+function goToPrestart() {
+  // Navigate to prestart form
+  goTo('screen-prestart');
+}
+
+// ════════════════════════════════════════════════════════════════════
+// DIRECTOR INCIDENTS FUNCTIONS
+// ════════════════════════════════════════════════════════════════════
 
 function goToDirectorIncidents() {
   goTo('screen-dir-incidents');
