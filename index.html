@@ -10973,435 +10973,278 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
     
-    <!-- Header Actions -->
-    <div id="dir-inc-actions" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="font-size:11px;color:#999">
-        <span style="font-weight:600;color:#666">Last updated:</span> 2 hours ago
-      </div>
-      <div style="display:flex;gap:6px">
-        <button onclick="exportIncidentsToCSV()" style="padding:6px 10px;font-size:10px;font-weight:600;background:#fff;border:1px solid #D0D0D0;border-radius:6px;color:#555;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08)">Export</button>
-        <button onclick="goToIncidentForm()" style="padding:6px 10px;font-size:10px;font-weight:600;background:linear-gradient(135deg, #1B6E3A 0%, #2D8A4F 100%);border:none;border-radius:6px;color:#fff;cursor:pointer;box-shadow:0 2px 6px rgba(27,110,58,0.3)">+ Report Incident</button>
-      </div>
+    <!-- Tab Navigation (MAIN PAGE LEVEL) -->
+    <div style="display:flex;gap:6px;margin-bottom:12px;padding:0 2px">
+      <button id="main-tab-overview" onclick="switchMainIncidentTab('overview')" style="flex:1;padding:14px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 4px 8px rgba(184,150,12,0.3);transition:all 0.3s">
+        OVERVIEW
+      </button>
+      <button id="main-tab-analytics" onclick="switchMainIncidentTab('analytics')" style="flex:1;padding:14px;background:#e5e5e5;color:#999;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;transition:all 0.3s">
+        ANALYTICS
+      </button>
+      <button id="main-tab-details" onclick="switchMainIncidentTab('details')" style="flex:1;padding:14px;background:#e5e5e5;color:#999;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;transition:all 0.3s">
+        DETAILS
+      </button>
     </div>
 
-    <!-- Incident Summary Box with TABS -->
-    <div class="fcard" style="margin-bottom:12px">
-      <div class="fcard-hdr">📊 Incident Summary</div>
-      <div style="padding:10px">
-        
-        <!-- Tab Navigation -->
-        <div style="display:flex;gap:4px;margin-bottom:12px;border-bottom:2px solid #E8E8E8">
-          <button id="tab-summary" onclick="switchIncidentTab('summary')" style="flex:1;padding:10px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:6px 6px 0 0;font-weight:600;font-size:11px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1)">
-            Summary
-          </button>
-          <button id="tab-analytics" onclick="switchIncidentTab('analytics')" style="flex:1;padding:10px;background:#f5f5f5;color:#666;border:none;border-radius:6px 6px 0 0;font-weight:600;font-size:11px;cursor:pointer">
-            Analytics
-          </button>
-        </div>
-
-        <!-- TAB 1: SUMMARY -->
-        <div id="incident-tab-summary">
-        
+    <!-- TAB 1: OVERVIEW -->
+    <div id="main-incident-tab-overview" class="main-incident-tab-content">
+      
+      <!-- Incident Summary -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 Incident Summary</div>
+        <div style="padding:10px">
+          
           <!-- Status Grid -->
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-              <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">This Month</div>
-              <div style="font-size:28px;font-weight:800;color:#1A2A1F;line-height:1;background:linear-gradient(135deg, #1A2A1F 0%, #2D5F3F 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="dinc-total-count">—</div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #E8E8E8;border-top:3px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">This Month</div>
+              <div style="font-size:32px;font-weight:800;color:#1A2A1F;line-height:1" id="dinc-total-count">—</div>
             </div>
-            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-              <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Open</div>
-              <div style="font-size:28px;font-weight:800;color:#D97706;line-height:1" id="dinc-open-count">—</div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #E8E8E8;border-top:3px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Open</div>
+              <div style="font-size:32px;font-weight:800;color:#D97706;line-height:1" id="dinc-open-count">—</div>
             </div>
-            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-              <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Closed</div>
-              <div style="font-size:28px;font-weight:800;color:#15803D;line-height:1" id="dinc-closed-count">—</div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #E8E8E8;border-top:3px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Closed</div>
+              <div style="font-size:32px;font-weight:800;color:#15803D;line-height:1" id="dinc-closed-count">—</div>
             </div>
           </div>
 
-          <!-- Alerts (Always Show) -->
+          <!-- Alerts -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-            <div style="padding:10px;background:#FEE2E2;border-left:3px solid #B83232;border-radius:6px">
-              <div style="font-size:10px;color:#B83232;font-weight:600;margin-bottom:3px">🚨 NOTIFIABLE</div>
-              <div style="font-size:20px;font-weight:800;color:#B83232" id="dinc-notifiable-count">—</div>
-              <div style="font-size:9px;color:#B83232;margin-top:2px" id="dinc-notifiable-label">—</div>
+            <div style="padding:12px;background:#FEE2E2;border-left:4px solid #B83232;border-radius:6px">
+              <div style="font-size:10px;color:#B83232;font-weight:700;margin-bottom:4px">🚨 NOTIFIABLE</div>
+              <div style="font-size:28px;font-weight:800;color:#B83232;line-height:1" id="dinc-notifiable-count">—</div>
+              <div style="font-size:9px;color:#B83232;margin-top:3px;font-weight:600" id="dinc-notifiable-label">—</div>
             </div>
-            <div style="padding:10px;background:#FEF3C7;border-left:3px solid #D97706;border-radius:6px">
-              <div style="font-size:10px;color:#D97706;font-weight:600;margin-bottom:3px">⚠️ OVERDUE</div>
-              <div style="font-size:20px;font-weight:800;color:#D97706" id="dinc-overdue-count">—</div>
-              <div style="font-size:9px;color:#D97706;margin-top:2px" id="dinc-overdue-label">—</div>
+            <div style="padding:12px;background:#FEF3C7;border-left:4px solid #D97706;border-radius:6px">
+              <div style="font-size:10px;color:#D97706;font-weight:700;margin-bottom:4px">⚠️ OVERDUE</div>
+              <div style="font-size:28px;font-weight:800;color:#D97706;line-height:1" id="dinc-overdue-count">—</div>
+              <div style="font-size:9px;color:#D97706;margin-top:3px;font-weight:600" id="dinc-overdue-label">—</div>
             </div>
           </div>
 
           <!-- Performance Metrics -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #E8E8E8;border-top:3px solid #B8960C">
               <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Avg Close Time</div>
-              <div style="font-size:20px;font-weight:700;line-height:1" id="dinc-avg-close">—</div>
+              <div style="font-size:20px;font-weight:700;line-height:1;margin-top:6px" id="dinc-avg-close">—</div>
             </div>
-            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #E8E8E8;border-top:3px solid #B8960C">
               <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">By Type</div>
-              <div style="font-size:11px;font-weight:600;color:#666;line-height:1.4" id="dinc-by-type">—</div>
+              <div style="font-size:10px;font-weight:600;color:#666;line-height:1.5;margin-top:6px" id="dinc-by-type">—</div>
             </div>
           </div>
 
-        </div>
-
-        <!-- TAB 2: ANALYTICS -->
-        <div id="incident-tab-analytics" style="display:none">
-          
-          <!-- Trend Chart -->
-          <div style="margin-bottom:12px">
-            <div style="font-size:11px;font-weight:600;color:#1A2A1F;margin-bottom:8px">📈 Trend (Last 6 Months)</div>
-            <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #E8E8E8">
-              <canvas id="dinc-trend-chart" style="max-height:180px"></canvas>
-            </div>
-          </div>
-
-          <!-- Type Breakdown -->
-          <div style="margin-bottom:12px">
-            <div style="font-size:11px;font-weight:600;color:#1A2A1F;margin-bottom:8px">📊 By Type</div>
-            <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #E8E8E8">
-              <canvas id="dinc-type-chart" style="max-height:180px"></canvas>
-            </div>
-          </div>
-
-          <!-- Top Root Causes -->
-          <div>
-            <div style="font-size:11px;font-weight:600;color:#1A2A1F;margin-bottom:8px">🎯 Top 5 Root Causes</div>
-            <div id="dinc-root-causes" style="display:flex;flex-direction:column;gap:6px"></div>
-          </div>
-
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Filter Controls -->
-    <div class="fcard">
-      <div class="fcard-hdr">Filter Data</div>
-      <div style="padding:10px">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-          <button onclick="resetDirectorFilters()" style="padding:4px 8px;font-size:9px;font-weight:600;background:transparent;border:1px solid #D0D0D0;border-radius:4px;color:#666;cursor:pointer">Reset</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-          <select id="filter-site" onchange="applyDirectorFilters()" style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
-            <option>All Sites</option>
-            <option>Parramatta Metro Stage 2</option>
-            <option>Bondi Junction Mixed Use Development</option>
-            <option>Sydney Olympic Park Sports Complex</option>
-          </select>
-          <select id="filter-period" onchange="applyDirectorFilters()" style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
-            <option value="180">Last 6 months</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">YTD</option>
-            <option value="9999">All time</option>
-          </select>
-          <select id="filter-severity" onchange="applyDirectorFilters()" style="padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#fff;color:#333;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer">
-            <option>All Severity</option>
-            <option>Near Miss</option>
-            <option>First Aid</option>
-            <option>LTI</option>
-          </select>
         </div>
       </div>
+
+      <!-- This Month Highlights -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📌 This Month Highlights</div>
+        <div style="padding:10px">
+          <div id="dinc-highlights"></div>
+        </div>
+      </div>
+
+      <!-- 5 Most Recent -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🕐 5 Most Recent Incidents</div>
+        <div style="padding:10px">
+          <div id="dinc-recent-5"></div>
+          <div style="text-align:center;margin-top:12px">
+            <button onclick="switchMainIncidentTab('details')" style="padding:12px 24px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;box-shadow:0 4px 8px rgba(184,150,12,0.3)">
+              View All Incidents →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="fcard">
+        <div class="fcard-hdr">⚡ Quick Actions</div>
+        <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
+          <button onclick="goToIncidentForm()" style="padding:14px;background:#B83232;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;box-shadow:0 2px 6px rgba(184,50,50,0.3)">
+            + Report New Incident
+          </button>
+          <button onclick="exportIncidentsToCSV()" style="padding:14px;background:#fff;color:#1a2a1f;border:1.5px solid #ddd;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer">
+            📊 Export Monthly Report
+          </button>
+          <button style="padding:14px;background:#fff;color:#1a2a1f;border:1.5px solid #ddd;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer">
+            📧 Email Summary to Team
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Demo Data Button -->
-    <button id="dir-inc-demo-btn" onclick="loadDirectorDemoIncidents()" style="display:none;width:100%;padding:10px;margin-bottom:12px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">⚡ Load 25 demo incidents across 3 sites</button>
+    <!-- TAB 2: ANALYTICS -->
+    <div id="main-incident-tab-analytics" class="main-incident-tab-content" style="display:none">
+      
+      <!-- Trend Chart -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📈 Trend (Last 6 Months)</div>
+        <div style="padding:10px">
+          <canvas id="dinc-trend-chart" style="max-height:200px"></canvas>
+        </div>
+      </div>
 
-    <!-- Industry Benchmark -->
-    <div class="fcard">
-      <div class="fcard-hdr">Industry Benchmark</div>
-      <div style="padding:10px">
-        <div style="background:linear-gradient(135deg, #FFF9E6 0%, #FFF3D6 100%);border-radius:6px;padding:10px;border-left:3px solid #B8960C">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <div style="font-size:8px;color:#999;background:#fff;padding:2px 6px;border-radius:4px">Australian Average</div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div>
-              <div style="font-size:9px;color:#856404;margin-bottom:3px;display:flex;align-items:center;gap:4px;position:relative">
-                Your TRIFR
-                <span onclick="toggleTrifrTooltip(event)" style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:50%;font-size:9px;font-weight:700;color:#B8960C;text-align:center;line-height:14px;cursor:pointer;border:1px solid #E8D9B0">ⓘ</span>
-                <div id="trifr-tooltip" style="display:none;position:absolute;background:#fff;border:2px solid #B8960C;border-radius:8px;padding:10px;font-size:10px;color:#333;width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1000;top:25px;left:0">
-                  <strong style="color:#B8960C">TRIFR</strong><br>
-                  Total Recordable Injury Frequency Rate - Number of injuries per million hours worked. Lower is better.
-                  <button onclick="event.stopPropagation();document.getElementById('trifr-tooltip').style.display='none'" style="position:absolute;top:4px;right:4px;background:none;border:none;cursor:pointer;color:#999;font-size:16px;line-height:1;padding:0 4px">×</button>
+      <!-- Type Breakdown -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 Breakdown By Type</div>
+        <div style="padding:10px">
+          <canvas id="dinc-type-chart" style="max-height:220px"></canvas>
+        </div>
+      </div>
+
+      <!-- Severity Breakdown -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">⚠️ Breakdown By Severity</div>
+        <div id="dir-inc-severity" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px"></div>
+      </div>
+
+      <!-- Top Root Causes -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🎯 Top 5 Root Causes</div>
+        <div style="padding:10px">
+          <div id="dinc-root-causes"></div>
+        </div>
+      </div>
+
+      <!-- By Mechanism -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🔧 Incidents By Mechanism</div>
+        <div style="padding:10px">
+          <div id="dir-inc-breakdown"></div>
+        </div>
+      </div>
+
+      <!-- Industry Benchmark -->
+      <div class="fcard">
+        <div class="fcard-hdr">Industry Benchmark</div>
+        <div style="padding:10px">
+          <div style="background:linear-gradient(135deg, #FFF9E6 0%, #FFF3D6 100%);border-radius:6px;padding:10px;border-left:3px solid #B8960C">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <div style="font-size:8px;color:#999;background:#fff;padding:2px 6px;border-radius:4px">Australian Average</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <div style="font-size:9px;color:#856404;margin-bottom:3px">Your TRIFR</div>
+                <div style="display:flex;align-items:baseline;gap:4px">
+                  <span id="dir-inc-your-trifr" style="font-size:20px;font-weight:800;color:#1B6E3A">4.2</span>
+                  <span id="dir-inc-trifr-trend" style="font-size:10px;color:#1B6E3A;font-weight:600">↓ 35%</span>
                 </div>
               </div>
-              <div style="display:flex;align-items:baseline;gap:4px">
-                <span id="dir-inc-your-trifr" style="font-size:20px;font-weight:800;color:#1B6E3A">4.2</span>
-                <span id="dir-inc-trifr-trend" style="font-size:10px;color:#1B6E3A;font-weight:600">↓ 35%</span>
+              <div>
+                <div style="font-size:9px;color:#856404;margin-bottom:3px">Industry Avg</div>
+                <div style="font-size:20px;font-weight:800;color:#666">6.5</div>
               </div>
             </div>
-            <div>
-              <div style="font-size:9px;color:#856404;margin-bottom:3px">Industry Avg</div>
-              <div style="display:flex;align-items:baseline;gap:4px">
-                <span style="font-size:20px;font-weight:800;color:#666">6.5</span>
-              </div>
+            <div style="margin-top:8px;background:#fff;border-radius:4px;padding:6px;font-size:9px;color:#666">
+              📊 You're performing <strong style="color:#1B6E3A">35% better</strong> than the construction industry average
             </div>
           </div>
-          <div style="margin-top:8px;background:#fff;border-radius:4px;padding:6px;font-size:9px;color:#666">
-            📊 You're performing <strong id="dir-inc-performance-text" style="color:#1B6E3A">35% better</strong> than the construction industry average (Safe Work Australia 2025)
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 3: DETAILS -->
+    <div id="main-incident-tab-details" class="main-incident-tab-content" style="display:none">
+      
+      <!-- Filters -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🔍 Search & Filters</div>
+        <div style="padding:10px">
+          
+          <!-- Search Bar -->
+          <div style="margin-bottom:10px">
+            <input id="dir-inc-search" type="text" placeholder="🔍 Search by description, location, person..." oninput="searchDirectorIncidents()" style="width:100%;padding:12px 14px;font-size:12px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#333;box-sizing:border-box">
           </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Key Metrics -->
-    <div class="fcard">
-      <div class="fcard-hdr">Key Metrics</div>
-      <div style="padding:10px">
-        <div id="dir-inc-stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-        <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Total incidents</div>
-        <div style="font-size:28px;font-weight:800;color:#1A2A1F;line-height:1;background:linear-gradient(135deg, #1A2A1F 0%, #2D5F3F 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="dir-inc-total">—</div>
-        <div style="font-size:10px;color:#1B6E3A;margin-top:4px;font-weight:600" id="dir-inc-trend">—</div>
-      </div>
-      <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);border:1px solid #E8E8E8;border-top:2px solid #B8960C">
-        <div style="font-size:9px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">LTI-free days</div>
-        <div style="font-size:28px;font-weight:800;color:#1A2A1F;line-height:1;background:linear-gradient(135deg, #1A2A1F 0%, #2D5F3F 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="dir-inc-lti">—</div>
-        <div style="font-size:10px;color:#1B6E3A;margin-top:4px;font-weight:600">Running total</div>
-      </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 1. MOST RELEVANT: Recent incidents list -->
-    <div class="fcard">
-      <div class="fcard-hdr">Recent incidents</div>
-      <div style="padding:10px">
-        <!-- Search bar -->
-        <div style="margin-bottom:10px">
-          <input id="dir-inc-search" type="text" placeholder="Search incidents..." oninput="searchDirectorIncidents()" style="width:100%;padding:8px 10px;font-size:11px;border:1px solid #D0D0D0;border-radius:6px;background:#F8F8F8;color:#333;box-sizing:border-box">
-        </div>
-        <!-- Result counter -->
-        <div style="font-size:10px;color:#999;margin-bottom:10px;font-weight:500">Showing <strong style="color:#1A2A1F" id="dir-inc-showing">0</strong> of <strong style="color:#1A2A1F" id="dir-inc-of">0</strong> incidents</div>
-        <div id="dir-inc-list"></div>
-      </div>
-    </div>
-
-    <!-- 2. Severity breakdown -->
-    <div class="fcard">
-      <div class="fcard-hdr">Severity breakdown</div>
-      <div id="dir-inc-severity" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px"></div>
-    </div>
-
-    <!-- 3. Trend chart -->
-    <!-- 3. Trend chart -->
-    <div class="fcard">
-      <div class="fcard-hdr">Incident trend (last 6 months)</div>
-      <div style="padding:10px"><div style="height:160px;position:relative"><canvas id="dir-inc-chart" role="img" aria-label="Incident trend chart"></canvas></div></div>
-    </div>
-
-    <!-- 4. Breakdown by mechanism -->
-    <div class="fcard">
-      <div class="fcard-hdr">Incidents by mechanism</div>
-      <div style="padding:10px"><div id="dir-inc-breakdown" style="display:flex;flex-direction:column;gap:10px"></div></div>
-    </div>
-
-    <!-- 5. Body injury map -->
-    <div class="fcard">
-      <div class="fcard-hdr">Body injury map <span style="font-weight:400;font-size:11px;color:var(--muted)">— Tap a zone</span></div>
-      <div style="display:flex;justify-content:center;gap:10px;margin-bottom:12px;padding:10px">
-        <button id="bm-front-btn" onclick="switchBodyView('front')" style="padding:8px 24px;border-radius:8px;border:2px solid var(--deep);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 2px 6px rgba(27,58,45,0.3)">Front</button>
-        <button id="bm-back-btn" onclick="switchBodyView('back')" style="padding:8px 24px;border-radius:8px;border:2px solid var(--border);background:#fff;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Back</button>
-      </div>
-      <div style="display:flex;justify-content:center;padding:16px;background:#F8F8F8;border-radius:8px;margin:0 10px 10px 10px">
-        <!-- Front view - Human Silhouette (NO FACE) -->
-        <svg id="dir-bm-front" viewBox="0 0 200 540" style="width:100%;max-width:200px;height:auto" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="skinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style="stop-color:#E8D4C0;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#D9C3AD;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-          
-          <!-- Head (simple oval, NO FACE) -->
-          <ellipse cx="100" cy="42" rx="26" ry="31" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Head', 1)"/>
-          
-          <!-- Neck -->
-          <path d="M 87 70 Q 85 74 85 82 L 85 90 L 115 90 L 115 82 Q 115 74 113 70" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck', 1)"/>
-          
-          <!-- Shoulders -->
-          <ellipse cx="68" cy="107" rx="20" ry="15" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)"/>
-          <ellipse cx="132" cy="107" rx="20" ry="15" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder', 2)"/>
-          
-          <!-- Torso -->
-          <path d="M 80 94 Q 72 107 72 125 L 72 165 Q 72 175 76 182 L 84 190 Q 87 192 90 192 L 110 192 Q 113 192 116 190 L 124 182 Q 128 175 128 165 L 128 125 Q 128 107 120 94 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Chest', 0)"/>
-          
-          <!-- Abdomen -->
-          <path d="M 84 190 Q 82 197 82 207 L 82 222 Q 82 230 85 235 L 115 235 Q 118 230 118 222 L 118 207 Q 118 197 116 190 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Abdomen', 0)"/>
-          
-          <!-- Pelvis -->
-          <path d="M 85 233 Q 78 241 78 252 L 78 265 L 90 265 L 110 265 L 122 265 L 122 252 Q 122 241 115 233 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Pelvis', 0)"/>
-          
-          <!-- Left Upper Arm -->
-          <path d="M 50 110 Q 46 114 45 125 L 45 185 Q 45 193 47 197 L 49 197 Q 57 197 60 194 L 62 194 Q 64 190 64 185 L 64 125 Q 64 114 60 110 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm', 2)"/>
-          
-          <!-- Right Upper Arm -->
-          <path d="M 136 110 Q 132 114 132 125 L 132 185 Q 132 193 134 197 L 136 197 Q 144 197 147 194 L 149 194 Q 151 190 151 185 L 151 125 Q 151 114 147 110 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm', 1)"/>
-          
-          <!-- Left Forearm -->
-          <path d="M 43 199 Q 41 205 41 215 L 41 280 Q 41 288 43 292 L 45 292 Q 51 292 53 289 L 55 289 Q 57 285 57 280 L 57 215 Q 57 205 55 199 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm', 2)"/>
-          
-          <!-- Right Forearm -->
-          <path d="M 143 199 Q 141 205 141 215 L 141 280 Q 141 288 143 292 L 145 292 Q 151 292 153 289 L 155 289 Q 157 285 157 280 L 157 215 Q 157 205 155 199 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm', 0)"/>
-          
-          <!-- Left Hand -->
-          <ellipse cx="49" cy="310" rx="10" ry="16" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand', 3)"/>
-          
-          <!-- Right Hand -->
-          <ellipse cx="149" cy="310" rx="10" ry="16" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand', 1)"/>
-          
-          <!-- Left Thigh -->
-          <path d="M 90 263 Q 85 271 85 285 L 85 355 Q 85 363 87 367 L 89 367 Q 95 367 97 364 L 99 364 Q 101 360 101 355 L 101 285 Q 101 271 99 263 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Thigh', 0)"/>
-          
-          <!-- Right Thigh -->
-          <path d="M 101 263 Q 99 271 99 285 L 99 355 Q 99 363 101 367 L 103 367 Q 109 367 111 364 L 113 364 Q 115 360 115 355 L 115 285 Q 115 271 113 263 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Thigh', 0)"/>
-          
-          <!-- Left Knee -->
-          <ellipse cx="93" cy="375" rx="12" ry="10" fill="#D4BFAA" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee', 1)"/>
-          
-          <!-- Right Knee -->
-          <ellipse cx="107" cy="375" rx="12" ry="10" fill="#D4BFAA" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee', 0)"/>
-          
-          <!-- Left Lower Leg -->
-          <path d="M 89 383 Q 86 392 85 410 L 85 480 Q 85 488 87 492 L 89 492 Q 95 492 97 489 L 99 489 Q 101 485 101 480 L 101 410 Q 101 392 99 383 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Lower Leg', 0)"/>
-          
-          <!-- Right Lower Leg -->
-          <path d="M 101 383 Q 99 392 99 410 L 99 480 Q 99 488 101 492 L 103 492 Q 109 492 111 489 L 113 489 Q 115 485 115 480 L 115 410 Q 115 392 113 383 Z" 
-                fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Lower Leg', 0)"/>
-          
-          <!-- Left Foot -->
-          <ellipse cx="93" cy="512" rx="13" ry="22" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Foot', 0)"/>
-          
-          <!-- Right Foot -->
-          <ellipse cx="107" cy="512" rx="13" ry="22" fill="url(#skinGrad)" stroke="#9B8770" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Foot', 0)"/>
-          
-          <!-- Injury Markers -->
-          <circle cx="100" cy="210" r="7" fill="#DC3545" stroke="#fff" stroke-width="2.5" style="cursor:pointer;filter:drop-shadow(0 0 8px rgba(220,53,69,0.9))" onclick="dirShowBodyZone(event, 'Lower Back', 6)">
-            <title>Lower Back: 6 incidents</title>
-          </circle>
-          <circle cx="68" cy="107" r="6" fill="#FD7E14" stroke="#fff" stroke-width="2.5" style="cursor:pointer;filter:drop-shadow(0 0 7px rgba(253,126,20,0.9))" onclick="dirShowBodyZone(event, 'Left Shoulder', 4)">
-            <title>Left Shoulder: 4 incidents</title>
-          </circle>
-          <circle cx="49" cy="310" r="6" fill="#F39C12" stroke="#fff" stroke-width="2.5" style="cursor:pointer;filter:drop-shadow(0 0 7px rgba(243,156,18,0.9))" onclick="dirShowBodyZone(event, 'Left Hand', 3)">
-            <title>Left Hand: 3 incidents</title>
-          </circle>
-          
-          <text x="100" y="535" font-size="10" fill="#9B8770" text-anchor="middle" font-weight="600">FRONT VIEW</text>
-        </svg>
-        <!-- Back view - Professional medical diagram -->
-        <svg id="dir-bm-back" viewBox="0 0 200 480" style="width:100%;max-width:180px;height:auto;display:none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Professional medical body outline - back view -->
-          
-          <!-- Back of Head -->
-          <ellipse cx="100" cy="35" rx="24" ry="28" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Back of Head', 0)"/>
-          
-          <!-- Neck -->
-          <path d="M 85 60 L 85 78 L 115 78 L 115 60" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Neck (Back)', 1)"/>
-          
-          <!-- Shoulders (rounded) -->
-          <ellipse cx="68" cy="95" rx="20" ry="14" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Shoulder (Back)', 2)"/>
-          <ellipse cx="132" cy="95" rx="20" ry="14" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Shoulder (Back)', 1)"/>
-          
-          <!-- Upper Back -->
-          <path d="M 75 82 Q 70 95 70 110 L 70 135 L 130 135 L 130 110 Q 130 95 125 82 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Upper Back', 1)"/>
-          
-          <!-- Lower Back (highlighted high-risk area) -->
-          <path d="M 70 133 L 70 160 Q 70 175 75 185 L 125 185 Q 130 175 130 160 L 130 133 Z" 
-                fill="#FFE8E8" stroke="#DC3545" stroke-width="2" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Lower Back', 6)"/>
-          
-          <!-- Pelvis/Buttocks -->
-          <path d="M 75 183 L 75 210 Q 75 220 78 225 L 122 225 Q 125 220 125 210 L 125 183 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Pelvis (Back)', 0)"/>
-          
-          <!-- Left Upper Arm -->
-          <path d="M 50 100 Q 48 105 48 115 L 48 160 Q 48 168 50 172 L 60 172 Q 62 168 62 160 L 62 115 Q 62 105 60 100 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Upper Arm (Back)', 1)"/>
-          
-          <!-- Right Upper Arm -->
-          <path d="M 140 100 Q 138 105 138 115 L 138 160 Q 138 168 140 172 L 150 172 Q 152 168 152 160 L 152 115 Q 152 105 150 100 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Upper Arm (Back)', 0)"/>
-          
-          <!-- Left Forearm -->
-          <path d="M 46 174 Q 44 180 44 190 L 44 250 Q 44 258 46 262 L 54 262 Q 56 258 56 250 L 56 190 Q 56 180 54 174 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Forearm (Back)', 1)"/>
-          
-          <!-- Right Forearm -->
-          <path d="M 146 174 Q 144 180 144 190 L 144 250 Q 144 258 146 262 L 154 262 Q 156 258 156 250 L 156 190 Q 156 180 154 174 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Forearm (Back)', 0)"/>
-          
-          <!-- Left Hand -->
-          <ellipse cx="50" cy="278" rx="10" ry="14" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hand (Back)', 1)"/>
-          
-          <!-- Right Hand -->
-          <ellipse cx="150" cy="278" rx="10" ry="14" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hand (Back)', 0)"/>
-          
-          <!-- Left Hamstring/Thigh -->
-          <path d="M 78 223 Q 76 230 76 245 L 76 310 Q 76 318 78 322 L 92 322 Q 94 318 94 310 L 94 245 Q 94 230 92 223 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Hamstring', 0)"/>
-          
-          <!-- Right Hamstring/Thigh -->
-          <path d="M 108 223 Q 106 230 106 245 L 106 310 Q 106 318 108 322 L 122 322 Q 124 318 124 310 L 124 245 Q 124 230 122 223 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Hamstring', 0)"/>
-          
-          <!-- Left Knee (back) -->
-          <ellipse cx="85" cy="334" rx="12" ry="10" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Knee (Back)', 0)"/>
-          
-          <!-- Right Knee (back) -->
-          <ellipse cx="115" cy="334" rx="12" ry="10" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Knee (Back)', 0)"/>
-          
-          <!-- Left Calf -->
-          <path d="M 80 342 Q 78 350 78 370 L 78 420 Q 78 428 80 432 L 90 432 Q 92 428 92 420 L 92 370 Q 92 350 90 342 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Calf', 0)"/>
-          
-          <!-- Right Calf -->
-          <path d="M 110 342 Q 108 350 108 370 L 108 420 Q 108 428 110 432 L 120 432 Q 122 428 122 420 L 122 370 Q 122 350 120 342 Z" 
-                fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Calf', 0)"/>
-          
-          <!-- Left Heel/Foot -->
-          <ellipse cx="85" cy="454" rx="12" ry="18" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Left Heel', 0)"/>
-          
-          <!-- Right Heel/Foot -->
-          <ellipse cx="115" cy="454" rx="12" ry="18" fill="#F9FAFB" stroke="#8B9AA8" stroke-width="1.8" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Right Heel', 0)"/>
-          
-          <!-- Injury marker on lower back (already highlighted with red fill) -->
-          <circle cx="100" cy="155" r="4" fill="#DC3545" stroke="#FFF" stroke-width="1" style="cursor:pointer" onclick="dirShowBodyZone(event, 'Lower Back', 6)"/>
-          
-        </svg>
-      </div>
-      <div id="dir-bm-panel" style="display:none;margin:0 10px 10px 10px;background:linear-gradient(135deg, #F5F9F7 0%, #EDF5F0 100%);border-radius:10px;border:2px solid var(--border);padding:16px;box-shadow:0 3px 10px rgba(0,0,0,0.1)">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div id="dir-bm-name" style="font-size:15px;font-weight:700;color:var(--text)"></div>
-            <div id="dir-bm-count" style="font-size:12px;color:var(--muted);margin-top:3px;font-weight:500"></div>
+          <!-- Filter Dropdowns -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+            <select id="filter-site" onchange="applyDirectorFilters()" style="padding:10px;font-size:11px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#333;font-weight:500;cursor:pointer">
+              <option>All Sites</option>
+              <option>Parramatta Metro Stage 2</option>
+              <option>Bondi Junction Mixed Use Development</option>
+              <option>Sydney Olympic Park Sports Complex</option>
+            </select>
+            <select id="filter-period" onchange="applyDirectorFilters()" style="padding:10px;font-size:11px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#333;font-weight:500;cursor:pointer">
+              <option value="180">Last 6 months</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="365">YTD</option>
+              <option value="9999">All time</option>
+            </select>
+            <select id="filter-severity" onchange="applyDirectorFilters()" style="padding:10px;font-size:11px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#333;font-weight:500;cursor:pointer">
+              <option>All Severity</option>
+              <option>Near Miss</option>
+              <option>First Aid</option>
+              <option>LTI</option>
+            </select>
           </div>
-          <button onclick="document.getElementById('dir-bm-panel').style.display='none'" style="background:rgba(0,0,0,0.05);border:none;cursor:pointer;color:var(--muted);font-size:24px;line-height:1;padding:2px 8px;border-radius:6px">×</button>
-        </div>
-        <div id="dir-bm-hist" style="margin-top:12px;display:flex;flex-direction:column;gap:8px"></div>
-      </div>
-    </div>
 
-    <!-- 6. LEAST RELEVANT: Time patterns -->
-    <div class="fcard">
-      <div class="fcard-hdr">When do incidents happen?</div>
-      <div id="dir-inc-timepatterns" style="padding:12px"></div>
+          <!-- Result Counter & Reset -->
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:11px;color:#999">
+              Showing <strong style="color:#1a2a1f" id="dir-inc-showing">0</strong> of <strong style="color:#1a2a1f" id="dir-inc-of">0</strong> incidents
+            </div>
+            <button onclick="resetDirectorFilters()" style="padding:6px 12px;font-size:10px;font-weight:600;background:transparent;border:1.5px solid #ddd;border-radius:6px;color:#666;cursor:pointer">
+              Reset Filters
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Demo Data Button -->
+      <button id="dir-inc-demo-btn" onclick="loadDirectorDemoIncidents()" style="display:none;width:100%;padding:10px;margin-bottom:12px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">⚡ Load 25 demo incidents across 3 sites</button>
+
+      <!-- Export Options -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📤 Export Options</div>
+        <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <button onclick="exportIncidentsToCSV()" style="padding:12px;background:#fff;border:1.5px solid #ddd;border-radius:8px;font-size:11px;font-weight:600;text-align:center;cursor:pointer">
+            📄 PDF
+          </button>
+          <button onclick="exportIncidentsToCSV()" style="padding:12px;background:#fff;border:1.5px solid #ddd;border-radius:8px;font-size:11px;font-weight:600;text-align:center;cursor:pointer">
+            📊 Excel
+          </button>
+          <button style="padding:12px;background:#fff;border:1.5px solid #ddd;border-radius:8px;font-size:11px;font-weight:600;text-align:center;cursor:pointer">
+            📧 Email
+          </button>
+        </div>
+      </div>
+
+      <!-- Full Incident List -->
+      <div class="fcard">
+        <div class="fcard-hdr">📋 All Incidents</div>
+        <div style="padding:10px">
+          <div id="dir-inc-list"></div>
+        </div>
+      </div>
+
     </div>
 
   </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bnav">
+    <button onclick="goToAnalytics('director')" class="bnav-btn bnav-active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Analytics</span>
+    </button>
+    <button onclick="goToIncidentForm()" class="bnav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>Report</span>
+    </button>
+    <button onclick="goToProfile('director')" class="bnav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </button>
+  </div>
+
 </div>
 
 <div id="screen-scorecard" class="screen">
@@ -36276,6 +36119,51 @@ function updateIncidentSummaryBox(incidents) {
 // SWITCH INCIDENT TAB (Summary / Analytics)
 // ═══════════════════════════════════════════════════════════════
 
+// Main tab switching for 3-tab system (Overview/Analytics/Details)
+function switchMainIncidentTab(tabName) {
+  // Hide all main tab contents
+  var tabs = document.querySelectorAll('.main-incident-tab-content');
+  tabs.forEach(function(tab) {
+    tab.style.display = 'none';
+  });
+  
+  // Show selected tab
+  var selectedTab = document.getElementById('main-incident-tab-' + tabName);
+  if (selectedTab) selectedTab.style.display = 'block';
+  
+  // Update all buttons
+  var buttons = ['overview', 'analytics', 'details'];
+  buttons.forEach(function(btn) {
+    var button = document.getElementById('main-tab-' + btn);
+    if (button) {
+      if (btn === tabName) {
+        button.style.background = 'linear-gradient(135deg, #B8960C 0%, #D4A72C 100%)';
+        button.style.color = '#fff';
+        button.style.boxShadow = '0 4px 8px rgba(184,150,12,0.3)';
+      } else {
+        button.style.background = '#e5e5e5';
+        button.style.color = '#999';
+        button.style.boxShadow = 'none';
+      }
+    }
+  });
+  
+  // When Analytics tab is opened, render charts and populate data
+  if (tabName === 'analytics') {
+    setTimeout(function() {
+      var incidents = incLoadAll();
+      populateIncidentAnalytics(incidents);
+      renderIncidentCharts(incidents);
+    }, 100);
+  }
+  
+  // When Overview tab is opened, populate highlights and recent
+  if (tabName === 'overview') {
+    var incidents = incLoadAll();
+    populateOverviewTab(incidents);
+  }
+}
+
 function switchIncidentTab(tabName) {
   // Hide all tabs
   var summaryTab = document.getElementById('incident-tab-summary');
@@ -36322,12 +36210,117 @@ function switchIncidentTab(tabName) {
 // POPULATE INCIDENT ANALYTICS (Charts & Trends)
 // ═══════════════════════════════════════════════════════════════
 
+// Store chart instances globally so we can destroy them
+var incidentTrendChart = null;
+var incidentTypeChart = null;
+
+// Populate Overview Tab with highlights and recent incidents
+function populateOverviewTab(incidents) {
+  if (!incidents || incidents.length === 0) return;
+  
+  // 1. THIS MONTH HIGHLIGHTS
+  var highlightsContainer = document.getElementById('dinc-highlights');
+  if (highlightsContainer) {
+    var openCount = incidents.filter(function(i) { return i.status === 'Open'; }).length;
+    var closedCount = incidents.filter(function(i) { return i.status === 'Closed'; }).length;
+    var thisMonthCount = incidents.length;
+    
+    // Calculate average close time
+    var closedIncidents = incidents.filter(function(i) { 
+      return i.status === 'Closed' && (i.closed_at || i.reviewed_date); 
+    });
+    var avgCloseDays = 0;
+    if (closedIncidents.length > 0) {
+      var totalDays = 0;
+      closedIncidents.forEach(function(inc) {
+        var startDate = new Date(inc.incident_date || inc.submitted_at);
+        var endDate = new Date(inc.closed_at || inc.reviewed_date);
+        var days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        totalDays += days;
+      });
+      avgCloseDays = (totalDays / closedIncidents.length).toFixed(1);
+    }
+    
+    // Count by type
+    var typeCounts = {};
+    incidents.forEach(function(inc) {
+      var type = inc.incident_type || 'Unknown';
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+    var mostCommon = Object.keys(typeCounts).reduce(function(a, b) { 
+      return typeCounts[a] > typeCounts[b] ? a : b; 
+    }, '');
+    
+    var highlightsHTML = '';
+    
+    if (openCount === 0 && closedCount > 0) {
+      highlightsHTML += '<div style="background:#fff;border-left:4px solid #15803D;border-radius:6px;padding:12px;margin-bottom:8px;box-shadow:0 2px 4px rgba(0,0,0,0.06)">';
+      highlightsHTML += '  <div style="font-size:12px;font-weight:700;color:#15803D;margin-bottom:4px">✓ All incidents closed</div>';
+      highlightsHTML += '  <div style="font-size:11px;color:#666">100% completion rate this month</div>';
+      highlightsHTML += '</div>';
+    }
+    
+    if (avgCloseDays && avgCloseDays < 7) {
+      highlightsHTML += '<div style="background:#fff;border-left:4px solid #15803D;border-radius:6px;padding:12px;margin-bottom:8px;box-shadow:0 2px 4px rgba(0,0,0,0.06)">';
+      highlightsHTML += '  <div style="font-size:12px;font-weight:700;color:#15803D;margin-bottom:4px">✓ Fast response time</div>';
+      highlightsHTML += '  <div style="font-size:11px;color:#666">Avg ' + avgCloseDays + ' days to close (target: <7 days)</div>';
+      highlightsHTML += '</div>';
+    }
+    
+    if (mostCommon) {
+      highlightsHTML += '<div style="background:#fff;border-left:4px solid #B8960C;border-radius:6px;padding:12px;margin-bottom:8px;box-shadow:0 2px 4px rgba(0,0,0,0.06)">';
+      highlightsHTML += '  <div style="font-size:12px;font-weight:700;color:#B8960C;margin-bottom:4px">→ Most common: ' + mostCommon + '</div>';
+      highlightsHTML += '  <div style="font-size:11px;color:#666">' + typeCounts[mostCommon] + ' ' + mostCommon.toLowerCase() + ' incidents reported</div>';
+      highlightsHTML += '</div>';
+    }
+    
+    highlightsContainer.innerHTML = highlightsHTML;
+  }
+  
+  // 2. 5 MOST RECENT INCIDENTS
+  var recentContainer = document.getElementById('dinc-recent-5');
+  if (recentContainer) {
+    var recentIncidents = incidents.slice(0, 5);
+    var recentHTML = '';
+    
+    recentIncidents.forEach(function(inc) {
+      var severityColor = inc.severity === 'Critical' || inc.severity === 'LTI' ? '#B83232' :
+                         inc.severity === 'Major' || inc.severity === 'Medical Treatment' ? '#D4630A' :
+                         inc.severity === 'Moderate' || inc.severity === 'First Aid' ? '#976500' : '#666';
+      var severityBg = inc.severity === 'Critical' || inc.severity === 'LTI' ? '#FAEBEB' :
+                      inc.severity === 'Major' || inc.severity === 'Medical Treatment' ? '#FEF0E6' :
+                      inc.severity === 'Moderate' || inc.severity === 'First Aid' ? '#FFFBF0' : '#f5f5f5';
+      
+      recentHTML += '<div style="background:#fff;border:1.5px solid #e5e5e5;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 2px 4px rgba(0,0,0,0.06)">';
+      recentHTML += '  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">';
+      recentHTML += '    <span style="padding:4px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;background:' + severityBg + ';color:' + severityColor + '">' + inc.severity + '</span>';
+      recentHTML += '    <span style="font-size:11px;font-weight:600">' + inc.incident_type + '</span>';
+      recentHTML += '    <span style="padding:4px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;background:#E6F5ED;color:#15803D">' + inc.status + '</span>';
+      recentHTML += '  </div>';
+      recentHTML += '  <div style="font-size:11px;color:#666;line-height:1.5;margin-bottom:8px">' + (inc.description || '').substring(0, 120) + '...</div>';
+      recentHTML += '  <div style="font-size:10px;color:#999;display:flex;gap:12px">';
+      recentHTML += '    <span>📍 ' + (inc.site || inc.location || 'Site') + '</span>';
+      recentHTML += '    <span>📅 ' + new Date(inc.incident_date || inc.submitted_at).toLocaleDateString() + '</span>';
+      recentHTML += '  </div>';
+      recentHTML += '</div>';
+    });
+    
+    recentContainer.innerHTML = recentHTML;
+  }
+}
+
 function populateIncidentAnalytics(incidents) {
   if (!incidents || incidents.length === 0) return;
   
   // 1. TREND CHART (Last 6 months)
   var trendCanvas = document.getElementById('dinc-trend-chart');
   if (trendCanvas && window.Chart) {
+    // Destroy existing chart if it exists
+    if (incidentTrendChart) {
+      incidentTrendChart.destroy();
+      incidentTrendChart = null;
+    }
+    
     var ctx = trendCanvas.getContext('2d');
     
     // Get last 6 months of data
@@ -36351,7 +36344,7 @@ function populateIncidentAnalytics(incidents) {
     var labels = Object.keys(monthsData);
     var data = Object.values(monthsData);
     
-    new Chart(ctx, {
+    incidentTrendChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: labels,
@@ -36380,6 +36373,12 @@ function populateIncidentAnalytics(incidents) {
   // 2. TYPE BREAKDOWN CHART
   var typeCanvas = document.getElementById('dinc-type-chart');
   if (typeCanvas && window.Chart) {
+    // Destroy existing chart if it exists
+    if (incidentTypeChart) {
+      incidentTypeChart.destroy();
+      incidentTypeChart = null;
+    }
+    
     var ctxType = typeCanvas.getContext('2d');
     
     var typeCounts = {
@@ -36405,7 +36404,7 @@ function populateIncidentAnalytics(incidents) {
       }
     });
     
-    new Chart(ctxType, {
+    incidentTypeChart = new Chart(ctxType, {
       type: 'doughnut',
       data: {
         labels: typeLabels,
@@ -43462,6 +43461,95 @@ function loadDirectorIncidents(customIncidents) {
   
   // Update benchmark colors
   updateDirectorBenchmarkColors();
+  
+  // Populate Overview tab (for 3-tab system)
+  populateOverviewTab(recentIncidents);
+  
+  // Update summary metrics in Overview tab
+  var now = new Date();
+  var currentMonth = now.getMonth();
+  var currentYear = now.getFullYear();
+  
+  var thisMonthIncidents = recentIncidents.filter(function(i) {
+    var incDate = new Date(i.incident_date || i.submitted_at);
+    return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
+  });
+  
+  var openCount = thisMonthIncidents.filter(function(i) { return i.status === 'Open'; }).length;
+  var closedCount = thisMonthIncidents.filter(function(i) { return i.status === 'Closed'; }).length;
+  
+  // Update counts
+  var totalCountEl = document.getElementById('dinc-total-count');
+  var openCountEl = document.getElementById('dinc-open-count');
+  var closedCountEl = document.getElementById('dinc-closed-count');
+  
+  if (totalCountEl) totalCountEl.textContent = thisMonthIncidents.length;
+  if (openCountEl) openCountEl.textContent = openCount;
+  if (closedCountEl) closedCountEl.textContent = closedCount;
+  
+  // Calculate notifiable and overdue
+  var notifiableCount = recentIncidents.filter(function(i) { 
+    return i.notifiable === 'Yes' || i.is_notifiable === true; 
+  }).length;
+  
+  var overdueCount = recentIncidents.filter(function(i) { 
+    if (i.status === 'Open') {
+      var incDate = new Date(i.incident_date || i.submitted_at);
+      var daysSince = Math.floor((now - incDate) / (1000 * 60 * 60 * 24));
+      return daysSince > 30; // Overdue if open for more than 30 days
+    }
+    return false;
+  }).length;
+  
+  var notifiableEl = document.getElementById('dinc-notifiable-count');
+  var notifiableLabelEl = document.getElementById('dinc-notifiable-label');
+  var overdueEl = document.getElementById('dinc-overdue-count');
+  var overdueLabelEl = document.getElementById('dinc-overdue-label');
+  
+  if (notifiableEl) notifiableEl.textContent = notifiableCount;
+  if (notifiableLabelEl) notifiableLabelEl.textContent = notifiableCount === 0 ? 'All clear ✓' : 'Require reporting';
+  if (overdueEl) overdueEl.textContent = overdueCount;
+  if (overdueLabelEl) overdueLabelEl.textContent = overdueCount === 0 ? 'All on track ✓' : 'Need review';
+  
+  // Calculate average close time
+  var closedIncidents = thisMonthIncidents.filter(function(i) { 
+    return i.status === 'Closed' && (i.closed_at || i.reviewed_date); 
+  });
+  
+  var avgCloseEl = document.getElementById('dinc-avg-close');
+  if (avgCloseEl) {
+    if (closedIncidents.length > 0) {
+      var totalDays = 0;
+      closedIncidents.forEach(function(inc) {
+        var startDate = new Date(inc.incident_date || inc.submitted_at);
+        var endDate = new Date(inc.closed_at || inc.reviewed_date);
+        var days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        totalDays += days;
+      });
+      var avgDays = (totalDays / closedIncidents.length).toFixed(1);
+      var emoji = avgDays < 3 ? '🟢' : avgDays < 7 ? '🟡' : '🔴';
+      var color = avgDays < 3 ? '#15803D' : avgDays < 7 ? '#D97706' : '#B83232';
+      avgCloseEl.innerHTML = '<span style="color:' + color + '">' + avgDays + ' days ' + emoji + '</span>';
+    } else {
+      avgCloseEl.textContent = '—';
+    }
+  }
+  
+  // Update "By Type" count
+  var byTypeEl = document.getElementById('dinc-by-type');
+  if (byTypeEl) {
+    var typeCounts = {};
+    thisMonthIncidents.forEach(function(inc) {
+      var type = (inc.incident_type || 'Other').split(' ')[0].toLowerCase(); // Shorten type name
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+    
+    var typeText = Object.keys(typeCounts).map(function(type) {
+      return typeCounts[type] + ' ' + type;
+    }).join(' · ');
+    
+    byTypeEl.textContent = typeText || '—';
+  }
 }
 
 function exportIncidentsToCSV() {
