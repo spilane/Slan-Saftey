@@ -11059,7 +11059,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="background:linear-gradient(135deg, #E6F3F0 0%, #D4EDE5 100%);border-radius:8px;padding:10px;border:1.5px solid #1B3A2D;margin-bottom:8px">
             <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px">
               <div style="font-size:9px;color:#1B3A2D;font-weight:700;text-transform:uppercase;letter-spacing:0.8px">TRIFR</div>
-              <span title="Total Recordable Injury Frequency Rate - per 1 million hours worked" style="cursor:help;font-size:10px;color:#666;background:rgba(255,255,255,0.6);width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700">?</span>
+              <span onclick="alert('TRIFR - Total Recordable Injury Frequency Rate\n\nMeasures the number of recordable incidents per 1 million hours worked.\n\nIncludes: First aid, medical treatment, restricted work, lost time injuries, and fatalities.')" style="cursor:pointer;font-size:10px;color:#1B3A2D;background:rgba(255,255,255,0.8);width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:1px solid #1B3A2D">?</span>
             </div>
             
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -11084,7 +11084,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="background:linear-gradient(135deg, #FFF4E6 0%, #FFE9CC 100%);border-radius:8px;padding:10px;border:1.5px solid #B8960C">
             <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px">
               <div style="font-size:9px;color:#B8960C;font-weight:700;text-transform:uppercase;letter-spacing:0.8px">LTI</div>
-              <span title="Lost Time Injury Frequency Rate - per 1 million hours worked" style="cursor:help;font-size:10px;color:#666;background:rgba(255,255,255,0.6);width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700">?</span>
+              <span onclick="alert('LTI - Lost Time Injury Frequency Rate\n\nMeasures the number of injuries resulting in time off work per 1 million hours worked.\n\nIncludes: Any work-related injury that prevents an employee from performing their normal work duties on any day after the incident.')" style="cursor:pointer;font-size:10px;color:#B8960C;background:rgba(255,255,255,0.8);width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:1px solid #B8960C">?</span>
             </div>
             
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -11148,19 +11148,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div id="dir-inc-severity" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px"></div>
       </div>
 
-      <!-- Top Root Causes -->
-      <div class="fcard" style="margin-bottom:12px">
-        <div class="fcard-hdr">🎯 Top 5 Root Causes</div>
-        <div style="padding:10px">
-          <div id="dinc-root-causes"></div>
-        </div>
-      </div>
-
       <!-- By Mechanism -->
       <div class="fcard" style="margin-bottom:12px">
         <div class="fcard-hdr">🔧 Incidents By Mechanism</div>
         <div style="padding:10px">
           <div id="dir-inc-breakdown"></div>
+        </div>
+      </div>
+
+      <!-- Top Root Causes -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🎯 Top 5 Root Causes</div>
+        <div style="padding:10px">
+          <div id="dinc-root-causes"></div>
         </div>
       </div>
 
@@ -36646,13 +36646,46 @@ function populateIncidentAnalytics(incidents) {
   var rootCausesEl = document.getElementById('dinc-root-causes');
   if (rootCausesEl) {
     var causes = {};
+    
+    // Root cause categorization based on keywords
+    var rootCauseCategories = {
+      'Inadequate training': ['training', 'trained', 'untrained', 'inexperienced', 'new to', 'first time'],
+      'Poor housekeeping': ['housekeeping', 'cleaning', 'wet floor', 'slippery', 'cluttered', 'debris', 'spill'],
+      'Equipment not maintained': ['maintained', 'maintenance', 'broken', 'faulty', 'defective', 'malfunction', 'not working'],
+      'Lack of supervision': ['supervision', 'unsupervised', 'alone', 'no oversight', 'unmonitored'],
+      'Poor lighting': ['lighting', 'light', 'dark', 'visibility', 'poorly lit', 'dim'],
+      'Time pressure': ['rush', 'hurry', 'time pressure', 'deadline', 'behind schedule', 'rushing'],
+      'Communication breakdown': ['communication', 'not informed', 'unaware', 'misunderstood', 'not told', 'miscommunication'],
+      'Inadequate procedures': ['procedure', 'process', 'instruction', 'no procedure', 'unclear process', 'no instructions'],
+      'Fatigue': ['fatigue', 'tired', 'exhausted', 'overworked', 'long hours', 'lack of rest'],
+      'Inadequate PPE': ['PPE', 'safety equipment', 'protective equipment', 'not wearing', 'no PPE', 'wrong PPE'],
+      'Poor work planning': ['planning', 'not planned', 'poor planning', 'unplanned', 'ad hoc'],
+      'Environmental factors': ['weather', 'wind', 'rain', 'temperature', 'heat', 'cold', 'environmental']
+    };
+    
     incidents.forEach(function(inc) {
       if (inc.what_caused) {
-        // Truncate to ~40 chars for short categories like "Slip/Trip", "Incorrect Lighting"
-        var cause = inc.what_caused.length > 40 
-          ? inc.what_caused.substring(0, 40).trim() + '...'
-          : inc.what_caused;
-        causes[cause] = (causes[cause] || 0) + 1;
+        var text = inc.what_caused.toLowerCase();
+        var matched = false;
+        
+        // Check each category for keyword matches
+        for (var category in rootCauseCategories) {
+          var keywords = rootCauseCategories[category];
+          for (var i = 0; i < keywords.length; i++) {
+            if (text.indexOf(keywords[i]) !== -1) {
+              causes[category] = (causes[category] || 0) + 1;
+              matched = true;
+              break;
+            }
+          }
+          if (matched) break;
+        }
+        
+        // If no match, use first 4 words as fallback
+        if (!matched) {
+          var words = inc.what_caused.split(' ').slice(0, 4).join(' ');
+          causes[words] = (causes[words] || 0) + 1;
+        }
       }
     });
     
@@ -36663,6 +36696,16 @@ function populateIncidentAnalytics(incidents) {
     var html = '';
     sortedCauses.forEach(function(cause, index) {
       var count = causes[cause];
+      var percent = Math.round((count / incidents.length) * 100);
+      html += '<div style="background:#F8F8F8;padding:8px 10px;border-radius:6px;border-left:3px solid #B8960C;margin-bottom:6px">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">';
+      html += '<div style="font-size:11px;color:#1A2A1F;font-weight:600;flex:1">' + (index + 1) + '. ' + cause + '</div>';
+      html += '<div style="font-size:11px;color:#B8960C;font-weight:700;white-space:nowrap">' + count + ' (' + percent + '%)</div>';
+      html += '</div></div>';
+    });
+    
+    rootCausesEl.innerHTML = html || '<div style="text-align:center;color:#999;padding:20px">No root cause data available</div>';
+  }
       var percent = Math.round((count / incidents.length) * 100);
       html += '<div style="background:#F8F8F8;padding:8px 10px;border-radius:6px;border-left:3px solid #B8960C;margin-bottom:6px">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">';
