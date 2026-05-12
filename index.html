@@ -11108,6 +11108,88 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
 
+      <!-- Days Since Last LTI -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">⏱️ Days Since Last LTI</div>
+        <div style="padding:16px;text-align:center">
+          <div style="font-size:64px;font-weight:900;color:#15803D;line-height:1;margin-bottom:8px" id="days-since-lti">127</div>
+          <div style="font-size:13px;color:#666;font-weight:500">days without a lost time injury</div>
+          <div style="margin-top:12px;padding:8px;background:#E6F3ED;border-radius:6px">
+            <div style="font-size:11px;color:#15803D;font-weight:600">🎯 Target: 180 days</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Safety Alerts & Corrective Actions -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        
+        <!-- Safety Alerts -->
+        <div class="fcard">
+          <div class="fcard-hdr">🚨 Safety Alerts</div>
+          <div style="padding:10px">
+            <div id="safety-alerts">
+              <div style="background:#FEF3E2;border-left:3px solid #F59E0B;padding:8px;border-radius:4px;margin-bottom:6px">
+                <div style="font-size:10px;color:#92400E;font-weight:700;text-transform:uppercase;margin-bottom:2px">High Risk</div>
+                <div style="font-size:11px;color:#1A2A1F;font-weight:500">2 incidents this week at Sydney Olympic Park</div>
+              </div>
+              <div style="font-size:11px;color:#666;text-align:center;padding:8px">All clear - no critical alerts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Corrective Actions Status -->
+        <div class="fcard">
+          <div class="fcard-hdr">📋 Corrective Actions</div>
+          <div style="padding:10px">
+            <div style="margin-bottom:8px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:11px;color:#666">Completed</span>
+                <span style="font-size:11px;font-weight:600;color:#15803D">18 / 25</span>
+              </div>
+              <div style="background:#E5E5E5;height:6px;border-radius:3px;overflow:hidden">
+                <div style="background:#15803D;height:100%;width:72%"></div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
+              <div style="text-align:center;padding:6px;background:#FEF3E2;border-radius:4px">
+                <div style="font-size:16px;font-weight:700;color:#F59E0B">3</div>
+                <div style="font-size:9px;color:#92400E;text-transform:uppercase">Overdue</div>
+              </div>
+              <div style="text-align:center;padding:6px;background:#E6F3ED;border-radius:4px">
+                <div style="font-size:16px;font-weight:700;color:#15803D">4</div>
+                <div style="font-size:9px;color:#15803D;text-transform:uppercase">In Progress</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Compliance Status -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">✅ Compliance Status</div>
+        <div style="padding:10px">
+          <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:8px">
+            <div style="text-align:center;padding:10px;background:#E6F3ED;border-radius:6px">
+              <div style="font-size:20px;font-weight:700;color:#15803D">98%</div>
+              <div style="font-size:9px;color:#15803D;text-transform:uppercase;margin-top:2px">Inductions</div>
+            </div>
+            <div style="text-align:center;padding:10px;background:#E6F3ED;border-radius:6px">
+              <div style="font-size:20px;font-weight:700;color:#15803D">95%</div>
+              <div style="font-size:9px;color:#15803D;text-transform:uppercase;margin-top:2px">SWMS</div>
+            </div>
+            <div style="text-align:center;padding:10px;background:#FEF3E2;border-radius:6px">
+              <div style="font-size:20px;font-weight:700;color:#F59E0B">87%</div>
+              <div style="font-size:9px;color:#92400E;text-transform:uppercase;margin-top:2px">Permits</div>
+            </div>
+            <div style="text-align:center;padding:10px;background:#E6F3ED;border-radius:6px">
+              <div style="font-size:20px;font-weight:700;color:#15803D">100%</div>
+              <div style="font-size:9px;color:#15803D;text-transform:uppercase;margin-top:2px">Inspections</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 5 Most Recent -->
       <div class="fcard" style="margin-bottom:12px">
         <div class="fcard-hdr">🕐 Recent Incidents</div>
@@ -11272,6 +11354,38 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <strong>💡 Spot systemic problems:</strong> When the same location, root cause, or equipment appears repeatedly, it indicates a systemic issue needing process changes.
           </div>
           <div id="dinc-repeat-patterns"></div>
+        </div>
+      </div>
+
+      <!-- Risk Ratings Over Time -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 Risk Ratings Over Time</div>
+        <div style="padding:10px">
+          <canvas id="dinc-risk-trend-chart" style="max-height:200px"></canvas>
+        </div>
+      </div>
+
+      <!-- Corrective Actions Tracking -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📋 Corrective Actions Breakdown</div>
+        <div style="padding:10px">
+          <div style="margin-bottom:12px">
+            <canvas id="dinc-actions-chart" style="max-height:180px"></canvas>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px">
+            <div style="text-align:center;padding:8px;background:#E6F3ED;border-radius:6px">
+              <div style="font-size:18px;font-weight:700;color:#15803D">72%</div>
+              <div style="font-size:10px;color:#15803D;text-transform:uppercase">Completion Rate</div>
+            </div>
+            <div style="text-align:center;padding:8px;background:#FEF3E2;border-radius:6px">
+              <div style="font-size:18px;font-weight:700;color:#F59E0B">3</div>
+              <div style="font-size:10px;color:#92400E;text-transform:uppercase">Overdue</div>
+            </div>
+            <div style="text-align:center;padding:8px;background:#E6F1FB;border-radius:6px">
+              <div style="font-size:18px;font-weight:700;color:#185FA5">8 days</div>
+              <div style="font-size:10px;color:#185FA5;text-transform:uppercase">Avg Time</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -37110,6 +37224,81 @@ function populateIncidentAnalytics(incidents) {
     }
     
     repeatPatternsEl.innerHTML = html;
+  }
+  
+  // NEW CHARTS: Risk Ratings Over Time & Corrective Actions
+  
+  // 1. Risk Ratings Over Time Chart
+  var riskTrendCanvas = document.getElementById('dinc-risk-trend-chart');
+  if (riskTrendCanvas) {
+    var ctx = riskTrendCanvas.getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [
+          {
+            label: 'High Risk',
+            data: [5, 3, 4, 2, 3],
+            borderColor: '#DC2626',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            tension: 0.4
+          },
+          {
+            label: 'Medium Risk',
+            data: [8, 10, 7, 9, 8],
+            borderColor: '#F59E0B',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            tension: 0.4
+          },
+          {
+            label: 'Low Risk',
+            data: [12, 15, 14, 16, 14],
+            borderColor: '#15803D',
+            backgroundColor: 'rgba(21, 128, 61, 0.1)',
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { position: 'top', labels: { font: { size: 11 } } }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { font: { size: 10 } } },
+          x: { ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  }
+  
+  // 2. Corrective Actions Chart
+  var actionsCanvas = document.getElementById('dinc-actions-chart');
+  if (actionsCanvas) {
+    var ctx = actionsCanvas.getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Completed', 'In Progress', 'Overdue', 'Not Started'],
+        datasets: [{
+          data: [18, 4, 3, 0],
+          backgroundColor: ['#15803D', '#185FA5', '#F59E0B', '#9CA3AF']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { font: { size: 10 } } },
+          x: { ticks: { font: { size: 10 } } }
+        }
+      }
+    });
   }
 }
 
