@@ -1363,7 +1363,7 @@ input[type="time"] {
 
 /* FORM */
 .fbody{flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-bottom:calc(20px + var(--sb))}
-.fcard{background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.fcard{background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
 .fcard-hdr{background:var(--deep);padding:11px 15px;font-size:10.5px;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase}
 .fcard-body{padding:15px;display:flex;flex-direction:column;gap:13px}
 .flabel{font-size:12.5px;font-weight:600;color:var(--text)}
@@ -11059,7 +11059,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="background:linear-gradient(135deg, #E6F3F0 0%, #D4EDE5 100%);border-radius:8px;padding:10px;border:1.5px solid #1B3A2D;margin-bottom:8px">
             <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px">
               <div style="font-size:9px;color:#1B3A2D;font-weight:700;text-transform:uppercase;letter-spacing:0.8px">TRIFR</div>
-              <span onclick="alert('TRIFR - Total Recordable Injury Frequency Rate\n\nMeasures the number of recordable incidents per 1 million hours worked.\n\nIncludes: First aid, medical treatment, restricted work, lost time injuries, and fatalities.')" style="cursor:pointer;font-size:10px;color:#1B3A2D;background:rgba(255,255,255,0.8);width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:1px solid #1B3A2D">?</span>
+              <span onclick="showTooltip('TRIFR - Total Recordable Injury Frequency Rate\\n\\nMeasures the number of recordable incidents per 1 million hours worked.\\n\\nIncludes: First aid, medical treatment, restricted work, lost time injuries, and fatalities.')" style="cursor:pointer;font-size:10px;color:#1B3A2D;background:rgba(255,255,255,0.8);width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:1px solid #1B3A2D">?</span>
             </div>
             
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -11084,7 +11084,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="background:linear-gradient(135deg, #FFF4E6 0%, #FFE9CC 100%);border-radius:8px;padding:10px;border:1.5px solid #B8960C">
             <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px">
               <div style="font-size:9px;color:#B8960C;font-weight:700;text-transform:uppercase;letter-spacing:0.8px">LTI</div>
-              <span onclick="alert('LTI - Lost Time Injury Frequency Rate\n\nMeasures the number of injuries resulting in time off work per 1 million hours worked.\n\nIncludes: Any work-related injury that prevents an employee from performing their normal work duties on any day after the incident.')" style="cursor:pointer;font-size:10px;color:#B8960C;background:rgba(255,255,255,0.8);width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:1px solid #B8960C">?</span>
+              <span onclick="showTooltip('LTI - Lost Time Injury Frequency Rate\\n\\nMeasures the number of injuries resulting in time off work per 1 million hours worked.\\n\\nIncludes: Any work-related injury that prevents an employee from performing their normal work duties on any day after the incident.')" style="cursor:pointer;font-size:10px;color:#B8960C;background:rgba(255,255,255,0.8);width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:1px solid #B8960C">?</span>
             </div>
             
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -11359,7 +11359,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
       <!-- Risk Ratings Over Time -->
       <div class="fcard" style="margin-bottom:12px">
-        <div class="fcard-hdr">📊 Risk Ratings Over Time</div>
+        <div class="fcard-hdr" style="display:flex;justify-content:space-between;align-items:center">
+          <span>📊 Risk Ratings Over Time</span>
+          <span onclick="showTooltip('Risk Ratings Over Time\\n\\nShows how incident severity has changed over recent months.\\n\\nHigh Risk (Red): Serious incidents with major injury or property damage potential\\nMedium Risk (Amber): Moderate incidents requiring investigation\\nLow Risk (Green): Minor incidents or near misses\\n\\nLook for trends - are high-risk incidents increasing or decreasing?')" style="cursor:pointer;font-size:11px;color:#B8960C;background:rgba(255,255,255,0.15);width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:1px solid rgba(255,255,255,0.3)">?</span>
+        </div>
         <div style="padding:10px">
           <canvas id="dinc-risk-trend-chart" style="max-height:200px"></canvas>
         </div>
@@ -37231,6 +37234,12 @@ function populateIncidentAnalytics(incidents) {
   // 1. Risk Ratings Over Time Chart
   var riskTrendCanvas = document.getElementById('dinc-risk-trend-chart');
   if (riskTrendCanvas) {
+    // Destroy existing chart if it exists
+    var existingChart = Chart.getChart(riskTrendCanvas);
+    if (existingChart) {
+      existingChart.destroy();
+    }
+    
     var ctx = riskTrendCanvas.getContext('2d');
     new Chart(ctx, {
       type: 'line',
@@ -37277,6 +37286,12 @@ function populateIncidentAnalytics(incidents) {
   // 2. Corrective Actions Chart
   var actionsCanvas = document.getElementById('dinc-actions-chart');
   if (actionsCanvas) {
+    // Destroy existing chart if it exists
+    var existingChart = Chart.getChart(actionsCanvas);
+    if (existingChart) {
+      existingChart.destroy();
+    }
+    
     var ctx = actionsCanvas.getContext('2d');
     new Chart(ctx, {
       type: 'bar',
@@ -45809,6 +45824,42 @@ function closeIncidentPDF() {
   // This function is no longer needed with the new PDF generation
   // But keeping it for backwards compatibility
   goTo('screen-dir-incidents');
+}
+
+// Custom Tooltip Function
+function showTooltip(message) {
+  // Remove existing tooltip if any
+  var existing = document.getElementById('custom-tooltip-modal');
+  if (existing) existing.remove();
+  
+  // Create modal overlay
+  var modal = document.createElement('div');
+  modal.id = 'custom-tooltip-modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px';
+  
+  // Create modal content
+  var content = document.createElement('div');
+  content.style.cssText = 'background:#fff;border-radius:12px;padding:24px;max-width:400px;width:100%;box-shadow:0 8px 24px rgba(0,0,0,0.15);position:relative';
+  
+  // Add text
+  var text = document.createElement('div');
+  text.style.cssText = 'font-size:13px;line-height:1.6;color:#1A2A1F;white-space:pre-wrap';
+  text.textContent = message.replace(/\\n/g, '\n');
+  
+  // Add close button
+  var closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Got it';
+  closeBtn.style.cssText = 'margin-top:16px;padding:10px 20px;background:#1B3A2D;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;width:100%';
+  closeBtn.onclick = function() { modal.remove(); };
+  
+  content.appendChild(text);
+  content.appendChild(closeBtn);
+  modal.appendChild(content);
+  
+  // Close on overlay click
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  
+  document.body.appendChild(modal);
 }
 
 
