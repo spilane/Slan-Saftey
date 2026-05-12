@@ -1363,7 +1363,7 @@ input[type="time"] {
 
 /* FORM */
 .fbody{flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-bottom:calc(20px + var(--sb))}
-.fcard{background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.fcard{background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;border:1px solid #E8E8E8;border-top:3px solid #B8960C;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
 .fcard-hdr{background:var(--deep);padding:11px 15px;font-size:10.5px;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase}
 .fcard-body{padding:15px;display:flex;flex-direction:column;gap:13px}
 .flabel{font-size:12.5px;font-weight:600;color:var(--text)}
@@ -11165,30 +11165,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
       </div>
 
-      <!-- Compliance Status -->
-      <div class="fcard" style="margin-bottom:12px">
-        <div class="fcard-hdr">✅ Compliance Status</div>
-        <div style="padding:10px">
-          <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:8px">
-            <div style="text-align:center;padding:10px;background:#E6F3ED;border-radius:6px">
-              <div style="font-size:20px;font-weight:700;color:#15803D">98%</div>
-              <div style="font-size:9px;color:#15803D;text-transform:uppercase;margin-top:2px">Inductions</div>
-            </div>
-            <div style="text-align:center;padding:10px;background:#E6F3ED;border-radius:6px">
-              <div style="font-size:20px;font-weight:700;color:#15803D">95%</div>
-              <div style="font-size:9px;color:#15803D;text-transform:uppercase;margin-top:2px">SWMS</div>
-            </div>
-            <div style="text-align:center;padding:10px;background:#FEF3E2;border-radius:6px">
-              <div style="font-size:20px;font-weight:700;color:#F59E0B">87%</div>
-              <div style="font-size:9px;color:#92400E;text-transform:uppercase;margin-top:2px">Permits</div>
-            </div>
-            <div style="text-align:center;padding:10px;background:#E6F3ED;border-radius:6px">
-              <div style="font-size:20px;font-weight:700;color:#15803D">100%</div>
-              <div style="font-size:9px;color:#15803D;text-transform:uppercase;margin-top:2px">Inspections</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- 5 Most Recent -->
       <div class="fcard" style="margin-bottom:12px">
@@ -36964,14 +36940,18 @@ function populateIncidentAnalytics(incidents) {
       return siteCounts[b] - siteCounts[a];
     });
     
-    // Find max for scaling
+    // Calculate total incidents for percentage
+    var totalIncidents = incidents.length;
+    
+    // Find max for bar scaling only
     var maxSiteCount = sortedSites.length > 0 ? siteCounts[sortedSites[0]] : 0;
     
     // Render horizontal bar chart (clickable) - Green theme
     var siteHTML = '';
     sortedSites.forEach(function(site, index) {
       var count = siteCounts[site];
-      var percentage = maxSiteCount > 0 ? (count / maxSiteCount) * 100 : 0;
+      var barWidth = maxSiteCount > 0 ? (count / maxSiteCount) * 100 : 0; // For bar display
+      var actualPercentage = totalIncidents > 0 ? (count / totalIncidents) * 100 : 0; // For label
       
       // Green gradient for all bars (darker for higher counts)
       var intensity = Math.max(0.5, 1 - (index * 0.15)); // Fade from 100% to 50%
@@ -36983,9 +36963,9 @@ function populateIncidentAnalytics(incidents) {
       siteHTML += '    <span style="font-size:11px;font-weight:700;color:#2C6B5E;background:#E6F3F0;padding:4px 12px;border-radius:12px">' + count + '</span>';
       siteHTML += '  </div>';
       siteHTML += '  <div style="background:#F5F5F5;border-radius:6px;height:10px;position:relative;overflow:hidden">';
-      siteHTML += '    <div style="background:' + barColor + ';height:100%;width:' + percentage + '%;border-radius:6px;transition:width 0.4s ease"></div>';
+      siteHTML += '    <div style="background:' + barColor + ';height:100%;width:' + barWidth + '%;border-radius:6px;transition:width 0.4s ease"></div>';
       siteHTML += '  </div>';
-      siteHTML += '  <div style="font-size:9px;color:#999;margin-top:4px;text-align:right">' + Math.round(percentage) + '% of all incidents</div>';
+      siteHTML += '  <div style="font-size:9px;color:#999;margin-top:4px;text-align:right">' + Math.round(actualPercentage) + '% of all incidents</div>';
       siteHTML += '</div>';
     });
     
@@ -38225,7 +38205,7 @@ function dincInitCharts() {
   
   // 3. INCIDENTS BY SEVERITY (Doughnut Chart)
   var severityCanvas = document.getElementById('dinc-chart-by-severity');
-  if (severityCanvas) {
+  if (severityCanvas && data && data.length > 0) {
     var sevCounts = {};
     data.forEach(function(inc) {
       var sev = inc.severity || 'Minor';
@@ -38246,7 +38226,9 @@ function dincInitCharts() {
       }
     });
     
-    incChartInstances.bySeverity = new Chart(severityCanvas, {
+    // Only create chart if we have data
+    if (sevLabels.length > 0 && sevValues.length > 0) {
+      incChartInstances.bySeverity = new Chart(severityCanvas, {
       type: 'doughnut',
       data: {
         labels: sevLabels,
@@ -38281,6 +38263,9 @@ function dincInitCharts() {
         }
       }
     });
+    } else {
+      console.log('Severity chart: No valid data to display');
+    }
   }
   
   // 4. INCIDENTS OVER TIME (Line Chart)
