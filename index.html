@@ -10992,6 +10992,44 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <!-- ACTION REQUIRED - Alert Section -->
       <div id="dinc-action-required" style="margin-bottom:12px"></div>
       
+      <!-- ACTIONS I CAN TAKE NOW -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🎯 Actions I Can Take Now</div>
+        <div style="padding:10px">
+          
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #1B3A2D 0%, #2C6B5E 100%);border:none;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 4px 12px rgba(27,58,45,0.3)" onclick="showDirectorActionsModal('pending')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#D4AF37;margin-bottom:4px">📋 Approve <span id="dinc-pending-reports-count">5</span> Pending Reports</div>
+                <div style="font-size:10px;color:#D4EDE5">Incident reports awaiting your review</div>
+              </div>
+              <div style="font-size:20px;color:#D4AF37">→</div>
+            </div>
+          </button>
+
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);border:none;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 4px 12px rgba(220,38,38,0.3)" onclick="showDirectorActionsModal('overdue')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:white;margin-bottom:4px">⚠️ Assign <span id="dinc-overdue-investigations-count">3</span> Overdue Investigations</div>
+                <div style="font-size:10px;color:#FEE2E2">Require immediate attention and assignment</div>
+              </div>
+              <div style="font-size:20px;color:white">→</div>
+            </div>
+          </button>
+
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #D97706 0%, #B45309 100%);border:none;border-radius:10px;cursor:pointer;box-shadow:0 4px 12px rgba(217,119,6,0.3)" onclick="showDirectorActionsModal('highrisk')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:white;margin-bottom:4px">🚨 Review High Risk Incidents</div>
+                <div style="font-size:10px;color:#FEF3C7"><span id="dinc-highrisk-count">2</span> high-risk incidents this week need review</div>
+              </div>
+              <div style="font-size:20px;color:white">→</div>
+            </div>
+          </button>
+
+        </div>
+      </div>
+      
       <!-- Incident Summary -->
       <div class="fcard" style="margin-bottom:12px">
         <div class="fcard-hdr">📊 Incident Summary</div>
@@ -45844,6 +45882,89 @@ function showTooltip(message) {
   // Close on overlay click
   modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
   
+  document.body.appendChild(modal);
+}
+
+// Director Actions Modal
+function showDirectorActionsModal(actionType) {
+  let title = '';
+  let content = '';
+  
+  if (actionType === 'pending') {
+    title = '📋 Pending Reports Awaiting Approval';
+    content = `
+      <div style="padding:20px">
+        <p style="margin-bottom:16px;color:#666">The following incident reports require your approval:</p>
+        <div style="background:#F5F5F5;padding:12px;border-radius:8px;margin-bottom:10px;border-left:3px solid #D4AF37">
+          <div style="font-weight:600;margin-bottom:4px">Near Miss - Sydney Olympic Park</div>
+          <div style="font-size:12px;color:#666">Reported by John Smith • 2 days ago</div>
+        </div>
+        <div style="background:#F5F5F5;padding:12px;border-radius:8px;margin-bottom:10px;border-left:3px solid #D4AF37">
+          <div style="font-weight:600;margin-bottom:4px">First Aid - Bondi Junction</div>
+          <div style="font-size:12px;color:#666">Reported by Sarah Lee • 3 days ago</div>
+        </div>
+        <div style="background:#F5F5F5;padding:12px;border-radius:8px;margin-bottom:10px;border-left:3px solid #D4AF37">
+          <div style="font-weight:600;margin-bottom:4px">Property Damage - Metro Project</div>
+          <div style="font-size:12px;color:#666">Reported by Mike Chen • 4 days ago</div>
+        </div>
+        <p style="margin-top:16px;font-size:12px;color:#888">Click on any report to review and approve</p>
+      </div>
+    `;
+  } else if (actionType === 'overdue') {
+    title = '⚠️ Overdue Investigations';
+    content = `
+      <div style="padding:20px">
+        <p style="margin-bottom:16px;color:#B83232;font-weight:600">These investigations are overdue and require immediate assignment:</p>
+        <div style="background:#FEE2E2;padding:12px;border-radius:8px;margin-bottom:10px;border-left:3px solid #DC2626">
+          <div style="font-weight:600;margin-bottom:4px;color:#991B1B">LTI - Fall from height</div>
+          <div style="font-size:12px;color:#7F1D1D">Overdue by 5 days • Sydney Olympic Park</div>
+        </div>
+        <div style="background:#FEE2E2;padding:12px;border-radius:8px;margin-bottom:10px;border-left:3px solid #DC2626">
+          <div style="font-weight:600;margin-bottom:4px;color:#991B1B">Dangerous Incident - Equipment failure</div>
+          <div style="font-size:12px;color:#7F1D1D">Overdue by 3 days • Bondi Junction</div>
+        </div>
+        <div style="background:#FEE2E2;padding:12px;border-radius:8px;margin-bottom:10px;border-left:3px solid #DC2626">
+          <div style="font-weight:600;margin-bottom:4px;color:#991B1B">First Aid - Manual handling</div>
+          <div style="font-size:12px;color:#7F1D1D">Overdue by 2 days • Metro Project</div>
+        </div>
+        <button style="width:100%;padding:12px;background:#DC2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-top:16px">Assign Investigators</button>
+      </div>
+    `;
+  } else if (actionType === 'highrisk') {
+    title = '🚨 High Risk Incidents';
+    content = `
+      <div style="padding:20px">
+        <p style="margin-bottom:16px;color:#D97706;font-weight:600">These high-risk incidents require your immediate review:</p>
+        <div style="background:#FEF3C7;padding:12px;border-radius:8px;margin-bottom:10px;border-left:3px solid #F59E0B">
+          <div style="font-weight:600;margin-bottom:4px;color:#92400E">Crane near miss</div>
+          <div style="font-size:12px;color:#78350F">Sydney Olympic Park • Risk Rating: High</div>
+        </div>
+        <div style="background:#FEF3C7;padding:12px;border-radius:8px;margin-bottom:10px;border-left:3px solid #F59E0B">
+          <div style="font-weight:600;margin-bottom:4px;color:#92400E">Edge protection failure</div>
+          <div style="font-size:12px;color:#78350F">Sydney Olympic Park • Risk Rating: High</div>
+        </div>
+        <button style="width:100%;padding:12px;background:#D97706;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-top:16px">Review All High Risk</button>
+      </div>
+    `;
+  }
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000';
+  
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:12px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3)';
+  
+  box.innerHTML = `
+    <div style="padding:20px;border-bottom:1px solid #E5E5E5;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:18px;font-weight:700;color:#1A2A1F">${title}</div>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#666">×</button>
+    </div>
+    ${content}
+  `;
+  
+  modal.appendChild(box);
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
   document.body.appendChild(modal);
 }
 
