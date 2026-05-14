@@ -45752,6 +45752,49 @@ function openIncidentPDF(incidentRef) {
   </div>
   ` : ''}
 
+  <!-- SIGNATURES SECTION -->
+  <div style="margin-top: 40px; padding-top: 30px; border-top: 3px solid #1B3A2D;">
+    <div style="font-size: 16px; font-weight: 800; color: #1B3A2D; margin-bottom: 24px; text-align: center;">✍️ SIGNATURES & APPROVALS</div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+      <!-- Reporter Signature -->
+      <div style="padding: 20px; background: #F8F9FA; border-radius: 8px; border: 2px solid #2563EB;">
+        <div style="font-size: 12px; font-weight: 700; color: #185FA5; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Reporter (Worker)</div>
+        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #E5E5E5; margin-bottom: 12px; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+          ${incident.reporter_signature ? `<img src="${incident.reporter_signature}" style="max-width: 100%; max-height: 70px; display: block;" alt="Reporter Signature" />` : '<div style="color: #999; font-size: 12px;">No signature</div>'}
+        </div>
+        <div style="font-size: 13px; font-weight: 700; color: #1A2A1F;">${incident.reporter_name}</div>
+        <div style="font-size: 11px; color: #666;">${incident.reporter_role}</div>
+        <div style="font-size: 11px; color: #666; margin-top: 4px;">Date: ${incident.incident_date}</div>
+      </div>
+
+      <!-- Supervisor Signature -->
+      <div style="padding: 20px; background: #F8F9FA; border-radius: 8px; border: 2px solid #3B6D11;">
+        <div style="font-size: 12px; font-weight: 700; color: #3B6D11; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Supervisor / Closer</div>
+        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #E5E5E5; margin-bottom: 12px; min-height: 80px; display: flex; align-items: center; justify-content: center;">
+          ${incident.closer_signature ? `<img src="${incident.closer_signature}" style="max-width: 100%; max-height: 70px; display: block;" alt="Supervisor Signature" />` : '<div style="color: #999; font-size: 12px;">No signature</div>'}
+        </div>
+        <div style="font-size: 13px; font-weight: 700; color: #1A2A1F;">${incident.supervisor_name || 'Pending'}</div>
+        <div style="font-size: 11px; color: #666;">${incident.supervisor_company || ''}</div>
+        <div style="font-size: 11px; color: #666; margin-top: 4px;">Reviewed: ${incident.reviewed_date || 'Pending'}</div>
+      </div>
+    </div>
+
+    ${incident.review_notes ? `
+    <div style="padding: 16px; background: #E6F3F0; border-left: 4px solid #3B6D11; border-radius: 8px; margin-bottom: 20px;">
+      <div style="font-size: 11px; font-weight: 700; color: #3B6D11; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Supervisor Review Notes</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #1A2A1F;">${incident.review_notes}</div>
+    </div>
+    ` : ''}
+
+    ${incident.closing_note ? `
+    <div style="padding: 16px; background: #FFF9E6; border-left: 4px solid #D4AF37; border-radius: 8px;">
+      <div style="font-size: 11px; font-weight: 700; color: #92400E; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Closing Notes</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #1A2A1F;">${incident.closing_note}</div>
+    </div>
+    ` : ''}
+  </div>
+
   <div style="padding: 20px; background: #F8F9FA; border-radius: 8px; text-align: center; margin-top: 30px;">
     <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">Status</div>
     <div style="display: inline-block; padding: 8px 20px; background: ${incident.status === 'closed' ? '#EAF3DE' : '#FEF3E2'}; color: ${incident.status === 'closed' ? '#3B6D11' : '#D97706'}; font-weight: 700; border-radius: 20px; font-size: 14px; text-transform: uppercase;">${incident.status || 'Open'}</div>
