@@ -37361,7 +37361,7 @@ function populateOverviewTab(incidents) {
                       inc.severity === 'Major' || inc.severity === 'Medical Treatment' ? '#FEF0E6' :
                       inc.severity === 'Moderate' || inc.severity === 'First Aid' ? '#FFFBF0' : '#f5f5f5';
       
-      recentHTML += '<div style="background:#fff;border:1.5px solid #e5e5e5;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 2px 4px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.2s" onclick="openIncidentPDF(\'' + inc.ref + '\')" onmouseover="this.style.background=\'#F8F9FA\';this.style.transform=\'translateX(4px)\'" onmouseout="this.style.background=\'#fff\';this.style.transform=\'translateX(0)\'" title="Click to view full incident report">';
+      recentHTML += '<div style="background:#fff;border:1.5px solid #e5e5e5;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 2px 4px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.2s" onclick="showIncidentSummary(\'' + inc.ref + '\')" onmouseover="this.style.background=\'#F8F9FA\';this.style.transform=\'translateX(4px)\'" onmouseout="this.style.background=\'#fff\';this.style.transform=\'translateX(0)\'" title="Click to view full incident report">';
       recentHTML += '  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">';
       recentHTML += '    <span style="padding:4px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;background:' + severityBg + ';color:' + severityColor + '">' + inc.severity + '</span>';
       recentHTML += '    <span style="font-size:11px;font-weight:600">' + inc.incident_type + '</span>';
@@ -45569,6 +45569,109 @@ function showIncidentsByPerson(personName) {
   };
 }
 
+// Show brief incident summary popup with "View Full PDF" button
+function showIncidentSummary(incidentRef) {
+  const incident = directorDemoIncidents.find(inc => inc.ref === incidentRef);
+  
+  if (!incident) {
+    alert('Incident not found: ' + incidentRef);
+    return;
+  }
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10001;padding:20px;box-sizing:border-box';
+  
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:12px;max-width:550px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;max-height:90vh;overflow-y:auto';
+  
+  // Severity colors
+  const severityColor = incident.severity === 'Critical' ? '#DC2626' : 
+                       incident.severity === 'Major' ? '#F59E0B' : 
+                       incident.severity === 'Moderate' ? '#D4AF37' : '#666';
+  const severityBg = incident.severity === 'Critical' ? '#FEE2E2' : 
+                     incident.severity === 'Major' ? '#FEF3E2' : 
+                     incident.severity === 'Moderate' ? '#FFF9E6' : '#F5F5F5';
+  
+  box.innerHTML = `
+    <!-- Header -->
+    <div style="padding:24px;border-bottom:2px solid #E5E5E5;display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-size:20px;font-weight:800;color:#1B3A2D;margin-bottom:8px">${incident.incident_type}</div>
+        <div style="font-size:13px;color:#666;font-weight:600">${incident.ref}</div>
+      </div>
+      <button onclick="this.closest('[style*=\\'position:fixed\\']').remove()" style="background:none;border:none;font-size:28px;cursor:pointer;color:#999;line-height:1;padding:0;margin-left:16px">×</button>
+    </div>
+    
+    <!-- Content -->
+    <div style="padding:24px">
+      <!-- Key Info Grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+        <div style="padding:12px;background:#F8F9FA;border-radius:8px">
+          <div style="font-size:10px;color:#666;font-weight:700;text-transform:uppercase;margin-bottom:4px">📅 Date & Time</div>
+          <div style="font-size:13px;font-weight:700;color:#1A2A1F">${incident.incident_date} at ${incident.incident_time}</div>
+        </div>
+        <div style="padding:12px;background:${severityBg};border-radius:8px;border:2px solid ${severityColor}">
+          <div style="font-size:10px;color:#666;font-weight:700;text-transform:uppercase;margin-bottom:4px">⚠️ Severity</div>
+          <div style="font-size:13px;font-weight:800;color:${severityColor}">${incident.severity}</div>
+        </div>
+      </div>
+      
+      <div style="padding:12px;background:#F8F9FA;border-radius:8px;margin-bottom:20px">
+        <div style="font-size:10px;color:#666;font-weight:700;text-transform:uppercase;margin-bottom:4px">📍 Location</div>
+        <div style="font-size:13px;font-weight:700;color:#1A2A1F">${incident.site}</div>
+        <div style="font-size:12px;color:#666;margin-top:2px">${incident.location}</div>
+      </div>
+      
+      <div style="padding:12px;background:#E6F3ED;border-radius:8px;margin-bottom:20px;border-left:3px solid #15803D">
+        <div style="font-size:10px;color:#15803D;font-weight:700;text-transform:uppercase;margin-bottom:4px">✅ Status</div>
+        <div style="font-size:13px;font-weight:800;color:#15803D;text-transform:uppercase">${incident.status || 'Open'}</div>
+      </div>
+      
+      <!-- Divider -->
+      <div style="height:1px;background:#E5E5E5;margin:20px 0"></div>
+      
+      <!-- Description -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;color:#1B3A2D;text-transform:uppercase;margin-bottom:8px">What Happened:</div>
+        <div style="font-size:13px;line-height:1.6;color:#444">${incident.description.substring(0, 200)}${incident.description.length > 200 ? '...' : ''}</div>
+      </div>
+      
+      <!-- Divider -->
+      <div style="height:1px;background:#E5E5E5;margin:20px 0"></div>
+      
+      <!-- People -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+        <div>
+          <div style="font-size:10px;color:#666;font-weight:700;text-transform:uppercase;margin-bottom:4px">Reported by</div>
+          <div style="font-size:13px;font-weight:700;color:#1A2A1F">${incident.reporter_name}</div>
+          <div style="font-size:11px;color:#666">${incident.reporter_role}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#666;font-weight:700;text-transform:uppercase;margin-bottom:4px">Reviewed by</div>
+          <div style="font-size:13px;font-weight:700;color:#1A2A1F">${incident.supervisor_name || 'Pending'}</div>
+          <div style="font-size:11px;color:#666">${incident.reviewed_date ? new Date(incident.reviewed_date).toLocaleDateString() : 'Pending'}</div>
+        </div>
+      </div>
+      
+      <!-- View Full PDF Button -->
+      <button onclick="event.stopPropagation(); openIncidentPDF('${incident.ref}'); this.closest('[style*=\\'position:fixed\\']').remove()" 
+              style="width:100%;padding:16px;background:linear-gradient(135deg, #1B3A2D 0%, #2C6B5E 100%);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(27,58,45,0.3);transition:all 0.2s"
+              onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(27,58,45,0.4)'"
+              onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(27,58,45,0.3)'">
+        📄 VIEW FULL PDF REPORT →
+      </button>
+    </div>
+  `;
+  
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+  
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.remove();
+  };
+}
+
 // Open incident as printable PDF in new tab
 function openIncidentPDF(incidentRef) {
   const incident = directorDemoIncidents.find(inc => inc.ref === incidentRef);
@@ -46409,7 +46512,7 @@ function renderDirectorIncidentList(incidents) {
                     inc.severity === 'Major' || inc.severity === 'Medical Treatment' ? '#FEF0E6' :
                     inc.severity === 'Moderate' || inc.severity === 'First Aid' ? '#FFFBF0' : '#f5f5f5';
     
-    return '<div style="background:#fff;border:1.5px solid #e5e5e5;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 2px 4px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.2s" onclick="openIncidentPDF(\'' + inc.ref + '\')" onmouseover="this.style.background=\'#F8F9FA\';this.style.transform=\'translateX(4px)\'" onmouseout="this.style.background=\'#fff\';this.style.transform=\'translateX(0)\'" title="Click to open full PDF report">' +
+    return '<div style="background:#fff;border:1.5px solid #e5e5e5;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 2px 4px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.2s" onclick="showIncidentSummary(\'' + inc.ref + '\')" onmouseover="this.style.background=\'#F8F9FA\';this.style.transform=\'translateX(4px)\'" onmouseout="this.style.background=\'#fff\';this.style.transform=\'translateX(0)\'" title="Click to open full PDF report">' +
       '  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">' +
       '    <span style="padding:4px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;background:' + severityBg + ';color:' + severityColor + '">' + inc.severity + '</span>' +
       '    <span style="font-size:11px;font-weight:600">' + inc.incident_type + '</span>' +
