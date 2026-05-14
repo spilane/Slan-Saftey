@@ -45600,7 +45600,7 @@ function showIncidentSummary(incidentRef) {
         <div style="font-size:20px;font-weight:800;color:#1B3A2D;margin-bottom:8px">${incident.incident_type}</div>
         <div style="font-size:13px;color:#666;font-weight:600">${incident.ref}</div>
       </div>
-      <button onclick="this.closest('[style*=\\'position:fixed\\']').remove()" style="background:none;border:none;font-size:28px;cursor:pointer;color:#999;line-height:1;padding:0;margin-left:16px">×</button>
+      <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background:none;border:none;font-size:28px;cursor:pointer;color:#999;line-height:1;padding:0;margin-left:16px">×</button>
     </div>
     
     <!-- Content -->
@@ -45655,7 +45655,7 @@ function showIncidentSummary(incidentRef) {
       </div>
       
       <!-- View Full PDF Button -->
-      <button onclick="event.stopPropagation(); openIncidentPDF('${incident.ref}'); this.closest('[style*=\\'position:fixed\\']').remove()" 
+      <button onclick="event.stopPropagation(); openIncidentPDF('${incident.ref}'); this.parentElement.parentElement.parentElement.remove()" 
               style="width:100%;padding:16px;background:linear-gradient(135deg, #1B3A2D 0%, #2C6B5E 100%);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(27,58,45,0.3);transition:all 0.2s"
               onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(27,58,45,0.4)'"
               onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(27,58,45,0.3)'">
