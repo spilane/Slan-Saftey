@@ -11178,7 +11178,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
                 <div style="font-size:11px;font-weight:700;color:#15803D;margin-top:4px">↓35% vs last year</div>
               </div>
               
-              <div style="background:rgba(255,255,255,0.6);border-radius:6px;padding:10px;text-align:center">
+              <div style="background:rgba(255,255,255,0.6);border-radius:6px;padding:10px;text-align:center;border:2px solid #1B3A2D">
                 <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:4px">Industry Average</div>
                 <div style="font-size:20px;font-weight:800;color:#999">6.5</div>
               </div>
@@ -11196,7 +11196,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
                 <div style="font-size:11px;font-weight:700;color:#15803D;margin-top:4px">↓40% vs last year</div>
               </div>
               
-              <div style="background:rgba(255,255,255,0.6);border-radius:6px;padding:10px;text-align:center">
+              <div style="background:rgba(255,255,255,0.6);border-radius:6px;padding:10px;text-align:center;border:2px solid #D4AF37">
                 <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:4px">Industry Average</div>
                 <div style="font-size:20px;font-weight:800;color:#999">3.0</div>
               </div>
@@ -45776,107 +45776,6 @@ function openIncidentPDF(incidentRef) {
 }
 
 // Show full incident detail modal
-function openIncidentPDF(incidentRef) {
-  const incident = directorDemoIncidents.find(inc => inc.ref === incidentRef);
-  
-  if (!incident) {
-    alert('Incident not found: ' + incidentRef);
-    return;
-  }
-  
-  // Create detailed incident report view
-  let content = `
-    <div style="padding:30px;background:white;font-family:system-ui,-apple-system,sans-serif">
-      <!-- Header -->
-      <div style="border-bottom:3px solid #1B3A2D;padding-bottom:20px;margin-bottom:20px">
-        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
-          <div>
-            <div style="font-size:24px;font-weight:800;color:#1B3A2D;margin-bottom:8px">${incident.incident_type}</div>
-            <div style="font-size:14px;color:#666">Incident Reference: <strong>${incident.ref}</strong></div>
-          </div>
-          <div style="padding:8px 16px;background:${incident.severity === 'Critical' ? '#FEE2E2' : incident.severity === 'Major' ? '#FEF3E2' : incident.severity === 'Moderate' ? '#FFF9E6' : '#F5F5F5'};border-radius:8px;border:2px solid ${incident.severity === 'Critical' ? '#DC2626' : incident.severity === 'Major' ? '#F59E0B' : incident.severity === 'Moderate' ? '#D4AF37' : '#999'}">
-            <div style="font-size:10px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">Severity</div>
-            <div style="font-size:16px;font-weight:800;color:${incident.severity === 'Critical' ? '#DC2626' : incident.severity === 'Major' ? '#F59E0B' : incident.severity === 'Moderate' ? '#D4AF37' : '#666'}">${incident.severity}</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Key Details -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-        <div style="padding:12px;background:#F8F9FA;border-radius:8px;border-left:3px solid #1B3A2D">
-          <div style="font-size:10px;color:#666;font-weight:600;text-transform:uppercase;margin-bottom:4px">Date & Time</div>
-          <div style="font-size:14px;font-weight:700;color:#1A2A1F">${incident.incident_date} at ${incident.incident_time}</div>
-        </div>
-        <div style="padding:12px;background:#F8F9FA;border-radius:8px;border-left:3px solid #D4AF37">
-          <div style="font-size:10px;color:#666;font-weight:600;text-transform:uppercase;margin-bottom:4px">Site</div>
-          <div style="font-size:14px;font-weight:700;color:#1A2A1F">${incident.site}</div>
-        </div>
-        <div style="padding:12px;background:#F8F9FA;border-radius:8px;border-left:3px solid #3B6D11">
-          <div style="font-size:10px;color:#666;font-weight:600;text-transform:uppercase;margin-bottom:4px">Location</div>
-          <div style="font-size:14px;font-weight:700;color:#1A2A1F">${incident.location}</div>
-        </div>
-        <div style="padding:12px;background:#F8F9FA;border-radius:8px;border-left:3px solid #2563EB">
-          <div style="font-size:10px;color:#666;font-weight:600;text-transform:uppercase;margin-bottom:4px">Reporter</div>
-          <div style="font-size:14px;font-weight:700;color:#1A2A1F">${incident.reporter_name}</div>
-          <div style="font-size:11px;color:#666">${incident.reporter_role}</div>
-        </div>
-      </div>
-      
-      <!-- Description -->
-      <div style="margin-bottom:20px;padding:16px;background:#FFF9E6;border-left:4px solid #D4AF37;border-radius:8px">
-        <div style="font-size:12px;font-weight:700;color:#92400E;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">📋 What Happened</div>
-        <div style="font-size:13px;line-height:1.6;color:#1A2A1F">${incident.description}</div>
-      </div>
-      
-      <!-- What Caused It -->
-      ${incident.what_caused ? `
-      <div style="margin-bottom:20px;padding:16px;background:#FEE2E2;border-left:4px solid #DC2626;border-radius:8px">
-        <div style="font-size:12px;font-weight:700;color:#991B1B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">⚠️ Root Cause</div>
-        <div style="font-size:13px;line-height:1.6;color:#1A2A1F">${incident.what_caused}</div>
-      </div>
-      ` : ''}
-      
-      <!-- Corrective Actions -->
-      ${incident.corrective_actions || incident.corrective_detail ? `
-      <div style="margin-bottom:20px;padding:16px;background:#EAF3DE;border-left:4px solid #3B6D11;border-radius:8px">
-        <div style="font-size:12px;font-weight:700;color:#3B6D11;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">✅ Corrective Actions Taken</div>
-        <div style="font-size:13px;line-height:1.6;color:#1A2A1F">${incident.corrective_actions || incident.corrective_detail}</div>
-      </div>
-      ` : ''}
-      
-      <!-- Status -->
-      <div style="padding:16px;background:#F8F9FA;border-radius:8px;text-align:center">
-        <div style="font-size:11px;color:#666;font-weight:600;text-transform:uppercase;margin-bottom:4px">Status</div>
-        <div style="display:inline-block;padding:6px 16px;background:${incident.status === 'closed' ? '#EAF3DE' : '#FEF3E2'};color:${incident.status === 'closed' ? '#3B6D11' : '#D97706'};font-weight:700;border-radius:20px;font-size:12px;text-transform:uppercase">${incident.status || 'Open'}</div>
-      </div>
-    </div>
-  `;
-  
-  // Create modal
-  const modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10001;padding:20px;box-sizing:border-box';
-  
-  const box = document.createElement('div');
-  box.style.cssText = 'background:white;border-radius:12px;max-width:800px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative';
-  
-  // Add close button
-  const closeBtn = document.createElement('button');
-  closeBtn.innerHTML = '×';
-  closeBtn.style.cssText = 'position:sticky;top:10px;right:10px;float:right;background:#fff;border:2px solid #E5E5E5;width:40px;height:40px;border-radius:50%;font-size:24px;cursor:pointer;z-index:1;margin:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s';
-  closeBtn.onmouseover = () => { closeBtn.style.background = '#FEE2E2'; closeBtn.style.borderColor = '#DC2626'; closeBtn.style.color = '#DC2626'; };
-  closeBtn.onmouseout = () => { closeBtn.style.background = '#fff'; closeBtn.style.borderColor = '#E5E5E5'; closeBtn.style.color = '#000'; };
-  closeBtn.onclick = () => modal.remove();
-  
-  box.innerHTML = content;
-  box.insertBefore(closeBtn, box.firstChild);
-  
-  modal.appendChild(box);
-  document.body.appendChild(modal);
-  
-  modal.onclick = (e) => {
-    if (e.target === modal) modal.remove();
-  };
-}
 
 // Show incidents by pattern/equipment type
 function showIncidentsByPattern(pattern) {
