@@ -45860,7 +45860,7 @@ function openIncidentPDF(incidentRef) {
     </tr>
     <tr>
       <td>Relationship</td>
-      <td>${incident.reporter_relationship || 'Employee'}</td>
+      <td>${incident.relationship || incident.reporter_relationship || 'Employee'}</td>
     </tr>
     <tr>
       <td>Supervisor</td>
@@ -45890,7 +45890,7 @@ function openIncidentPDF(incidentRef) {
     </tr>
     <tr>
       <td>Briefings given</td>
-      <td>${incident.briefings || 'prestart, swms, toolbox'}</td>
+      <td>${incident.briefing || 'prestart, swms, toolbox'}</td>
     </tr>
     <tr>
       <td>Shift start</td>
@@ -45898,7 +45898,7 @@ function openIncidentPDF(incidentRef) {
     </tr>
     <tr>
       <td>Days worked in row</td>
-      <td>${incident.days_since_rest || 'N/A'}</td>
+      <td>${incident.days_worked || incident.days_since_rest || 'N/A'}</td>
     </tr>
     <tr>
       <td>Experience</td>
@@ -45916,7 +45916,9 @@ function openIncidentPDF(incidentRef) {
   <table class="data-table">
     <tr>
       <td>Witness</td>
-      <td>${incident.witnesses || 'None recorded'}</td>
+      <td>${incident.witnesses && incident.witnesses.length > 0 
+        ? incident.witnesses.map(w => `${w.name} · ${w.company} · ${w.phone}`).join('<br>') 
+        : 'None recorded'}</td>
     </tr>
   </table>
 
@@ -45926,7 +45928,7 @@ function openIncidentPDF(incidentRef) {
   <table class="data-table">
     <tr>
       <td>Event mechanism</td>
-      <td>${incident.event_mechanism || 'See description'}</td>
+      <td>${incident.mechanism || incident.event_mechanism || 'See description'}</td>
     </tr>
     <tr>
       <td>Body part</td>
@@ -45934,7 +45936,7 @@ function openIncidentPDF(incidentRef) {
     </tr>
     <tr>
       <td>Injury nature</td>
-      <td>${incident.injury_type || 'See description'}</td>
+      <td>${incident.injury_nature || incident.injury_type || 'See description'}</td>
     </tr>
     <tr>
       <td>Treatment</td>
@@ -45955,12 +45957,12 @@ function openIncidentPDF(incidentRef) {
   <!-- WHAT CAUSED IT -->
   <div class="section-header">WHAT CAUSED IT</div>
   
-  <div class="text-content">${incident.root_cause || 'Under investigation'}</div>
+  <div class="text-content">${incident.what_caused || incident.root_cause || 'Under investigation'}</div>
 
   <!-- HOW IT WILL BE PREVENTED -->
   <div class="section-header">HOW IT WILL BE PREVENTED</div>
   
-  <div class="text-content">${incident.prevention || 'Under review'}</div>
+  <div class="text-content">${incident.how_prevented || incident.prevention || 'Under review'}</div>
 
   <!-- IMMEDIATE ACTION TAKEN -->
   <div class="section-header">IMMEDIATE ACTION TAKEN</div>
@@ -45970,11 +45972,7 @@ function openIncidentPDF(incidentRef) {
   <!-- CORRECTIVE ACTIONS -->
   <div class="section-header">CORRECTIVE ACTIONS</div>
   
-  <div class="text-content">
-    ${incident.corrective_actions && incident.corrective_actions.length > 0 
-      ? incident.corrective_actions.map(action => `• ${action.action} (${action.status})`).join('<br>') 
-      : 'No corrective actions recorded'}
-  </div>
+  <div class="text-content">${incident.corrective_actions || 'No corrective actions recorded'}</div>
 
   <!-- REVIEW -->
   <div class="section-header">REVIEW</div>
@@ -45993,11 +45991,7 @@ function openIncidentPDF(incidentRef) {
   <div class="section-header">SUPERVISOR CLOSE-OUT</div>
   
   <div style="font-weight: bold; margin: 8px 0 5px 0; font-size: 9pt;">Corrective action detail</div>
-  <div class="text-content">
-    ${incident.corrective_actions && incident.corrective_actions.length > 0 
-      ? incident.corrective_actions.map(action => action.action).join('. ') + '.'
-      : 'Pending'}
-  </div>
+  <div class="text-content">${incident.corrective_detail || incident.corrective_actions || 'Pending'}</div>
 
   <div style="font-weight: bold; margin: 8px 0 5px 0; font-size: 9pt;">Closing note</div>
   <div class="text-content">${incident.closing_note || 'Under review'}</div>
