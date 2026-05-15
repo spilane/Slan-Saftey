@@ -45693,14 +45693,38 @@ function openIncidentPDF(incidentRef) {
       body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
       .page-break { page-break-after: always; }
       .no-print { display: none; }
+      .page-container { box-shadow: none; margin: 0; }
+    }
+    @media screen {
+      body {
+        background: #525659;
+        padding: 30px 0;
+      }
+      .page-container {
+        max-width: 21cm;
+        min-height: 29.7cm;
+        margin: 0 auto 30px auto;
+        padding: 2cm;
+        background: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      }
+      .page-break {
+        margin: 30px 0;
+        padding: 15px;
+        text-align: center;
+        color: #888;
+        border-top: 3px dashed #ccc;
+        border-bottom: 3px dashed #ccc;
+        background: #f0f0f0;
+        font-weight: bold;
+      }
     }
     body {
       font-family: Arial, sans-serif;
       font-size: 10pt;
       line-height: 1.4;
       color: #000;
-      margin: 20px;
-      background: white;
+      margin: 0;
     }
     .header-table {
       width: 100%;
@@ -45785,6 +45809,9 @@ function openIncidentPDF(incidentRef) {
 <body>
 
   <button class="no-print" onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; background: #1B5E45; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; z-index: 1000;">🖨️ Print / Save as PDF</button>
+
+  <!-- PAGE 1 -->
+  <div class="page-container">
 
   <!-- HEADER -->
   <table class="header-table">
@@ -45944,9 +45971,13 @@ function openIncidentPDF(incidentRef) {
     </tr>
   </table>
 
-  <div class="page-break"></div>
+  </div>
+  <!-- END PAGE 1 -->
+
+  <div class="page-break">⇣ PAGE BREAK - PAGE 2 ⇣</div>
 
   <!-- PAGE 2 -->
+  <div class="page-container">
   
   <!-- WHAT HAPPENED -->
   <div class="section-header">WHAT HAPPENED</div>
@@ -45996,9 +46027,13 @@ function openIncidentPDF(incidentRef) {
   <div style="font-weight: bold; margin: 8px 0 5px 0; font-size: 9pt;">Closing note</div>
   <div class="text-content">${incident.closing_note || 'Under review'}</div>
 
-  <div class="page-break"></div>
+  </div>
+  <!-- END PAGE 2 -->
+
+  <div class="page-break">⇣ PAGE BREAK - PAGE 3 ⇣</div>
 
   <!-- PAGE 3 -->
+  <div class="page-container">
 
   <!-- DECLARATION -->
   <div class="section-header">DECLARATION</div>
@@ -46021,6 +46056,9 @@ function openIncidentPDF(incidentRef) {
     ${incident.closer_signature ? `<img src="${incident.closer_signature}" class="signature-img" alt="Supervisor Signature">` : ''}
     <div style="margin-top: 10px; font-weight: bold; font-size: 11pt;">${incident.supervisor_name || 'Pending'}</div>
   </div>
+
+  </div>
+  <!-- END PAGE 3 -->
 
   <!-- FOOTER -->
   <div class="footer">
