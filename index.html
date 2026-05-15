@@ -45781,15 +45781,21 @@ function openIncidentPDF(incidentRef) {
       line-height: 1.5;
     }
     .footer {
-      position: fixed;
-      bottom: 1cm;
-      left: 2cm;
-      right: 2cm;
       text-align: center;
       font-size: 8pt;
       color: #666;
-      border-top: 1px solid #ccc;
-      padding-top: 5px;
+      border-top: 1px solid #ddd;
+      padding-top: 8px;
+      margin-top: 30px;
+    }
+    @media print {
+      .footer {
+        position: fixed;
+        bottom: 1cm;
+        left: 2cm;
+        right: 2cm;
+        margin-top: 0;
+      }
     }
     .signature-box {
       border: 1px solid #ccc;
@@ -45971,6 +45977,12 @@ function openIncidentPDF(incidentRef) {
     </tr>
   </table>
 
+  <div class="footer" style="display: flex; justify-content: space-between; font-size: 8pt; color: #666; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 30px;">
+    <span>SLS-INC · v1.0</span>
+    <span><em>DOCUMENT UNCONTROLLED WHEN PRINTED</em></span>
+    <span>Page 1 of 3</span>
+  </div>
+
   </div>
   <!-- END PAGE 1 -->
 
@@ -46027,6 +46039,12 @@ function openIncidentPDF(incidentRef) {
   <div style="font-weight: bold; margin: 8px 0 5px 0; font-size: 9pt;">Closing note</div>
   <div class="text-content">${incident.closing_note || 'Under review'}</div>
 
+  <div class="footer" style="display: flex; justify-content: space-between; font-size: 8pt; color: #666; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 30px;">
+    <span>SLS-INC · v1.0</span>
+    <span><em>DOCUMENT UNCONTROLLED WHEN PRINTED</em></span>
+    <span>Page 2 of 3</span>
+  </div>
+
   </div>
   <!-- END PAGE 2 -->
 
@@ -46057,13 +46075,14 @@ function openIncidentPDF(incidentRef) {
     <div style="margin-top: 10px; font-weight: bold; font-size: 11pt;">${incident.supervisor_name || 'Pending'}</div>
   </div>
 
+  <div class="footer" style="display: flex; justify-content: space-between; font-size: 8pt; color: #666; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 30px;">
+    <span>SLS-INC · v1.0</span>
+    <span><em>DOCUMENT UNCONTROLLED WHEN PRINTED</em></span>
+    <span>Page 3 of 3</span>
+  </div>
+
   </div>
   <!-- END PAGE 3 -->
-
-  <!-- FOOTER -->
-  <div class="footer">
-    Slan-HSE-TEM-008 R1 · <em>DOCUMENT UNCONTROLLED WHEN PRINTED</em> · Page 1 of 3
-  </div>
 
 </body>
 </html>`;
