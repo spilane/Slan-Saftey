@@ -45672,7 +45672,7 @@ function showIncidentSummary(incidentRef) {
   };
 }
 
-// Open incident as printable PDF in new tab
+// Open incident as printable PDF in new tab - MATCHING WORD TEMPLATE FORMAT
 function openIncidentPDF(incidentRef) {
   const incident = directorDemoIncidents.find(inc => inc.ref === incidentRef);
   
@@ -45681,235 +45681,360 @@ function openIncidentPDF(incidentRef) {
     return;
   }
   
-  // Create printable HTML page
-  const htmlContent = `
-<!DOCTYPE html>
+  // Create printable HTML matching the Word template structure
+  const htmlContent = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>Incident Report - ${incident.ref}</title>
   <style>
+    @page { margin: 2cm; size: A4; }
     @media print {
-      @page { margin: 2cm; }
       body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .page-break { page-break-after: always; }
+      .no-print { display: none; }
     }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      line-height: 1.6;
-      color: #1A2A1F;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 40px 20px;
-      background: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 10pt;
+      line-height: 1.4;
+      color: #000;
+      margin: 20px;
+      background: white;
     }
-    .header {
-      border-bottom: 4px solid #1B3A2D;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
+    .header-table {
+      width: 100%;
+      margin-bottom: 15px;
+      border-collapse: collapse;
     }
-    .title {
-      font-size: 28px;
-      font-weight: 800;
-      color: #1B3A2D;
+    .header-title {
+      font-size: 18pt;
+      font-weight: bold;
+      text-align: center;
+    }
+    .logo-box {
+      text-align: right;
+      vertical-align: top;
+      padding: 10px;
+    }
+    .logo-text {
+      font-weight: bold;
+      color: #1B5E45;
+      font-size: 14pt;
+      line-height: 1;
+    }
+    .section-header {
+      background: #1B5E45;
+      color: white;
+      padding: 8px 10px;
+      font-weight: bold;
+      font-size: 10pt;
+      margin-top: 15px;
       margin-bottom: 8px;
     }
-    .ref {
-      font-size: 14px;
-      color: #666;
-      font-weight: 600;
-    }
-    .severity-badge {
-      padding: 10px 20px;
-      border-radius: 8px;
-      text-align: center;
-      font-weight: 800;
-    }
-    .severity-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-      color: #666;
-    }
-    .severity-value {
-      font-size: 18px;
-    }
-    .details-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 30px;
-    }
-    .detail-box {
-      padding: 12px;
-      background: #F8F9FA;
-      border-radius: 8px;
-      border-left: 4px solid;
-    }
-    .detail-label {
-      font-size: 10px;
-      color: #666;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
-    .detail-value {
-      font-size: 14px;
-      font-weight: 700;
-      color: #1A2A1F;
-    }
-    .section {
-      margin-bottom: 24px;
-      padding: 20px;
-      border-radius: 8px;
-      border-left: 5px solid;
-    }
-    .section-title {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
       margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 9pt;
     }
-    .section-content {
-      font-size: 14px;
-      line-height: 1.8;
+    table.data-table td {
+      border: 1px solid #ddd;
+      padding: 5px 8px;
+      vertical-align: top;
+    }
+    table.data-table td:first-child {
+      background: #f5f5f5;
+      font-weight: bold;
+      width: 35%;
+    }
+    .text-content {
+      padding: 10px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      margin-bottom: 12px;
+      font-size: 9pt;
+      line-height: 1.5;
     }
     .footer {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 2px solid #E5E5E5;
+      position: fixed;
+      bottom: 1cm;
+      left: 2cm;
+      right: 2cm;
       text-align: center;
-      color: #999;
-      font-size: 11px;
+      font-size: 8pt;
+      color: #666;
+      border-top: 1px solid #ccc;
+      padding-top: 5px;
     }
-    @media print {
-      .no-print { display: none !important; }
+    .signature-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 10px 0;
+      min-height: 80px;
+      text-align: center;
+      background: #fafafa;
+    }
+    .signature-img {
+      max-width: 200px;
+      max-height: 60px;
+      margin: 10px auto;
     }
   </style>
 </head>
 <body>
-  <div class="no-print" style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px;">
-    <button onclick="window.print()" style="padding: 12px 24px; background: #1B3A2D; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
-      🖨️ Print / Save as PDF
-    </button>
-    <button onclick="window.close()" style="padding: 12px 24px; background: #E5E5E5; color: #1A2A1F; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
-      ✕ Close
-    </button>
+
+  <button class="no-print" onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 10px 20px; background: #1B5E45; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; z-index: 1000;">🖨️ Print / Save as PDF</button>
+
+  <!-- HEADER -->
+  <table class="header-table">
+    <tr>
+      <td class="header-title">Incident Report</td>
+      <td class="logo-box">
+        <div class="logo-text">Slán</div>
+        <div style="font-size: 9pt; color: #666;">SAFETY</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- INCIDENT DETAILS -->
+  <div class="section-header">INCIDENT DETAILS</div>
+  
+  <table class="data-table">
+    <tr>
+      <td>Reference</td>
+      <td><strong>${incident.ref}</strong></td>
+    </tr>
+    <tr>
+      <td>Date</td>
+      <td>${incident.incident_date} ${incident.incident_time}</td>
+    </tr>
+    <tr>
+      <td>Status</td>
+      <td><strong>${incident.status || 'OPEN'}</strong></td>
+    </tr>
+  </table>
+
+  <table class="data-table">
+    <tr>
+      <td>Type of report</td>
+      <td>${incident.incident_type}</td>
+    </tr>
+    <tr>
+      <td>Severity</td>
+      <td><strong>${incident.severity}</strong></td>
+    </tr>
+    <tr>
+      <td>Date</td>
+      <td>${incident.incident_date}</td>
+    </tr>
+    <tr>
+      <td>Time</td>
+      <td>${incident.incident_time}</td>
+    </tr>
+    <tr>
+      <td>Location</td>
+      <td>${incident.location}</td>
+    </tr>
+    <tr>
+      <td>Site</td>
+      <td>${incident.site}</td>
+    </tr>
+  </table>
+
+  <!-- REPORTER & PERSON INVOLVED -->
+  <div class="section-header">REPORTER & PERSON INVOLVED</div>
+  
+  <table class="data-table">
+    <tr>
+      <td>Reporter</td>
+      <td>${incident.reporter_name}</td>
+    </tr>
+    <tr>
+      <td>Reporter role</td>
+      <td>${incident.reporter_role}</td>
+    </tr>
+    <tr>
+      <td>Reporter company</td>
+      <td>${incident.reporter_company}</td>
+    </tr>
+    <tr>
+      <td>Relationship</td>
+      <td>${incident.reporter_relationship || 'Employee'}</td>
+    </tr>
+    <tr>
+      <td>Supervisor</td>
+      <td>${incident.supervisor_name}</td>
+    </tr>
+    <tr>
+      <td>Supervisor phone</td>
+      <td>${incident.supervisor_phone || 'N/A'}</td>
+    </tr>
+    <tr>
+      <td>Supervisor company</td>
+      <td>${incident.supervisor_company || incident.reporter_company}</td>
+    </tr>
+    <tr>
+      <td>Supervisor present</td>
+      <td>${incident.supervisor_present || 'yes'}</td>
+    </tr>
+  </table>
+
+  <!-- WORK CONTEXT -->
+  <div class="section-header">WORK CONTEXT</div>
+  
+  <table class="data-table">
+    <tr>
+      <td>Activity at time</td>
+      <td>${incident.activity || 'See description'}</td>
+    </tr>
+    <tr>
+      <td>Briefings given</td>
+      <td>${incident.briefings || 'prestart, swms, toolbox'}</td>
+    </tr>
+    <tr>
+      <td>Shift start</td>
+      <td>${incident.shift_start || 'N/A'}</td>
+    </tr>
+    <tr>
+      <td>Days worked in row</td>
+      <td>${incident.days_since_rest || 'N/A'}</td>
+    </tr>
+    <tr>
+      <td>Experience</td>
+      <td>${incident.experience || 'N/A'}</td>
+    </tr>
+    <tr>
+      <td>Weather</td>
+      <td>${incident.weather || 'N/A'}</td>
+    </tr>
+  </table>
+
+  <!-- WITNESSES -->
+  <div class="section-header">WITNESSES</div>
+  
+  <table class="data-table">
+    <tr>
+      <td>Witness</td>
+      <td>${incident.witnesses || 'None recorded'}</td>
+    </tr>
+  </table>
+
+  <!-- TYPE-SPECIFIC DETAILS -->
+  <div class="section-header">TYPE-SPECIFIC DETAILS</div>
+  
+  <table class="data-table">
+    <tr>
+      <td>Event mechanism</td>
+      <td>${incident.event_mechanism || 'See description'}</td>
+    </tr>
+    <tr>
+      <td>Body part</td>
+      <td>${incident.body_part || 'N/A'}</td>
+    </tr>
+    <tr>
+      <td>Injury nature</td>
+      <td>${incident.injury_type || 'See description'}</td>
+    </tr>
+    <tr>
+      <td>Treatment</td>
+      <td>${incident.treatment || 'N/A'}</td>
+    </tr>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- PAGE 2 -->
+  
+  <!-- WHAT HAPPENED -->
+  <div class="section-header">WHAT HAPPENED</div>
+  
+  <div style="font-weight: bold; margin: 8px 0 5px 0; font-size: 9pt;">Description</div>
+  <div class="text-content">${incident.description}</div>
+
+  <!-- WHAT CAUSED IT -->
+  <div class="section-header">WHAT CAUSED IT</div>
+  
+  <div class="text-content">${incident.root_cause || 'Under investigation'}</div>
+
+  <!-- HOW IT WILL BE PREVENTED -->
+  <div class="section-header">HOW IT WILL BE PREVENTED</div>
+  
+  <div class="text-content">${incident.prevention || 'Under review'}</div>
+
+  <!-- IMMEDIATE ACTION TAKEN -->
+  <div class="section-header">IMMEDIATE ACTION TAKEN</div>
+  
+  <div class="text-content">${incident.immediate_action || 'See corrective actions'}</div>
+
+  <!-- CORRECTIVE ACTIONS -->
+  <div class="section-header">CORRECTIVE ACTIONS</div>
+  
+  <div class="text-content">
+    ${incident.corrective_actions && incident.corrective_actions.length > 0 
+      ? incident.corrective_actions.map(action => `• ${action.action} (${action.status})`).join('<br>') 
+      : 'No corrective actions recorded'}
   </div>
 
-  <div class="header">
-    <div>
-      <div class="title">${incident.incident_type}</div>
-      <div class="ref">Incident Reference: <strong>${incident.ref}</strong></div>
-    </div>
-    <div class="severity-badge" style="background: ${incident.severity === 'Critical' ? '#FEE2E2' : incident.severity === 'Major' ? '#FEF3E2' : incident.severity === 'Moderate' ? '#FFF9E6' : '#F5F5F5'}; border: 2px solid ${incident.severity === 'Critical' ? '#DC2626' : incident.severity === 'Major' ? '#F59E0B' : incident.severity === 'Moderate' ? '#D4AF37' : '#999'};">
-      <div class="severity-label">Severity</div>
-      <div class="severity-value" style="color: ${incident.severity === 'Critical' ? '#DC2626' : incident.severity === 'Major' ? '#F59E0B' : incident.severity === 'Moderate' ? '#D4AF37' : '#666'};">${incident.severity}</div>
-    </div>
+  <!-- REVIEW -->
+  <div class="section-header">REVIEW</div>
+  
+  <table class="data-table">
+    <tr>
+      <td>Reviewed date</td>
+      <td>${incident.reviewed_date || 'Pending'}</td>
+    </tr>
+  </table>
+
+  <div style="font-weight: bold; margin: 8px 0 5px 0; font-size: 9pt;">Review notes</div>
+  <div class="text-content">${incident.review_notes || 'No review notes'}</div>
+
+  <!-- SUPERVISOR CLOSE-OUT -->
+  <div class="section-header">SUPERVISOR CLOSE-OUT</div>
+  
+  <div style="font-weight: bold; margin: 8px 0 5px 0; font-size: 9pt;">Corrective action detail</div>
+  <div class="text-content">
+    ${incident.corrective_actions && incident.corrective_actions.length > 0 
+      ? incident.corrective_actions.map(action => action.action).join('. ') + '.'
+      : 'Pending'}
   </div>
 
-  <div class="details-grid">
-    <div class="detail-box" style="border-left-color: #1B3A2D;">
-      <div class="detail-label">Date & Time</div>
-      <div class="detail-value">${incident.incident_date} at ${incident.incident_time}</div>
-    </div>
-    <div class="detail-box" style="border-left-color: #D4AF37;">
-      <div class="detail-label">Site</div>
-      <div class="detail-value">${incident.site}</div>
-    </div>
-    <div class="detail-box" style="border-left-color: #3B6D11;">
-      <div class="detail-label">Location</div>
-      <div class="detail-value">${incident.location}</div>
-    </div>
-    <div class="detail-box" style="border-left-color: #2563EB;">
-      <div class="detail-label">Reporter</div>
-      <div class="detail-value">${incident.reporter_name}</div>
-      <div style="font-size: 12px; color: #666; margin-top: 2px;">${incident.reporter_role}</div>
-    </div>
+  <div style="font-weight: bold; margin: 8px 0 5px 0; font-size: 9pt;">Closing note</div>
+  <div class="text-content">${incident.closing_note || 'Under review'}</div>
+
+  <div class="page-break"></div>
+
+  <!-- PAGE 3 -->
+
+  <!-- DECLARATION -->
+  <div class="section-header">DECLARATION</div>
+  
+  <div class="text-content">
+    I confirm this report is accurate to the best of my knowledge. This report was filed for review within 24 hours as required under WHS Act 2011.
   </div>
 
-  <div class="section" style="background: #FFF9E6; border-left-color: #D4AF37;">
-    <div class="section-title" style="color: #92400E;">📋 WHAT HAPPENED</div>
-    <div class="section-content">${incident.description}</div>
+  <!-- SIGNATURES -->
+  <div style="font-weight: bold; margin: 15px 0 8px 0; font-size: 10pt;">Reporter signature</div>
+  
+  <div class="signature-box">
+    ${incident.reporter_signature ? `<img src="${incident.reporter_signature}" class="signature-img" alt="Reporter Signature">` : ''}
+    <div style="margin-top: 10px; font-weight: bold; font-size: 11pt;">${incident.reporter_name}</div>
   </div>
 
-  ${incident.what_caused ? `
-  <div class="section" style="background: #FEE2E2; border-left-color: #DC2626;">
-    <div class="section-title" style="color: #991B1B;">⚠️ ROOT CAUSE</div>
-    <div class="section-content">${incident.what_caused}</div>
-  </div>
-  ` : ''}
-
-  ${incident.corrective_actions || incident.corrective_detail ? `
-  <div class="section" style="background: #EAF3DE; border-left-color: #3B6D11;">
-    <div class="section-title" style="color: #3B6D11;">✅ CORRECTIVE ACTIONS TAKEN</div>
-    <div class="section-content">${incident.corrective_actions || incident.corrective_detail}</div>
-  </div>
-  ` : ''}
-
-  <!-- SIGNATURES SECTION -->
-  <div style="margin-top: 40px; padding-top: 30px; border-top: 3px solid #1B3A2D;">
-    <div style="font-size: 16px; font-weight: 800; color: #1B3A2D; margin-bottom: 24px; text-align: center;">✍️ SIGNATURES & APPROVALS</div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-      <!-- Reporter Signature -->
-      <div style="padding: 20px; background: #F8F9FA; border-radius: 8px; border: 2px solid #2563EB;">
-        <div style="font-size: 12px; font-weight: 700; color: #185FA5; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Reporter (Worker)</div>
-        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #E5E5E5; margin-bottom: 12px; min-height: 80px; display: flex; align-items: center; justify-content: center;">
-          ${incident.reporter_signature ? `<img src="${incident.reporter_signature}" style="max-width: 100%; max-height: 70px; display: block;" alt="Reporter Signature" />` : '<div style="color: #999; font-size: 12px;">No signature</div>'}
-        </div>
-        <div style="font-size: 13px; font-weight: 700; color: #1A2A1F;">${incident.reporter_name}</div>
-        <div style="font-size: 11px; color: #666;">${incident.reporter_role}</div>
-        <div style="font-size: 11px; color: #666; margin-top: 4px;">Date: ${incident.incident_date}</div>
-      </div>
-
-      <!-- Supervisor Signature -->
-      <div style="padding: 20px; background: #F8F9FA; border-radius: 8px; border: 2px solid #3B6D11;">
-        <div style="font-size: 12px; font-weight: 700; color: #3B6D11; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Supervisor / Closer</div>
-        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #E5E5E5; margin-bottom: 12px; min-height: 80px; display: flex; align-items: center; justify-content: center;">
-          ${incident.closer_signature ? `<img src="${incident.closer_signature}" style="max-width: 100%; max-height: 70px; display: block;" alt="Supervisor Signature" />` : '<div style="color: #999; font-size: 12px;">No signature</div>'}
-        </div>
-        <div style="font-size: 13px; font-weight: 700; color: #1A2A1F;">${incident.supervisor_name || 'Pending'}</div>
-        <div style="font-size: 11px; color: #666;">${incident.supervisor_company || ''}</div>
-        <div style="font-size: 11px; color: #666; margin-top: 4px;">Reviewed: ${incident.reviewed_date || 'Pending'}</div>
-      </div>
-    </div>
-
-    ${incident.review_notes ? `
-    <div style="padding: 16px; background: #E6F3F0; border-left: 4px solid #3B6D11; border-radius: 8px; margin-bottom: 20px;">
-      <div style="font-size: 11px; font-weight: 700; color: #3B6D11; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Supervisor Review Notes</div>
-      <div style="font-size: 13px; line-height: 1.6; color: #1A2A1F;">${incident.review_notes}</div>
-    </div>
-    ` : ''}
-
-    ${incident.closing_note ? `
-    <div style="padding: 16px; background: #FFF9E6; border-left: 4px solid #D4AF37; border-radius: 8px;">
-      <div style="font-size: 11px; font-weight: 700; color: #92400E; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Closing Notes</div>
-      <div style="font-size: 13px; line-height: 1.6; color: #1A2A1F;">${incident.closing_note}</div>
-    </div>
-    ` : ''}
+  <div style="font-weight: bold; margin: 25px 0 8px 0; font-size: 10pt;">Supervisor close-out signature</div>
+  
+  <div class="signature-box">
+    ${incident.closer_signature ? `<img src="${incident.closer_signature}" class="signature-img" alt="Supervisor Signature">` : ''}
+    <div style="margin-top: 10px; font-weight: bold; font-size: 11pt;">${incident.supervisor_name || 'Pending'}</div>
   </div>
 
-  <div style="padding: 20px; background: #F8F9FA; border-radius: 8px; text-align: center; margin-top: 30px;">
-    <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">Status</div>
-    <div style="display: inline-block; padding: 8px 20px; background: ${incident.status === 'closed' ? '#EAF3DE' : '#FEF3E2'}; color: ${incident.status === 'closed' ? '#3B6D11' : '#D97706'}; font-weight: 700; border-radius: 20px; font-size: 14px; text-transform: uppercase;">${incident.status || 'Open'}</div>
-  </div>
-
+  <!-- FOOTER -->
   <div class="footer">
-    <div><strong>Slán Safety</strong> - Incident Management System</div>
-    <div>Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</div>
+    Slan-HSE-TEM-008 R1 · <em>DOCUMENT UNCONTROLLED WHEN PRINTED</em> · Page 1 of 3
   </div>
+
 </body>
-</html>
-  `;
+</html>`;
   
   // Open in new tab
   const newWindow = window.open('', '_blank');
@@ -45920,6 +46045,8 @@ function openIncidentPDF(incidentRef) {
     alert('Please allow popups to view the incident report');
   }
 }
+
+
 
 // Show full incident detail modal
 
