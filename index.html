@@ -15913,6 +15913,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   initFirebase();
   checkOnboarding();
+  
+  // Prepopulate demo incidents for director portal
+  if (typeof prepopulateDemoIncidents === 'function') {
+    prepopulateDemoIncidents();
+  }
+  
   window.addEventListener('online',()=>{isOnline=true;updateSync();syncQ();});
   window.addEventListener('offline',()=>{isOnline=false;updateSync();});
   updateSync();updateQBadge();
@@ -36006,6 +36012,16 @@ function goToAnalytics(fromRole) {
       safetySection.style.display = 'block';
       if (safetyArrow) safetyArrow.style.transform = 'rotate(180deg)';
       setTimeout(anRenderCharts, 150);
+    }
+    
+    // Auto-open Body Map section for directors
+    if (anIsDirector) {
+      var bodymapSection = document.getElementById('an-section-bodymap');
+      var bodymapArrow = document.getElementById('an-arrow-bodymap');
+      if (bodymapSection && bodymapSection.style.display === 'none') {
+        bodymapSection.style.display = 'block';
+        if (bodymapArrow) bodymapArrow.style.transform = 'rotate(180deg)';
+      }
     }
   }, 100);
 
