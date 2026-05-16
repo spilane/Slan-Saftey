@@ -37168,6 +37168,15 @@ function switchMainIncidentTab(tabName) {
     var incidents = incLoadAll();
     populateOverviewTab(incidents);
   }
+  
+  // When Details tab is opened, populate incident list
+  if (tabName === 'details') {
+    setTimeout(function() {
+      if (typeof applyDirectorFilters === 'function') {
+        applyDirectorFilters();
+      }
+    }, 100);
+  }
 }
 
 function switchIncidentTab(tabName) {
