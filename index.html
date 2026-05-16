@@ -11504,10 +11504,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
 
       <!-- 🗺️ BODY INCIDENT MAP - 50/50 LAYOUT AT BOTTOM -->
-      <div id="an-section-bodymap" style="display:grid;grid-template-columns:50% 50%;gap:16px;margin-bottom:12px;width:100%;box-sizing:border-box">
+      <div id="an-section-bodymap" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
         
-        <!-- LEFT CARD: Body Map -->
-        <div class="fcard" style="min-width:0;min-height:500px;width:100%;box-sizing:border-box">
+        <!-- LEFT: Body Map -->
+        <div class="fcard">
           <div class="fcard-hdr">🗺️ Body Incident Map</div>
           <div style="padding:20px 18px">
             <!-- Incident Type Filter -->
@@ -11579,8 +11579,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
 
-        <!-- RIGHT CARD: Incidents Panel -->
-        <div class="fcard" style="min-width:0;min-height:500px;width:100%;box-sizing:border-box">
+        <!-- RIGHT: Incidents Panel -->
+        <div class="fcard">
           <div class="fcard-hdr" id="an-bm-name">Click a body zone</div>
           <div style="padding:18px">
             <div id="an-bm-count" style="font-size:12px;color:var(--muted);margin-bottom:16px">Select a colored area to view incidents</div>
@@ -36675,6 +36675,11 @@ function switchMainIncidentTab(tabName) {
   document.getElementById('main-incident-tab-analytics').style.display = 'none';
   document.getElementById('main-incident-tab-details').style.display = 'none';
   
+  console.log('📋 All tabs hidden');
+  console.log('   Overview display:', document.getElementById('main-incident-tab-overview').style.display);
+  console.log('   Analytics display:', document.getElementById('main-incident-tab-analytics').style.display);
+  console.log('   Details display:', document.getElementById('main-incident-tab-details').style.display);
+  
   // Show selected tab
   var selectedTab = document.getElementById('main-incident-tab-' + tabName);
   if (selectedTab) {
@@ -36682,6 +36687,20 @@ function switchMainIncidentTab(tabName) {
     console.log('✅ Set display:block on:', 'main-incident-tab-' + tabName);
     console.log('   Display value:', selectedTab.style.display);
     console.log('   Computed display:', window.getComputedStyle(selectedTab).display);
+    
+    // Check position and visibility
+    var rect = selectedTab.getBoundingClientRect();
+    console.log('   Position:', {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+      bottom: rect.bottom,
+      right: rect.right
+    });
+    console.log('   In viewport:', rect.top < window.innerHeight && rect.bottom > 0);
+    console.log('   Parent element:', selectedTab.parentElement ? selectedTab.parentElement.tagName : 'none');
+    console.log('   Parent display:', selectedTab.parentElement ? window.getComputedStyle(selectedTab.parentElement).display : 'N/A');
   } else {
     console.error('❌ Tab not found:', 'main-incident-tab-' + tabName);
   }
