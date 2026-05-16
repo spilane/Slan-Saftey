@@ -11504,10 +11504,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
 
       <!-- 🗺️ BODY INCIDENT MAP - 50/50 LAYOUT AT BOTTOM -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;width:100%;max-width:100%">
+      <div style="display:grid;grid-template-columns:50% 50%;gap:16px;margin-bottom:12px;width:100%;box-sizing:border-box">
         
         <!-- LEFT CARD: Body Map -->
-        <div class="fcard" style="min-width:0;min-height:500px">
+        <div class="fcard" style="min-width:0;min-height:500px;width:100%;box-sizing:border-box">
           <div class="fcard-hdr">🗺️ Body Incident Map</div>
           <div style="padding:20px 18px">
             <!-- Incident Type Filter -->
@@ -11580,7 +11580,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
 
         <!-- RIGHT CARD: Incidents Panel -->
-        <div class="fcard" style="min-width:0;min-height:500px">
+        <div class="fcard" style="min-width:0;min-height:500px;width:100%;box-sizing:border-box">
           <div class="fcard-hdr" id="an-bm-name">Click a body zone</div>
           <div style="padding:18px">
             <div id="an-bm-count" style="font-size:12px;color:var(--muted);margin-bottom:16px">Select a colored area to view incidents</div>
@@ -36668,21 +36668,22 @@ function updateIncidentSummaryBox(incidents) {
 
 // Main tab switching for 3-tab system (Overview/Analytics/Details)
 function switchMainIncidentTab(tabName) {
-  // Hide all main tab contents
-  var tabs = document.querySelectorAll('.main-incident-tab-content');
-  tabs.forEach(function(tab) {
-    tab.style.display = 'none';
-  });
+  console.log('🔄 Switching to tab:', tabName);
+  
+  // Hide all tabs by ID - be absolutely explicit
+  document.getElementById('main-incident-tab-overview').style.display = 'none';
+  document.getElementById('main-incident-tab-analytics').style.display = 'none';
+  document.getElementById('main-incident-tab-details').style.display = 'none';
   
   // Show selected tab
   var selectedTab = document.getElementById('main-incident-tab-' + tabName);
   if (selectedTab) {
     selectedTab.style.display = 'block';
-    console.log('✅ Set display:block on main-incident-tab-' + tabName);
-    console.log('   Current display value:', selectedTab.style.display);
-    console.log('   Is visible:', selectedTab.offsetParent !== null);
+    console.log('✅ Set display:block on:', 'main-incident-tab-' + tabName);
+    console.log('   Display value:', selectedTab.style.display);
+    console.log('   Computed display:', window.getComputedStyle(selectedTab).display);
   } else {
-    console.error('❌ Tab not found: main-incident-tab-' + tabName);
+    console.error('❌ Tab not found:', 'main-incident-tab-' + tabName);
   }
   
   // Update all buttons
