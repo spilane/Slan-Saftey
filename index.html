@@ -47619,6 +47619,52 @@ new Chart(riskCtx, {
     }
   }
 });
+
+// Populate body map from actual incident data
+function populateBodyMapFromIncidents() {
+  var incidents = incLoadAll();
+  var bodyCounts = {};
+  
+  incidents.forEach(function(inc) {
+    var bodyPart = (inc.body_part || "").toLowerCase().trim();
+    if (bodyPart && bodyPart !== "none" && bodyPart !== "") {
+      var normalized = bodyPart
+        .replace(/left /gi, "Left ")
+        .replace(/right /gi, "Right ")
+        .replace(/forearm/gi, "Forearm")
+        .replace(/hand|palm|finger|thumb|wrist/gi, "Hand")
+        .replace(/shoulder/gi, "Shoulder")
+        .replace(/lower back/gi, "Lower Back")
+        .replace(/back/gi, "Back")
+        .replace(/ribs|chest/gi, "Chest");
+      bodyCounts[normalized] = (bodyCounts[normalized] || 0) + 1;
+    }
+  });
+  
+  console.log("🗺️ Body map populated with counts:", bodyCounts);
+  
+  document.querySelectorAll(".an-zone").forEach(function(zone) {
+    var label = zone.getAttribute("data-l");
+    var count = bodyCounts[label] || 0;
+    zone.setAttribute("data-n", count);
+    
+    if (count >= 5) {
+      zone.setAttribute("fill", "#B83232");
+      zone.setAttribute("fill-opacity", "0.65");
+    } else if (count >= 3) {
+      zone.setAttribute("fill", "#B8960C");
+      zone.setAttribute("fill-opacity", "0.65");
+    } else if (count >= 1) {
+      zone.setAttribute("fill", "#2D6A45");
+      zone.setAttribute("fill-opacity", "0.4");
+    } else {
+      zone.setAttribute("fill", "rgba(27,58,45,.1)");
+      zone.setAttribute("fill-opacity", "1");
+    }
+  });
+}
+
+setTimeout(populateBodyMapFromIncidents, 1500);
 </script>
 
 <!-- TFB SUPERVISOR APPROVAL-WITH-OVERRIDE MODAL — 8 fields including extra TFB-day safety measures -->
