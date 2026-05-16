@@ -15889,28 +15889,26 @@ let isOnline=navigator.onLine;
 let sigCanvas,sigCtx,isSigning=false,hasSig=false;
 
 document.addEventListener('DOMContentLoaded',()=>{
-  if('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-      // Check for updates every time app opens
-      reg.update().catch(()=>{});
-      // When a new service worker takes over, reload the page
-      reg.addEventListener('updatefound', () => {
-        const newSW = reg.installing;
-        if (newSW) {
-          newSW.addEventListener('statechange', () => {
-            if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
-              window.location.reload();
-            }
-          });
-        }
-      });
-    }).catch(()=>{});
-    // Also listen for controller change (another way to detect update)
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!refreshing) { refreshing = true; window.location.reload(); }
-    });
-  }
+  // Service worker disabled - causes cache errors without sw.js file
+  // if('serviceWorker' in navigator) {
+  //   navigator.serviceWorker.register('sw.js').then(reg => {
+  //     reg.update().catch(()=>{});
+  //     reg.addEventListener('updatefound', () => {
+  //       const newSW = reg.installing;
+  //       if (newSW) {
+  //         newSW.addEventListener('statechange', () => {
+  //           if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
+  //             window.location.reload();
+  //           }
+  //         });
+  //       }
+  //     });
+  //   }).catch(()=>{});
+  //   let refreshing = false;
+  //   navigator.serviceWorker.addEventListener('controllerchange', () => {
+  //     if (!refreshing) { refreshing = true; window.location.reload(); }
+  //   });
+  // }
   initFirebase();
   checkOnboarding();
   
@@ -35926,14 +35924,17 @@ var AN_BODY_HIST = {
 var AN_STARS = []; // Populated from Firebase when connected
 
 function goToAnalytics(fromRole) {
+  console.log('📊 goToAnalytics() called, role:', fromRole);
   // Require PIN when entering director portal (always, even in demo mode)
   if (fromRole === 'director') {
     if (sessionStorage.getItem('sup_auth') !== 'true') {
+      console.log('🔐 PIN required');
       requirePin(() => goToAnalytics(fromRole));
       return;
     }
   }
   anIsDirector = (fromRole === 'director');
+  console.log('✅ Navigating to screen-analytics, isDirector:', anIsDirector);
   goTo('screen-analytics');
   const p = getProfile();
   // Set logo
@@ -36025,11 +36026,20 @@ function goToAnalytics(fromRole) {
     
     // Auto-open Body Map section for directors
     if (anIsDirector) {
+      console.log('🗺️ Director view - checking body map...');
       var bodymapSection = document.getElementById('an-section-bodymap');
       var bodymapArrow = document.getElementById('an-arrow-bodymap');
+      console.log('Body map section found:', bodymapSection ? 'YES' : 'NO');
+      console.log('Body map current display:', bodymapSection ? bodymapSection.style.display : 'N/A');
+      
       if (bodymapSection && bodymapSection.style.display === 'none') {
         bodymapSection.style.display = 'block';
         if (bodymapArrow) bodymapArrow.style.transform = 'rotate(180deg)';
+        console.log('✅ Body map opened');
+      } else if (bodymapSection) {
+        console.log('✅ Body map already visible');
+      } else {
+        console.error('❌ Body map section not found!');
       }
     }
   }, 100);
@@ -36945,14 +36955,21 @@ function anToggleSection(id) {
 
 function populateDirectorIncidents() {
   // ═══════════════════════════════════════════════════════════════
-  var list = document.getElementById('dinc-incidents-list');
+  console.log('📊 populateDirectorIncidents() called');
+  var list = document.getElementById('dir-inc-list'); // FIXED: was 'dinc-incidents-list'
   var summary = document.getElementById('an-inc-summary');
+  
+  console.log('List element found:', list ? 'YES' : 'NO');
   
   // Load incidents from storage (prepopulates demo if empty)
   var incidents = incLoadAll();
+  console.log('Incidents loaded from storage:', incidents.length);
+  
   if (incidents.length === 0) {
+    console.log('No incidents found, prepopulating demo data...');
     prepopulateDemoIncidents();
     incidents = incLoadAll();
+    console.log('After prepopulate:', incidents.length, 'incidents');
   }
   
   // Simple home tile summary - just show open count
@@ -37171,9 +37188,13 @@ function switchMainIncidentTab(tabName) {
   
   // When Details tab is opened, populate incident list
   if (tabName === 'details') {
+    console.log('🔍 Details tab opened, populating incident list...');
     setTimeout(function() {
       if (typeof applyDirectorFilters === 'function') {
         applyDirectorFilters();
+        console.log('✅ applyDirectorFilters() called');
+      } else {
+        console.error('❌ applyDirectorFilters function not found!');
       }
     }, 100);
   }
