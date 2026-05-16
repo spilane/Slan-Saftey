@@ -46707,11 +46707,19 @@ function toggleDirectorBreakdown() {
 }
 
 function renderDirectorIncidentList(incidents) {
+  console.log('📋 renderDirectorIncidentList() called with', incidents ? incidents.length : 0, 'incidents');
   var container = document.getElementById('dir-inc-list');
-  if (!container) return;
+  console.log('Container found:', container ? 'YES' : 'NO');
+  console.log('Container visible:', container ? (container.offsetParent !== null ? 'YES' : 'NO') : 'N/A');
+  
+  if (!container) {
+    console.error('❌ dir-inc-list container not found!');
+    return;
+  }
   
   // Use provided incidents (from filters) or load all
   var allIncidents = incidents || incLoadAll();
+  console.log('Total incidents to render:', allIncidents.length);
   
   // Sort by date (newest first)
   allIncidents.sort(function(a, b) {
@@ -46758,6 +46766,8 @@ function renderDirectorIncidentList(incidents) {
   }
   
   container.innerHTML = html;
+  console.log('✅ Rendered', displayIncidents.length, 'incidents to list');
+  console.log('HTML length:', html.length, 'characters');
 }
 
 function toggleShowAllIncidents() {
