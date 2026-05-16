@@ -10728,8 +10728,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </div>
             <!-- View Toggle -->
             <div style="display:flex;justify-content:center;gap:10px;margin-bottom:16px">
-              <button onclick="document.getElementById('an-bm-f').style.display='block';document.getElementById('an-bm-b').style.display='none'" style="padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer">Front View</button>
-              <button onclick="document.getElementById('an-bm-b').style.display='block';document.getElementById('an-bm-f').style.display='none'" style="padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:#f5f5f5;color:#666;font-size:12px;font-weight:600;cursor:pointer">Back View</button>
+              <button id="btn-front-view" onclick="switchBodyView('front')" style="padding:10px 24px;border-radius:8px;border:2px solid #D4AF37;background:linear-gradient(135deg, #1B3A2D 0%, #0F2419 100%);color:#D4AF37;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s;box-shadow:0 3px 8px rgba(212,175,55,0.3)">Front View</button>
+              <button id="btn-back-view" onclick="switchBodyView('back')" style="padding:10px 24px;border-radius:8px;border:2px solid #E5E5E5;background:#F5F5F5;color:#666;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.3s">Back View</button>
             </div>
             <!-- Body SVGs -->
             <div style="display:flex;justify-content:center">
@@ -46995,6 +46995,50 @@ function showBodyPartIncidents(bodyPart, incidents) {
 }
 
 // Filter body map by incident type
+// Toggle between front and back body views
+function switchBodyView(view) {
+  var frontSvg = document.getElementById('an-bm-f');
+  var backSvg = document.getElementById('an-bm-b');
+  var frontBtn = document.getElementById('btn-front-view');
+  var backBtn = document.getElementById('btn-back-view');
+  
+  if (view === 'front') {
+    frontSvg.style.display = 'block';
+    backSvg.style.display = 'none';
+    
+    // Active state for front button
+    frontBtn.style.background = 'linear-gradient(135deg, #1B3A2D 0%, #0F2419 100%)';
+    frontBtn.style.color = '#D4AF37';
+    frontBtn.style.border = '2px solid #D4AF37';
+    frontBtn.style.fontWeight = '700';
+    frontBtn.style.boxShadow = '0 3px 8px rgba(212,175,55,0.3)';
+    
+    // Inactive state for back button
+    backBtn.style.background = '#F5F5F5';
+    backBtn.style.color = '#666';
+    backBtn.style.border = '2px solid #E5E5E5';
+    backBtn.style.fontWeight = '600';
+    backBtn.style.boxShadow = 'none';
+  } else {
+    frontSvg.style.display = 'none';
+    backSvg.style.display = 'block';
+    
+    // Inactive state for front button
+    frontBtn.style.background = '#F5F5F5';
+    frontBtn.style.color = '#666';
+    frontBtn.style.border = '2px solid #E5E5E5';
+    frontBtn.style.fontWeight = '600';
+    frontBtn.style.boxShadow = 'none';
+    
+    // Active state for back button
+    backBtn.style.background = 'linear-gradient(135deg, #1B3A2D 0%, #0F2419 100%)';
+    backBtn.style.color = '#D4AF37';
+    backBtn.style.border = '2px solid #D4AF37';
+    backBtn.style.fontWeight = '700';
+    backBtn.style.boxShadow = '0 3px 8px rgba(212,175,55,0.3)';
+  }
+}
+
 function filterBodyMapByType() {
   var filterSelect = document.getElementById("bodymap-type-filter");
   var selectedType = filterSelect.value;
