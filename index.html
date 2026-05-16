@@ -11502,31 +11502,31 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </div>
           </div>
     
-    <!-- Body Incident Map (IN ANALYTICS TAB) -->
-    <div class="fcard" style="margin-bottom:12px">
-      <div class="fcard-hdr">🗺️ Body Incident Map</div>
-      <div style="padding:20px 18px">
+    <!-- Body Incident Map (IN ANALYTICS TAB) - TWO SEPARATE CARDS SIDE BY SIDE -->
+    <div style="display:grid;grid-template-columns:340px 1fr;gap:12px;margin-bottom:12px">
+      
+      <!-- LEFT CARD: Body Map -->
+      <div class="fcard">
+        <div class="fcard-hdr">🗺️ Body Incident Map</div>
+        <div style="padding:20px 18px">
 
-        <!-- Incident Type Filter -->
-        <div style="display:flex;justify-content:center;margin-bottom:14px">
-          <select id="bodymap-type-filter" onchange="filterBodyMapByType()" style="padding:10px 16px;font-size:12px;border:2px solid #E5E5E5;border-radius:8px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05);min-width:200px" onfocus="this.style.borderColor='#B8960C';this.style.boxShadow='0 4px 8px rgba(184,150,12,0.15)'" onblur="this.style.borderColor='#E5E5E5';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'">
-            <option value="">All Incidents (5)</option>
-            <option value="Actual Injury">Actual Injury Only (5)</option>
-            <option value="Near Miss">Near Miss Only (5)</option>
-            <option value="Dangerous Incident">Dangerous Incident Only (5)</option>
-          </select>
-        </div>
+          <!-- Incident Type Filter -->
+          <div style="display:flex;justify-content:center;margin-bottom:14px">
+            <select id="bodymap-type-filter" onchange="filterBodyMapByType()" style="padding:10px 16px;font-size:12px;border:2px solid #E5E5E5;border-radius:8px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05);min-width:200px" onfocus="this.style.borderColor='#B8960C';this.style.boxShadow='0 4px 8px rgba(184,150,12,0.15)'" onblur="this.style.borderColor='#E5E5E5';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'">
+              <option value="">All Incidents (5)</option>
+              <option value="Actual Injury">Actual Injury Only (5)</option>
+              <option value="Near Miss">Near Miss Only (5)</option>
+              <option value="Dangerous Incident">Dangerous Incident Only (5)</option>
+            </select>
+          </div>
 
-        <!-- View Toggle Buttons -->
-        <div style="display:flex;justify-content:center;gap:10px;margin-bottom:16px">
-          <button onclick="document.getElementById('an-bm-f').style.display='block';document.getElementById('an-bm-b').style.display='none';this.style.background='var(--deep)';this.style.color='#fff';this.nextElementSibling.style.background='#f5f5f5';this.nextElementSibling.style.color='#666'" style="padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Front View</button>
-          <button onclick="document.getElementById('an-bm-b').style.display='block';document.getElementById('an-bm-f').style.display='none';this.style.background='var(--deep)';this.style.color='#fff';this.previousElementSibling.style.background='#f5f5f5';this.previousElementSibling.style.color='#666'" style="padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:#f5f5f5;color:#666;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Back View</button>
-        </div>
+          <!-- View Toggle Buttons -->
+          <div style="display:flex;justify-content:center;gap:10px;margin-bottom:16px">
+            <button onclick="document.getElementById('an-bm-f').style.display='block';document.getElementById('an-bm-b').style.display='none';this.style.background='var(--deep)';this.style.color='#fff';this.nextElementSibling.style.background='#f5f5f5';this.nextElementSibling.style.color='#666'" style="padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Front View</button>
+            <button onclick="document.getElementById('an-bm-b').style.display='block';document.getElementById('an-bm-f').style.display='none';this.style.background='var(--deep)';this.style.color='#fff';this.previousElementSibling.style.background='#f5f5f5';this.previousElementSibling.style.color='#666'" style="padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:#f5f5f5;color:#666;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Back View</button>
+          </div>
 
-        <!-- Side-by-Side Layout: Body Map Left, Incidents Right -->
-        <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:start">
-          
-          <!-- LEFT: Body Diagrams -->
+          <!-- Body Diagrams -->
           <div style="display:flex;justify-content:center">
             <svg id="an-bm-f" viewBox="0 0 200 460" width="180" xmlns="http://www.w3.org/2000/svg">
           <ellipse class="an-zone" data-l="Head" data-n="1" cx="100" cy="30" rx="28" ry="30" fill="#2D6A45" fill-opacity=".4" stroke="#2C6B5E" stroke-width="1"/>
@@ -11577,22 +11577,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <text x="24" y="445" font-size="10" fill="#9FC4AE" font-family="sans-serif" font-weight="600">R</text>
         </svg>
           </div>
-          <!-- END LEFT COLUMN -->
-
-          <!-- RIGHT: Incidents Panel -->
-          <div id="an-bm-panel" style="background:#F8FAF9;border-radius:10px;border:1.5px solid var(--deep);padding:15px;min-height:460px;display:flex;flex-direction:column">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-              <div>
-                <div id="an-bm-name" style="font-size:15px;font-weight:700;color:var(--text)">Click a body zone</div>
-                <div id="an-bm-count" style="font-size:11px;color:var(--muted);margin-top:3px">Select a colored area to view incidents</div>
-              </div>
-            </div>
-            <div id="an-bm-hist" style="display:flex;flex-direction:column;gap:6px;flex:1"></div>
-          </div>
-          <!-- END RIGHT COLUMN -->
-
         </div>
-        <!-- END SIDE-BY-SIDE LAYOUT -->
+      </div>
+      <!-- END LEFT CARD: Body Map -->
+
+      <!-- RIGHT CARD: Incidents List (White Space) -->
+      <div class="fcard">
+        <div class="fcard-hdr" id="an-bm-name">Click a body zone</div>
+        <div style="padding:18px">
+          <div id="an-bm-count" style="font-size:12px;color:var(--muted);margin-bottom:16px">Select a colored area on the body map to view incidents for that zone</div>
+          <div id="an-bm-hist" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+      </div>
+      <!-- END RIGHT CARD -->
+      
+    </div>
+    <!-- END TWO-CARD LAYOUT -->
     </div>
       </div>
         </div>    </div>
@@ -47190,53 +47190,77 @@ function showBodyPartIncidents(bodyPart, incidents) {
   console.log('   Incidents:', incidents.length);
   console.log('═══════════════════════════════════════');
   
-  var panel = document.getElementById("an-bm-panel");
   var nameEl = document.getElementById("an-bm-name");
   var countEl = document.getElementById("an-bm-count");
   var histEl = document.getElementById("an-bm-hist");
   
-  console.log('   Panel found:', panel ? 'YES' : 'NO');
   console.log('   Name element found:', nameEl ? 'YES' : 'NO');
   console.log('   Count element found:', countEl ? 'YES' : 'NO');
   console.log('   Hist element found:', histEl ? 'YES' : 'NO');
   
-  if (!panel || !nameEl || !countEl || !histEl) {
+  if (!nameEl || !countEl || !histEl) {
     console.error('❌ Missing elements!');
     return;
   }
   
-  nameEl.textContent = bodyPart;
-  countEl.textContent = incidents.length + " incident" + (incidents.length !== 1 ? "s" : "");
+  // Update header with body part name
+  nameEl.textContent = bodyPart + " - Incidents";
+  countEl.textContent = incidents.length + " incident" + (incidents.length !== 1 ? "s" : "") + " found. Click an incident below to open the full PDF report.";
   
+  // Clear and populate incident list
   histEl.innerHTML = "";
+  
+  if (incidents.length === 0) {
+    histEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:13px">No incidents recorded for this body zone</div>';
+    return;
+  }
+  
   incidents.forEach(function(inc) {
     console.log('   Adding incident:', inc.ref);
     var div = document.createElement("div");
-    div.style.cssText = "background:#fff;padding:12px;border-radius:8px;border-left:3px solid var(--deep);cursor:pointer;transition:all 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.08)";
-    div.onmouseover = function() { this.style.background = "#F0F7F4"; this.style.transform = "translateX(2px)"; };
-    div.onmouseout = function() { this.style.background = "#fff"; this.style.transform = "translateX(0)"; };
+    div.style.cssText = "background:#fff;padding:14px;border-radius:10px;border:2px solid #E5E5E5;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.06)";
+    div.onmouseover = function() { 
+      this.style.borderColor = "#B8960C"; 
+      this.style.transform = "translateY(-2px)"; 
+      this.style.boxShadow = "0 4px 8px rgba(184,150,12,0.15)";
+    };
+    div.onmouseout = function() { 
+      this.style.borderColor = "#E5E5E5"; 
+      this.style.transform = "translateY(0)"; 
+      this.style.boxShadow = "0 2px 4px rgba(0,0,0,0.06)";
+    };
+    
+    // Severity badge color
+    var sevColor = inc.severity === 'Critical' ? '#B83232' : 
+                   inc.severity === 'Major' ? '#D4630A' : 
+                   inc.severity === 'Moderate' ? '#D4AF37' : '#1B6E3A';
+    var sevBg = inc.severity === 'Critical' ? '#FAEBEB' : 
+                inc.severity === 'Major' ? '#FEF0E6' : 
+                inc.severity === 'Moderate' ? '#FFFBF0' : '#E6F5ED';
     
     div.innerHTML = 
-      "<div style='font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px'>" + 
-      (inc.ref || "No ref") + 
+      "<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'>" +
+        "<span style='display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:" + sevBg + ";color:" + sevColor + ";text-transform:uppercase'>" + (inc.severity || 'Minor') + "</span>" +
+        "<span style='font-size:12px;font-weight:700;color:var(--text)'>" + (inc.ref || "No ref") + "</span>" +
       "</div>" +
-      "<div style='font-size:10px;color:#666;margin-bottom:4px'>" + 
-      (inc.site || "No site") + 
+      "<div style='font-size:11px;color:#666;margin-bottom:6px;font-weight:600'>" + 
+        (inc.reporter_name || "Unknown") + " · " + (inc.site || "No site") + 
       "</div>" +
-      "<div style='font-size:10px;color:var(--muted);line-height:1.4'>" + 
-      (inc.description ? inc.description.substring(0, 60) + "..." : "No description") + 
+      "<div style='font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px'>" + 
+        (inc.description ? inc.description.substring(0, 100) + "..." : "No description") + 
       "</div>" +
-      "<div style='font-size:10px;color:var(--deep);margin-top:6px;font-weight:600'>📄 Click to open PDF →</div>";
+      "<div style='font-size:11px;color:var(--deep);font-weight:700;text-align:right'>📄 Click to open full PDF report →</div>";
     
     div.onclick = function() {
-      console.log('📄 Opening PDF for:', inc.ref);
+      console.log('📄 CLICKED! Opening PDF for:', inc.ref);
+      console.log('   Calling openIncidentPDF(' + inc.ref + ')');
       openIncidentPDF(inc.ref);
     };
     
     histEl.appendChild(div);
   });
   
-  console.log('✅ Panel updated');
+  console.log('✅ Panel updated with', incidents.length, 'incident cards');
 }
 
 // Filter body map by incident type
