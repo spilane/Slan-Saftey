@@ -47735,6 +47735,8 @@ function populateBodyMapFromIncidents() {
     // Add click handler
     zone.style.cursor = 'pointer';
     zone.onclick = function() {
+      console.log('🖱️ BODY ZONE CLICKED:', label);
+      console.log('   Incidents for this zone:', bodyIncidents[label] ? bodyIncidents[label].length : 0);
       showBodyPartIncidents(label, bodyIncidents[label] || []);
     };
   });
@@ -47746,18 +47748,33 @@ function populateBodyMapFromIncidents() {
 
 
 function showBodyPartIncidents(bodyPart, incidents) {
+  console.log('═══════════════════════════════════════');
+  console.log('📋 showBodyPartIncidents CALLED');
+  console.log('   Body part:', bodyPart);
+  console.log('   Incidents:', incidents.length);
+  console.log('═══════════════════════════════════════');
+  
   var panel = document.getElementById("an-bm-panel");
   var nameEl = document.getElementById("an-bm-name");
   var countEl = document.getElementById("an-bm-count");
   var histEl = document.getElementById("an-bm-hist");
   
-  if (!panel || !nameEl || !countEl || !histEl) return;
+  console.log('   Panel found:', panel ? 'YES' : 'NO');
+  console.log('   Name element found:', nameEl ? 'YES' : 'NO');
+  console.log('   Count element found:', countEl ? 'YES' : 'NO');
+  console.log('   Hist element found:', histEl ? 'YES' : 'NO');
+  
+  if (!panel || !nameEl || !countEl || !histEl) {
+    console.error('❌ Missing elements!');
+    return;
+  }
   
   nameEl.textContent = bodyPart;
   countEl.textContent = incidents.length + " incident" + (incidents.length !== 1 ? "s" : "");
   
   histEl.innerHTML = "";
   incidents.forEach(function(inc) {
+    console.log('   Adding incident:', inc.ref);
     var div = document.createElement("div");
     div.style.cssText = "background:#fff;padding:10px;border-radius:6px;border-left:3px solid var(--deep);cursor:pointer;transition:all 0.2s";
     div.onmouseover = function() { this.style.background = "#f5f5f5"; };
@@ -47773,6 +47790,7 @@ function showBodyPartIncidents(bodyPart, incidents) {
       "<div style='font-size:10px;color:var(--deep);margin-top:4px;font-weight:600'>Click to open PDF →</div>";
     
     div.onclick = function() {
+      console.log('📄 Opening PDF for:', inc.ref);
       openIncidentPDF(inc.ref);
     };
     
@@ -47780,8 +47798,12 @@ function showBodyPartIncidents(bodyPart, incidents) {
   });
   
   panel.style.display = "block";
+  console.log('✅ Panel displayed');
 }
-setTimeout(populateBodyMapFromIncidents, 1500);
+setTimeout(function() {
+  console.log('⏰ Body map population timer triggered (2500ms delay)');
+  populateBodyMapFromIncidents();
+}, 2500);
 </script>
 
 <!-- TFB SUPERVISOR APPROVAL-WITH-OVERRIDE MODAL — 8 fields including extra TFB-day safety measures -->
