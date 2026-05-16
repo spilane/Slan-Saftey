@@ -12030,6 +12030,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-hdr">🗺️ Body Incident Map</div>
       <div style="padding:20px 18px">
 
+        <!-- Incident Type Filter -->
+        <div style="display:flex;justify-content:center;margin-bottom:14px">
+          <select id="bodymap-type-filter" onchange="filterBodyMapByType()" style="padding:10px 16px;font-size:12px;border:2px solid #E5E5E5;border-radius:8px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05);min-width:200px" onfocus="this.style.borderColor='#B8960C';this.style.boxShadow='0 4px 8px rgba(184,150,12,0.15)'" onblur="this.style.borderColor='#E5E5E5';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'">
+            <option value="">All Incidents (12)</option>
+            <option value="Actual Injury">Actual Injury Only (5)</option>
+            <option value="Near Miss">Near Miss Only (2)</option>
+            <option value="Dangerous Incident">Dangerous Incident Only (3)</option>
+            <option value="Property Damage">Property Damage Only (2)</option>
+          </select>
+        </div>
+
         <!-- View Toggle Buttons -->
         <div style="display:flex;justify-content:center;gap:10px;margin-bottom:16px">
           <button onclick="document.getElementById('an-bm-f').style.display='block';document.getElementById('an-bm-b').style.display='none';this.style.background='var(--deep)';this.style.color='#fff';this.nextElementSibling.style.background='#f5f5f5';this.nextElementSibling.style.color='#666'" style="padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Front View</button>
@@ -47572,13 +47583,26 @@ new Chart(riskCtx, {
 });
 
 // Populate body map from actual incident data
-function populateBodyMapFromIncidents() {
+function populateBodyMapFromIncidents(incidentTypeFilter) {
   console.log('═══════════════════════════════════════');
   console.log('🗺️ BODY MAP POPULATION STARTING');
+  if (incidentTypeFilter) {
+    console.log('   Filter: ' + incidentTypeFilter);
+  } else {
+    console.log('   Filter: All Incidents');
+  }
   console.log('═══════════════════════════════════════');
   
   var incidents = incLoadAll();
   console.log('1. Total incidents loaded:', incidents.length);
+  
+  // Filter by incident type if specified
+  if (incidentTypeFilter) {
+    incidents = incidents.filter(function(inc) {
+      return inc.incident_type === incidentTypeFilter;
+    });
+    console.log('   Filtered to:', incidents.length, 'incidents');
+  }
   
   var bodyCounts = {};
   var bodyIncidents = {}; // Store incidents per body part
@@ -47717,6 +47741,21 @@ function showBodyPartIncidents(bodyPart, incidents) {
   
   panel.style.display = "block";
   console.log('✅ Panel displayed');
+}
+
+// Filter body map by incident type
+function filterBodyMapByType() {
+  var filterSelect = document.getElementById("bodymap-type-filter");
+  var selectedType = filterSelect.value;
+  
+  console.log('🔍 Body map filter changed to:', selectedType || 'All Incidents');
+  
+  // Hide popup panel when filter changes
+  var panel = document.getElementById("an-bm-panel");
+  if (panel) panel.style.display = "none";
+  
+  // Re-populate map with filter
+  populateBodyMapFromIncidents(selectedType || null);
 }
 setTimeout(function() {
   console.log('⏰ Body map population timer triggered (2500ms delay)');
