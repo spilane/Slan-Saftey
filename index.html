@@ -11503,11 +11503,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </div>
           </div>
 
-      <!-- 🗺️ BODY INCIDENT MAP - AT TOP FOR FULL WIDTH -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
+      <!-- 🗺️ BODY INCIDENT MAP - 50/50 LAYOUT AT BOTTOM -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;width:100%;max-width:100%">
         
         <!-- LEFT CARD: Body Map -->
-        <div class="fcard">
+        <div class="fcard" style="min-width:0">
           <div class="fcard-hdr">🗺️ Body Incident Map</div>
           <div style="padding:20px 18px">
             <!-- Incident Type Filter -->
@@ -11580,7 +11580,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
 
         <!-- RIGHT CARD: Incidents Panel -->
-        <div class="fcard">
+        <div class="fcard" style="min-width:0">
           <div class="fcard-hdr" id="an-bm-name">Click a body zone</div>
           <div style="padding:18px">
             <div id="an-bm-count" style="font-size:12px;color:var(--muted);margin-bottom:16px">Select a colored area to view incidents</div>
@@ -11593,7 +11593,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- END ANALYTICS TAB -->
     
     <!-- TAB 3: DETAILS -->
-    <div id="main-incident-tab-details" class="main-incident-tab-content" style="display:none">
+    <div id="main-incident-tab-details" class="main-incident-tab-content" style="display:none;background:#FFE6E6;min-height:500px">
       
       <!-- TEST: Static text to verify tab is showing -->
       <div style="background:#B83232;color:white;padding:20px;font-size:20px;font-weight:bold;text-align:center;margin-bottom:16px">
@@ -36719,14 +36719,12 @@ function switchMainIncidentTab(tabName) {
   // When Details tab is opened, populate incident list
   if (tabName === 'details') {
     console.log('🔍 Details tab opened, populating incident list...');
-    setTimeout(function() {
-      if (typeof applyDirectorFilters === 'function') {
-        applyDirectorFilters();
-        console.log('✅ applyDirectorFilters() called');
-      } else {
-        console.error('❌ applyDirectorFilters function not found!');
-      }
-    }, 100);
+    if (typeof applyDirectorFilters === 'function') {
+      applyDirectorFilters();
+      console.log('✅ applyDirectorFilters() called');
+    } else {
+      console.error('❌ applyDirectorFilters function not found!');
+    }
   }
 }
 
