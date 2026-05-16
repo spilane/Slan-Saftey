@@ -10721,9 +10721,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <!-- Incident Type Filter -->
             <div style="display:flex;justify-content:center;margin-bottom:14px">
               <select id="bodymap-type-filter" onchange="filterBodyMapByType()" style="padding:10px 16px;font-size:12px;border:2px solid #E5E5E5;border-radius:8px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05);min-width:200px">
-                <option value="">All Incidents (5)</option>
+                <option value="">All Incidents (25 total, 5 with injuries)</option>
                 <option value="Actual Injury">Actual Injury Only (5)</option>
-                <option value="Near Miss">Near Miss Only (5)</option>
+                <option value="Near Miss">Near Miss Only (0 injuries)</option>
               </select>
             </div>
             <!-- View Toggle -->
@@ -35679,37 +35679,58 @@ var AN_ZONE_SUGGESTIONS = {
 };
 
 function anBmZoneClick() {
-  var l = this.dataset.l, n = parseInt(this.dataset.n || 0);
-  document.getElementById('an-bm-name').textContent = l;
-  document.getElementById('an-bm-count').textContent = n > 0 ? n + ' recorded injur' + (n===1?'y':'ies') : 'No injuries recorded yet';
+  var bodyPartLabel = this.dataset.l;
+  var incidentCount = parseInt(this.dataset.n || 0);
   
-  // History
-  var h = AN_BODY_HIST[l] || [];
-  var histHtml = h.length
-    ? h.map(function(i){ return '<div style="background:#F2F3F2;border-radius:7px;padding:7px 10px;font-size:11px;color:var(--muted)">' + i + '</div>'; }).join('')
-    : '<div style="font-size:11px;color:#9FC4AE;font-style:italic;padding:3px 0">No recorded history for this zone.</div>';
+  console.log('🖱️ Body zone clicked:', bodyPartLabel, '- Count:', incidentCount);
   
-  // Preventive action suggestions — shown when 3+ incidents
-  var preventHtml = '';
-  if (n >= 3) {
-    var suggestions = AN_ZONE_SUGGESTIONS[l] || ['Review SWMS and controls for tasks involving this body area','Add targeted safety topic to next toolbox talk'];
-    var safeZone = l.replace(/"/g,'&quot;');
-    preventHtml = '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">' +
-      '<div style="font-size:10px;font-weight:600;color:#B8960C;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">⚠ ' + n + ' injuries — preventive actions suggested</div>' +
-      suggestions.slice(0,3).map(function(s,i){
-        return '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px">' +
-          '<div style="width:18px;height:18px;border-radius:5px;background:rgba(184,150,12,.15);border:1px solid rgba(184,150,12,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;font-weight:600;color:#8B6914">' + (i+1) + '</div>' +
-          '<div style="font-size:11px;color:var(--text);line-height:1.4;flex:1">' + s + '</div>' +
-          '</div>';
-      }).join('') +
-      '<button onclick="anCreateCorrectiveAction(this)" data-zone="' + safeZone + '" data-count="' + n + '" style="margin-top:8px;width:100%;padding:10px;border-radius:9px;background:var(--deep);border:none;color:#fff;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>' +
-        'Create corrective action from this zone</button>' +
-      '</div>';
+  // Get all incidents for this body part
+  var allIncidents = incLoadAll();
+  var bodyPartIncidents = [];
+  
+  allIncidents.forEach(function(inc) {
+    var bodyPart = (inc.body_part || "").trim();
+    if (bodyPart && bodyPart.toLowerCase() !== "none" && bodyPart !== "") {
+      var normalized = normalizeBodyPart(bodyPart);
+      if (normalized === bodyPartLabel) {
+        bodyPartIncidents.push(inc);
+      }
+    }
+  });
+  
+  console.log('   Found', bodyPartIncidents.length, 'incidents for', bodyPartLabel);
+  
+  // Show the incidents in the right panel
+  showBodyPartIncidents(bodyPartLabel, bodyPartIncidents);
+}
+
+// Helper function to normalize body part names (same logic as in populateBodyMapFromIncidents)
+function normalizeBodyPart(bodyPart) {
+  var lower = bodyPart.toLowerCase();
+  var normalized;
+  
+  // Handle hand-related injuries (palm, finger, thumb, wrist)
+  if (lower.match(/palm|finger|thumb|wrist/)) {
+    if (lower.match(/left/)) {
+      normalized = "Left Hand";
+    } else if (lower.match(/right/)) {
+      normalized = "Right Hand";
+    } else {
+      normalized = "Hand";
+    }
+  }
+  // Handle ribs → chest
+  else if (lower.match(/rib/)) {
+    normalized = "Chest";
+  }
+  // Everything else: capitalize first letter of each word
+  else {
+    normalized = bodyPart.split(' ').map(function(word) {
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
   }
   
-  document.getElementById('an-bm-hist').innerHTML = histHtml + preventHtml;
-  // Panel no longer exists - incidents show in right card automatically
+  return normalized;
 }
 
 function anCreateCorrectiveAction(btn) {
@@ -46779,6 +46800,16 @@ function populateBodyMapFromIncidents(incidentTypeFilter) {
   
   var bodyCounts = {};
   var bodyIncidents = {}; // Store incidents per body part
+  var bodyMaxSeverity = {}; // Track highest severity per body part
+  
+  // Severity ranking: higher number = more severe
+  var severityRank = {
+    'Critical': 4,
+    'Major': 3,
+    'Moderate': 2,
+    'Minor': 1,
+    'First Aid': 0
+  };
   
   incidents.forEach(function(inc, index) {
     var bodyPart = (inc.body_part || "").trim();
@@ -46811,6 +46842,14 @@ function populateBodyMapFromIncidents(incidentTypeFilter) {
       console.log('   → Normalized to:', normalized);
       bodyCounts[normalized] = (bodyCounts[normalized] || 0) + 1;
       
+      // Track highest severity for this body part
+      var currentSeverity = inc.severity || 'Minor';
+      var currentRank = severityRank[currentSeverity] || 0;
+      var maxRank = severityRank[bodyMaxSeverity[normalized]] || 0;
+      if (currentRank > maxRank) {
+        bodyMaxSeverity[normalized] = currentSeverity;
+      }
+      
       // Store incident for this body part
       if (!bodyIncidents[normalized]) bodyIncidents[normalized] = [];
       bodyIncidents[normalized].push(inc);
@@ -46830,21 +46869,31 @@ function populateBodyMapFromIncidents(incidentTypeFilter) {
     
     if (count > 0) {
       updated++;
-      console.log('   Zone "' + label + '" → count:', count);
-    }
-    
-    if (count >= 5) {
-      zone.setAttribute("fill", "#B83232");
-      zone.setAttribute("fill-opacity", "0.65");
-    } else if (count >= 3) {
-      zone.setAttribute("fill", "#B8960C");
-      zone.setAttribute("fill-opacity", "0.65");
-    } else if (count >= 1) {
-      zone.setAttribute("fill", "#2D6A45");
-      zone.setAttribute("fill-opacity", "0.4");
+      var maxSeverity = bodyMaxSeverity[label] || 'Minor';
+      console.log('   Zone "' + label + '" → count:', count, '- max severity:', maxSeverity);
+      
+      // Color based on SEVERITY, not count
+      if (maxSeverity === 'Critical' || maxSeverity === 'Major') {
+        // RED for Critical/Major
+        zone.setAttribute("fill", "#D32F2F");
+        zone.setAttribute("stroke", "#B71C1C");
+        zone.setAttribute("stroke-width", "2");
+      } else if (maxSeverity === 'Moderate') {
+        // ORANGE for Moderate
+        zone.setAttribute("fill", "#FF6F00");
+        zone.setAttribute("stroke", "#E65100");
+        zone.setAttribute("stroke-width", "2");
+      } else {
+        // YELLOW for Minor
+        zone.setAttribute("fill", "#FDD835");
+        zone.setAttribute("stroke", "#F57F17");
+        zone.setAttribute("stroke-width", "2");
+      }
     } else {
-      zone.setAttribute("fill", "rgba(27,58,45,.1)");
-      zone.setAttribute("fill-opacity", "1");
+      // No incidents - keep light gray
+      zone.setAttribute("fill", "#F5F5F5");
+      zone.setAttribute("stroke", "#CCC");
+      zone.setAttribute("stroke-width", "1");
     }
     
     // Add click handler
