@@ -12109,47 +12109,24 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     
     <!-- Body Injury Map (IN ANALYTICS TAB) -->
     <div class="fcard" style="overflow:hidden;padding:0;display:block;background:linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);border:2px solid #E5E7EB">
-      <div onclick="anToggleSection('bodymap')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;cursor:pointer;background:#FFFFFF;border-bottom:2px solid #E5E7EB">
+      <div onclick="anToggleSection('bodymap')" style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;cursor:pointer;background:linear-gradient(135deg, #1B6E3A 0%, #15803D 100%);border-bottom:2px solid #15803D">
         <div style="display:flex;align-items:center;gap:14px">
-          <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid #FCA5A5">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid rgba(255,255,255,0.3)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
           </div>
           <div>
-            <div style="font-size:15px;font-weight:700;color:#1F2937;letter-spacing:-0.2px">Body Injury Heatmap</div>
-            <div style="font-size:12px;color:#6B7280;margin-top:2px;font-weight:500">Click zones to view detailed injury data</div>
+            <div style="font-size:15px;font-weight:700;color:#FFFFFF;letter-spacing:-0.2px">Body Incident Map</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:2px;font-weight:500">Click zones to view incident details</div>
           </div>
         </div>
-        <svg id="an-arrow-bodymap" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" style="width:22px;height:22px;transition:transform .25s;flex-shrink:0;transform:rotate(180deg)"><polyline points="6 9 12 15 18 9"/></svg>
+        <svg id="an-arrow-bodymap" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" style="width:22px;height:22px;transition:transform .25s;flex-shrink:0;transform:rotate(180deg)"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div id="an-section-bodymap" style="display:block;padding:20px 18px;background:#FAFBFC">
-        
-        <!-- Color Legend -->
-        <div style="background:#FFFFFF;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px 16px;margin-bottom:16px">
-          <div style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px">Injury Frequency</div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-            <div style="text-align:center">
-              <div style="width:100%;height:6px;background:#DC2626;border-radius:3px;margin-bottom:4px;opacity:0.65"></div>
-              <div style="font-size:10px;font-weight:600;color:#374151">High (5+)</div>
-            </div>
-            <div style="text-align:center">
-              <div style="width:100%;height:6px;background:#D97706;border-radius:3px;margin-bottom:4px;opacity:0.65"></div>
-              <div style="font-size:10px;font-weight:600;color:#374151">Medium (3-4)</div>
-            </div>
-            <div style="text-align:center">
-              <div style="width:100%;height:6px;background:#16A34A;border-radius:3px;margin-bottom:4px;opacity:0.4"></div>
-              <div style="font-size:10px;font-weight:600;color:#374151">Low (1-2)</div>
-            </div>
-            <div style="text-align:center">
-              <div style="width:100%;height:6px;background:#9CA3AF;border-radius:3px;margin-bottom:4px;opacity:0.15"></div>
-              <div style="font-size:10px;font-weight:600;color:#374151">None (0)</div>
-            </div>
-          </div>
-        </div>
 
         <!-- View Toggle Buttons -->
         <div style="display:flex;justify-content:center;gap:12px;margin-bottom:16px">
-          <button onclick="document.getElementById('an-bm-f').style.display='block';document.getElementById('an-bm-b').style.display='none';this.style.background='linear-gradient(135deg, #1F2937 0%, #374151 100%)';this.style.color='#fff';this.style.border='2px solid #1F2937';this.nextElementSibling.style.background='#FFFFFF';this.nextElementSibling.style.color='#6B7280';this.nextElementSibling.style.border='1.5px solid #E5E7EB'" style="padding:10px 24px;border-radius:10px;border:2px solid #1F2937;background:linear-gradient(135deg, #1F2937 0%, #374151 100%);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;letter-spacing:0.3px">FRONT VIEW</button>
-          <button onclick="document.getElementById('an-bm-b').style.display='block';document.getElementById('an-bm-f').style.display='none';this.style.background='linear-gradient(135deg, #1F2937 0%, #374151 100%)';this.style.color='#fff';this.style.border='2px solid #1F2937';this.previousElementSibling.style.background='#FFFFFF';this.previousElementSibling.style.color='#6B7280';this.previousElementSibling.style.border='1.5px solid #E5E7EB'" style="padding:10px 24px;border-radius:10px;border:1.5px solid #E5E7EB;background:#FFFFFF;color:#6B7280;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;letter-spacing:0.3px">BACK VIEW</button>
+          <button onclick="document.getElementById('an-bm-f').style.display='block';document.getElementById('an-bm-b').style.display='none';this.style.background='linear-gradient(135deg, #1B6E3A 0%, #15803D 100%)';this.style.color='#fff';this.style.border='2px solid #1B6E3A';this.nextElementSibling.style.background='#FFFFFF';this.nextElementSibling.style.color='#6B7280';this.nextElementSibling.style.border='1.5px solid #E5E7EB'" style="padding:10px 24px;border-radius:10px;border:2px solid #1B6E3A;background:linear-gradient(135deg, #1B6E3A 0%, #15803D 100%);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;letter-spacing:0.3px">FRONT VIEW</button>
+          <button onclick="document.getElementById('an-bm-b').style.display='block';document.getElementById('an-bm-f').style.display='none';this.style.background='linear-gradient(135deg, #1B6E3A 0%, #15803D 100%)';this.style.color='#fff';this.style.border='2px solid #1B6E3A';this.previousElementSibling.style.background='#FFFFFF';this.previousElementSibling.style.color='#6B7280';this.previousElementSibling.style.border='1.5px solid #E5E7EB'" style="padding:10px 24px;border-radius:10px;border:1.5px solid #E5E7EB;background:#FFFFFF;color:#6B7280;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;letter-spacing:0.3px">BACK VIEW</button>
         </div>
 
         <!-- Body Diagrams -->
@@ -46324,19 +46301,31 @@ function showIncidentsByPattern(pattern) {
 }
 
 function searchDirectorIncidents() {
-  var searchTerm = document.getElementById('dir-inc-search').value.toLowerCase().trim();
-  console.log('🔍 Search triggered, term:', searchTerm);
+  console.log('═══════════════════════════════════════');
+  console.log('🔍 SEARCH FUNCTION CALLED');
+  console.log('═══════════════════════════════════════');
+  
+  var searchInput = document.getElementById('dir-inc-search');
+  console.log('1. Search input element:', searchInput ? 'FOUND' : 'NOT FOUND');
+  
+  if (!searchInput) {
+    console.error('❌ CRITICAL: Search input not found!');
+    return;
+  }
+  
+  var searchTerm = searchInput.value.toLowerCase().trim();
+  console.log('2. Search term:', searchTerm ? '"' + searchTerm + '"' : '(empty)');
   
   if (!searchTerm) {
-    // If search is empty, reload all data
-    console.log('Search cleared, reloading all');
+    console.log('3. Empty search - calling applyDirectorFilters()');
     applyDirectorFilters();
     return;
   }
   
   // Get all incidents
   var allIncidents = incLoadAll();
-  console.log('Searching in', allIncidents.length, 'incidents');
+  console.log('4. Total incidents loaded:', allIncidents.length);
+  console.log('5. Sample incident:', allIncidents[0] ? JSON.stringify(allIncidents[0]).substring(0, 200) : 'none');
   
   // Search in all fields
   var searched = allIncidents.filter(function(inc) {
@@ -46352,13 +46341,21 @@ function searchDirectorIncidents() {
       inc.mechanism || ''
     ].join(' ').toLowerCase();
     
-    return searchableText.includes(searchTerm);
+    var matches = searchableText.includes(searchTerm);
+    if (matches) {
+      console.log('   ✓ Match:', inc.ref, '-', inc.description ? inc.description.substring(0, 50) : '');
+    }
+    return matches;
   });
   
-  console.log('Search results:', searched.length, 'incidents match');
+  console.log('6. Search results:', searched.length, 'incidents match');
+  console.log('7. Calling renderDirectorIncidentList with', searched.length, 'incidents');
   
   // Render with searched results
   renderDirectorIncidentList(searched);
+  
+  console.log('8. renderDirectorIncidentList completed');
+  console.log('═══════════════════════════════════════');
 }
 
 function toggleTrifrTooltip(event) {
