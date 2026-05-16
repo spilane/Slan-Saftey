@@ -11503,7 +11503,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
     
     <!-- Body Incident Map (IN ANALYTICS TAB) - TWO SEPARATE CARDS SIDE BY SIDE -->
-    <div style="display:grid;grid-template-columns:340px 1fr;gap:12px;margin-bottom:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
       
       <!-- LEFT CARD: Body Map -->
       <div class="fcard">
@@ -11573,6 +11573,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <ellipse class="an-zone" data-l="Right Knee (Rear)" data-n="0" cx="66" cy="288" rx="20" ry="14" fill="rgba(27,58,45,.1)" stroke="#2C6B5E" stroke-width="1"/>
           <rect class="an-zone" data-l="Left Calf" data-n="2" x="114" y="304" width="40" height="62" rx="10" fill="#2D6A45" fill-opacity=".38" stroke="#2C6B5E" stroke-width="1"/>
           <rect class="an-zone" data-l="Right Calf" data-n="0" x="46" y="304" width="40" height="62" rx="10" fill="rgba(27,58,45,.1)" stroke="#2C6B5E" stroke-width="1"/>
+          <ellipse class="an-zone" data-l="Left Foot (Rear)" data-n="0" cx="138" cy="390" rx="26" ry="14" fill="rgba(27,58,45,.1)" stroke="#2C6B5E" stroke-width="1"/>
+          <ellipse class="an-zone" data-l="Right Foot (Rear)" data-n="0" cx="62" cy="390" rx="26" ry="14" fill="rgba(27,58,45,.1)" stroke="#2C6B5E" stroke-width="1"/>
           <text x="164" y="445" font-size="10" fill="#9FC4AE" font-family="sans-serif" font-weight="600">L</text>
           <text x="24" y="445" font-size="10" fill="#9FC4AE" font-family="sans-serif" font-weight="600">R</text>
         </svg>
@@ -35669,7 +35671,7 @@ function anBmView(v) {
   var bb = document.getElementById('an-bm-bbtn');
   if (fb) { fb.style.background = v==='f' ? 'var(--deep)' : 'transparent'; fb.style.color = v==='f' ? '#fff' : 'var(--muted)'; fb.style.border = v==='f' ? 'none' : '1px solid var(--border)'; }
   if (bb) { bb.style.background = v==='b' ? 'var(--deep)' : 'transparent'; bb.style.color = v==='b' ? '#fff' : 'var(--muted)'; bb.style.border = v==='b' ? 'none' : '1px solid var(--border)'; }
-  document.getElementById('an-bm-panel').style.display = 'none';
+  // Panel no longer exists - it's part of the right card now
 }
 
 // Zone-specific preventive action suggestions
@@ -35717,7 +35719,7 @@ function anBmZoneClick() {
   }
   
   document.getElementById('an-bm-hist').innerHTML = histHtml + preventHtml;
-  document.getElementById('an-bm-panel').style.display = 'block';
+  // Panel no longer exists - incidents show in right card automatically
 }
 
 function anCreateCorrectiveAction(btn) {
