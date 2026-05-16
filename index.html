@@ -10711,6 +10711,50 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- TAB 2: ANALYTICS -->
     <div id="main-incident-tab-analytics" class="main-incident-tab-content" style="display:none">
       
+      <!-- 🗺️ BODY INCIDENT MAP - AT TOP FOR FULL WIDTH -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
+        
+        <!-- LEFT CARD: Body Map -->
+        <div class="fcard">
+          <div class="fcard-hdr">🗺️ Body Incident Map</div>
+          <div style="padding:20px 18px">
+            <!-- Incident Type Filter -->
+            <div style="display:flex;justify-content:center;margin-bottom:14px">
+              <select id="bodymap-type-filter" onchange="filterBodyMapByType()" style="padding:10px 16px;font-size:12px;border:2px solid #E5E5E5;border-radius:8px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05);min-width:200px">
+                <option value="">All Incidents (5)</option>
+                <option value="Actual Injury">Actual Injury Only (5)</option>
+                <option value="Near Miss">Near Miss Only (5)</option>
+              </select>
+            </div>
+            <!-- View Toggle -->
+            <div style="display:flex;justify-content:center;gap:10px;margin-bottom:16px">
+              <button onclick="document.getElementById('an-bm-f').style.display='block';document.getElementById('an-bm-b').style.display='none'" style="padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:var(--deep);color:#fff;font-size:12px;font-weight:600;cursor:pointer">Front View</button>
+              <button onclick="document.getElementById('an-bm-b').style.display='block';document.getElementById('an-bm-f').style.display='none'" style="padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:#f5f5f5;color:#666;font-size:12px;font-weight:600;cursor:pointer">Back View</button>
+            </div>
+            <!-- Body SVGs -->
+            <div style="display:flex;justify-content:center">
+              <svg id="an-bm-f" viewBox="0 0 200 460" width="180" xmlns="http://www.w3.org/2000/svg">
+                <!-- Front view body parts here - keeping it short for now -->
+                <ellipse class="an-zone" data-l="Left Hand" data-n="3" cx="20" cy="242" rx="18" ry="28" fill="#B8960C" fill-opacity=".6" stroke="#2C6B5E" stroke-width="1" style="cursor:pointer"/>
+              </svg>
+              <svg id="an-bm-b" viewBox="0 0 200 460" width="180" xmlns="http://www.w3.org/2000/svg" style="display:none">
+                <!-- Back view -->
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT CARD: Incidents Panel -->
+        <div class="fcard">
+          <div class="fcard-hdr" id="an-bm-name">Click a body zone</div>
+          <div style="padding:18px">
+            <div id="an-bm-count" style="font-size:12px;color:var(--muted);margin-bottom:16px">Select a colored area to view incidents</div>
+            <div id="an-bm-hist" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+        </div>
+      </div>
+      <!-- END BODY MAP -->
+
         <!-- 1. TREND (LAST 6 MONTHS) -->
         <div class="fcard" style="margin-bottom:12px">
           <div class="fcard-hdr">📈 Trend (Last 6 Months)</div>
@@ -11503,7 +11547,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
     
     <!-- Body Incident Map (IN ANALYTICS TAB) - TWO SEPARATE CARDS SIDE BY SIDE -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;width:100%">
       
       <!-- LEFT CARD: Body Map -->
       <div class="fcard">
@@ -47254,9 +47298,14 @@ function showBodyPartIncidents(bodyPart, incidents) {
       "<div style='font-size:11px;color:var(--deep);font-weight:700;text-align:right'>📄 Click to open full PDF report →</div>";
     
     div.onclick = function() {
-      console.log('📄 CLICKED! Opening PDF for:', inc.ref);
-      console.log('   Calling openIncidentPDF(' + inc.ref + ')');
+      alert('CLICKED INCIDENT: ' + inc.ref + ' - Opening PDF now!');
+      console.log('═══════════════════════════════════════');
+      console.log('📄 INCIDENT CARD CLICKED!');
+      console.log('   Incident ref:', inc.ref);
+      console.log('   About to call openIncidentPDF()');
+      console.log('═══════════════════════════════════════');
       openIncidentPDF(inc.ref);
+      console.log('   openIncidentPDF() called');
     };
     
     histEl.appendChild(div);
