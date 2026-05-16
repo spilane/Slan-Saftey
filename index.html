@@ -10728,7 +10728,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </div>
             <!-- View Toggle -->
             <div style="display:flex;justify-content:center;gap:10px;margin-bottom:16px">
-              <button id="btn-front-view" onclick="switchBodyView('front')" style="padding:10px 24px;border-radius:8px;border:2px solid #D4AF37;background:linear-gradient(135deg, #1B3A2D 0%, #0F2419 100%);color:#D4AF37;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s;box-shadow:0 3px 8px rgba(212,175,55,0.3)">Front View</button>
+              <button id="btn-front-view" onclick="switchBodyView('front')" style="padding:10px 24px;border-radius:8px;border:2px solid #E5E5E5;border-top:3px solid #D4AF37;background:linear-gradient(135deg, #1B3A2D 0%, #0F2419 100%);color:#D4AF37;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s;box-shadow:0 2px 6px rgba(0,0,0,0.1)">Front View</button>
               <button id="btn-back-view" onclick="switchBodyView('back')" style="padding:10px 24px;border-radius:8px;border:2px solid #E5E5E5;background:#F5F5F5;color:#666;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.3s">Back View</button>
             </div>
             <!-- Body SVGs -->
@@ -46946,38 +46946,46 @@ function showBodyPartIncidents(bodyPart, incidents) {
   incidents.forEach(function(inc) {
     console.log('   Adding incident:', inc.ref);
     var div = document.createElement("div");
-    div.style.cssText = "background:#fff;padding:14px;border-radius:10px;border:2px solid #E5E5E5;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.06)";
+    div.style.cssText = "background:#fff;border:1.5px solid #e5e5e5;border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.06)";
     div.onmouseover = function() { 
-      this.style.borderColor = "#B8960C"; 
-      this.style.transform = "translateY(-2px)"; 
-      this.style.boxShadow = "0 4px 8px rgba(184,150,12,0.15)";
+      this.style.background = '#F8F9FA';
+      this.style.transform = 'translateX(4px)';
     };
     div.onmouseout = function() { 
-      this.style.borderColor = "#E5E5E5"; 
-      this.style.transform = "translateY(0)"; 
-      this.style.boxShadow = "0 2px 4px rgba(0,0,0,0.06)";
+      this.style.background = '#fff';
+      this.style.transform = 'translateX(0)';
     };
     
-    // Severity badge color
+    // Severity badge colors - match Overview
     var sevColor = inc.severity === 'Critical' ? '#B83232' : 
                    inc.severity === 'Major' ? '#D4630A' : 
-                   inc.severity === 'Moderate' ? '#D4AF37' : '#1B6E3A';
+                   inc.severity === 'Moderate' ? '#976500' : '#666';
     var sevBg = inc.severity === 'Critical' ? '#FAEBEB' : 
                 inc.severity === 'Major' ? '#FEF0E6' : 
-                inc.severity === 'Moderate' ? '#FFFBF0' : '#E6F5ED';
+                inc.severity === 'Moderate' ? '#FFFBF0' : '#f5f5f5';
+    
+    // Status badge colors
+    var statusColor = '#15803D';
+    var statusBg = '#E6F5ED';
     
     div.innerHTML = 
-      "<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'>" +
-        "<span style='display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:" + sevBg + ";color:" + sevColor + ";text-transform:uppercase'>" + (inc.severity || 'Minor') + "</span>" +
-        "<span style='font-size:12px;font-weight:700;color:var(--text)'>" + (inc.ref || "No ref") + "</span>" +
+      // Badges row
+      "<div style='display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap'>" +
+        "<span style='padding:4px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;background:" + sevBg + ";color:" + sevColor + "'>" + (inc.severity || 'Minor') + "</span>" +
+        "<span style='font-size:11px;font-weight:600'>" + (inc.incident_type || 'Actual Injury') + "</span>" +
+        "<span style='padding:4px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;background:" + statusBg + ";color:" + statusColor + "'>" + (inc.status || 'open') + "</span>" +
       "</div>" +
-      "<div style='font-size:11px;color:#666;margin-bottom:6px;font-weight:600'>" + 
-        (inc.reporter_name || "Unknown") + " · " + (inc.site || "No site") + 
+      // Description
+      "<div style='font-size:11px;color:#666;line-height:1.5;margin-bottom:8px'>" + 
+        (inc.description ? inc.description.substring(0, 120) + "..." : "No description") + 
       "</div>" +
-      "<div style='font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px'>" + 
-        (inc.description ? inc.description.substring(0, 100) + "..." : "No description") + 
+      // Site and Date
+      "<div style='font-size:10px;color:#999;display:flex;gap:12px'>" +
+        "<span>📍 " + (inc.site || inc.location || "Site") + "</span>" +
+        "<span>📅 " + new Date(inc.incident_date || inc.submitted_at).toLocaleDateString() + "</span>" +
       "</div>" +
-      "<div style='font-size:11px;color:var(--deep);font-weight:700;text-align:right'>📄 Click to open full PDF report →</div>";
+      // Click to open
+      "<div style='font-size:10px;color:#B8960C;margin-top:8px;font-weight:600'>📄 Click to open full report →</div>";
     
     div.onclick = function() {
       console.log('═══════════════════════════════════════');
@@ -47006,17 +47014,19 @@ function switchBodyView(view) {
     frontSvg.style.display = 'block';
     backSvg.style.display = 'none';
     
-    // Active state for front button
+    // Active state for front button - gold top border
     frontBtn.style.background = 'linear-gradient(135deg, #1B3A2D 0%, #0F2419 100%)';
     frontBtn.style.color = '#D4AF37';
-    frontBtn.style.border = '2px solid #D4AF37';
+    frontBtn.style.border = '2px solid #E5E5E5';
+    frontBtn.style.borderTop = '3px solid #D4AF37';
     frontBtn.style.fontWeight = '700';
-    frontBtn.style.boxShadow = '0 3px 8px rgba(212,175,55,0.3)';
+    frontBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.1)';
     
     // Inactive state for back button
     backBtn.style.background = '#F5F5F5';
     backBtn.style.color = '#666';
     backBtn.style.border = '2px solid #E5E5E5';
+    backBtn.style.borderTop = '2px solid #E5E5E5';
     backBtn.style.fontWeight = '600';
     backBtn.style.boxShadow = 'none';
   } else {
@@ -47027,15 +47037,17 @@ function switchBodyView(view) {
     frontBtn.style.background = '#F5F5F5';
     frontBtn.style.color = '#666';
     frontBtn.style.border = '2px solid #E5E5E5';
+    frontBtn.style.borderTop = '2px solid #E5E5E5';
     frontBtn.style.fontWeight = '600';
     frontBtn.style.boxShadow = 'none';
     
-    // Active state for back button
+    // Active state for back button - gold top border
     backBtn.style.background = 'linear-gradient(135deg, #1B3A2D 0%, #0F2419 100%)';
     backBtn.style.color = '#D4AF37';
-    backBtn.style.border = '2px solid #D4AF37';
+    backBtn.style.border = '2px solid #E5E5E5';
+    backBtn.style.borderTop = '3px solid #D4AF37';
     backBtn.style.fontWeight = '700';
-    backBtn.style.boxShadow = '0 3px 8px rgba(212,175,55,0.3)';
+    backBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.1)';
   }
 }
 
