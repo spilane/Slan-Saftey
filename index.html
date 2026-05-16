@@ -12228,9 +12228,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
             <select id="filter-site" onchange="applyDirectorFilters()" style="padding:12px;font-size:12px;border:2px solid #E5E5E5;border-radius:10px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05)" onfocus="this.style.borderColor='#B8960C';this.style.boxShadow='0 4px 8px rgba(184,150,12,0.15)'" onblur="this.style.borderColor='#E5E5E5';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'">
               <option>All Sites</option>
-              <option>Sydney Olympic Park (10)</option>
-              <option>Bondi Junction (10)</option>
-              <option>Metro Project (5)</option>
+              <option>Sydney Olympic Park (5)</option>
+              <option>Bondi Junction Mixed Use (10)</option>
+              <option>Parramatta Metro Stage 2 (10)</option>
             </select>
             <select id="filter-period" onchange="toggleCustomDateRange(); applyDirectorFilters()" style="padding:12px;font-size:12px;border:2px solid #E5E5E5;border-radius:10px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05)" onfocus="this.style.borderColor='#B8960C';this.style.boxShadow='0 4px 8px rgba(184,150,12,0.15)'" onblur="this.style.borderColor='#E5E5E5';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'">
               <option value="180">Last 6 months</option>
@@ -12242,9 +12242,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </select>
             <select id="filter-severity" onchange="applyDirectorFilters()" style="padding:12px;font-size:12px;border:2px solid #E5E5E5;border-radius:10px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05)" onfocus="this.style.borderColor='#B8960C';this.style.boxShadow='0 4px 8px rgba(184,150,12,0.15)'" onblur="this.style.borderColor='#E5E5E5';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'">
               <option>All Severity</option>
-              <option>LTI (7)</option>
-              <option>First Aid (10)</option>
-              <option>Near Miss (8)</option>
+              <option>Critical (2)</option>
+              <option>Major (5)</option>
+              <option>Moderate (10)</option>
+              <option>Minor (8)</option>
             </select>
           </div>
           
@@ -46879,7 +46880,7 @@ function renderDirectorIncidentList(incidents) {
       '  <div style="font-size:11px;color:#666;line-height:1.5;margin-bottom:8px">' + (inc.description || '').substring(0, 120) + '...</div>' +
       '  <div style="font-size:10px;color:#999;display:flex;gap:12px">' +
       '    <span>📍 ' + (inc.site || inc.location || 'Site') + '</span>' +
-      '    <span>📅 ' + new Date(inc.incident_date || inc.submitted_at).toLocaleDateString() + '</span>' +
+      '    <span>📅 ' + new Date(inc.incident_date || inc.submitted_at).toLocaleDateString('en-AU') + '</span>' +
       '  </div>' +
       '  <div style="font-size:10px;color:#B8960C;margin-top:8px;font-weight:600">📄 Click to open full PDF report →</div>' +
     '</div>';
@@ -47665,19 +47666,32 @@ function populateBodyMapFromIncidents() {
   var bodyIncidents = {}; // Store incidents per body part
   
   incidents.forEach(function(inc, index) {
-    var bodyPart = (inc.body_part || "").toLowerCase().trim();
-    console.log('   Incident', index + 1, '- body_part:', inc.body_part, '→', bodyPart);
+    var bodyPart = (inc.body_part || "").trim();
+    console.log('   Incident', index + 1, '- body_part:', inc.body_part);
     
-    if (bodyPart && bodyPart !== "none" && bodyPart !== "") {
-      var normalized = bodyPart
-        .replace(/left /gi, "Left ")
-        .replace(/right /gi, "Right ")
-        .replace(/forearm/gi, "Forearm")
-        .replace(/hand|palm|finger|thumb|wrist/gi, "Hand")
-        .replace(/shoulder/gi, "Shoulder")
-        .replace(/lower back/gi, "Lower Back")
-        .replace(/back/gi, "Back")
-        .replace(/ribs|chest/gi, "Chest");
+    if (bodyPart && bodyPart.toLowerCase() !== "none" && bodyPart !== "") {
+      var lower = bodyPart.toLowerCase();
+      var normalized;
+      
+      // Handle hand-related injuries (palm, finger, thumb, wrist)
+      if (lower.match(/palm|finger|thumb|wrist/)) {
+        if (lower.match(/left/)) {
+          normalized = "Left Hand";
+        } else if (lower.match(/right/)) {
+          normalized = "Right Hand";
+        } else {
+          normalized = "Hand";
+        }
+      }
+      // Handle ribs -> chest
+      else if (lower.match(/ribs/)) {
+        normalized = lower.replace(/ribs/g, "chest")
+          .replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+      }
+      // Standard normalization: just capitalize first letter of each word
+      else {
+        normalized = lower.replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+      }
       
       console.log('   → Normalized to:', normalized);
       bodyCounts[normalized] = (bodyCounts[normalized] || 0) + 1;
@@ -47759,7 +47773,7 @@ function showBodyPartIncidents(bodyPart, incidents) {
       "<div style='font-size:10px;color:var(--deep);margin-top:4px;font-weight:600'>Click to open PDF →</div>";
     
     div.onclick = function() {
-      generateDirectorIncidentPDF(inc);
+      openIncidentPDF(inc.ref);
     };
     
     histEl.appendChild(div);
