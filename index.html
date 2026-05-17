@@ -11503,13 +11503,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </div>
           </div>
 
-      <!-- 🗺️ BODY INCIDENT MAP - 50/50 LAYOUT AT BOTTOM -->
-      <div id="an-section-bodymap" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
-        
-        <!-- LEFT: Body Map -->
-        <div class="fcard">
-          <div class="fcard-hdr">🗺️ Body Incident Map</div>
-          <div style="padding:20px 18px">
+      <!-- 🗺️ BODY INCIDENT MAP - ONE CARD WITH 50/50 INSIDE -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🗺️ Body Incident Map</div>
+        <div id="an-section-bodymap" style="padding:10px">
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            
+            <!-- LEFT: Body Map -->
+            <div>
+              <div style="padding:10px 8px">
             <!-- Incident Type Filter -->
             <div style="display:flex;justify-content:center;margin-bottom:14px">
               <select id="bodymap-type-filter" onchange="filterBodyMapByType()" style="padding:10px 16px;font-size:12px;border:2px solid #E5E5E5;border-radius:8px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05);min-width:200px">
@@ -11577,18 +11580,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </svg>
             </div>
           </div>
-        </div>
-
-        <!-- RIGHT: Incidents Panel -->
-        <div class="fcard">
-          <div class="fcard-hdr" id="an-bm-name">Click a body zone</div>
-          <div style="padding:18px">
-            <div id="an-bm-count" style="font-size:12px;color:var(--muted);margin-bottom:16px">Select a colored area to view incidents</div>
-            <div id="an-bm-hist" style="display:flex;flex-direction:column;gap:10px"></div>
+            
+            <!-- RIGHT: Incidents Panel -->
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#1a2a1f;margin-bottom:10px" id="an-bm-name">Click a body zone</div>
+              <div id="an-bm-count" style="font-size:12px;color:var(--muted);margin-bottom:16px">Select a colored area to view incidents</div>
+              <div id="an-bm-hist" style="display:flex;flex-direction:column;gap:10px"></div>
+            </div>
+            
           </div>
         </div>
       </div>
       <!-- END BODY MAP -->
+      
     </div>
     <!-- END ANALYTICS TAB -->
     
@@ -36684,6 +36688,13 @@ function switchMainIncidentTab(tabName) {
   var selectedTab = document.getElementById('main-incident-tab-' + tabName);
   if (selectedTab) {
     selectedTab.style.display = 'block';
+    
+    // ALSO FORCE PARENT TO BE VISIBLE
+    if (selectedTab.parentElement) {
+      selectedTab.parentElement.style.display = 'block';
+      console.log('✅ Set parent display to block');
+    }
+    
     console.log('✅ Set display:block on:', 'main-incident-tab-' + tabName);
     console.log('   Display value:', selectedTab.style.display);
     console.log('   Computed display:', window.getComputedStyle(selectedTab).display);
