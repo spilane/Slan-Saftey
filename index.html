@@ -11503,16 +11503,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </div>
           </div>
 
-      <!-- 🗺️ BODY INCIDENT MAP - ONE CARD WITH 50/50 INSIDE -->
+      <!-- 🗺️ BODY INCIDENT MAP - EXACTLY LIKE DAY/TIME STRUCTURE -->
       <div class="fcard" style="margin-bottom:12px">
         <div class="fcard-hdr">🗺️ Body Incident Map</div>
-        <div id="an-section-bodymap" style="padding:10px">
+        <div style="padding:10px">
           
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div id="an-section-bodymap" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
             
-            <!-- LEFT: Body Map -->
+            <!-- LEFT: Body Map SVG -->
             <div>
-              <div style="padding:10px 8px">
             <!-- Incident Type Filter -->
             <div style="display:flex;justify-content:center;margin-bottom:14px">
               <select id="bodymap-type-filter" onchange="filterBodyMapByType()" style="padding:10px 16px;font-size:12px;border:2px solid #E5E5E5;border-radius:8px;background:#fff;color:#1A2A1F;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.05);min-width:200px">
@@ -11579,7 +11578,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <text x="164" y="445" font-size="10" fill="#666" font-family="sans-serif" font-weight="600">L</text>
         </svg>
             </div>
-          </div>
             
             <!-- RIGHT: Incidents Panel -->
             <div>
@@ -11589,6 +11587,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </div>
             
           </div>
+          
         </div>
       </div>
       <!-- END BODY MAP -->
@@ -36689,10 +36688,12 @@ function switchMainIncidentTab(tabName) {
   if (selectedTab) {
     selectedTab.style.display = 'block';
     
-    // ALSO FORCE PARENT TO BE VISIBLE
-    if (selectedTab.parentElement) {
-      selectedTab.parentElement.style.display = 'block';
-      console.log('✅ Set parent display to block');
+    // FORCE ALL PARENTS TO BE VISIBLE
+    var parent = selectedTab.parentElement;
+    while (parent && parent !== document.body) {
+      parent.style.display = 'block';
+      console.log('✅ Set parent display to block:', parent.id || parent.className);
+      parent = parent.parentElement;
     }
     
     console.log('✅ Set display:block on:', 'main-incident-tab-' + tabName);
