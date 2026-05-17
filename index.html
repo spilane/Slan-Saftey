@@ -15413,8 +15413,15 @@ document.addEventListener('DOMContentLoaded',()=>{
         renderIncidentList();
         console.log('✅ Incident list rendered');
       }
+      // Calculate and update LTI counter
+      updateDaysSinceLTI();
     }, 100);
   }
+  
+  // Update LTI counter on page load
+  setTimeout(function() {
+    updateDaysSinceLTI();
+  }, 200);
   
   window.addEventListener('online',()=>{isOnline=true;updateSync();syncQ();});
   window.addEventListener('offline',()=>{isOnline=false;updateSync();});
@@ -21654,6 +21661,49 @@ function incLoadAll() {
     var arr = raw ? JSON.parse(raw) : [];
     return Array.isArray(arr) ? arr : [];
   } catch(e) { return []; }
+}
+
+// Calculate and update Days Since Last LTI counter
+function updateDaysSinceLTI() {
+  try {
+    const incidents = incLoadAll();
+    
+    if (incidents.length === 0) {
+      return; // No incidents loaded yet
+    }
+    
+    // Find all LTIs (Actual Injury with Moderate, Major, or Critical severity)
+    const ltis = incidents.filter(inc => 
+      inc.incident_type === 'Actual Injury' && 
+      (inc.severity === 'Moderate' || inc.severity === 'Critical' || inc.severity === 'Major')
+    );
+    
+    const ltiElement = document.getElementById('days-since-lti');
+    if (!ltiElement) return;
+    
+    if (ltis.length === 0) {
+      // No LTIs recorded
+      ltiElement.textContent = '∞';
+      return;
+    }
+    
+    // Sort by date to find most recent
+    ltis.sort((a, b) => new Date(b.incident_date) - new Date(a.incident_date));
+    const lastLTI = ltis[0];
+    
+    // Calculate days since
+    const lastLTIDate = new Date(lastLTI.incident_date);
+    const today = new Date();
+    const diffTime = today - lastLTIDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Update the display
+    ltiElement.textContent = diffDays;
+    
+    console.log(`📊 LTI Counter Updated: ${diffDays} days since ${lastLTI.incident_date} (${lastLTI.ref})`);
+  } catch (error) {
+    console.error('Error calculating days since LTI:', error);
+  }
 }
 
 function incLoadPhotos(ref) {
@@ -46699,29 +46749,78 @@ function showDirectorActionsModal(actionType) {
 
 
 
-// Trend (Last 6 Months)
+// Trend (Last 6 Months) - WITH COMPARISONS
 const trendCtx = document.getElementById('trendChart').getContext('2d');
 new Chart(trendCtx, {
   type: 'line',
   data: {
     labels: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
-    datasets: [{
-      label: 'Incidents',
-      data: [0, 0, 0, 0, 12, 13],
-      borderColor: '#B8960C',
-      backgroundColor: 'rgba(184, 150, 12, 0.1)',
-      tension: 0.3,
-      fill: true
-    }]
+    datasets: [
+      {
+        label: 'Current Period',
+        data: [0, 0, 0, 0, 12, 13],
+        borderColor: '#B8960C',
+        backgroundColor: 'rgba(184, 150, 12, 0.1)',
+        tension: 0.3,
+        fill: true,
+        borderWidth: 3
+      },
+      {
+        label: 'Previous Period',
+        data: [0, 0, 0, 0, 10, 12],
+        borderColor: '#999',
+        backgroundColor: 'transparent',
+        borderDash: [5, 5],
+        tension: 0.3,
+        fill: false,
+        borderWidth: 2,
+        pointRadius: 0
+      },
+      {
+        label: 'Industry Benchmark',
+        data: [8, 8, 8, 8, 8, 8],
+        borderColor: '#2563EB',
+        backgroundColor: 'transparent',
+        borderDash: [2, 4],
+        tension: 0,
+        fill: false,
+        borderWidth: 2,
+        pointRadius: 0
+      }
+    ]
   },
   options: {
     responsive: true,
     maintainAspectRatio: true,
     plugins: {
-      legend: { display: false }
+      legend: { 
+        display: true,
+        position: 'bottom',
+        labels: {
+          boxWidth: 12,
+          font: { size: 10 },
+          padding: 8,
+          usePointStyle: true
+        }
+      },
+      tooltip: {
+        callbacks: {
+          afterLabel: function(context) {
+            if (context.datasetIndex === 0) {
+              const prev = context.chart.data.datasets[1].data[context.dataIndex];
+              if (prev > 0) {
+                const current = context.parsed.y;
+                const change = ((current - prev) / prev * 100).toFixed(0);
+                return change > 0 ? `↑ ${change}% vs previous` : `↓ ${Math.abs(change)}% vs previous`;
+              }
+            }
+            return '';
+          }
+        }
+      }
     },
     scales: {
-      y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } },
+      y: { beginAtZero: true, ticks: { stepSize: 2, font: { size: 11 } } },
       x: { ticks: { font: { size: 11 } } }
     }
   }
