@@ -1466,7 +1466,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="ob-info"><strong>Your privacy:</strong> Your information is collected under the Privacy Act 1988 (Cth) for workplace safety only.</div>
     <button class="ob-btn" onclick="obGoTo('ob-pick-site')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>Get Started</button>
-    <button onclick="showDemoRoleSheet()" style="margin-top:10px;background:var(--mid);border:none;border-radius:8px;padding:14px;width:100%;font-family:inherit;font-size:15px;font-weight:600;color:#fff;cursor:pointer">View Demo</button>
   </div>
 </div>
 
@@ -1486,154 +1485,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
-<!-- SCREEN 3: INDUCTION FORM - SECTION 1 -->
-<div id="mainForm" style="display:none;min-height:100vh;padding:20px;background:var(--bg)">
-  <div style="max-width:680px;margin:0 auto;padding:20px 0">
-    
-    <!-- Section Header -->
-    <div style="background:var(--deep);color:#fff;padding:24px;border-radius:var(--r);margin-bottom:20px">
-      <div style="display:flex;align-items:flex-start;gap:16px">
-        <div style="width:40px;height:40px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--deep);flex-shrink:0">1</div>
-        <div style="flex:1">
-          <h2 style="margin:0 0 6px 0;font-size:19px;font-weight:600">Personal Details</h2>
-          <p style="margin:0;opacity:.75;font-size:13px">All fields and profile photo mandatory — Section 2 unlocks on completion</p>
-        </div>
-      </div>
+<!-- SCREEN 3: INDUCTION FORM -->
+<div id="mainForm" style="display:none;min-height:100vh;padding:20px;background:#fff">
+  <div style="max-width:600px;margin:0 auto;padding:20px 0">
+    <div style="background:var(--deep);color:#fff;padding:20px;border-radius:8px;margin-bottom:20px;text-align:center">
+      <h2 style="margin:0 0 10px 0;font-size:20px">Complete Your Induction</h2>
+      <p style="margin:0;opacity:.8">Site: <strong id="ob-bridge-sub">—</strong></p>
     </div>
-
-    <!-- Form Content -->
-    <div style="background:#fff;padding:28px;border-radius:var(--r);box-shadow:var(--sh);margin-bottom:20px">
-      
-      <!-- Profile Photo Section -->
-      <div style="margin-bottom:32px">
-        <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:8px;font-size:14px">Profile Photo <span style="color:var(--red)">*</span></label>
-        <div style="border:2px dashed var(--border);border-radius:var(--r);padding:24px;text-align:center;background:var(--bg)">
-          <div style="font-size:32px;margin-bottom:8px">📸</div>
-          <div style="font-weight:600;color:var(--t1);margin-bottom:4px">Upload your photo</div>
-          <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Face clearly visible · No sunglasses · Taken within 2 years</div>
-          <input type="file" accept="image/*" style="display:none" id="ob-photo-input">
-          <button onclick="document.getElementById('ob-photo-input').click()" style="padding:10px 20px;background:var(--mid);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px">Choose Photo</button>
-        </div>
-        <div style="font-size:12px;color:var(--t3);margin-top:8px;line-height:1.5">Your photo is used by site supervisors to verify your identity on Day 1. Stored securely in your worker record and only accessed by authorised personnel.</div>
-      </div>
-
-      <!-- Personal Information -->
-      <div style="margin-bottom:24px">
-        <h3 style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:16px">Personal Information</h3>
-        
-        <div style="margin-bottom:16px">
-          <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Full Legal Name <span style="color:var(--red)">*</span></label>
-          <input type="text" id="ob-full-name" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit" placeholder="As it appears on your ID">
-        </div>
-
-        <div style="margin-bottom:16px">
-          <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Preferred Name</label>
-          <input type="text" id="ob-preferred-name" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit" placeholder="Optional">
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-          <div>
-            <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Date of Birth <span style="color:var(--red)">*</span></label>
-            <input type="date" id="ob-dob" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
-          </div>
-          <div>
-            <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Gender</label>
-            <select id="ob-gender" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
-              <option value="">Prefer not to say</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="non-binary">Non-binary</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-          <div>
-            <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Mobile Number <span style="color:var(--red)">*</span></label>
-            <input type="tel" id="ob-mobile" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit" placeholder="04XX XXX XXX">
-          </div>
-          <div>
-            <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Email Address <span style="color:var(--red)">*</span></label>
-            <input type="email" id="ob-email" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit" placeholder="you@example.com">
-          </div>
-        </div>
-      </div>
-
-      <!-- Residential Address -->
-      <div style="margin-bottom:24px">
-        <h3 style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:16px">Residential Address</h3>
-        
-        <div style="margin-bottom:16px">
-          <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Street Address <span style="color:var(--red)">*</span></label>
-          <input type="text" id="ob-street" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
-        </div>
-
-        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px">
-          <div>
-            <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Suburb <span style="color:var(--red)">*</span></label>
-            <input type="text" id="ob-suburb" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
-          </div>
-          <div>
-            <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">State <span style="color:var(--red)">*</span></label>
-            <select id="ob-state" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
-              <option value="">Select</option>
-              <option value="NSW">NSW</option>
-              <option value="VIC">VIC</option>
-              <option value="QLD">QLD</option>
-              <option value="WA">WA</option>
-              <option value="SA">SA</option>
-              <option value="TAS">TAS</option>
-              <option value="ACT">ACT</option>
-              <option value="NT">NT</option>
-            </select>
-          </div>
-          <div>
-            <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Postcode <span style="color:var(--red)">*</span></label>
-            <input type="text" id="ob-postcode" maxlength="4" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
-          </div>
-        </div>
-      </div>
-
-      <!-- Right to Work -->
-      <div>
-        <h3 style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:16px">Right to Work & Training Identity</h3>
-        
-        <div style="margin-bottom:16px">
-          <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">USI (Unique Student Identifier) <span style="color:var(--red)">*</span></label>
-          <input type="text" id="ob-usi" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit" placeholder="10 characters">
-          <div style="font-size:12px;color:var(--t3);margin-top:4px">Find yours at usi.gov.au</div>
-        </div>
-
-        <div style="margin-bottom:16px">
-          <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Right to Work in Australia <span style="color:var(--red)">*</span></label>
-          <select id="ob-right-to-work" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
-            <option value="">Select...</option>
-            <option value="citizen">Australian Citizen</option>
-            <option value="permanent">Permanent Resident</option>
-            <option value="visa">Visa Holder</option>
-          </select>
-        </div>
-
-        <div id="ob-visa-fields" style="display:none;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Visa Class <span style="color:var(--red)">*</span></label>
-            <input type="text" id="ob-visa-class" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
-          </div>
-          <div>
-            <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Visa Expiry Date <span style="color:var(--red)">*</span></label>
-            <input type="date" id="ob-visa-expiry" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
-            <div style="font-size:11px;color:var(--t3);margin-top:4px">Alert fires at 30 days before expiry</div>
-          </div>
-        </div>
-      </div>
+    <div style="background:#F4F9F5;padding:20px;border-radius:8px;margin-bottom:20px;color:var(--t2);line-height:1.6">
+      Complete all sections below. This induction covers site-specific policies, safety procedures, and workplace agreements. Approximately 5 minutes.
     </div>
-
-    <!-- Navigation -->
-    <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;padding:20px;border-radius:var(--r);box-shadow:var(--sh)">
-      <div style="font-size:13px;color:var(--t3)">Section 1 of 10</div>
-      <button onclick="obShowCongrats()" style="padding:14px 28px;background:var(--mid);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;font-family:inherit">Next →</button>
-    </div>
-
+    <button onclick="obShowCongrats()" style="width:100%;padding:15px;background:var(--deep);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;font-family:inherit">Complete Induction → Proceed</button>
   </div>
 </div>
 
@@ -36594,9 +36456,6 @@ function startDemoAs(role) {
   p.created = new Date().toISOString(); p.demo = true; p.sig = null; p.photo = null;
   localStorage.setItem('slan_profile', JSON.stringify(p));
   localStorage.setItem('slan_onboarded', 'true');
-  // Everyone starts SIGNED OUT for demo so the toolbox gate fires when they
-  // first try to sign in. Nobody starts with the toolbox pre-signed either —
-  // the chip stays amber until they sign through the proper flow.
   localStorage.removeItem('slan_signed_in_today');
   localStorage.removeItem('slan_signed_out_today');
   localStorage.removeItem('talk_signed_' + today);
@@ -36604,26 +36463,26 @@ function startDemoAs(role) {
 
   var sheet = document.getElementById('demo-role-sheet');
   if (sheet) sheet.remove();
-  // Remove existing banner before showing new one
   var existingBanner = document.getElementById('demo-banner');
   if (existingBanner) existingBanner.remove();
   showDemoBanner();
 
-  // DEMO MODE: walk through onboarding pre-filled
   localStorage.removeItem('slan_onboarded');
   window._demoTargetRole = role;
   
-  // Worker role → Induction first; Supervisor/Director → Profile
-  if(role === 'worker') {
-    // Hide old onboarding screen
-    var oldOnboarding = document.getElementById('screen-onboarding');
-    if(oldOnboarding) oldOnboarding.style.display = 'none';
-    // Show induction
-    obGoTo('ob-welcome');
-  } else {
-    // Supervisor/Director: explicitly hide ob-welcome before showing profile
-    var obWelcome = document.getElementById('ob-welcome');
-    if(obWelcome) obWelcome.style.display = 'none';
+  // Hide all ob-screens before navigating
+  var obScreens = document.querySelectorAll('.ob-screen');
+  obScreens.forEach(function(screen) {
+    screen.style.display = 'none';
+  });
+  
+  // Route based on role
+  if (role === 'worker') {
+    goTo('screen-profile');
+  } else if (role === 'supervisor') {
+    goTo('screen-profile');
+    demoPrefillAll(p, role);
+  } else if (role === 'director') {
     goTo('screen-profile');
     demoPrefillAll(p, role);
   }
@@ -47554,21 +47413,6 @@ function obStartInduction() {
   var form = document.getElementById('mainForm');
   if(form) form.style.display = 'block';
   window.scrollTo(0,0);
-  
-  // Initialize visa fields toggle
-  setTimeout(function() {
-    var rightToWorkSelect = document.getElementById('ob-right-to-work');
-    var visaFields = document.getElementById('ob-visa-fields');
-    if(rightToWorkSelect && visaFields) {
-      rightToWorkSelect.addEventListener('change', function() {
-        if(this.value === 'visa') {
-          visaFields.style.display = 'grid';
-        } else {
-          visaFields.style.display = 'none';
-        }
-      });
-    }
-  }, 100);
 }
 
 function obShowCongrats() {
