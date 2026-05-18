@@ -36485,6 +36485,16 @@ function startDemoAs(role) {
     // Show induction
     obGoTo('ob-welcome');
   } else {
+    // Supervisor/Director: Force hide ALL induction screens
+    var obWelcome = document.getElementById('ob-welcome');
+    var obPickSite = document.getElementById('ob-pick-site');
+    var obInduction = document.getElementById('ob-induction');
+    var obCongrats = document.getElementById('ob-congrats');
+    if(obWelcome) { obWelcome.classList.remove('active'); obWelcome.style.display = 'none'; }
+    if(obPickSite) { obPickSite.classList.remove('active'); obPickSite.style.display = 'none'; }
+    if(obInduction) { obInduction.classList.remove('active'); obInduction.style.display = 'none'; }
+    if(obCongrats) { obCongrats.classList.remove('active'); obCongrats.style.display = 'none'; }
+    // Show profile setup
     goTo('screen-profile');
     demoPrefillAll(p, role);
   }
