@@ -36477,6 +36477,10 @@ function startDemoAs(role) {
   
   // Worker role → Induction first; Supervisor/Director → Profile
   if(role === 'worker') {
+    // Hide old onboarding screen
+    var oldOnboarding = document.getElementById('screen-onboarding');
+    if(oldOnboarding) oldOnboarding.style.display = 'none';
+    // Show induction
     obGoTo('ob-welcome');
   } else {
     goTo('screen-profile');
@@ -47433,9 +47437,15 @@ function obShowCongrats() {
 }
 
 function proceedToProfileSetup() {
+  // Hide all induction screens
+  document.querySelectorAll('.ob-screen').forEach(function(s){
+    s.style.display = 'none';
+  });
+  
   // Store site info for auto-fill in profile
   if(obSiteName) {
-    document.getElementById('obSiteInfo').value = obSiteId + '|' + obSiteName;
+    var field = document.getElementById('obSiteInfo');
+    if(field) field.value = obSiteId + '|' + obSiteName;
   }
   // Go to profile setup
   goTo('screen-profile');
