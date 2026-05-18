@@ -36472,18 +36472,18 @@ function startDemoAs(role) {
   if (existingBanner) existingBanner.remove();
   showDemoBanner();
 
-  // DEMO MODE: walk through onboarding pre-filled
-  localStorage.removeItem('slan_onboarded');
-  window._demoTargetRole = role;
-  
   // Worker role → Induction first; Supervisor/Director → Profile
   if(role === 'worker') {
+    // DEMO MODE: walk through onboarding pre-filled
+    localStorage.removeItem('slan_onboarded');
+    window._demoTargetRole = role;
     // Hide old onboarding screen
     var oldOnboarding = document.getElementById('screen-onboarding');
     if(oldOnboarding) oldOnboarding.style.display = 'none';
     // Show induction
     obGoTo('ob-welcome');
   } else {
+    // Supervisor/Director skip induction, go straight to profile setup
     goTo('screen-profile');
     demoPrefillAll(p, role);
   }
