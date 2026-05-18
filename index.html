@@ -1379,6 +1379,1075 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .ack-tick-text { font-size:13.5px; line-height:1.4; color:var(--text); flex:1; }
 .ack-tick.checked .ack-tick-text { color:#0F4A27; font-weight:500; }
 
+
+/* ═══ INDUCTION FORM STYLES ═══ */
+:root{
+  --deep:#1B3A2D;--mid:#2D6A45;--gold:#B8960C;--gold-l:#D4AA30;
+  --bg:#F0F3F1;--card:#FFFFFF;--border:#D4DEDB;--border-f:#2D6A45;
+  --t1:#1A2E25;--t2:#4B6358;--t3:#7A938B;
+  --red-bg:#FFF1F0;--red:#CC2222;
+  --amber-bg:#FFFBF0;--amber:#A06000;
+  --green-bg:#F0FBF3;--green:#1B5E35;
+  --r:8px;--rl:12px;
+  --sh:0 1px 4px rgba(0,0,0,.07),0 2px 8px rgba(0,0,0,.04);
+  --sh-lg:0 4px 16px rgba(0,0,0,.10),0 2px 8px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  background:var(--bg);color:var(--t1);min-height:100vh;font-size:14px;line-height:1.6}
+
+/* HEADER */
+.site-header{background:var(--deep);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:2px solid var(--gold)}
+.logo-block{display:flex;align-items:center;gap:10px}
+.logo-text .brand{font-size:20px;font-weight:700;color:var(--gold-l);letter-spacing:.04em}
+.logo-text .tagline{font-size:10px;color:#9FC4AE;letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.header-center h1{font-size:16px;font-weight:600;color:#fff;text-align:center}
+.header-center p{font-size:11px;color:#9FC4AE;text-align:center;margin-top:1px}
+.header-meta{text-align:right;font-size:11px;color:#9FC4AE;line-height:1.8}
+.header-meta strong{color:var(--gold-l)}
+
+/* PROGRESS */
+.step-bar{padding:10px 24px;display:flex;align-items:center;gap:0;background:var(--deep)}
+.step-item{display:flex;align-items:center;flex:1}
+.step-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;flex-shrink:0;transition:all .25s;
+  background:rgba(255,255,255,.1);color:rgba(255,255,255,.35);border:1.5px solid rgba(255,255,255,.15)}
+.step-item.done .step-dot{background:var(--mid);color:#fff;border-color:var(--mid)}
+.step-item.active .step-dot{background:var(--gold);color:var(--deep);border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,150,12,.3)}
+.step-line{flex:1;height:1.5px;background:rgba(255,255,255,.12);margin:0 2px}
+.step-item.done .step-line{background:var(--mid)}
+.progress-lbl{padding:4px 24px 8px;font-size:11px;color:#9FC4AE;background:var(--deep)}
+.progress-lbl span{color:var(--gold-l);font-weight:600}
+
+/* INTRO */
+#introScreen{display:block}
+.intro-hero{background:linear-gradient(160deg,var(--deep) 0%,#2D6A45 100%);padding:36px 20px 28px;text-align:center}
+.intro-slan{font-size:52px;font-weight:700;color:var(--gold-l);line-height:1;letter-spacing:-.5px}
+.intro-safety{font-size:13px;color:rgba(255,255,255,.45);letter-spacing:4px;text-transform:uppercase;margin:4px 0 18px}
+.intro-title{font-size:20px;font-weight:600;color:#fff;margin-bottom:6px}
+.intro-sub{font-size:13px;color:rgba(255,255,255,.55);max-width:380px;margin:0 auto}
+.intro-body{max-width:680px;margin:0 auto;padding:20px 16px 60px}
+
+/* VIDEO CARD (intro) */
+.vid-card{background:var(--card);border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh-lg);margin-bottom:18px}
+.vid-hdr{background:var(--deep);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.vid-hdr-title{font-size:14px;font-weight:600;color:var(--gold-l)}
+.vid-hdr-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px}
+.req-badge{background:rgba(184,150,12,.2);color:var(--gold-l);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase}
+.vid-thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#0D2218,#1B4D2E);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;border:none;width:100%}
+.vid-thumb:hover .play-circle{transform:scale(1.07)}
+.play-circle{width:68px;height:68px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;transition:transform .2s;box-shadow:0 6px 20px rgba(184,150,12,.4)}
+.vid-ph-note{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:rgba(255,255,255,.18);font-size:10px;letter-spacing:1px;text-transform:uppercase}
+.vid-footer{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)}
+.vid-status{font-size:12px;color:var(--t3)}
+.vid-status.ok{color:var(--green);font-weight:600}
+
+/* INTRO CHECKLIST */
+.intro-cl{background:var(--card);border-radius:var(--rl);padding:18px 22px;box-shadow:var(--sh);margin-bottom:18px}
+.intro-cl h3{font-size:15px;font-weight:700;color:var(--deep);margin-bottom:12px}
+.cl-item{display:flex;gap:9px;padding:6px 0;border-bottom:1px solid var(--bg);font-size:13px;color:var(--t2)}
+.cl-item:last-child{border-bottom:none}
+.cl-item::before{content:"\2192";color:var(--gold);font-weight:700;flex-shrink:0}
+
+/* START BUTTON */
+.start-btn{width:100%;padding:15px;background:var(--mid);color:#fff;border:none;border-radius:50px;
+  font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(45,106,69,.35);
+  letter-spacing:.3px;margin-bottom:10px}
+.start-btn:hover:not(:disabled){background:var(--deep);transform:translateY(-1px)}
+.start-btn:disabled{background:var(--border);color:var(--t3);box-shadow:none;cursor:not-allowed}
+.intro-note{text-align:center;font-size:12px;color:var(--t3)}
+.intro-note.ready{color:var(--green);font-weight:600}
+
+/* MAIN FORM */
+#mainForm{display:none}
+.form-wrap{max-width:720px;margin:0 auto;padding:22px 16px 80px}
+.form-section{display:none}
+.form-section.active{display:block}
+
+/* SECTION CARD */
+.sec-card{background:var(--card);border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh-lg);margin-bottom:16px}
+.sec-hdr{background:var(--deep);padding:16px 20px;display:flex;align-items:center;gap:13px}
+.sec-num{width:36px;height:36px;border-radius:50%;background:rgba(184,150,12,.15);border:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--gold-l);flex-shrink:0}
+.sec-title{font-size:17px;font-weight:700;color:var(--gold-l)}
+.sec-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.sec-body{padding:20px}
+
+/* FIELDS */
+.fg{margin-bottom:15px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.fr1{grid-template-columns:1fr}
+@media(max-width:540px){.fr,.fr3{grid-template-columns:1fr}}
+label.fl{display:block;font-size:11px;font-weight:600;color:var(--t2);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px}
+label.fl .req{color:var(--red);margin-left:2px}
+label.fl .opt{color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0;margin-left:4px;font-size:11px}
+input[type=text],input[type=email],input[type=tel],input[type=date],select,textarea{
+  width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r);
+  font-family:inherit;font-size:14px;color:var(--t1);background:#fff;
+  transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--border-f);box-shadow:0 0 0 3px rgba(45,106,69,.1)}
+input.err,select.err{border-color:var(--red);background:var(--red-bg)}
+textarea{resize:vertical;min-height:72px}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%232D6A45' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;cursor:pointer}
+.hint{font-size:11px;color:var(--t3);margin-top:3px}
+.valmsg{font-size:11px;color:var(--red);margin-top:3px;display:none}
+.valmsg.show{display:block}
+
+/* INFO BOXES */
+.ib{background:#F4F9F5;border-left:3px solid var(--mid);border-radius:0 var(--r) var(--r) 0;padding:10px 13px;font-size:12.5px;color:var(--t2);margin-bottom:14px;line-height:1.5}
+.ib.gold{background:var(--amber-bg);border-color:var(--amber)}
+.ib.warn{background:var(--red-bg);border-color:var(--red)}
+.ib.green{background:var(--green-bg);border-color:var(--green)}
+
+/* DIVIDER */
+.dv{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mid);
+  padding:3px 0 9px;border-bottom:1.5px solid #E0EAE4;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.dv::before{content:'';width:3px;height:12px;background:var(--gold);border-radius:2px;display:inline-block}
+.dv .ot{font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3);font-size:11px;margin-left:4px}
+
+/* UPLOAD */
+.ua{border:2px dashed var(--border);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;
+  transition:all .15s;background:#F8FAF9;position:relative;overflow:hidden}
+.ua:hover{border-color:var(--mid);background:#EDF4EF}
+.ua.up{border-style:solid;border-color:var(--mid);background:var(--green-bg)}
+.ua input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ua-icon{font-size:18px;margin-bottom:2px}
+.ua-main{font-size:12px;color:var(--t2)}
+.ua-main strong{color:var(--mid)}
+.ua-sub{font-size:11px;color:var(--t3)}
+
+/* PHOTO */
+.photo-wrap{border:2px dashed var(--border);border-radius:var(--rl);padding:22px;text-align:center;cursor:pointer;
+  transition:all .15s;background:#F8FAF9;position:relative;overflow:hidden}
+.photo-wrap:hover{border-color:var(--mid);background:#EDF4EF}
+.photo-wrap.hp{border-style:solid;border-color:var(--mid)}
+.photo-wrap input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.photo-prev{width:86px;height:86px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);margin:0 auto 10px;display:none}
+.photo-wrap.hp .photo-prev{display:block}
+.photo-icon{font-size:38px;margin-bottom:7px}
+.photo-wrap.hp .photo-icon{display:none}
+
+/* YES/NO */
+.yn{display:flex;gap:7px;margin-top:3px}
+.yn-b{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--r);text-align:center;
+  cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;background:#fff;color:var(--t2);user-select:none}
+.yn-b:hover{border-color:var(--mid)}
+.yn-b.ya{background:var(--mid);color:#fff;border-color:var(--mid)}
+.yn-b.na{background:#EDF4EF;color:var(--deep);border-color:var(--mid)}
+.cd{display:none;margin-top:9px}
+.cd.show{display:block}
+
+/* CHECKBOXES */
+.cbg{display:flex;flex-direction:column;gap:7px}
+.cbi{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border:1.5px solid var(--border);
+  border-radius:var(--r);cursor:pointer;transition:all .15s;user-select:none}
+.cbi:hover{border-color:var(--mid);background:#F4F9F5}
+.cbi.ck{border-color:var(--mid);background:#EDF4EF}
+.cbi.lk{cursor:not-allowed;opacity:.5}
+.cbi input{display:none}
+.cb-bx{width:17px;height:17px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:10px;color:#fff}
+.cbi.ck .cb-bx{background:var(--mid);border-color:var(--mid)}
+.cbi.ck .cb-bx::after{content:"\2713";font-weight:700}
+.cb-lbl{font-size:13px;color:var(--t1);line-height:1.5}
+.cb-lbl small{display:block;font-size:11px;color:var(--t3);margin-top:2px}
+
+/* DYNAMIC ROWS */
+.dyn{background:#F4F9F5;border:1.5px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:7px;position:relative}
+.dyn-rm{position:absolute;top:9px;right:9px;width:21px;height:21px;border:none;border-radius:50%;
+  background:var(--red-bg);color:var(--red);cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;
+  border:1.5px dashed var(--mid);border-radius:var(--r);background:transparent;color:var(--mid);
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:5px;font-family:inherit}
+.add-btn:hover{background:#EDF4EF}
+
+/* VOC */
+.voc-wrap{display:none;margin-top:20px}
+.voc-wrap.show{display:block}
+.voc-row{background:var(--amber-bg);border:1.5px solid #E8CC80;border-radius:var(--r);padding:13px;margin-bottom:7px}
+.voc-rt{font-weight:700;color:var(--deep);font-size:13px;margin-bottom:9px}
+
+/* SOP VIDEO CARD */
+.sop-vid{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.sop-vid-hdr{background:var(--deep);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.sop-vid-hdr .svt{font-size:13px;font-weight:600;color:var(--gold-l)}
+.sop-vid-hdr .svs{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px}
+.sop-thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#0D2218,#1B4D2E);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;border:none;width:100%}
+.sop-thumb:hover .sop-play{transform:scale(1.07)}
+.sop-play{width:56px;height:56px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform .2s;box-shadow:0 4px 14px rgba(184,150,12,.4)}
+.sop-ph{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:rgba(255,255,255,.2);font-size:9px;letter-spacing:1px;text-transform:uppercase}
+.sop-footer{padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)}
+.sop-status{font-size:12px;color:var(--t3)}
+.sop-status.ok{color:var(--green);font-weight:600}
+
+/* POLICY LINKS */
+.pol-link{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1.5px solid var(--border);
+  border-radius:var(--r);cursor:pointer;text-decoration:none;margin-bottom:7px;background:#fff;transition:all .15s}
+.pol-link:hover{border-color:var(--mid);background:#F4F9F5}
+.pol-link.op{border-color:var(--green);background:var(--green-bg)}
+.pol-icon{width:34px;height:34px;border-radius:7px;background:#EDF4EF;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.pol-link.op .pol-icon{background:#DCFCE7}
+.pol-name{font-weight:600;font-size:13px;color:var(--t1)}
+.pol-desc{font-size:11px;color:var(--t3);margin-top:1px}
+.pol-st{margin-left:auto;font-size:11px;font-weight:600;color:var(--t3);flex-shrink:0}
+.pol-link.op .pol-st{color:var(--green)}
+
+/* DISCLAIMER BOX */
+.disclaimer-box{background:var(--amber-bg);border:1.5px solid var(--amber);border-radius:var(--r);padding:16px 18px;margin-top:18px}
+.disclaimer-box h4{font-size:13px;font-weight:700;color:var(--deep);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.disclaimer-box p{font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:12px}
+
+/* PRIVACY BOX */
+.priv-box{background:#F4F9F5;border:1.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.priv-box h3{font-size:14px;font-weight:700;color:var(--deep);margin-bottom:9px}
+.priv-box p{font-size:12.5px;color:var(--t2);line-height:1.7;margin-bottom:8px}
+.priv-box p:last-of-type{margin-bottom:0}
+.legal-note{background:var(--red-bg);border-left:3px solid var(--red);border-radius:0 6px 6px 0;padding:7px 11px;margin-top:11px;font-size:11.5px;color:var(--red);font-weight:600}
+
+
+.sig-clr:hover{color:var(--red);border-color:var(--red)}
+
+/* NAV BAR */
+.nav-bar{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-top:1px solid #E0EAE4}
+.btn{padding:10px 24px;border-radius:50px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;border:none;letter-spacing:.2px}
+.btn-next{background:var(--mid);color:#fff;box-shadow:0 3px 10px rgba(45,106,69,.3)}
+.btn-next:hover{background:var(--deep);transform:translateY(-1px)}
+.btn-next:disabled{background:var(--border);color:var(--t3);box-shadow:none;transform:none;cursor:not-allowed}
+.btn-back{background:transparent;color:var(--t2);border:1.5px solid var(--border)}
+.btn-back:hover{border-color:var(--mid);color:var(--mid)}
+.btn-sub{background:var(--gold);color:var(--deep);box-shadow:0 3px 10px rgba(184,150,12,.35);font-weight:700}
+.btn-sub:hover{background:#A07800;transform:translateY(-1px)}
+.sc{font-size:11px;color:var(--t3);font-weight:500}
+
+/* SIGNATURE */
+.sig-wrap{border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
+.sig-cv{width:100%;height:140px;cursor:crosshair;display:block;touch-action:none;background:#fff}
+.sig-bar{display:flex;justify-content:space-between;align-items:center;padding:6px 11px;background:#F4F9F5;border-top:1px solid var(--border)}
+.sig-clr{font-size:11px;color:var(--t3);cursor:pointer;background:none;border:1px solid var(--border);padding:3px 9px;border-radius:5px;font-family:inherit}
+.sig-clr:hover{color:var(--red);border-color:var(--red)}
+
+/* SUCCESS */
+#successScreen{display:none;min-height:60vh;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;background:var(--deep)}
+#successScreen.show{display:flex}
+.suc-icon{font-size:56px;margin-bottom:16px}
+.suc-title{font-size:26px;font-weight:700;color:var(--gold-l);margin-bottom:9px}
+.suc-body{font-size:14px;color:rgba(255,255,255,.6);max-width:400px;line-height:1.7}
+
+/* COND BLOCKS */
+.cb-block{display:none}
+.cb-block.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ INDUCTION FORM ═══════════════════ -->
+<!-- ═══ INTRO SCREEN ═══ -->
+<div id="introScreen">
+  <header class="site-header">
+    <div class="header-top">
+      <div class="logo-block"><div class="logo-text"><div class="brand">Sl&aacute;n Safety</div><div class="tagline">WHS Compliance</div></div></div>
+      <div class="header-center"><h1>Worker Site Induction Form</h1><p>SLS-IND-001 &mdash; v1.9</p></div>
+      <div class="header-meta"><div><strong>Doc:</strong> SLS-IND-001</div><div><strong>Ver:</strong> 1.9</div></div>
+    </div>
+  </header>
+  <div class="intro-hero">
+    <div class="intro-slan">Sl&aacute;n</div>
+    <div class="intro-safety">Safety</div>
+    <div class="intro-title">Worker Site Induction Form</div>
+    <div class="intro-sub">Complete this form before your first day on site. All information is held confidentially for WHS compliance purposes.</div>
+    <div style="margin-top:14px;background:rgba(255,255,255,.1);border-radius:8px;padding:10px 16px;font-size:12px;color:rgba(255,255,255,.6);max-width:400px;margin-left:auto;margin-right:auto">
+      &#127760; This form is in English. If you need it translated, use the Translate option in your browser.
+    </div>
+  </div>
+  <div class="intro-body">
+    <div class="vid-card">
+      <div class="vid-hdr">
+        <div><div class="vid-hdr-title">Site Induction Video</div><div class="vid-hdr-sub">Watch before starting the form &mdash; required</div></div>
+        <div class="req-badge">Required</div>
+      </div>
+      <div style="position:relative;aspect-ratio:16/9;background:#000">
+        <iframe
+          src="https://drive.google.com/file/d/1P8anJDB9O_5u3OPiR8AcMDCyPJ7RZFYf/preview"
+          style="width:100%;height:100%;border:none;display:block"
+          allow="autoplay"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <div style="padding:8px 16px;background:var(--deep);text-align:center">
+        <button onclick="watchIntroVid()" style="background:var(--gold);color:var(--deep);border:none;padding:8px 22px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">&#10003;&nbsp; I have watched this video</button>
+      </div>
+      <div class="vid-footer">
+        <div id="introVidSt" class="vid-status">&#9203; Click above to watch the induction video</div>
+        <div style="font-size:11px;color:var(--t3)">Form unlocks after watching</div>
+      </div>
+    </div>
+    <div class="intro-cl">
+      <h3>What you'll need to complete this form</h3>
+      <div class="cl-item">General Construction Induction Card (White Card or Blue Card WA) &mdash; front and back</div>
+      <div class="cl-item">Driver's Licence &mdash; front and back</div>
+      <div class="cl-item">Any HRWL licences, plant tickets, safety certificates, or trade qualifications &mdash; front and back of cards, or certificate front</div>
+      <div class="cl-item">Your USI (Unique Student Identifier) &mdash; find yours at usi.gov.au</div>
+      <div class="cl-item">A recent photo of yourself &mdash; face clearly visible, no sunglasses</div>
+      <div class="cl-item">Emergency contact name and phone number</div>
+      <div class="cl-item">If you're a subcontractor &mdash; your Public Liability and WorkCover insurance details</div>
+    </div>
+    <button class="start-btn" id="startBtn" disabled onclick="startForm()">Start Induction Form &rarr;</button>
+    <div class="intro-note" id="introNote">Watch the induction video above to unlock the form</div>
+  </div>
+</div>
+<!-- ═══ MAIN FORM ═══ -->
+<div id="mainForm">
+  <header class="site-header">
+    <div class="header-top">
+      <div class="logo-block"><div class="logo-text"><div class="brand">Sl&aacute;n Safety</div><div class="tagline">WHS Compliance</div></div></div>
+      <div class="header-center"><h1>Worker Site Induction Form</h1><p>SLS-IND-001 &mdash; v1.9</p></div>
+      <div class="header-meta"><div><strong>Version:</strong> 1.9</div><div><strong>Confidential</strong></div></div>
+    </div>
+    <div class="step-bar" id="stepBar">
+      <div class="step-item active" id="sp1"><div class="step-dot">1</div><div class="step-line"></div></div>
+      <div class="step-item" id="sp2"><div class="step-dot">2</div><div class="step-line"></div></div>
+      <div class="step-item" id="sp3"><div class="step-dot">3</div><div class="step-line"></div></div>
+      <div class="step-item" id="sp4"><div class="step-dot">4</div><div class="step-line"></div></div>
+      <div class="step-item" id="sp5"><div class="step-dot">5</div><div class="step-line"></div></div>
+      <div class="step-item" id="sp6"><div class="step-dot">6</div><div class="step-line"></div></div>
+      <div class="step-item" id="sp7"><div class="step-dot">7</div><div class="step-line"></div></div>
+      <div class="step-item" id="sp8"><div class="step-dot">8</div><div class="step-line"></div></div>
+      <div class="step-item" id="sp9"><div class="step-dot">9</div><div class="step-line"></div></div>
+      <div class="step-item" id="sp10"><div class="step-dot" style="border:none">10</div></div>
+    </div>
+    <div class="progress-lbl">Section <span id="progNum">1</span> of 10 &mdash; <span id="progTitle">Personal Details</span></div>
+  </header>
+  <div class="form-wrap">
+    <!-- SEC 1: PERSONAL DETAILS -->
+    <div class="form-section active" id="sec1">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">1</div><div><div class="sec-title">Personal Details</div><div class="sec-sub">All fields and profile photo mandatory &mdash; Section 2 unlocks on completion</div></div></div>
+        <div class="sec-body">
+          <div class="dv">Profile Photo</div>
+          <div class="fr">
+            <div>
+              <label class="fl">Profile Photo <span class="req">*</span></label>
+              <div class="photo-wrap" id="photoWrap">
+                <input type="file" accept="image/*" id="photoInput" onchange="handlePhoto(this)">
+                <img class="photo-prev" id="photoPrev" src="" alt="">
+                <div class="photo-icon">&#128248;</div>
+                <div style="font-size:13px;color:var(--t2)"><strong>Upload your photo</strong></div>
+                <div style="font-size:11px;color:var(--t3);margin-top:2px">Face clearly visible &middot; No sunglasses &middot; Taken within 2 years</div>
+              </div>
+              <div class="valmsg" id="photoErr">Profile photo is required before proceeding</div>
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content:center">
+              <div class="ib">Your photo is used by site supervisors to verify your identity on Day 1. Stored securely in your worker record and only accessed by authorised personnel.</div>
+            </div>
+          </div>
+          <div class="dv" style="margin-top:6px">Personal Information</div>
+          <div class="fr">
+            <div class="fg"><label class="fl">Full Legal Name <span class="req">*</span></label><input type="text" id="fullName" placeholder="As it appears on your ID"></div>
+            <div class="fg"><label class="fl">Preferred Name <span class="opt">(optional)</span></label><input type="text" id="prefName" placeholder="What you like to be called"></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label class="fl">Date of Birth <span class="req">*</span></label><input type="date" id="dob"></div>
+            <div class="fg"><label class="fl">Gender <span class="opt">(optional)</span></label><select id="gender"><option value="">Prefer not to say</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option></select></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label class="fl">Mobile Number <span class="req">*</span></label><input type="tel" id="mobile" placeholder="04XX XXX XXX"></div>
+            <div class="fg"><label class="fl">Email Address <span class="req">*</span></label><input type="email" id="email" placeholder="your@email.com"></div>
+          </div>
+          <div class="dv">Residential Address</div>
+          <div class="fr fr1"><div class="fg"><label class="fl">Street Address <span class="req">*</span></label><input type="text" id="street" placeholder="Street number and name"></div></div>
+          <div class="fr3">
+            <div class="fg"><label class="fl">Suburb <span class="req">*</span></label><input type="text" id="suburb" placeholder="Suburb"></div>
+            <div class="fg"><label class="fl">State <span class="req">*</span></label><select id="addrState"><option value="">Select</option><option>NSW</option><option>VIC</option><option>QLD</option><option>WA</option><option>SA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div>
+            <div class="fg"><label class="fl">Postcode <span class="req">*</span></label><input type="text" id="postcode" placeholder="0000" maxlength="4"></div>
+          </div>
+          <div class="dv">Right to Work &amp; Training Identity</div>
+          <div class="fr">
+            <div class="fg"><label class="fl">USI (Unique Student Identifier) <span class="req">*</span></label><input type="text" id="usi" placeholder="e.g. AB12CD34EF" style="text-transform:uppercase"><div class="hint">Find yours at usi.gov.au</div></div>
+            <div class="fg"><label class="fl">Right to Work in Australia <span class="req">*</span></label><select id="rtw" onchange="toggleVisa()"><option value="">Select...</option><option>Australian Citizen</option><option>Permanent Resident</option><option>Visa Holder</option></select></div>
+          </div>
+          <div class="cb-block" id="visaBlock">
+            <div class="fr">
+              <div class="fg"><label class="fl">Visa Class <span class="req">*</span></label><input type="text" id="visaClass" placeholder="e.g. 482, 457, 417"></div>
+              <div class="fg"><label class="fl">Visa Expiry Date <span class="req">*</span></label><input type="date" id="visaExpiry"><div class="hint">Alert fires at 30 days before expiry</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-bar"><div></div><div class="sc">Section 1 of 10</div><button class="btn btn-next" onclick="goNext(1)">Next &rarr;</button></div>
+      </div>
+    </div>
+    <!-- SEC 2: EMPLOYMENT -->
+    <div class="form-section" id="sec2">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">2</div><div><div class="sec-title">Employment Details</div><div class="sec-sub">All fields mandatory &mdash; Section 3 unlocks on completion</div></div></div>
+        <div class="sec-body">
+          <div class="fr">
+            <div class="fg"><label class="fl">Employer / Company Name <span class="req">*</span></label><input type="text" id="employer" placeholder="Company you work for"></div>
+            <div class="fg"><label class="fl">Employment Type <span class="req">*</span></label><select id="empType" onchange="toggleSub()"><option value="">Select...</option><option>Employee</option><option>Subcontractor</option><option>Visitor / Observer</option><option>Other</option></select></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label class="fl">Primary Trade / Job Title <span class="req">*</span></label><select id="primTrade" onchange="chkSecTrade()"><option value="">Select trade...</option><option>Boilermaker</option><option>Carpenter</option><option>Civil Construction Operator</option><option>Concretor</option><option>Crane Operator</option><option>Dogman</option><option>Electrician</option><option>Estimator</option><option>Excavator Operator</option><option>Formworker</option><option>Gasfitter</option><option>Grader Operator</option><option>Labourer</option><option>Labourer + Traffic Controller</option><option>Painter</option><option>Pipelayer</option><option>Plant Operator (General)</option><option>Plasterer</option><option>Plumber</option><option>Project Manager</option><option>Rigger</option><option>Scaffolder</option><option>Site Manager</option><option>Steelfixer</option><option>Supervisor</option><option>Tiler</option><option>Traffic Controller</option><option>Waterproofer</option><option>Welder / Fabricator</option><option>Other</option></select></div>
+            <div class="fg"><label class="fl">Start Date <span class="req">*</span></label><input type="date" id="startDate"></div>
+          </div>
+          <div class="cb-block" id="primTradeOther"><div class="fg"><label class="fl">Specify Trade <span class="req">*</span></label><input type="text" id="primTradeOtherTxt" placeholder="Enter your trade"></div></div>
+          <div class="fg"><label class="fl">Secondary Trade / Job Title <span class="opt">(optional)</span></label><select id="secTrade" onchange="chkSecTrade()"><option value="none">None &mdash; single trade only</option><option>Boilermaker</option><option>Carpenter</option><option>Civil Construction Operator</option><option>Concretor</option><option>Crane Operator</option><option>Dogman</option><option>Electrician</option><option>Estimator</option><option>Excavator Operator</option><option>Formworker</option><option>Gasfitter</option><option>Grader Operator</option><option>Labourer</option><option>Labourer + Traffic Controller</option><option>Painter</option><option>Pipelayer</option><option>Plant Operator (General)</option><option>Plasterer</option><option>Plumber</option><option>Project Manager</option><option>Rigger</option><option>Scaffolder</option><option>Site Manager</option><option>Steelfixer</option><option>Supervisor</option><option>Tiler</option><option>Traffic Controller</option><option>Waterproofer</option><option>Welder / Fabricator</option><option>Other</option></select><div class="valmsg" id="secTradeErr">Secondary trade cannot match primary trade</div></div>
+          <div class="cb-block" id="subBlock">
+            <div class="dv">Subcontractor Insurance Details</div>
+            <div class="ib gold">Mandatory for subcontractors. Upload Certificates of Currency for all policies.</div>
+            <div class="fr"><div class="fg"><label class="fl">ABN <span class="req">*</span></label><input type="text" id="abn" placeholder="XX XXX XXX XXX"></div><div></div></div>
+            <div class="fr"><div class="fg"><label class="fl">Public Liability Insurer <span class="req">*</span></label><input type="text" id="plIns" placeholder="Insurer name"></div><div class="fg"><label class="fl">PL Policy Number <span class="req">*</span></label><input type="text" id="plPol" placeholder="Policy number"></div></div>
+            <div class="fr"><div class="fg"><label class="fl">Coverage Amount <span class="req">*</span></label><input type="text" id="plCov" placeholder="e.g. $20,000,000"><div class="hint">Minimum $10M required</div></div><div class="fg"><label class="fl">PL Expiry Date <span class="req">*</span></label><input type="date" id="plExp"></div></div>
+            <div class="fg"><label class="fl">PL Certificate of Currency <span class="req">*</span></label><div class="ua"><input type="file" accept=".pdf,image/*"><div class="ua-icon">&#128196;</div><div class="ua-main"><strong>Upload Certificate of Currency</strong></div><div class="ua-sub">PDF or image</div></div></div>
+            <div class="fr"><div class="fg"><label class="fl">WorkCover Insurer <span class="req">*</span></label><input type="text" id="wcIns" placeholder="Insurer name"></div><div class="fg"><label class="fl">WorkCover Policy No. <span class="req">*</span></label><input type="text" id="wcPol" placeholder="Policy / registration number"></div></div>
+            <div class="fr"><div class="fg"><label class="fl">WorkCover State <span class="req">*</span></label><select id="wcState"><option value="">Select state</option><option>NSW</option><option>VIC</option><option>QLD</option><option>WA</option><option>SA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div><div class="fg"><label class="fl">WorkCover Expiry Date <span class="req">*</span></label><input type="date" id="wcExp"></div></div>
+            <div class="fg"><label class="fl">WorkCover Certificate <span class="req">*</span></label><div class="ua"><input type="file" accept=".pdf,image/*"><div class="ua-icon">&#128196;</div><div class="ua-main"><strong>Upload WorkCover Certificate</strong></div><div class="ua-sub">Sole traders: upload statutory declaration instead</div></div></div>
+          </div>
+        </div>
+        <div class="nav-bar"><button class="btn btn-back" onclick="goBack(2)">&#8592; Back</button><div class="sc">Section 2 of 10</div><button class="btn btn-next" onclick="goNext(2)">Next &rarr;</button></div>
+      </div>
+    </div>
+    <!-- SEC 3: LICENCES -->
+    <div class="form-section" id="sec3">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">3</div><div><div class="sec-title">Licences, Tickets &amp; Qualifications</div><div class="sec-sub">All declared licences require uploads &mdash; Section 4 unlocks on completion</div></div></div>
+        <div class="sec-body">
+          <div class="ib"><strong>Front AND back</strong> of every card must be uploaded. Certificates require front upload only. Expired dates are flagged red and recorded in your training matrix.</div>
+          <div class="dv">General Construction Induction Card (White / Blue Card)</div>
+          <div class="ib gold">Mandatory for all workers. Issued for life &mdash; no expiry. White Card all states except WA (Blue Card in WA).</div>
+          <div class="fr"><div class="fg"><label class="fl">Card Number <span class="req">*</span></label><input type="text" id="wcNo" placeholder="Card number"></div><div class="fg" style="display:flex;flex-direction:column;justify-content:flex-end"><div style="padding:9px 12px;background:#F4F9F5;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--t3)">No expiry &mdash; issued for life</div></div></div>
+          <div class="fr"><div class="fg"><label class="fl">Front <span class="req">*</span></label><div class="ua"><input type="file" accept="image/*,.pdf"><div class="ua-icon">&#128248;</div><div class="ua-main"><strong>Upload front</strong></div></div></div><div class="fg"><label class="fl">Back <span class="req">*</span></label><div class="ua"><input type="file" accept="image/*,.pdf"><div class="ua-icon">&#128248;</div><div class="ua-main"><strong>Upload back</strong></div><div class="ua-sub">Shows RTO &amp; completion date</div></div></div></div>
+          <div class="dv">Yellow Card (EWP Operator) <span class="ot">if applicable</span></div>
+          <div class="fr3"><div class="fg"><label class="fl">Card Number</label><input type="text" id="ycNo" placeholder="Card number"></div><div class="fg"><label class="fl">Class</label><select id="ycClass" onchange="updVOC()"><option value="">Select class</option><option>SL (Scissor Lift)</option><option>BL (Boom Lift)</option><option>KB (Knuckle Boom)</option><option>Other</option></select></div><div class="fg"><label class="fl">Expiry Date</label><input type="date" id="ycExp" onchange="flagExp(this)"></div></div>
+          <div class="fr"><div class="fg"><label class="fl">Front</label><div class="ua"><input type="file" accept="image/*,.pdf"><div class="ua-icon">&#128248;</div><div class="ua-main"><strong>Upload front</strong></div></div></div><div class="fg"><label class="fl">Back</label><div class="ua"><input type="file" accept="image/*,.pdf"><div class="ua-icon">&#128248;</div><div class="ua-main"><strong>Upload back</strong></div></div></div></div>
+          <div class="dv">Driver's Licence</div>
+          <div class="fr3"><div class="fg"><label class="fl">Licence Number <span class="req">*</span></label><input type="text" id="dlNo" placeholder="Licence number"></div><div class="fg"><label class="fl">Class <span class="req">*</span></label><select id="dlClass"><option value="">Select</option><option>C (Car)</option><option>LR (Light Rigid)</option><option>MR (Medium Rigid)</option><option>HR (Heavy Rigid)</option><option>HC (Heavy Combination)</option><option>MC (Multi-Combination)</option></select></div><div class="fg"><label class="fl">Issuing State <span class="req">*</span></label><select id="dlState"><option value="">State</option><option>NSW</option><option>VIC</option><option>QLD</option><option>WA</option><option>SA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div></div>
+          <div class="fr"><div class="fg"><label class="fl">Expiry Date <span class="req">*</span></label><input type="date" id="dlExp" onchange="flagExp(this)"></div><div></div></div>
+          <div class="fr"><div class="fg"><label class="fl">Front <span class="req">*</span></label><div class="ua"><input type="file" accept="image/*,.pdf"><div class="ua-icon">&#128248;</div><div class="ua-main"><strong>Upload front</strong></div></div></div><div class="fg"><label class="fl">Back <span class="req">*</span></label><div class="ua"><input type="file" accept="image/*,.pdf"><div class="ua-icon">&#128248;</div><div class="ua-main"><strong>Upload back</strong></div></div></div></div>
+          <div class="dv" style="margin-top:4px">High Risk Work Licence (HRWL) <span class="ot">if applicable &mdash; add one row per class</span></div>
+          <div id="hrwlWrap"></div><button class="add-btn" onclick="addHRWL()">+ Add HRWL Class</button>
+          <div class="dv" style="margin-top:16px">Plant &amp; Equipment Operator Tickets <span class="ot">if applicable</span></div>
+          <div id="plantWrap"></div><button class="add-btn" onclick="addPlant()">+ Add Plant / Equipment Ticket</button>
+          <div class="dv" style="margin-top:16px">Safety Tickets &amp; Certificates <span class="ot">if applicable</span></div>
+          <div id="safetyWrap"></div><button class="add-btn" onclick="addSafety()">+ Add Safety Ticket</button>
+          <div class="dv" style="margin-top:16px">Qualifications &amp; Trade Certificates <span class="ot">if applicable</span></div>
+          <div id="qualWrap"></div><button class="add-btn" onclick="addQual()">+ Add Qualification</button>
+          <div class="voc-wrap" id="vocWrap" style="margin-top:20px">
+            <div class="dv">3B &mdash; Verification of Competency (VOC)</div>
+            <div class="ib gold">Based on your selections above, confirm your VOC status for each item of plant or equipment below. Rows are generated automatically from your Section 3 selections.</div>
+            <div id="vocRows"></div>
+          </div>
+        </div>
+        <div class="nav-bar"><button class="btn btn-back" onclick="goBack(3)">&#8592; Back</button><div class="sc">Section 3 of 10</div><button class="btn btn-next" onclick="goNext(3)">Next &rarr;</button></div>
+      </div>
+    </div>
+    <!-- SEC 4: HEALTH -->
+    <div class="form-section" id="sec4">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">4</div><div><div class="sec-title">Health &amp; Medical Information</div><div class="sec-sub">Privacy protected &mdash; restricted access &mdash; Section 5 unlocks on completion</div></div></div>
+        <div class="sec-body">
+          <div class="ib">Health information is classified as sensitive data stored in a restricted-access folder. It will only be accessed by authorised personnel in a health emergency.</div>
+          <div class="fg"><label class="fl">Pre-existing medical conditions that may affect your work safety? <span class="req">*</span></label><div class="yn"><div class="yn-b" onclick="ynClick(this,'medCond')">Yes</div><div class="yn-b" onclick="ynClick(this)">No</div></div><div class="cd" id="medCond"><label class="fl" style="margin-top:8px">Please describe <span class="req">*</span></label><textarea id="medCondTxt" placeholder="Describe condition, how it may affect your work, and management strategies in place"></textarea></div></div>
+          <div class="fg"><label class="fl">Regular medication that may affect your ability to work safely? <span class="req">*</span></label><div class="yn"><div class="yn-b" onclick="ynClick(this,'medicDet')">Yes &mdash; details provided to supervisor</div><div class="yn-b" onclick="ynClick(this)">No</div></div><div class="cd" id="medicDet"><div class="ib warn" style="margin-top:8px">Inform your site supervisor directly of any medication that may affect your ability to operate plant or machinery safely.</div></div></div>
+          <div class="fg"><label class="fl">Known allergies including medication allergies? <span class="req">*</span></label><div class="yn"><div class="yn-b" onclick="ynClick(this,'allergyDet')">Yes</div><div class="yn-b" onclick="ynClick(this)">No</div></div><div class="cd" id="allergyDet"><label class="fl" style="margin-top:8px">Please describe <span class="req">*</span></label><textarea id="allergyTxt" placeholder="List all known allergies and severity of reaction"></textarea></div></div>
+          <div class="fg"><label class="fl">Allergic to any insect stings or spider bites? <span class="req">*</span></label><div class="yn"><div class="yn-b" onclick="ynClick(this,'insectDet')">Yes</div><div class="yn-b" onclick="ynClick(this)">No</div></div><div class="cd" id="insectDet"><label class="fl" style="margin-top:8px">Specify insect/spider and reaction type <span class="req">*</span></label><textarea id="insectTxt" placeholder="e.g. Bee sting &mdash; anaphylactic reaction, carry EpiPen"></textarea></div></div>
+          <div class="fg"><label class="fl">Food allergies? <span class="req">*</span></label><div class="yn"><div class="yn-b" onclick="ynClick(this,'foodDet')">Yes</div><div class="yn-b" onclick="ynClick(this)">No</div></div><div class="cd" id="foodDet"><label class="fl" style="margin-top:8px">Please describe <span class="req">*</span></label><textarea id="foodTxt" placeholder="List food allergies and severity"></textarea></div></div>
+          <div class="dv">Items Required On Your Person At All Times</div>
+          <div class="ib">Select at least one option &mdash; including N/A if none apply.</div>
+          <div class="cbg" id="itemsGrp">
+            <label class="cbi" onclick="cbClick(this,'itemsOtherBlk',false,false)"><input type="checkbox" value="epipen"><div class="cb-bx"></div><div class="cb-lbl">EpiPen (adrenaline auto-injector)</div></label>
+            <label class="cbi" onclick="cbClick(this,null,false,false)"><input type="checkbox" value="inhaler"><div class="cb-bx"></div><div class="cb-lbl">Inhaler / Puffer (asthma)</div></label>
+            <label class="cbi" onclick="cbClick(this,null,false,false)"><input type="checkbox" value="insulin"><div class="cb-bx"></div><div class="cb-lbl">Insulin / Glucose monitor</div></label>
+            <label class="cbi" onclick="cbClick(this,null,false,false)"><input type="checkbox" value="nitrate"><div class="cb-bx"></div><div class="cb-lbl">Nitrate spray (cardiac)</div></label>
+            <label class="cbi" onclick="cbClick(this,null,false,false)"><input type="checkbox" value="gtn"><div class="cb-bx"></div><div class="cb-lbl">GTN patch / medication</div></label>
+            <label class="cbi" onclick="cbClick(this,'itemsOtherBlk',false,false)"><input type="checkbox" value="other"><div class="cb-bx"></div><div class="cb-lbl">Other &mdash; please specify below</div></label>
+            <label class="cbi" onclick="cbClick(this,null,true,false)"><input type="checkbox" value="none"><div class="cb-bx"></div><div class="cb-lbl">None of the above / Not applicable</div></label>
+          </div>
+          <div class="cb-block" id="itemsOtherBlk" style="margin-top:7px"><div class="fg"><label class="fl">Please specify</label><input type="text" id="itemsOtherTxt" placeholder="Describe items required"></div></div>
+          <div class="fg" style="margin-top:14px"><label class="fl">Previous injuries site management should be aware of? <span class="req">*</span></label><div class="yn"><div class="yn-b" onclick="ynClick(this,'injuryDet')">Yes</div><div class="yn-b" onclick="ynClick(this)">No</div></div><div class="cd" id="injuryDet"><label class="fl" style="margin-top:8px">Body part, nature of injury, approximate date <span class="req">*</span></label><textarea id="injuryTxt" placeholder="e.g. Lower back L4/L5 disc &mdash; 2021 &mdash; managed with lifting restrictions"></textarea></div></div>
+          <div class="fg"><label class="fl">Previously made a workers compensation claim? <span class="req">*</span></label><div class="yn"><div class="yn-b" onclick="ynClick(this,'wcompDet')">Yes</div><div class="yn-b" onclick="ynClick(this)">No</div></div><div class="cd" id="wcompDet"><label class="fl" style="margin-top:8px">Date, nature of claim, current status <span class="req">*</span></label><textarea id="wcompTxt" placeholder="Provide brief details of the claim and its current status"></textarea></div></div>
+          <div class="fg"><label class="fl">Any condition that could affect your ability to safely carry out your duties? <span class="req">*</span></label><div class="yn"><div class="yn-b" onclick="ynClick(this,'debilDet')">Yes</div><div class="yn-b" onclick="ynClick(this)">No</div></div><div class="cd" id="debilDet"><label class="fl" style="margin-top:8px">Please describe <span class="req">*</span></label><textarea id="debilTxt" placeholder="Describe the condition and how it may affect your duties"></textarea></div></div>
+          <div class="dv" style="margin-top:4px">Privacy Consent</div>
+          <div class="cbg"><label class="cbi" id="healthConCbi" onclick="cbClick(this)"><input type="checkbox" id="healthCon"><div class="cb-bx"></div><div class="cb-lbl">I consent to the collection, storage, and use of my health and medical information above for workplace safety and emergency response purposes. <span class="req">*</span></div></label></div>
+        </div>
+        <div class="nav-bar"><button class="btn btn-back" onclick="goBack(4)">&#8592; Back</button><div class="sc">Section 4 of 10</div><button class="btn btn-next" onclick="goNext(4)">Next &rarr;</button></div>
+      </div>
+    </div>
+    <!-- SEC 5: EMERGENCY CONTACT -->
+    <div class="form-section" id="sec5">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">5</div><div><div class="sec-title">Emergency Contact</div><div class="sec-sub">All fields mandatory &mdash; Section 6 unlocks on completion</div></div></div>
+        <div class="sec-body">
+          <div class="ib">This person must be someone who is <strong>NOT</strong> working on the same site as you.</div>
+          <div class="fr"><div class="fg"><label class="fl">Full Name <span class="req">*</span></label><input type="text" id="ecName" placeholder="Full name"></div><div class="fg"><label class="fl">Relationship <span class="req">*</span></label><input type="text" id="ecRel" placeholder="e.g. Partner, Parent, Sibling"></div></div>
+          <div class="fr"><div class="fg"><label class="fl">Phone Number <span class="req">*</span></label><input type="tel" id="ecPhone" placeholder="04XX XXX XXX"></div><div></div></div>
+          <div class="fg"><label class="fl">Address <span class="opt">(if different from yours)</span></label><textarea id="ecAddr" placeholder="Street address, suburb, state, postcode" rows="2"></textarea></div>
+        </div>
+        <div class="nav-bar"><button class="btn btn-back" onclick="goBack(5)">&#8592; Back</button><div class="sc">Section 5 of 10</div><button class="btn btn-next" onclick="goNext(5)">Next &rarr;</button></div>
+      </div>
+    </div>
+    <!-- SEC 6: BACKGROUND -->
+    <div class="form-section" id="sec6">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">6</div><div><div class="sec-title">Background Disclosures</div><div class="sec-sub">All questions mandatory &mdash; Section 7 unlocks on completion</div></div></div>
+        <div class="sec-body">
+          <div class="ib">All information is handled in strict confidence under the Privacy Act 1988.</div>
+          <div class="dv">Cultural Identity <span class="ot">optional</span></div>
+          <div class="ib">This question is entirely optional and will not affect your employment or site access.</div>
+          <div class="fg"><label class="fl">Do you identify as Aboriginal and/or Torres Strait Islander?</label><select id="atsi"><option value="prefer">Prefer not to say / Not applicable</option><option>Yes, Aboriginal</option><option>Yes, Torres Strait Islander</option><option>Yes, both Aboriginal and Torres Strait Islander</option><option>Prefer not to say</option></select></div>
+          <div class="dv">Criminal History Disclosure</div>
+          <div class="ib">Only disclose convictions <strong>relevant to this position</strong>. Irrelevant spent convictions need not be disclosed.</div>
+          <div class="fg"><label class="fl">Criminal convictions relevant to this position? <span class="req">*</span></label><div class="yn"><div class="yn-b" onclick="ynClick(this,'crimDet')">Yes &mdash; details below</div><div class="yn-b" onclick="ynClick(this)">No</div></div><div class="cd" id="crimDet"><label class="fl" style="margin-top:8px">Nature of offence, date, outcome <span class="req">*</span></label><textarea id="crimTxt" placeholder="Spent and irrelevant convictions need not be disclosed"></textarea></div></div>
+        </div>
+        <div class="nav-bar"><button class="btn btn-back" onclick="goBack(6)">&#8592; Back</button><div class="sc">Section 6 of 10</div><button class="btn btn-next" onclick="goNext(6)">Next &rarr;</button></div>
+      </div>
+    </div>
+    <!-- SEC 7: SOPs & PROCEDURE VIDEOS -->
+    <div class="form-section" id="sec7">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">7</div><div><div class="sec-title">Standard Operating Procedures (SOPs)</div><div class="sec-sub">Watch both videos and tick the disclaimer &mdash; Section 8 unlocks on completion</div></div></div>
+        <div class="sec-body">
+          <div class="ib gold">You must watch both SOP videos below before you can tick the disclaimer and proceed to the next section. The disclaimer checkbox only activates once both videos have been watched.</div>
+
+          <!-- VIDEO 1: WORKING IN THE HEAT -->
+          <!-- PLACEHOLDER: Replace onclick with your actual video URL e.g. window.open('https://youtu.be/YOUR_ID','_blank') -->
+          <div class="sop-vid">
+            <div class="sop-vid-hdr">
+              <div><div class="svt">SOP 1 &mdash; Working in Extreme Temperatures</div><div class="svs">Managing heat and extreme temperature risks on site</div></div>
+              <div class="req-badge">Watch</div>
+            </div>
+            <div style="aspect-ratio:16/9;position:relative;background:#000">
+              <iframe src="https://drive.google.com/file/d/1IZMybKl8ryqd2YaV5zXHNC3EcfdndLrA/preview" width="100%" height="100%" style="position:absolute;top:0;left:0;border:none" allowfullscreen allow="autoplay"></iframe>
+              <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);padding:6px 12px;font-size:11px;color:rgba(255,255,255,.6);text-align:center">Watch the full video before proceeding</div>
+            </div>
+            <div style="padding:8px 14px;background:#F4F9F5;border-top:1px solid var(--border);font-size:12px;color:var(--t2)">
+              Once you have watched both videos, tick the disclaimer box below to proceed.
+            </div>
+            <div class="sop-footer">
+              <div id="sop1St" class="sop-status">&#9654; Press play above to watch this video in full</div>
+              <div style="font-size:11px;color:var(--t3)">Required before proceeding</div>
+            </div>
+            <div style="padding:10px 14px;text-align:center;border-top:1px solid var(--border)">
+              <button id="confirmBtn_sop1" onclick="watchSOP('sop1St','sop1')" style="background:var(--mid);color:#fff;border:none;padding:9px 22px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">&#10003;&nbsp; I have watched this video</button>
+            </div>
+          </div>
+
+          <!-- VIDEO 2: MANUAL HANDLING -->
+          <!-- PLACEHOLDER: Replace onclick with your actual video URL -->
+          <div class="sop-vid">
+            <div class="sop-vid-hdr">
+              <div><div class="svt">SOP 2 &mdash; Manual Handling</div><div class="svs">Safe lifting techniques, load limits, and musculoskeletal injury prevention</div></div>
+              <div class="req-badge">Watch</div>
+            </div>
+            <div style="aspect-ratio:16/9;position:relative;background:#000">
+              <iframe src="https://drive.google.com/file/d/1LaK97AplVmycvfy1teFiWhNM586gjx5k/preview" width="100%" height="100%" style="position:absolute;top:0;left:0;border:none" allowfullscreen allow="autoplay"></iframe>
+              <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);padding:6px 12px;font-size:11px;color:rgba(255,255,255,.6);text-align:center">Watch the full video before proceeding</div>
+            </div>
+            <div style="padding:8px 14px;background:#F4F9F5;border-top:1px solid var(--border);font-size:12px;color:var(--t2)">
+              Once you have watched both videos, tick the disclaimer box below to proceed.
+            </div>
+            <div class="sop-footer">
+              <div id="sop2St" class="sop-status">&#9654; Press play above to watch this video in full</div>
+              <div style="font-size:11px;color:var(--t3)">Required before proceeding</div>
+            </div>
+            <div style="padding:10px 14px;text-align:center;border-top:1px solid var(--border)">
+              <button id="confirmBtn_sop2" onclick="watchSOP('sop2St','sop2')" style="background:var(--mid);color:#fff;border:none;padding:9px 22px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">&#10003;&nbsp; I have watched this video</button>
+            </div>
+          </div>
+
+          <!-- DISCLAIMER -->
+          <div class="disclaimer-box">
+            <h4>&#128221; SOP Acknowledgement Disclaimer</h4>
+            <p>By ticking the box below, you confirm that you have watched both SOP videos in full and that you understand the procedures covered. You agree to comply with these procedures at all times while on site. You understand that failure to follow these procedures may result in injury to yourself or others and may lead to disciplinary action or removal from site.</p>
+            <div class="cbg">
+              <label class="cbi" id="sopAckCbi" onclick="cbClick(this)">
+                <input type="checkbox" id="sopAck">
+                <div class="cb-bx"></div>
+                <div class="cb-lbl">I confirm that I have watched both SOP videos above in full and I understand and agree to comply with the procedures covered &mdash; Working in Extreme Temperatures and Manual Handling. <span class="req">*</span>
+                  <small>This checkbox activates once both videos have been watched.</small>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="nav-bar"><button class="btn btn-back" onclick="goBack(7)">&#8592; Back</button><div class="sc">Section 7 of 10</div><button class="btn btn-next" onclick="goNext(7)">Next &rarr;</button></div>
+      </div>
+    </div>
+    <!-- SEC 8: POLICIES -->
+    <div class="form-section" id="sec8">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">8</div><div><div class="sec-title">Company Policies &amp; Procedures</div><div class="sec-sub">Open all documents and tick acknowledgement &mdash; Section 9 unlocks on completion</div></div></div>
+        <div class="sec-body">
+          <div class="ib gold">You must open and read all policy documents below before ticking the acknowledgement box. The checkbox only activates once all links have been opened.</div>
+          <a class="pol-link" id="pol1" href="https://drive.google.com/file/d/1gTSwrhIu57S1dTLTPQupNg5etFwRlynd/view?usp=drivesdk" onclick="openPol('pol1','polSt1',event)" target="_blank"><div class="pol-icon">&#127891;</div><div><div class="pol-name">WHS Competency Management Procedure</div><div class="pol-desc">Identifying, verifying, recording, and maintaining worker competencies</div></div><div class="pol-st" id="polSt1">Not opened</div></a>
+          <a class="pol-link" id="pol2" href="https://drive.google.com/file/d/1YBeUKKiUSY9kLAm14KwM5KoyGIm4sxlb/view?usp=drivesdk" onclick="openPol('pol2','polSt2',event)" target="_blank"><div class="pol-icon">&#128203;</div><div><div class="pol-name">WHS Induction Procedure</div><div class="pol-desc">Process for conducting WHS inductions at all sites and projects</div></div><div class="pol-st" id="polSt2">Not opened</div></a>
+          <a class="pol-link" id="pol3" href="https://drive.google.com/file/d/1dxaaCAbVXhkjtLumYLC_LOT44QDfw4qX/view?usp=drivesdk" onclick="openPol('pol3','polSt3',event)" target="_blank"><div class="pol-icon">&#129657;</div><div><div class="pol-name">Injury Management Policy</div><div class="pol-desc">Supporting worker recovery and safe return to work after injury</div></div><div class="pol-st" id="polSt3">Not opened</div></a>
+          <a class="pol-link" id="pol4" href="https://drive.google.com/file/d/1Av8rKBGht7HAFfsp50Z_H5gYVc5tqIgv/view?usp=drivesdk" onclick="openPol('pol4','polSt4',event)" target="_blank"><div class="pol-icon">&#127959;</div><div><div class="pol-name">Plant Management Policy</div><div class="pol-desc">Safe management, operation, and maintenance of all plant and equipment</div></div><div class="pol-st" id="polSt4">Not opened</div></a>
+          <!-- PLACEHOLDER: Replace href="#" with actual policy URL -->
+          <a class="pol-link" id="pol5" href="#" onclick="openPol('pol5','polSt5',event)" ><div class="pol-icon">&#128683;</div><div><div class="pol-name">Drug &amp; Alcohol Policy</div><div class="pol-desc">Zero tolerance requirements and testing procedures</div></div><div class="pol-st" id="polSt5">Not opened</div></a>
+          <!-- PLACEHOLDER: Replace href="#" with actual policy URL -->
+          <a class="pol-link" id="pol6" href="#" onclick="openPol('pol6','polSt6',event)" ><div class="pol-icon">&#128564;</div><div><div class="pol-name">Fatigue Management Policy</div><div class="pol-desc">Hours of work, rest requirements and fatigue indicators</div></div><div class="pol-st" id="polSt6">Not opened</div></a>
+          <!-- PLACEHOLDER: Replace href="#" with actual policy URL -->
+          <a class="pol-link" id="pol7" href="#" onclick="openPol('pol7','polSt7',event)" ><div class="pol-icon">&#128241;</div><div><div class="pol-name">Mobile Phone &amp; Distraction Policy</div><div class="pol-desc">Phone use rules and prohibited activities on site</div></div><div class="pol-st" id="polSt7">Not opened</div></a>
+          <!-- PLACEHOLDER: Replace href="#" with actual policy URL -->
+          <a class="pol-link" id="pol8" href="#" onclick="openPol('pol8','polSt8',event)" ><div class="pol-icon">&#129686;</div><div><div class="pol-name">PPE Policy</div><div class="pol-desc">Minimum PPE requirements and worker responsibilities</div></div><div class="pol-st" id="polSt8">Not opened</div></a>
+          <!-- PLACEHOLDER: Replace href="#" with actual policy URL -->
+          <a class="pol-link" id="pol9" href="#" onclick="openPol('pol9','polSt9',event)" ><div class="pol-icon">&#129309;</div><div><div class="pol-name">Bullying, Harassment &amp; Discrimination Policy</div><div class="pol-desc">Expected behaviours and reporting procedures</div></div><div class="pol-st" id="polSt9">Not opened</div></a>
+          <!-- PLACEHOLDER: Replace href="#" with actual policy URL -->
+          <a class="pol-link" id="pol10" href="#" onclick="openPol('pol10','polSt10',event)" ><div class="pol-icon">&#128680;</div><div><div class="pol-name">Site Emergency Procedures</div><div class="pol-desc">Emergency contacts, assembly points, and evacuation procedures</div></div><div class="pol-st" id="polSt10">Not opened</div></a>
+
+          <div style="margin-top:16px">
+            <label class="cbi lk" id="polAckCbi" onclick="if(!this.classList.contains('lk'))cbClick(this)">
+              <input type="checkbox" id="polAck">
+              <div class="cb-bx"></div>
+              <div class="cb-lbl">I confirm that I have opened and read all of the above [Company Name] policies and procedures. I agree to comply with all policies and procedures as a condition of my engagement. I understand that these policies may be updated from time to time and that I will be notified to re-read and re-acknowledge any material changes. <span class="req">*</span>
+                <small>This checkbox activates once all policy documents above have been opened.</small>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="nav-bar"><button class="btn btn-back" onclick="goBack(8)">&#8592; Back</button><div class="sc">Section 8 of 10</div><button class="btn btn-next" onclick="goNext(8)">Next &rarr;</button></div>
+      </div>
+    </div>
+    <!-- SEC 9: WHS ACKNOWLEDGEMENTS -->
+    <div class="form-section" id="sec9">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">9</div><div><div class="sec-title">Site Rules &amp; WHS Acknowledgements</div><div class="sec-sub">All boxes must be ticked &mdash; Section 10 unlocks on completion</div></div></div>
+        <div class="sec-body">
+          <div class="ib">Read each statement carefully. Every checkbox must be ticked before you can proceed.</div>
+          <div class="dv">Work Health &amp; Safety Obligations</div>
+          <div class="cbg">
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that I have a duty under the Work Health and Safety Act 2011 to take reasonable care for my own health and safety and the health and safety of others who may be affected by my acts or omissions at work.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that I must comply with any reasonable instruction given by [Company Name], the principal contractor, site management, or their authorised representatives in relation to work health and safety.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that I must not attend site under the influence of alcohol or drugs, including prescription medication that may impair my ability to work safely. I consent to drug and alcohol testing if required.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that I must report all incidents, near misses, hazards, and unsafe conditions immediately using the site reporting system or by notifying my supervisor.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that I must not commence any high risk work without a current, signed and approved Safe Work Method Statement (SWMS) for that activity.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that I must wear appropriate Personal Protective Equipment (PPE) at all times on site as required by [Company Name] site rules and as specified in the relevant SWMS.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I confirm that I have been informed of the minimum PPE requirements for this site and I accept responsibility for presenting to work with the correct PPE.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that I must not operate any plant, equipment, or machinery for which I do not hold the required licence, ticket, or competency &mdash; including a Verification of Competency (VOC) where required.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I declare that I am fit for work today &mdash; I am not under the influence of alcohol, drugs, or fatigue and I am physically and mentally fit to perform my duties safely.</div></label>
+          </div>
+          <div class="dv" style="margin-top:13px">Site Rules</div>
+          <div class="cbg">
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that mobile phones are to be used in designated areas only and must not be used while operating plant or performing high risk work.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that I must sign in and out of site every day using the [Company Name] site QR code sign-in system and that my attendance is recorded.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that any damage to site, equipment, or property must be reported to my supervisor immediately.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that bullying, harassment, discrimination, or threatening behaviour toward any person on site will result in immediate removal from site.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that the principal contractor's site rules take precedence on this site and that I am required to comply with all site-specific requirements communicated to me.</div></label>
+          </div>
+          <div class="dv" style="margin-top:13px">Psychosocial Safety</div>
+          <div class="cbg">
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I am aware that [Company Name] has a Psychosocial Risk Management system in place and that I can report concerns about bullying, harassment, workload, fatigue, or any other psychosocial hazard confidentially using the site Wellbeing &amp; Concerns portal.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that all psychosocial reports are treated confidentially and that I may report anonymously if I choose.</div></label>
+          </div>
+          <div class="dv" style="margin-top:13px">Environmental Obligations</div>
+          <div class="cbg">
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand that I must not dispose of any waste, chemicals, or materials in a manner that may cause harm to the environment, including discharge to stormwater drains or waterways.</div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I am aware that any environmental incidents &mdash; including spills, unexpected contamination, or damage to the environment &mdash; must be reported immediately using the site reporting system.</div></label>
+          </div>
+        </div>
+        <div class="nav-bar"><button class="btn btn-back" onclick="goBack(9)">&#8592; Back</button><div class="sc">Section 9 of 10</div><button class="btn btn-next" onclick="goNext(9)">Next &rarr;</button></div>
+      </div>
+    </div>
+    <!-- SEC 10: PRIVACY & SIGNATURE -->
+    <div class="form-section" id="sec10">
+      <div class="sec-card">
+        <div class="sec-hdr"><div class="sec-num">10</div><div><div class="sec-title">Privacy Consent &amp; Signature</div><div class="sec-sub">All declarations must be ticked and signature captured &mdash; submit to complete</div></div></div>
+        <div class="sec-body">
+          <div class="priv-box">
+            <h3>Privacy Collection Notice</h3>
+            <p>The personal and health information collected in this form is collected by <strong>[Company Name]</strong> as the responsible employer and data controller. [Company Name] has appointed <strong>Sl&aacute;n Safety Pty Ltd</strong> as its authorised WHS compliance administrator to collect and manage this information on its behalf. Sl&aacute;n Safety acts solely as a data processor under instruction from [Company Name] and does not use your information for any independent purpose.</p>
+            <p>Your information will not be disclosed to any third party &mdash; meaning any party outside of [Company Name] and its appointed administrators &mdash; without your consent, unless required by law. This includes disclosure to WorkSafe, SafeWork, or other regulatory authorities in the event of a notifiable incident.</p>
+            <p>You have the right to access and correct your personal information at any time by contacting your site supervisor or the safety administrator. This form is administered under the Australian Privacy Act 1988 and the Australian Privacy Principles (APPs).</p>
+            <div class="legal-note">&#9888; Legal Review Required &mdash; This privacy notice should be reviewed by a qualified solicitor before go-live. Confirm data processor obligations under the Privacy Act 1988 and GDPR applicability for EU-based workers.</div>
+          </div>
+          <div class="dv">Declarations</div>
+          <div class="cbg">
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I have read and understood the Privacy Collection Notice above and I consent to the collection, storage, and use of my personal and health information for the purposes described. <span class="req">*</span></div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I confirm that all information provided in this form is true and accurate to the best of my knowledge. I understand that providing false information may result in my removal from site. <span class="req">*</span></div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I confirm that I have read, understood, and agree to comply with all WHS obligations, site rules, and acknowledgements in Section 9 of this form. <span class="req">*</span></div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I declare that I have the legal right to work in Australia and that my right to work documents are current and valid. <span class="req">*</span></div></label>
+            <label class="cbi" onclick="cbClick(this)"><input type="checkbox"><div class="cb-bx"></div><div class="cb-lbl">I understand and agree that I must notify [Company Name] immediately if any licence, ticket, certificate, right to work document, or insurance policy declared in this form is cancelled, suspended, lapses, expires, or materially changes after submission. Failure to notify may result in immediate removal from site. <span class="req">*</span></div></label>
+          </div>
+
+        </div>
+          <div class="dv" style="margin-top:16px">Digital Signature</div>
+          <div class="ib">Sign below using your finger or mouse. Date and time are captured automatically on submission.</div>
+          <label class="fl">Worker Signature <span class="req">*</span></label>
+          <div class="sig-wrap"><canvas id="sigCv" class="sig-cv" width="680" height="140"></canvas><div class="sig-bar"><div style="font-size:11px;color:var(--t3)">Draw your signature above</div><button class="sig-clr" onclick="clearSig()">Clear</button></div></div>
+          <div class="valmsg" id="sigErr">Signature is required before submitting</div>
+          <div class="fr" style="margin-top:13px">
+            <div class="fg"><label class="fl">Date</label><input type="text" id="sigDate" readonly style="background:#F4F9F5;color:var(--t2)"></div>
+            <div class="fg"><label class="fl">Time</label><input type="text" id="sigTime" readonly style="background:#F4F9F5;color:var(--t2)"></div>
+          </div>
+        </div>
+        <div class="nav-bar"><button class="btn btn-back" onclick="goBack(10)">&#8592; Back</button><div class="sc">Section 10 of 10</div><button class="btn btn-sub" onclick="submitForm()">Submit Induction &rarr;</button></div>
+      </div>
+    </div>
+
+  </div><!-- /form-wrap -->
+</div><!-- /mainForm -->
+<!-- ═══ SUCCESS ═══ -->
+<div id="successScreen">
+  <div class="suc-icon">&#9989;</div>
+  <div class="suc-title">Induction Complete</div>
+  <div class="suc-body">Your induction form has been submitted successfully.<br><br>A confirmation email with a PDF copy of your completed form will be sent to the email address you provided. Your record is now under review &mdash; you will be notified once your documents have been verified and you are cleared to commence on site.</div>
+</div>
+<script>
+var cur=1,TOTAL=10;
+var introVidWatched=false;
+var sopWatched={sop1:false,sop2:false};
+var polsOpened={},polsCount=10,polsOpenedCount=0;
+var polAckUnlocked=false,sopAckUnlocked=false;
+var dynCnt={hrwl:0,plant:0,safety:0,qual:0};
+var vocTrigPlant=["Skid Steer / Bobcat (TLILIC0003)","Telehandler (TLILIC0005)","Excavator Operator","Bulldozer / Dozer Operator","Grader Operator","Compactor / Roller Operator","Crane Truck (C5 Vehicle Loading)"];
+var vocTrigHRWL=["CO","C2","C3","C5","C6","CN","LF","WP"];
+var titles=["Personal Details","Employment Details","Licences & Tickets","Health & Medical","Emergency Contact","Background Disclosures","SOPs & Procedures","Policies & Procedures","WHS Acknowledgements","Privacy & Signature"];
+
+
+// ─── INTRO
+function watchIntroVid(){
+  // PLACEHOLDER: Replace this block with your video player code
+  // Example: window.open("https://youtu.be/YOUR_VIDEO_ID","_blank");
+  introVidWatched=true;
+  var s=document.getElementById("introVidSt");
+  s.textContent="\u2705 Video watched \u2014 form unlocked";
+  s.classList.add("ok");
+  document.getElementById("startBtn").disabled=false;
+  var n=document.getElementById("introNote");
+  n.textContent="Ready \u2014 click below to begin your induction";
+  n.classList.add("ready");
+}
+function startForm(){
+  document.getElementById("introScreen").style.display="none";
+  document.getElementById("mainForm").style.display="block";
+  window.scrollTo(0,0);
+}
+
+// ─── SECTION NAV
+function goNext(from){if(!validate(from))return;cur=from+1;showSec(cur);}
+function goBack(from){cur=from-1;showSec(cur);}
+function showSec(n){
+  document.querySelectorAll(".form-section").forEach(function(s){s.classList.remove("active");});
+  var el=document.getElementById("sec"+n);
+  if(el){el.classList.add("active");el.scrollIntoView({behavior:"smooth",block:"start"});}
+  document.getElementById("progNum").textContent=n;
+  document.getElementById("progTitle").textContent=titles[n-1];
+  for(var i=1;i<=TOTAL;i++){
+    var sp=document.getElementById("sp"+i);
+    if(!sp)continue;
+    sp.className="step-item";
+    if(i<n)sp.classList.add("done");
+    else if(i===n)sp.classList.add("active");
+  }
+}
+
+// ─── VALIDATION
+function validate(n){
+  if(n===1){
+    var ok=true;
+    if(!document.getElementById("photoInput").files.length){document.getElementById("photoErr").classList.add("show");ok=false;}
+    else document.getElementById("photoErr").classList.remove("show");
+    ["fullName","dob","mobile","email","street","suburb","addrState","postcode","usi","rtw"].forEach(function(id){
+      var el=document.getElementById(id);if(!el)return;
+      if(!el.value.trim()){el.classList.add("err");ok=false;}else el.classList.remove("err");
+    });
+    if(document.getElementById("rtw").value==="Visa Holder"){
+      ["visaClass","visaExpiry"].forEach(function(id){var el=document.getElementById(id);if(!el.value){el.classList.add("err");ok=false;}else el.classList.remove("err");});
+    }
+    if(!ok)alert("Please complete all required fields before continuing.");
+    return ok;
+  }
+  if(n===2){
+    var ok=true;
+    ["employer","empType","primTrade","startDate"].forEach(function(id){var el=document.getElementById(id);if(!el||!el.value.trim()){if(el)el.classList.add("err");ok=false;}else el.classList.remove("err");});
+    if(document.getElementById("empType").value==="Subcontractor"){
+      ["abn","plIns","plPol","plCov","plExp","wcIns","wcPol","wcState","wcExp"].forEach(function(id){var el=document.getElementById(id);if(el&&!el.value.trim()){el.classList.add("err");ok=false;}else if(el)el.classList.remove("err");});
+    }
+    if(!ok)alert("Please complete all required fields before continuing.");
+    return ok;
+  }
+  if(n===3){
+    if(!document.getElementById("wcNo").value.trim()){alert("General Construction Induction Card number is required.");return false;}
+    if(!document.getElementById("dlNo").value.trim()||!document.getElementById("dlClass").value||!document.getElementById("dlState").value||!document.getElementById("dlExp").value){alert("Please complete all Driver's Licence fields.");return false;}
+    return true;
+  }
+  if(n===4){
+    var itemOk=document.querySelectorAll("#itemsGrp .cbi.ck").length>0;
+    if(!itemOk){alert("Please select at least one option under Items Required at All Times.");return false;}
+    if(!document.getElementById("healthConCbi").classList.contains("ck")){alert("Health information privacy consent must be ticked before proceeding.");return false;}
+    return true;
+  }
+  if(n===5){
+    var ok=true;
+    ["ecName","ecRel","ecPhone"].forEach(function(id){var el=document.getElementById(id);if(!el.value.trim()){el.classList.add("err");ok=false;}else el.classList.remove("err");});
+    if(!ok)alert("Please complete all emergency contact fields.");
+    return ok;
+  }
+  if(n===6){
+    var ynEl=document.querySelector("#sec6 .yn-b.ya")||document.querySelector("#sec6 .yn-b.na");
+    if(!ynEl){alert("Please answer the criminal history question.");return false;}
+    return true;
+  }
+  if(n===7){
+    if(!document.getElementById("sopAckCbi").classList.contains("ck")){alert("You must watch both SOP videos and tick the disclaimer before proceeding.");return false;}
+    return true;
+  }
+  if(n===8){
+    if(!document.getElementById("polAckCbi").classList.contains("ck")){alert("You must open all policy documents and tick the acknowledgement before proceeding.");return false;}
+    return true;
+  }
+  if(n===9){
+    var cbs=document.querySelectorAll("#sec9 .cbi input[type=checkbox]");
+    for(var i=0;i<cbs.length;i++){if(!cbs[i].closest(".cbi").classList.contains("ck")){alert("Every checkbox in this section must be ticked before proceeding.");return false;}}
+    return true;
+  }
+  return true;
+}
+
+// ─── UI HELPERS
+function toggleVisa(){document.getElementById("visaBlock").classList.toggle("show",document.getElementById("rtw").value==="Visa Holder");}
+function toggleSub(){document.getElementById("subBlock").classList.toggle("show",document.getElementById("empType").value==="Subcontractor");}
+function chkSecTrade(){
+  var p=document.getElementById("primTrade").value,s=document.getElementById("secTrade").value;
+  var err=document.getElementById("secTradeErr");
+  if(p&&s&&s!=="none"&&s===p){err.classList.add("show");document.getElementById("secTrade").classList.add("err");}
+  else{err.classList.remove("show");document.getElementById("secTrade").classList.remove("err");}
+  document.getElementById("primTradeOther").classList.toggle("show",p==="Other");
+}
+function flagExp(el){
+  if(!el.value)return;
+  var past=new Date(el.value)<new Date();today=new Date(),today.setHours(0,0,0,0);
+  var expired=new Date(el.value)<today;
+  el.style.background=expired?"var(--red-bg)":"";
+  el.style.borderColor=expired?"var(--red)":"";
+  el.title=expired?"This licence has expired \u2014 will be flagged in your training record":"";
+}
+function handlePhoto(inp){
+  if(inp.files&&inp.files[0]){
+    var r=new FileReader();
+    r.onload=function(e){document.getElementById("photoPrev").src=e.target.result;document.getElementById("photoWrap").classList.add("hp");};
+    r.readAsDataURL(inp.files[0]);
+  }
+}
+function ynClick(btn,detId){
+  var w=btn.closest(".yn");
+  w.querySelectorAll(".yn-b").forEach(function(b){b.classList.remove("ya","na");});
+  var isYes=btn.textContent.startsWith("Yes");
+  btn.classList.add(isYes?"ya":"na");
+  if(detId){var d=document.getElementById(detId);if(d)d.classList.toggle("show",isYes);}
+}
+function cbClick(el,condId,exclusive,locked){
+  if(locked||el.classList.contains("lk"))return;
+  el.classList.toggle("ck");
+  if(condId){var c=document.getElementById(condId);if(c)c.classList.toggle("show",el.classList.contains("ck"));}
+  if(exclusive&&el.classList.contains("ck")){
+    el.closest(".cbg").querySelectorAll(".cbi").forEach(function(item){if(item!==el)item.classList.remove("ck");});
+  }
+}
+
+// ─── SOP VIDEOS
+// Google Drive iframes embed directly - iframe onload fires when player loads
+// We use a manual "Mark as watched" button approach for reliability
+function markSOPLoaded(statusId, sopKey){
+  // iframe has loaded - update status but don't auto-mark as watched
+  // worker must press play and watch, then click the confirm button
+}
+function watchSOP(statusId,sopKey){
+  sopWatched[sopKey]=true;
+  var s=document.getElementById(statusId);
+  s.textContent="\u2705 Video confirmed watched";
+  s.classList.add("ok");
+  var btn=document.getElementById("confirmBtn_"+sopKey);
+  if(btn){btn.textContent="\u2705 Confirmed";btn.style.background="var(--green)";btn.disabled=true;}
+  checkSOPAck();
+}
+function checkSOPAck(){
+  if(sopWatched.sop1&&sopWatched.sop2){
+    sopAckUnlocked=true;
+    var cb=document.getElementById("sopAckCbi");
+    cb.classList.remove("lk");
+    cb.title="Both videos watched \u2014 you may now tick this box";
+  }
+}
+
+// ─── POLICIES
+var openedPolsArr=[];
+function openPol(cardId,statusId,e){
+  e.preventDefault();
+  var card=document.getElementById(cardId);
+  if(!card.classList.contains("op")){
+    card.classList.add("op");
+    document.getElementById(statusId).textContent="\u2713 Opened";
+    openedPolsArr.push(cardId);
+    polsOpenedCount++;
+    if(polsOpenedCount>=polsCount){
+      polAckUnlocked=true;
+      var cb=document.getElementById("polAckCbi");
+      cb.classList.remove("lk");
+      cb.title="All policies opened \u2014 you may now tick this box";
+    }
+  }
+  // PLACEHOLDER: Open actual policy URL here
+  // window.open("YOUR_POLICY_URL","_blank");
+}
+
+// ─── DYNAMIC ROWS
+function addHRWL(){
+  dynCnt.hrwl++;
+  var id="hrwl"+dynCnt.hrwl,d=document.createElement("div");
+  d.className="dyn";d.id=id;
+  d.innerHTML="<button class=\"dyn-rm\" onclick=\"rmRow('"+id+"')\" title=\"Remove\">&times;</button>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">HRWL Class <span class=\"req\">*</span></label>"+
+    "<select onchange=\"updVOC()\"><option value=\"\">Select class</option>"+
+    "<option>DG &mdash; Dogging</option><option>RB &mdash; Basic Rigging</option><option>RI &mdash; Intermediate Rigging</option><option>RA &mdash; Advanced Rigging</option>"+
+    "<option>SB &mdash; Basic Scaffolding</option><option>SI &mdash; Intermediate Scaffolding</option><option>SA &mdash; Advanced Scaffolding</option>"+
+    "<option>CO &mdash; Crane Non-Slewing >3t</option><option>C2 &mdash; Crane Self-Erecting Tower</option><option>C3 &mdash; Crane Derrick</option>"+
+    "<option>C5 &mdash; Crane Vehicle Loading</option><option>C6 &mdash; Crane Non-Slewing up to 3t</option><option>CN &mdash; Crane Non-Slewing up to 10t</option>"+
+    "<option>LF &mdash; Forklift Truck</option><option>WP &mdash; Order Picking Forklift</option></select></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Licence Number <span class=\"req\">*</span></label><input type=\"text\" placeholder=\"Licence number\"></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Expiry Date <span class=\"req\">*</span></label><input type=\"date\" onchange=\"flagExp(this)\"></div><div></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Front of Card <span class=\"req\">*</span></label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128248;</div><div class=\"ua-main\"><strong>Upload front</strong></div></div></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Back of Card <span class=\"req\">*</span></label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128248;</div><div class=\"ua-main\"><strong>Upload back</strong></div><div class=\"ua-sub\">Shows licence classes held</div></div></div></div>";
+  document.getElementById("hrwlWrap").appendChild(d);
+}
+function addPlant(){
+  dynCnt.plant++;
+  var id="plant"+dynCnt.plant,d=document.createElement("div");
+  d.className="dyn";d.id=id;
+  d.innerHTML="<button class=\"dyn-rm\" onclick=\"rmRow('"+id+"')\" title=\"Remove\">&times;</button>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Ticket Type <span class=\"req\">*</span></label>"+
+    "<select onchange=\"updVOC()\"><option value=\"\">Select ticket type</option>"+
+    "<option>Skid Steer / Bobcat (TLILIC0003)</option><option>Telehandler (TLILIC0005)</option><option>Excavator Operator</option>"+
+    "<option>Bulldozer / Dozer Operator</option><option>Grader Operator</option><option>Compactor / Roller Operator</option>"+
+    "<option>Water Cart Operator</option><option>Tip Truck Operator</option><option>Concrete Pump Operator</option>"+
+    "<option>Concrete Agitator Operator</option><option>Road Paver Operator</option><option>Backhoe Operator</option>"+
+    "<option>Trencher Operator</option><option>Pipe Layer</option><option>Crane Truck (C5 Vehicle Loading)</option><option>Other</option></select></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Ticket / Cert Number</label><input type=\"text\" placeholder=\"Number if applicable\"></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Expiry Date</label><input type=\"date\" onchange=\"flagExp(this)\"></div><div></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Front Upload</label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload front</strong></div></div></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Back Upload <span style=\"font-weight:400;text-transform:none\">if card issued</span></label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload back if card</strong></div></div></div></div>";
+  document.getElementById("plantWrap").appendChild(d);
+}
+function addSafety(){
+  dynCnt.safety++;
+  var id="safety"+dynCnt.safety,d=document.createElement("div");
+  d.className="dyn";d.id=id;
+  d.innerHTML="<button class=\"dyn-rm\" onclick=\"rmRow('"+id+"')\" title=\"Remove\">&times;</button>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Ticket Type <span class=\"req\">*</span></label>"+
+    "<select><option value=\"\">Select ticket type</option>"+
+    "<option>Working at Heights (RIIWHS204E)</option><option>Confined Space Entry (RIIWHS202E)</option>"+
+    "<option>Gas Testing / Atmosphere Monitoring (MSMWHS217)</option>"+
+    "<option>Traffic Control &mdash; Stop/Slow Bat</option><option>Traffic Control &mdash; Traffic Controller</option>"+
+    "<option>Traffic Management Implementer</option><option>First Aid (HLTAID011)</option>"+
+    "<option>CPR (HLTAID009)</option><option>Advanced First Aid (HLTAID014)</option>"+
+    "<option>Fire Warden</option><option>Chief Warden</option><option>Asbestos Awareness</option>"+
+    "<option>Asbestos Removal Class A</option><option>Asbestos Removal Class B</option>"+
+    "<option>Manual Handling</option><option>Silica Awareness</option><option>Noise Awareness</option><option>Other</option></select></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Certificate Number</label><input type=\"text\" placeholder=\"Cert number\"></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Expiry Date</label><input type=\"date\" onchange=\"flagExp(this)\"></div><div></div></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Certificate Upload</label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload certificate (front)</strong></div></div></div>";
+  document.getElementById("safetyWrap").appendChild(d);
+}
+function addQual(){
+  dynCnt.qual++;
+  var id="qual"+dynCnt.qual,d=document.createElement("div");
+  d.className="dyn";d.id=id;
+  d.innerHTML="<button class=\"dyn-rm\" onclick=\"rmRow('"+id+"')\" title=\"Remove\">&times;</button>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Qualification <span class=\"req\">*</span></label>"+
+    "<select><option value=\"\">Select qualification</option>"+
+    "<option>Certificate II &mdash; Construction</option><option>Certificate II &mdash; Civil Construction Operations</option>"+
+    "<option>Certificate III &mdash; Carpentry</option><option>Certificate III &mdash; Concreting</option>"+
+    "<option>Certificate III &mdash; Civil Construction (Drainage)</option><option>Certificate III &mdash; Civil Construction (Excavation &amp; Civil)</option>"+
+    "<option>Certificate III &mdash; Civil Construction (Formwork / Falsework)</option><option>Certificate III &mdash; Civil Construction (Road Construction &amp; Maintenance)</option>"+
+    "<option>Certificate III &mdash; Civil Construction (Trenchless Technology)</option><option>Certificate III &mdash; Painting &amp; Decorating</option>"+
+    "<option>Certificate III &mdash; Plumbing</option><option>Certificate III &mdash; Electrotechnology</option>"+
+    "<option>Certificate III &mdash; Engineering (Fabrication Trade)</option><option>Certificate IV &mdash; Building &amp; Construction</option>"+
+    "<option>Certificate IV &mdash; Work Health &amp; Safety</option><option>Diploma of Building &amp; Construction</option>"+
+    "<option>Diploma of Work Health &amp; Safety</option><option>Advanced Diploma of Building &amp; Construction Management</option>"+
+    "<option>Apprenticeship &mdash; specify below</option><option>Trade Licence (Plumber / Electrician / Gasfitter)</option><option>Other</option></select></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Cert / Registration Number</label><input type=\"text\" placeholder=\"Number\"></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Completion / Expiry Date</label><input type=\"date\" onchange=\"flagExp(this)\"></div><div></div></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Certificate Upload</label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload certificate</strong></div></div></div>";
+  document.getElementById("qualWrap").appendChild(d);
+}
+function rmRow(id){var el=document.getElementById(id);if(el)el.remove();updVOC();}
+
+// ─── VOC
+function updVOC(){
+  var triggers=[];
+  var yc=document.getElementById("ycClass").value;
+  if(yc)triggers.push("Yellow Card \u2014 "+yc);
+  document.querySelectorAll("#hrwlWrap select").forEach(function(sel){
+    if(!sel.value)return;
+    var code=sel.value.split(" \u2014 ")[0].replace("&mdash;","").trim();
+    if(vocTrigHRWL.indexOf(code)>-1)triggers.push("HRWL \u2014 "+sel.value);
+  });
+  document.querySelectorAll("#plantWrap select").forEach(function(sel){
+    if(!sel.value)return;
+    var base=sel.value.split(" (")[0];
+    if(vocTrigPlant.indexOf(sel.value.split(" (")[0])>-1||vocTrigPlant.indexOf(base)>-1)triggers.push(sel.value.split(" (")[0]);
+  });
+  var vw=document.getElementById("vocWrap"),vr=document.getElementById("vocRows");
+  if(!triggers.length){vw.classList.remove("show");return;}
+  vw.classList.add("show");
+  vr.innerHTML="";
+  triggers.forEach(function(t){
+    var safe=t.replace(/[^a-z0-9]/gi,"_");
+    var div=document.createElement("div");div.className="voc-row";
+    div.innerHTML="<div class=\"voc-rt\">"+t+"</div>"+
+      "<div class=\"fg\"><label class=\"fl\">Do you hold a VOC for this? <span class=\"req\">*</span></label>"+
+      "<div class=\"yn\"><div class=\"yn-b\" onclick=\"ynClick(this,\'vd_"+safe+"\')\">Yes</div><div class=\"yn-b\" onclick=\"ynClick(this)\">No</div></div></div>"+
+      "<div class=\"cd\" id=\"vd_"+safe+"\">"+
+      "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Make &amp; Model</label><input type=\"text\" placeholder=\"e.g. Caterpillar 320 Excavator\"></div>"+
+      "<div class=\"fg\"><label class=\"fl\">Date of VOC</label><input type=\"date\"></div></div>"+
+      "<div class=\"fg\"><label class=\"fl\">VOC Certificate <span style=\"font-weight:400;text-transform:none\">if available</span></label>"+
+      "<div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload VOC certificate</strong></div></div></div></div>";
+    vr.appendChild(div);
+  });
+}
+
+
+// ─── SIGNATURE
+var sigCv,sigCtx,sigDrawing=false,sigHasCon=false;
+window.addEventListener("load",function(){
+  sigCv=document.getElementById("sigCv");
+  if(!sigCv)return;
+  sigCtx=sigCv.getContext("2d");
+  sigCtx.strokeStyle="#1B3A2D";sigCtx.lineWidth=2;sigCtx.lineCap="round";
+  sigCv.addEventListener("mousedown",function(e){sigDrawing=true;sigCtx.beginPath();var r=sigCv.getBoundingClientRect();sigCtx.moveTo(e.clientX-r.left,e.clientY-r.top);});
+  sigCv.addEventListener("mousemove",function(e){if(!sigDrawing)return;var r=sigCv.getBoundingClientRect();sigCtx.lineTo(e.clientX-r.left,e.clientY-r.top);sigCtx.stroke();sigHasCon=true;});
+  sigCv.addEventListener("mouseup",function(){sigDrawing=false;});
+  sigCv.addEventListener("touchstart",function(e){e.preventDefault();sigDrawing=true;sigCtx.beginPath();var r=sigCv.getBoundingClientRect();var t=e.touches[0];sigCtx.moveTo(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+  sigCv.addEventListener("touchmove",function(e){e.preventDefault();if(!sigDrawing)return;var r=sigCv.getBoundingClientRect();var t=e.touches[0];sigCtx.lineTo(t.clientX-r.left,t.clientY-r.top);sigCtx.stroke();sigHasCon=true;},{passive:false});
+  sigCv.addEventListener("touchend",function(){sigDrawing=false;});
+  var now=new Date();
+  var d=document.getElementById("sigDate"),t=document.getElementById("sigTime");
+  if(d)d.value=now.toLocaleDateString("en-AU");
+  if(t)t.value=now.toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit"});
+});
+function clearSig(){sigCtx.clearRect(0,0,sigCv.width,sigCv.height);sigHasCon=false;}
+
+// ─── SUBMIT
+function submitForm(){
+  if(!sigHasCon){document.getElementById("sigErr").classList.add("show");alert("Please provide your digital signature before submitting.");return;}
+  document.getElementById("sigErr").classList.remove("show");
+  var allCk=true;
+  document.querySelectorAll("#sec10 .cbi").forEach(function(c){if(!c.classList.contains("ck"))allCk=false;});
+  if(!allCk){alert("Please tick all declaration checkboxes before submitting.");return;}
+  // PLACEHOLDER: Wire up your form submission endpoint here
+  // Example: fetch("YOUR_ENDPOINT_URL", { method:"POST", body: JSON.stringify(getFormData()) })
+  document.getElementById("mainForm").style.display="none";
+  document.getElementById("successScreen").style.display="flex";
+  window.scrollTo(0,0);
+}
+</script>
+
+<!-- ═══════════════════ END INDUCTION FORM ═══════════════════ -->
+
+<!-- ═══ INTRO SCREEN ═══ -->
+<div id="introScreen">
 </style>
 </head>
 <body>
@@ -47413,6 +48482,359 @@ setTimeout(function() {
     </div>
   </div>
 </div>
+
+
+<script>
+// ═══════════════════ INDUCTION FORM JAVASCRIPT ═══════════════════
+var cur=1,TOTAL=10;
+var introVidWatched=false;
+var sopWatched={sop1:false,sop2:false};
+var polsOpened={},polsCount=10,polsOpenedCount=0;
+var polAckUnlocked=false,sopAckUnlocked=false;
+var dynCnt={hrwl:0,plant:0,safety:0,qual:0};
+var vocTrigPlant=["Skid Steer / Bobcat (TLILIC0003)","Telehandler (TLILIC0005)","Excavator Operator","Bulldozer / Dozer Operator","Grader Operator","Compactor / Roller Operator","Crane Truck (C5 Vehicle Loading)"];
+var vocTrigHRWL=["CO","C2","C3","C5","C6","CN","LF","WP"];
+var titles=["Personal Details","Employment Details","Licences & Tickets","Health & Medical","Emergency Contact","Background Disclosures","SOPs & Procedures","Policies & Procedures","WHS Acknowledgements","Privacy & Signature"];
+
+
+// ─── INTRO
+function watchIntroVid(){
+  // PLACEHOLDER: Replace this block with your video player code
+  // Example: window.open("https://youtu.be/YOUR_VIDEO_ID","_blank");
+  introVidWatched=true;
+  var s=document.getElementById("introVidSt");
+  s.textContent="\u2705 Video watched \u2014 form unlocked";
+  s.classList.add("ok");
+  document.getElementById("startBtn").disabled=false;
+  var n=document.getElementById("introNote");
+  n.textContent="Ready \u2014 click below to begin your induction";
+  n.classList.add("ready");
+}
+function startForm(){
+  document.getElementById("introScreen").style.display="none";
+  document.getElementById("mainForm").style.display="block";
+  window.scrollTo(0,0);
+}
+
+// ─── SECTION NAV
+function goNext(from){if(!validate(from))return;cur=from+1;showSec(cur);}
+function goBack(from){cur=from-1;showSec(cur);}
+function showSec(n){
+  document.querySelectorAll(".form-section").forEach(function(s){s.classList.remove("active");});
+  var el=document.getElementById("sec"+n);
+  if(el){el.classList.add("active");el.scrollIntoView({behavior:"smooth",block:"start"});}
+  document.getElementById("progNum").textContent=n;
+  document.getElementById("progTitle").textContent=titles[n-1];
+  for(var i=1;i<=TOTAL;i++){
+    var sp=document.getElementById("sp"+i);
+    if(!sp)continue;
+    sp.className="step-item";
+    if(i<n)sp.classList.add("done");
+    else if(i===n)sp.classList.add("active");
+  }
+}
+
+// ─── VALIDATION
+function validate(n){
+  if(n===1){
+    var ok=true;
+    if(!document.getElementById("photoInput").files.length){document.getElementById("photoErr").classList.add("show");ok=false;}
+    else document.getElementById("photoErr").classList.remove("show");
+    ["fullName","dob","mobile","email","street","suburb","addrState","postcode","usi","rtw"].forEach(function(id){
+      var el=document.getElementById(id);if(!el)return;
+      if(!el.value.trim()){el.classList.add("err");ok=false;}else el.classList.remove("err");
+    });
+    if(document.getElementById("rtw").value==="Visa Holder"){
+      ["visaClass","visaExpiry"].forEach(function(id){var el=document.getElementById(id);if(!el.value){el.classList.add("err");ok=false;}else el.classList.remove("err");});
+    }
+    if(!ok)alert("Please complete all required fields before continuing.");
+    return ok;
+  }
+  if(n===2){
+    var ok=true;
+    ["employer","empType","primTrade","startDate"].forEach(function(id){var el=document.getElementById(id);if(!el||!el.value.trim()){if(el)el.classList.add("err");ok=false;}else el.classList.remove("err");});
+    if(document.getElementById("empType").value==="Subcontractor"){
+      ["abn","plIns","plPol","plCov","plExp","wcIns","wcPol","wcState","wcExp"].forEach(function(id){var el=document.getElementById(id);if(el&&!el.value.trim()){el.classList.add("err");ok=false;}else if(el)el.classList.remove("err");});
+    }
+    if(!ok)alert("Please complete all required fields before continuing.");
+    return ok;
+  }
+  if(n===3){
+    if(!document.getElementById("wcNo").value.trim()){alert("General Construction Induction Card number is required.");return false;}
+    if(!document.getElementById("dlNo").value.trim()||!document.getElementById("dlClass").value||!document.getElementById("dlState").value||!document.getElementById("dlExp").value){alert("Please complete all Driver's Licence fields.");return false;}
+    return true;
+  }
+  if(n===4){
+    var itemOk=document.querySelectorAll("#itemsGrp .cbi.ck").length>0;
+    if(!itemOk){alert("Please select at least one option under Items Required at All Times.");return false;}
+    if(!document.getElementById("healthConCbi").classList.contains("ck")){alert("Health information privacy consent must be ticked before proceeding.");return false;}
+    return true;
+  }
+  if(n===5){
+    var ok=true;
+    ["ecName","ecRel","ecPhone"].forEach(function(id){var el=document.getElementById(id);if(!el.value.trim()){el.classList.add("err");ok=false;}else el.classList.remove("err");});
+    if(!ok)alert("Please complete all emergency contact fields.");
+    return ok;
+  }
+  if(n===6){
+    var ynEl=document.querySelector("#sec6 .yn-b.ya")||document.querySelector("#sec6 .yn-b.na");
+    if(!ynEl){alert("Please answer the criminal history question.");return false;}
+    return true;
+  }
+  if(n===7){
+    if(!document.getElementById("sopAckCbi").classList.contains("ck")){alert("You must watch both SOP videos and tick the disclaimer before proceeding.");return false;}
+    return true;
+  }
+  if(n===8){
+    if(!document.getElementById("polAckCbi").classList.contains("ck")){alert("You must open all policy documents and tick the acknowledgement before proceeding.");return false;}
+    return true;
+  }
+  if(n===9){
+    var cbs=document.querySelectorAll("#sec9 .cbi input[type=checkbox]");
+    for(var i=0;i<cbs.length;i++){if(!cbs[i].closest(".cbi").classList.contains("ck")){alert("Every checkbox in this section must be ticked before proceeding.");return false;}}
+    return true;
+  }
+  return true;
+}
+
+// ─── UI HELPERS
+function toggleVisa(){document.getElementById("visaBlock").classList.toggle("show",document.getElementById("rtw").value==="Visa Holder");}
+function toggleSub(){document.getElementById("subBlock").classList.toggle("show",document.getElementById("empType").value==="Subcontractor");}
+function chkSecTrade(){
+  var p=document.getElementById("primTrade").value,s=document.getElementById("secTrade").value;
+  var err=document.getElementById("secTradeErr");
+  if(p&&s&&s!=="none"&&s===p){err.classList.add("show");document.getElementById("secTrade").classList.add("err");}
+  else{err.classList.remove("show");document.getElementById("secTrade").classList.remove("err");}
+  document.getElementById("primTradeOther").classList.toggle("show",p==="Other");
+}
+function flagExp(el){
+  if(!el.value)return;
+  var past=new Date(el.value)<new Date();today=new Date(),today.setHours(0,0,0,0);
+  var expired=new Date(el.value)<today;
+  el.style.background=expired?"var(--red-bg)":"";
+  el.style.borderColor=expired?"var(--red)":"";
+  el.title=expired?"This licence has expired \u2014 will be flagged in your training record":"";
+}
+function handlePhoto(inp){
+  if(inp.files&&inp.files[0]){
+    var r=new FileReader();
+    r.onload=function(e){document.getElementById("photoPrev").src=e.target.result;document.getElementById("photoWrap").classList.add("hp");};
+    r.readAsDataURL(inp.files[0]);
+  }
+}
+function ynClick(btn,detId){
+  var w=btn.closest(".yn");
+  w.querySelectorAll(".yn-b").forEach(function(b){b.classList.remove("ya","na");});
+  var isYes=btn.textContent.startsWith("Yes");
+  btn.classList.add(isYes?"ya":"na");
+  if(detId){var d=document.getElementById(detId);if(d)d.classList.toggle("show",isYes);}
+}
+function cbClick(el,condId,exclusive,locked){
+  if(locked||el.classList.contains("lk"))return;
+  el.classList.toggle("ck");
+  if(condId){var c=document.getElementById(condId);if(c)c.classList.toggle("show",el.classList.contains("ck"));}
+  if(exclusive&&el.classList.contains("ck")){
+    el.closest(".cbg").querySelectorAll(".cbi").forEach(function(item){if(item!==el)item.classList.remove("ck");});
+  }
+}
+
+// ─── SOP VIDEOS
+// Google Drive iframes embed directly - iframe onload fires when player loads
+// We use a manual "Mark as watched" button approach for reliability
+function markSOPLoaded(statusId, sopKey){
+  // iframe has loaded - update status but don't auto-mark as watched
+  // worker must press play and watch, then click the confirm button
+}
+function watchSOP(statusId,sopKey){
+  sopWatched[sopKey]=true;
+  var s=document.getElementById(statusId);
+  s.textContent="\u2705 Video confirmed watched";
+  s.classList.add("ok");
+  var btn=document.getElementById("confirmBtn_"+sopKey);
+  if(btn){btn.textContent="\u2705 Confirmed";btn.style.background="var(--green)";btn.disabled=true;}
+  checkSOPAck();
+}
+function checkSOPAck(){
+  if(sopWatched.sop1&&sopWatched.sop2){
+    sopAckUnlocked=true;
+    var cb=document.getElementById("sopAckCbi");
+    cb.classList.remove("lk");
+    cb.title="Both videos watched \u2014 you may now tick this box";
+  }
+}
+
+// ─── POLICIES
+var openedPolsArr=[];
+function openPol(cardId,statusId,e){
+  e.preventDefault();
+  var card=document.getElementById(cardId);
+  if(!card.classList.contains("op")){
+    card.classList.add("op");
+    document.getElementById(statusId).textContent="\u2713 Opened";
+    openedPolsArr.push(cardId);
+    polsOpenedCount++;
+    if(polsOpenedCount>=polsCount){
+      polAckUnlocked=true;
+      var cb=document.getElementById("polAckCbi");
+      cb.classList.remove("lk");
+      cb.title="All policies opened \u2014 you may now tick this box";
+    }
+  }
+  // PLACEHOLDER: Open actual policy URL here
+  // window.open("YOUR_POLICY_URL","_blank");
+}
+
+// ─── DYNAMIC ROWS
+function addHRWL(){
+  dynCnt.hrwl++;
+  var id="hrwl"+dynCnt.hrwl,d=document.createElement("div");
+  d.className="dyn";d.id=id;
+  d.innerHTML="<button class=\"dyn-rm\" onclick=\"rmRow('"+id+"')\" title=\"Remove\">&times;</button>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">HRWL Class <span class=\"req\">*</span></label>"+
+    "<select onchange=\"updVOC()\"><option value=\"\">Select class</option>"+
+    "<option>DG &mdash; Dogging</option><option>RB &mdash; Basic Rigging</option><option>RI &mdash; Intermediate Rigging</option><option>RA &mdash; Advanced Rigging</option>"+
+    "<option>SB &mdash; Basic Scaffolding</option><option>SI &mdash; Intermediate Scaffolding</option><option>SA &mdash; Advanced Scaffolding</option>"+
+    "<option>CO &mdash; Crane Non-Slewing >3t</option><option>C2 &mdash; Crane Self-Erecting Tower</option><option>C3 &mdash; Crane Derrick</option>"+
+    "<option>C5 &mdash; Crane Vehicle Loading</option><option>C6 &mdash; Crane Non-Slewing up to 3t</option><option>CN &mdash; Crane Non-Slewing up to 10t</option>"+
+    "<option>LF &mdash; Forklift Truck</option><option>WP &mdash; Order Picking Forklift</option></select></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Licence Number <span class=\"req\">*</span></label><input type=\"text\" placeholder=\"Licence number\"></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Expiry Date <span class=\"req\">*</span></label><input type=\"date\" onchange=\"flagExp(this)\"></div><div></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Front of Card <span class=\"req\">*</span></label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128248;</div><div class=\"ua-main\"><strong>Upload front</strong></div></div></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Back of Card <span class=\"req\">*</span></label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128248;</div><div class=\"ua-main\"><strong>Upload back</strong></div><div class=\"ua-sub\">Shows licence classes held</div></div></div></div>";
+  document.getElementById("hrwlWrap").appendChild(d);
+}
+function addPlant(){
+  dynCnt.plant++;
+  var id="plant"+dynCnt.plant,d=document.createElement("div");
+  d.className="dyn";d.id=id;
+  d.innerHTML="<button class=\"dyn-rm\" onclick=\"rmRow('"+id+"')\" title=\"Remove\">&times;</button>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Ticket Type <span class=\"req\">*</span></label>"+
+    "<select onchange=\"updVOC()\"><option value=\"\">Select ticket type</option>"+
+    "<option>Skid Steer / Bobcat (TLILIC0003)</option><option>Telehandler (TLILIC0005)</option><option>Excavator Operator</option>"+
+    "<option>Bulldozer / Dozer Operator</option><option>Grader Operator</option><option>Compactor / Roller Operator</option>"+
+    "<option>Water Cart Operator</option><option>Tip Truck Operator</option><option>Concrete Pump Operator</option>"+
+    "<option>Concrete Agitator Operator</option><option>Road Paver Operator</option><option>Backhoe Operator</option>"+
+    "<option>Trencher Operator</option><option>Pipe Layer</option><option>Crane Truck (C5 Vehicle Loading)</option><option>Other</option></select></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Ticket / Cert Number</label><input type=\"text\" placeholder=\"Number if applicable\"></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Expiry Date</label><input type=\"date\" onchange=\"flagExp(this)\"></div><div></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Front Upload</label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload front</strong></div></div></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Back Upload <span style=\"font-weight:400;text-transform:none\">if card issued</span></label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload back if card</strong></div></div></div></div>";
+  document.getElementById("plantWrap").appendChild(d);
+}
+function addSafety(){
+  dynCnt.safety++;
+  var id="safety"+dynCnt.safety,d=document.createElement("div");
+  d.className="dyn";d.id=id;
+  d.innerHTML="<button class=\"dyn-rm\" onclick=\"rmRow('"+id+"')\" title=\"Remove\">&times;</button>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Ticket Type <span class=\"req\">*</span></label>"+
+    "<select><option value=\"\">Select ticket type</option>"+
+    "<option>Working at Heights (RIIWHS204E)</option><option>Confined Space Entry (RIIWHS202E)</option>"+
+    "<option>Gas Testing / Atmosphere Monitoring (MSMWHS217)</option>"+
+    "<option>Traffic Control &mdash; Stop/Slow Bat</option><option>Traffic Control &mdash; Traffic Controller</option>"+
+    "<option>Traffic Management Implementer</option><option>First Aid (HLTAID011)</option>"+
+    "<option>CPR (HLTAID009)</option><option>Advanced First Aid (HLTAID014)</option>"+
+    "<option>Fire Warden</option><option>Chief Warden</option><option>Asbestos Awareness</option>"+
+    "<option>Asbestos Removal Class A</option><option>Asbestos Removal Class B</option>"+
+    "<option>Manual Handling</option><option>Silica Awareness</option><option>Noise Awareness</option><option>Other</option></select></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Certificate Number</label><input type=\"text\" placeholder=\"Cert number\"></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Expiry Date</label><input type=\"date\" onchange=\"flagExp(this)\"></div><div></div></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Certificate Upload</label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload certificate (front)</strong></div></div></div>";
+  document.getElementById("safetyWrap").appendChild(d);
+}
+function addQual(){
+  dynCnt.qual++;
+  var id="qual"+dynCnt.qual,d=document.createElement("div");
+  d.className="dyn";d.id=id;
+  d.innerHTML="<button class=\"dyn-rm\" onclick=\"rmRow('"+id+"')\" title=\"Remove\">&times;</button>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Qualification <span class=\"req\">*</span></label>"+
+    "<select><option value=\"\">Select qualification</option>"+
+    "<option>Certificate II &mdash; Construction</option><option>Certificate II &mdash; Civil Construction Operations</option>"+
+    "<option>Certificate III &mdash; Carpentry</option><option>Certificate III &mdash; Concreting</option>"+
+    "<option>Certificate III &mdash; Civil Construction (Drainage)</option><option>Certificate III &mdash; Civil Construction (Excavation &amp; Civil)</option>"+
+    "<option>Certificate III &mdash; Civil Construction (Formwork / Falsework)</option><option>Certificate III &mdash; Civil Construction (Road Construction &amp; Maintenance)</option>"+
+    "<option>Certificate III &mdash; Civil Construction (Trenchless Technology)</option><option>Certificate III &mdash; Painting &amp; Decorating</option>"+
+    "<option>Certificate III &mdash; Plumbing</option><option>Certificate III &mdash; Electrotechnology</option>"+
+    "<option>Certificate III &mdash; Engineering (Fabrication Trade)</option><option>Certificate IV &mdash; Building &amp; Construction</option>"+
+    "<option>Certificate IV &mdash; Work Health &amp; Safety</option><option>Diploma of Building &amp; Construction</option>"+
+    "<option>Diploma of Work Health &amp; Safety</option><option>Advanced Diploma of Building &amp; Construction Management</option>"+
+    "<option>Apprenticeship &mdash; specify below</option><option>Trade Licence (Plumber / Electrician / Gasfitter)</option><option>Other</option></select></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Cert / Registration Number</label><input type=\"text\" placeholder=\"Number\"></div></div>"+
+    "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Completion / Expiry Date</label><input type=\"date\" onchange=\"flagExp(this)\"></div><div></div></div>"+
+    "<div class=\"fg\"><label class=\"fl\">Certificate Upload</label><div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload certificate</strong></div></div></div>";
+  document.getElementById("qualWrap").appendChild(d);
+}
+function rmRow(id){var el=document.getElementById(id);if(el)el.remove();updVOC();}
+
+// ─── VOC
+function updVOC(){
+  var triggers=[];
+  var yc=document.getElementById("ycClass").value;
+  if(yc)triggers.push("Yellow Card \u2014 "+yc);
+  document.querySelectorAll("#hrwlWrap select").forEach(function(sel){
+    if(!sel.value)return;
+    var code=sel.value.split(" \u2014 ")[0].replace("&mdash;","").trim();
+    if(vocTrigHRWL.indexOf(code)>-1)triggers.push("HRWL \u2014 "+sel.value);
+  });
+  document.querySelectorAll("#plantWrap select").forEach(function(sel){
+    if(!sel.value)return;
+    var base=sel.value.split(" (")[0];
+    if(vocTrigPlant.indexOf(sel.value.split(" (")[0])>-1||vocTrigPlant.indexOf(base)>-1)triggers.push(sel.value.split(" (")[0]);
+  });
+  var vw=document.getElementById("vocWrap"),vr=document.getElementById("vocRows");
+  if(!triggers.length){vw.classList.remove("show");return;}
+  vw.classList.add("show");
+  vr.innerHTML="";
+  triggers.forEach(function(t){
+    var safe=t.replace(/[^a-z0-9]/gi,"_");
+    var div=document.createElement("div");div.className="voc-row";
+    div.innerHTML="<div class=\"voc-rt\">"+t+"</div>"+
+      "<div class=\"fg\"><label class=\"fl\">Do you hold a VOC for this? <span class=\"req\">*</span></label>"+
+      "<div class=\"yn\"><div class=\"yn-b\" onclick=\"ynClick(this,\'vd_"+safe+"\')\">Yes</div><div class=\"yn-b\" onclick=\"ynClick(this)\">No</div></div></div>"+
+      "<div class=\"cd\" id=\"vd_"+safe+"\">"+
+      "<div class=\"fr\"><div class=\"fg\"><label class=\"fl\">Make &amp; Model</label><input type=\"text\" placeholder=\"e.g. Caterpillar 320 Excavator\"></div>"+
+      "<div class=\"fg\"><label class=\"fl\">Date of VOC</label><input type=\"date\"></div></div>"+
+      "<div class=\"fg\"><label class=\"fl\">VOC Certificate <span style=\"font-weight:400;text-transform:none\">if available</span></label>"+
+      "<div class=\"ua\"><input type=\"file\" accept=\"image/*,.pdf\"><div class=\"ua-icon\">&#128196;</div><div class=\"ua-main\"><strong>Upload VOC certificate</strong></div></div></div></div>";
+    vr.appendChild(div);
+  });
+}
+
+
+// ─── SIGNATURE
+var sigCv,sigCtx,sigDrawing=false,sigHasCon=false;
+window.addEventListener("load",function(){
+  sigCv=document.getElementById("sigCv");
+  if(!sigCv)return;
+  sigCtx=sigCv.getContext("2d");
+  sigCtx.strokeStyle="#1B3A2D";sigCtx.lineWidth=2;sigCtx.lineCap="round";
+  sigCv.addEventListener("mousedown",function(e){sigDrawing=true;sigCtx.beginPath();var r=sigCv.getBoundingClientRect();sigCtx.moveTo(e.clientX-r.left,e.clientY-r.top);});
+  sigCv.addEventListener("mousemove",function(e){if(!sigDrawing)return;var r=sigCv.getBoundingClientRect();sigCtx.lineTo(e.clientX-r.left,e.clientY-r.top);sigCtx.stroke();sigHasCon=true;});
+  sigCv.addEventListener("mouseup",function(){sigDrawing=false;});
+  sigCv.addEventListener("touchstart",function(e){e.preventDefault();sigDrawing=true;sigCtx.beginPath();var r=sigCv.getBoundingClientRect();var t=e.touches[0];sigCtx.moveTo(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+  sigCv.addEventListener("touchmove",function(e){e.preventDefault();if(!sigDrawing)return;var r=sigCv.getBoundingClientRect();var t=e.touches[0];sigCtx.lineTo(t.clientX-r.left,t.clientY-r.top);sigCtx.stroke();sigHasCon=true;},{passive:false});
+  sigCv.addEventListener("touchend",function(){sigDrawing=false;});
+  var now=new Date();
+  var d=document.getElementById("sigDate"),t=document.getElementById("sigTime");
+  if(d)d.value=now.toLocaleDateString("en-AU");
+  if(t)t.value=now.toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit"});
+});
+function clearSig(){sigCtx.clearRect(0,0,sigCv.width,sigCv.height);sigHasCon=false;}
+
+// ─── SUBMIT
+function submitForm(){
+  if(!sigHasCon){document.getElementById("sigErr").classList.add("show");alert("Please provide your digital signature before submitting.");return;}
+  document.getElementById("sigErr").classList.remove("show");
+  var allCk=true;
+  document.querySelectorAll("#sec10 .cbi").forEach(function(c){if(!c.classList.contains("ck"))allCk=false;});
+  if(!allCk){alert("Please tick all declaration checkboxes before submitting.");return;}
+  // PLACEHOLDER: Wire up your form submission endpoint here
+  // Example: fetch("YOUR_ENDPOINT_URL", { method:"POST", body: JSON.stringify(getFormData()) })
+  document.getElementById("mainForm").style.display="none";
+  document.getElementById("successScreen").style.display="flex";
+  window.scrollTo(0,0);
+}
+// ═══════════════════ END INDUCTION JAVASCRIPT ═══════════════════
+</script>
 
 </body>
 </html>
