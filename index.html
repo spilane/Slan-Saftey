@@ -1614,7 +1614,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </select>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="ob-visa-fields" style="display:none">
+        <div id="ob-visa-fields" style="display:none;grid-template-columns:1fr 1fr;gap:12px">
           <div>
             <label style="display:block;font-weight:600;color:var(--t1);margin-bottom:6px;font-size:13px">Visa Class <span style="color:var(--red)">*</span></label>
             <input type="text" id="ob-visa-class" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
@@ -47561,7 +47561,11 @@ function obStartInduction() {
     var visaFields = document.getElementById('ob-visa-fields');
     if(rightToWorkSelect && visaFields) {
       rightToWorkSelect.addEventListener('change', function() {
-        visaFields.style.display = this.value === 'visa' ? 'grid' : 'none';
+        if(this.value === 'visa') {
+          visaFields.style.display = 'grid';
+        } else {
+          visaFields.style.display = 'none';
+        }
       });
     }
   }, 100);
