@@ -37408,7 +37408,14 @@ function startDemoAs(role) {
   // DEMO MODE: walk through onboarding pre-filled
   localStorage.removeItem('slan_onboarded');
   window._demoTargetRole = role;
-  goTo('screen-profile');
+  
+  // Worker goes to induction first, others go to profile
+  if (role === 'worker') {
+    goTo('introScreen');
+  } else {
+    goTo('screen-profile');
+  }
+  
   demoPrefillAll(p, role);
 }
 
@@ -48832,6 +48839,13 @@ function submitForm(){
   document.getElementById("mainForm").style.display="none";
   document.getElementById("successScreen").style.display="flex";
   window.scrollTo(0,0);
+  
+  // After 3 seconds, redirect to profile setup
+  setTimeout(function() {
+    if (typeof goTo === 'function') {
+      goTo('screen-profile');
+    }
+  }, 3000);
 }
 // ═══════════════════ END INDUCTION JAVASCRIPT ═══════════════════
 </script>
