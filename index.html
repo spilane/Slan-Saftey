@@ -36494,8 +36494,15 @@ function startDemoAs(role) {
     if(obPickSite) { obPickSite.classList.remove('active'); obPickSite.style.display = 'none'; }
     if(obInduction) { obInduction.classList.remove('active'); obInduction.style.display = 'none'; }
     if(obCongrats) { obCongrats.classList.remove('active'); obCongrats.style.display = 'none'; }
-    // Show profile setup
-    goTo('screen-profile');
+    // Show profile setup explicitly
+    var profileScreen = document.getElementById('screen-profile');
+    if(profileScreen) {
+      // Hide all other screens first
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      // Show profile
+      profileScreen.classList.add('active');
+      profileScreen.style.display = 'flex';
+    }
     demoPrefillAll(p, role);
   }
 }
