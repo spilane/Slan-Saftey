@@ -1466,7 +1466,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="ob-info"><strong>Your privacy:</strong> Your information is collected under the Privacy Act 1988 (Cth) for workplace safety only.</div>
     <button class="ob-btn" onclick="obGoTo('ob-pick-site')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>Get Started</button>
-    <button onclick="showDemoRoleSheet()" style="margin-top:10px;background:var(--mid);border:none;border-radius:8px;padding:14px;width:100%;font-family:inherit;font-size:15px;font-weight:600;color:#fff;cursor:pointer">View Demo</button>
   </div>
 </div>
 
@@ -19243,9 +19242,7 @@ function goTo(id){
   if (typeof _hwDraftActive !== 'undefined' && id !== 'screen-hw-form') {
     _hwDraftActive = false;
   }
-  // Hide all screens (both .screen and .ob-screen classes)
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.ob-screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
   // Auto-refresh chip strip when landing on worker home or supervisor dash
@@ -36474,18 +36471,18 @@ function startDemoAs(role) {
   if (existingBanner) existingBanner.remove();
   showDemoBanner();
 
+  // DEMO MODE: walk through onboarding pre-filled
+  localStorage.removeItem('slan_onboarded');
+  window._demoTargetRole = role;
+  
   // Worker role → Induction first; Supervisor/Director → Profile
   if(role === 'worker') {
-    // DEMO MODE: walk through onboarding pre-filled
-    localStorage.removeItem('slan_onboarded');
-    window._demoTargetRole = role;
     // Hide old onboarding screen
     var oldOnboarding = document.getElementById('screen-onboarding');
     if(oldOnboarding) oldOnboarding.style.display = 'none';
     // Show induction
     obGoTo('ob-welcome');
   } else {
-    // Supervisor/Director skip induction, go straight to profile setup
     goTo('screen-profile');
     demoPrefillAll(p, role);
   }
