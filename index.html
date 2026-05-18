@@ -19243,7 +19243,9 @@ function goTo(id){
   if (typeof _hwDraftActive !== 'undefined' && id !== 'screen-hw-form') {
     _hwDraftActive = false;
   }
+  // Hide all screens (both .screen and .ob-screen classes)
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ob-screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
   // Auto-refresh chip strip when landing on worker home or supervisor dash
