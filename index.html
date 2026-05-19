@@ -873,6 +873,9 @@ input[type="time"] {
 .fgroup{display:flex;flex-direction:column;gap:5px}
 
 input[type=text],input[type=tel],input[type=email],input[type=number],input[type=search],input[type=url],input[type=date],input[type=time],input[type=datetime-local],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);background:#fff;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+/* Readonly inputs (permit ID, date, site fields etc.) — force DM Sans 15px
+   over any inline font-size:14px so they match the surrounding form copy. */
+input[readonly],input[readonly][type=text],input[readonly][type=number],input[readonly][type=tel]{font-family:'DM Sans',sans-serif!important;font-size:15px!important}
 input:focus,select:focus,textarea:focus{border-color:var(--mid);box-shadow:0 0 0 3px rgba(45,106,69,.1)}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235C6B62' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
 
@@ -4436,7 +4439,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       New Permit
     </button>
 
-    <button onclick="ptwDiag()" style="display:block;width:100%;padding:8px;margin-bottom:8px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">🔧 Show diagnostic info</button>
     <button onclick="ptwSeedDemoPermits()" style="display:block;width:100%;padding:8px;margin-bottom:14px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">⚡ Load demo permits (24 sample permits across all 12 types)</button>
     <div id="ptw-diag-out" style="display:none;font-size:11px;font-family:monospace;background:#F8FAF8;border:1px solid var(--border);padding:10px;border-radius:6px;margin-bottom:14px;white-space:pre-wrap;word-break:break-all;line-height:1.5"></div>
 
@@ -8944,7 +8946,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <option value="">Select supervisor...</option>
     </select>
     <div id="hw-handover-no-sups" style="display:none;font-size:11.5px;color:#A32D2D;margin-top:-10px;margin-bottom:14px;line-height:1.4">⚠ No supervisors are currently signed in to site. You cannot hand over right now — call your supervisor to come on site, or wait for the fire watch to complete.</div>
-    <button onclick="hwHandoverDiag()" style="display:block;width:100%;padding:8px;margin-bottom:14px;background:#EAECEE;border:1px dashed var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer">🔧 Show diagnostic info</button>
     <div id="hw-handover-diag-out" style="display:none;font-size:11px;font-family:monospace;background:#F8FAF8;border:1px solid var(--border);padding:10px;border-radius:6px;margin-bottom:14px;white-space:pre-wrap;word-break:break-all;line-height:1.5"></div>
 
     <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Photo of cooled work area <span style="color:#A32D2D">*</span></div>
@@ -16800,8 +16801,8 @@ function hwMaybeRestoreDraft() {
     '<div><strong>Restore in-progress permit?</strong></div>' +
     '<div>You started a permit ' + minsAgo + ' min ago' + (photoCount ? ' with ' + photoCount + ' photo' + (photoCount===1?'':'s') : '') + '. Restore it?</div>' +
     '<div style="display:flex;gap:8px;margin-top:2px">' +
-      '<button id="hw-restore-yes" style="flex:1;padding:10px;background:#2C6B5E;color:white;border:none;border-radius:8px;font-weight:600;font-size:12.5px;cursor:pointer;font-family:\'DM Sans\',sans-serif">Yes, restore</button>' +
-      '<button id="hw-restore-no" style="flex:1;padding:10px;background:white;color:#633806;border:1.5px solid #BA7517;border-radius:8px;font-weight:600;font-size:12.5px;cursor:pointer;font-family:\'DM Sans\',sans-serif">Start fresh</button>' +
+      '<button id="hw-restore-yes" style="flex:1;padding:11px;background:var(--deep);color:#fff;border:none;border-radius:var(--rs);font-weight:600;font-size:13px;cursor:pointer;font-family:\'DM Sans\',sans-serif">Yes, restore</button>' +
+      '<button id="hw-restore-no" style="flex:1;padding:11px;background:#fff;color:var(--text);border:1.5px solid var(--border);border-radius:var(--rs);font-weight:600;font-size:13px;cursor:pointer;font-family:\'DM Sans\',sans-serif">Start fresh</button>' +
     '</div>';
   // Insert banner right after the topbar (so it's at the top of the scrollable form)
   const fbody = formScreen.querySelector('.fbody') || formScreen.querySelector('.body') || formScreen;
