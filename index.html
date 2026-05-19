@@ -16075,8 +16075,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   initFirebase();
   checkOnboarding();
   
-  // Prepopulate demo incidents for director portal
-  if (typeof prepopulateDemoIncidents === 'function') {
+  // Prepopulate demo incidents for director portal (ONLY IN DEMO MODE)
+  if (DEMO_MODE && typeof prepopulateDemoIncidents === 'function') {
     console.log('🚀 Loading demo incidents...');
     prepopulateDemoIncidents();
     console.log('📊 Demo incidents loaded, rendering list...');
