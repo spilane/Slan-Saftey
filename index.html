@@ -23061,6 +23061,13 @@ function downloadIncidentPdf() {
 }
 
 async function submitIncident() {
+  // Double-submit guard. Without this, a fast double-tap creates two
+  // incident records (one click = one full submission). The button is
+  // also visually locked + relabelled so the user gets feedback.
+  if (window._incSubmitting) return;
+  const _incBtn = document.getElementById('inc-submit-btn');
+  const _incBtnOrig = _incBtn ? _incBtn.innerHTML : '';
+
   const p = getProfile();
   // Validate every required (*) field. Should match incRecheckSubmit() exactly.
   if (!document.getElementById('inc-type').value) { slanAlert('Please select the type of report you\'re submitting.'); return; }
@@ -23072,6 +23079,26 @@ async function submitIncident() {
   if (!incFields.sup) { slanAlert('Please indicate whether a supervisor was present before submitting.'); return; }
   if (!document.getElementById('inc-activity').value.trim()) { slanAlert('Please enter the work activity at the time before submitting.'); return; }
   if (!document.getElementById('inc-description').value.trim()) { slanAlert('Please describe what happened before submitting the report.'); return; }
+
+  // Validation passed — engage the double-submit lock and visually disable
+  // the button. Failsafe: release the lock after 8 seconds in case the
+  // submit hangs (slow network, error), so the user can retry.
+  window._incSubmitting = true;
+  if (_incBtn) {
+    _incBtn.disabled = true;
+    _incBtn.style.opacity = '.6';
+    _incBtn.style.pointerEvents = 'none';
+    _incBtn.innerHTML = 'Submitting…';
+  }
+  setTimeout(function() {
+    window._incSubmitting = false;
+    if (_incBtn) {
+      _incBtn.disabled = false;
+      _incBtn.style.opacity = '';
+      _incBtn.style.pointerEvents = '';
+      _incBtn.innerHTML = _incBtnOrig;
+    }
+  }, 8000);
 
   const now = new Date();
   const ref = 'INC-'+now.getFullYear().toString().slice(-2)+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+Math.random().toString(36).slice(-4).toUpperCase();
@@ -36323,6 +36350,18 @@ function showDemoRoleSheet() {
 }
 
 function startDemoAs(role) {
+  // Capture state BEFORE we mutate anything, so we can tell:
+  //  (a) is this an initial demo entry vs a role-flip within demo?
+  //  (b) is this role-flip actually to the SAME role (no-op profile reset)?
+  var _wasAlreadyInDemo = localStorage.getItem('slan_demo') === 'true';
+  var _currentProfile = null;
+  try { _currentProfile = JSON.parse(localStorage.getItem('slan_profile') || 'null'); } catch(e) {}
+  var _currentRoleSlug = _currentProfile ? (
+    _currentProfile.role === 'Worker'           ? 'worker' :
+    _currentProfile.role === 'Site Supervisor'  ? 'supervisor' :
+    _currentProfile.role === 'Company Director' ? 'director' : ''
+  ) : '';
+
   DEMO_MODE = true;
   localStorage.setItem('slan_demo', 'true');
   var today = new Date().toLocaleDateString('en-AU').replace(/\//g, '-');
@@ -36331,16 +36370,30 @@ function startDemoAs(role) {
     supervisor: { name:'Eoin Burke',     company:'Murphy Civil Construction', role:'Site Supervisor',  safetyPoints:0,   phone:'0432 778 901', dob:'1985-11-22', state:'NSW', experience:'10+',  licences:{ whitecard:{expiry:'2027-06-15'}, hrwl:{expiry:'2026-09-20'}, firstaid:{expiry:'2026-11-30'} } },
     director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   phone:'0419 222 333', dob:'1972-03-08', state:'NSW', experience:'10+',  licences:{} }
   };
-  var p = profiles[role] || profiles.supervisor;
-  p.created = new Date().toISOString(); p.demo = true; p.sig = null; p.photo = null;
+  var p;
+  if (_wasAlreadyInDemo && _currentRoleSlug === role && _currentProfile) {
+    // Flipping back into the role you're already in (e.g. via the My Profile
+    // "Switch user" entry point) — preserve the existing profile so any
+    // signature, photo, or profile edits aren't wiped.
+    p = _currentProfile;
+  } else {
+    p = profiles[role] || profiles.supervisor;
+    p.created = new Date().toISOString();
+    p.demo = true;
+    p.sig = null;
+    p.photo = null;
+  }
   localStorage.setItem('slan_profile', JSON.stringify(p));
   localStorage.setItem('slan_onboarded', 'true');
-  // Everyone starts SIGNED OUT for demo so the toolbox gate fires when they
-  // first try to sign in. Nobody starts with the toolbox pre-signed either —
-  // the chip stays amber until they sign through the proper flow.
-  localStorage.removeItem('slan_signed_in_today');
-  localStorage.removeItem('slan_signed_out_today');
-  localStorage.removeItem('talk_signed_' + today);
+  // Reset sign-in / toolbox state ONLY on initial demo entry. Role flips
+  // within an existing demo session preserve the state, so a presenter
+  // can swap between Worker / Supervisor / Director to show how the same
+  // sign-in or toolbox sign-off looks from each perspective.
+  if (!_wasAlreadyInDemo) {
+    localStorage.removeItem('slan_signed_in_today');
+    localStorage.removeItem('slan_signed_out_today');
+    localStorage.removeItem('talk_signed_' + today);
+  }
   localStorage.setItem('slan_site_ps_done_' + today, 'true');
 
   var sheet = document.getElementById('demo-role-sheet');
