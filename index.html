@@ -13664,12 +13664,10 @@ function skipToDashboard() {
 }
 
 function validateAndSaveSection1() {
-  // In demo mode, skip validation and just go to profile
+  // In demo mode, skip validation and go to Section 2
   if (DEMO_MODE || localStorage.getItem('slan_demo') === 'true') {
     localStorage.setItem('slan_onboarded', 'true');
-    goTo('screen-profile');
-    initSig();
-    checkLocationPermissionStatus();
+    goTo('screen-induction-2');
     return;
   }
   
