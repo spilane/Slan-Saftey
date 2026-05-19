@@ -15407,7 +15407,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   // }
   initFirebase();
   checkOnboarding();
-  
+
+  // Demo banner only gets added by startDemoAs() — re-draw it on every load
+  // so reloads (or reopens of the installed PWA) keep the Switch role / Exit
+  // controls visible while DEMO_MODE persists in localStorage.
+  if (localStorage.getItem('slan_demo') === 'true' && typeof showDemoBanner === 'function') {
+    showDemoBanner();
+  }
+
   // Prepopulate demo incidents for director portal
   if (typeof prepopulateDemoIncidents === 'function') {
     console.log('🚀 Loading demo incidents...');
