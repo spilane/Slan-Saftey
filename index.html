@@ -13356,9 +13356,11 @@ function buildDemoData() {
 }
 
 
-if (localStorage.getItem('slan_demo')) {
-  DEMO_MODE = true;
-}
+// DISABLED: Don't auto-restore demo mode from localStorage
+// This causes demo features to activate for real users who previously used demo mode
+// if (localStorage.getItem('slan_demo')) {
+//   DEMO_MODE = true;
+// }
 
 // ── ONBOARDING ────────────────────────────────────────────────────────────
 
@@ -13580,8 +13582,8 @@ function checkOnboarding() {
   if (sl && obl) obl.src = sl.src;
 
   // Demo mode — restore to the correct role screen
-  if (DEMO_MODE || localStorage.getItem('slan_demo')) {
-    DEMO_MODE = true;
+  // NOTE: Don't auto-restore from localStorage (causes demo data to load for real users)
+  if (DEMO_MODE) {
     if (!p) { goTo('screen-onboarding'); return; }
     if (p.role === 'Company Director') {
       goToAnalytics('director');  // PIN-gated within
@@ -14807,8 +14809,7 @@ function _doOpenSuperDash() {
 
 async function loadSuperDash() {
   // Demo mode — load fake data immediately
-  if (DEMO_MODE || localStorage.getItem('slan_demo')) {
-    DEMO_MODE = true;
+  if (DEMO_MODE) {
     // Ensure demo data arrays are populated
     if (!DEMO_WORKERS || DEMO_WORKERS.length < 5) buildDemoData();
     renderSuperDash(DEMO_SIGNINS, DEMO_TALKS, DEMO_PRESTARTS, DEMO_HAZARDS, DEMO_VISITORS);
