@@ -3104,7 +3104,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             <span>Add photo</span>
           </div>
-          <div class="hz-photo-slot" id="inc-slot-1" onclick="document.getElementById('inc-photo-input-1').click()" style="display:none"></div>
+          <div class="hz-photo-slot" id="inc-slot-1" onclick="document.getElementById('inc-photo-input-1').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Add photo</span>
+          </div>
           <div class="hz-photo-slot" id="inc-slot-2" onclick="document.getElementById('inc-photo-input-2').click()" style="display:none"></div>
         </div>
 
@@ -3938,19 +3941,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="hz-photo-slot" id="sds-slot-0">
-              <label for="sds-photo-input-0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                <div class="hw-photo-label">1 · Product label</div>
-                <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
-              </label>
+            <div class="hz-photo-slot" id="sds-slot-0" onclick="document.getElementById('sds-photo-input-0').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <div class="hw-photo-label">1 · Product label</div>
+              <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
             </div>
-            <div class="hz-photo-slot" id="sds-slot-1">
-              <label for="sds-photo-input-1" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                <div class="hw-photo-label">2 · Product label</div>
-                <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
-              </label>
+            <div class="hz-photo-slot" id="sds-slot-1" onclick="document.getElementById('sds-photo-input-1').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <div class="hw-photo-label">2 · Product label</div>
+              <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
             </div>
           </div>
           <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(0,event)">
@@ -20311,7 +20310,10 @@ function resetIncidentPhotos() {
     slot.style.border = '';
     slot.style.padding = '';
     slot.style.minHeight = '';
-    if (i === 0) {
+    if (i <= 1) {
+      // Slots 0 and 1 are always visible from the start so workers know
+      // they can attach more than one photo. Slot 2 only appears once
+      // slot 1 has been filled (see handleIncidentPhoto reveal logic).
       slot.style.display = 'flex';
       slot.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Add photo</span>`;
     } else {
