@@ -1921,6 +1921,232 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ═══════════════════ INDUCTION SECTION 2 ═══ -->
+<div id="screen-induction-2" class="screen">
+  <!-- Header with progress -->
+  <div style="position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);padding:16px 20px;z-index:100">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <img src="data:image/png;base64,..." style="height:32px" alt="Slán Safety">
+      <div style="font-size:11px;font-weight:700;color:var(--deep);letter-spacing:.5px">SLÁN SAFETY WHS COMPLIANCE APP</div>
+    </div>
+    
+    <!-- Progress dots -->
+    <div style="display:flex;gap:6px;margin:12px 0">
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--success)"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--deep)"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+    </div>
+    
+    <div style="font-size:13px;font-weight:600;color:var(--text)">Section 2 of 10 — Employment Details</div>
+  </div>
+
+  <!-- Form content -->
+  <div style="padding:20px 20px 200px">
+    
+    <!-- Employment Information -->
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid #F0F3F1">Employment Information</div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div>
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Employer / Company Name <span style="color:#C33">*</span></label>
+        <input type="text" id="ind2-employer" placeholder="Company you work for" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+      </div>
+      <div>
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Employment Type <span style="color:#C33">*</span></label>
+        <select id="ind2-emptype" onchange="toggleSubcontractorBlock()" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff">
+          <option value="">Select...</option>
+          <option>Employee</option>
+          <option>Subcontractor</option>
+          <option>Visitor / Observer</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Primary Trade -->
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Primary Trade / Job Title <span style="color:#C33">*</span></label>
+      <select id="ind2-primtrade" onchange="togglePrimaryTradeOther();checkSecondaryTrade()" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff">
+        <option value="">Select trade...</option>
+        <option>Boilermaker</option>
+        <option>Carpenter</option>
+        <option>Civil Construction Operator</option>
+        <option>Concretor</option>
+        <option>Crane Operator</option>
+        <option>Dogman</option>
+        <option>Electrician</option>
+        <option>Estimator</option>
+        <option>Excavator Operator</option>
+        <option>Formworker</option>
+        <option>Gasfitter</option>
+        <option>Grader Operator</option>
+        <option>Labourer</option>
+        <option>Labourer + Traffic Controller</option>
+        <option>Painter</option>
+        <option>Pipelayer</option>
+        <option>Plant Operator (General)</option>
+        <option>Plasterer</option>
+        <option>Plumber</option>
+        <option>Project Manager</option>
+        <option>Rigger</option>
+        <option>Scaffolder</option>
+        <option>Site Manager</option>
+        <option>Steelfixer</option>
+        <option>Supervisor</option>
+        <option>Tiler</option>
+        <option>Traffic Controller</option>
+        <option>Waterproofer</option>
+        <option>Welder / Fabricator</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <!-- Primary Trade Other (conditional) -->
+    <div id="primtrade-other-block" style="display:none;margin-bottom:14px">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Specify Trade <span style="color:#C33">*</span></label>
+      <input type="text" id="ind2-primtrade-other" placeholder="Enter your trade" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+    </div>
+
+    <!-- Secondary Trade (optional) -->
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Secondary Trade / Job Title <span style="font-size:11px;color:var(--muted)">(optional)</span></label>
+      <select id="ind2-sectrade" onchange="checkSecondaryTrade()" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff">
+        <option value="none">None — single trade only</option>
+        <option>Boilermaker</option>
+        <option>Carpenter</option>
+        <option>Civil Construction Operator</option>
+        <option>Concretor</option>
+        <option>Crane Operator</option>
+        <option>Dogman</option>
+        <option>Electrician</option>
+        <option>Estimator</option>
+        <option>Excavator Operator</option>
+        <option>Formworker</option>
+        <option>Gasfitter</option>
+        <option>Grader Operator</option>
+        <option>Labourer</option>
+        <option>Labourer + Traffic Controller</option>
+        <option>Painter</option>
+        <option>Pipelayer</option>
+        <option>Plant Operator (General)</option>
+        <option>Plasterer</option>
+        <option>Plumber</option>
+        <option>Project Manager</option>
+        <option>Rigger</option>
+        <option>Scaffolder</option>
+        <option>Site Manager</option>
+        <option>Steelfixer</option>
+        <option>Supervisor</option>
+        <option>Tiler</option>
+        <option>Traffic Controller</option>
+        <option>Waterproofer</option>
+        <option>Welder / Fabricator</option>
+        <option>Other</option>
+      </select>
+      <div id="sectrade-error" style="display:none;font-size:12px;color:#C33;margin-top:6px">⚠ Secondary trade cannot match primary trade</div>
+    </div>
+
+    <!-- Subcontractor Insurance Block (conditional) -->
+    <div id="subcontractor-block" style="display:none">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin:24px 0 12px;padding-bottom:8px;border-bottom:2px solid #F0F3F1">Subcontractor Insurance Details</div>
+      <div style="background:#FFF9E6;border:1.5px solid #FFD666;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#8B6914">
+        <strong>Mandatory for subcontractors.</strong> Upload Certificates of Currency for all policies.
+      </div>
+
+      <!-- ABN -->
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">ABN <span style="color:#C33">*</span></label>
+        <input type="text" id="ind2-abn" placeholder="XX XXX XXX XXX" maxlength="14" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+      </div>
+
+      <!-- Public Liability -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Public Liability Insurer <span style="color:#C33">*</span></label>
+          <input type="text" id="ind2-pl-insurer" placeholder="Insurer name" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">PL Policy Number <span style="color:#C33">*</span></label>
+          <input type="text" id="ind2-pl-policy" placeholder="Policy number" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Coverage Amount <span style="color:#C33">*</span></label>
+          <input type="text" id="ind2-pl-coverage" placeholder="e.g. $20,000,000" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Minimum $10M required</div>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">PL Expiry Date <span style="color:#C33">*</span></label>
+          <input type="date" id="ind2-pl-expiry" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+        </div>
+      </div>
+
+      <!-- PL Certificate Upload -->
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">PL Certificate of Currency <span style="color:#C33">*</span></label>
+        <input type="file" id="ind2-pl-cert" accept=".pdf,image/*" style="width:100%;padding:10px;border:1.5px dashed var(--border);border-radius:8px;font-size:13px;cursor:pointer">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">PDF or image file</div>
+      </div>
+
+      <!-- Workers Compensation -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Workers Compensation Insurer <span style="color:#C33">*</span></label>
+          <input type="text" id="ind2-wc-insurer" placeholder="Insurer name" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">WC Policy Number <span style="color:#C33">*</span></label>
+          <input type="text" id="ind2-wc-policy" placeholder="Policy / registration number" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Insuring State <span style="color:#C33">*</span></label>
+          <select id="ind2-wc-state" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff">
+            <option value="">Select state</option>
+            <option>NSW</option>
+            <option>VIC</option>
+            <option>QLD</option>
+            <option>WA</option>
+            <option>SA</option>
+            <option>TAS</option>
+            <option>ACT</option>
+            <option>NT</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">WC Expiry Date <span style="color:#C33">*</span></label>
+          <input type="date" id="ind2-wc-expiry" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px">
+        </div>
+      </div>
+
+      <!-- WC Certificate Upload -->
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">Workers Compensation Certificate <span style="color:#C33">*</span></label>
+        <input type="file" id="ind2-wc-cert" accept=".pdf,image/*" style="width:100%;padding:10px;border:1.5px dashed var(--border);border-radius:8px;font-size:13px;cursor:pointer">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Sole traders: upload statutory declaration instead</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom nav bar -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:16px 20px 90px;display:flex;gap:12px">
+    <button onclick="goTo('screen-induction-1')" style="padding:12px 24px;background:transparent;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer">Back</button>
+    <button onclick="validateAndSaveSection2()" style="flex:1;padding:12px;background:var(--deep);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Continue →</button>
+  </div>
+</div>
+
 <!-- ═══════════════════ PROFILE SETUP ═══ -->
 <div id="screen-profile" class="screen">
   <div class="setup-hero">
@@ -13504,24 +13730,126 @@ function validateAndSaveSection1() {
   localStorage.setItem('slan_induction_section1', JSON.stringify(section1Data));
   localStorage.setItem('slan_onboarded', 'true');
   
-  // Pre-fill profile screen
-  setTimeout(() => {
-    const fname = document.getElementById('prof-fname');
-    const sname = document.getElementById('prof-sname');
-    const phone = document.getElementById('prof-phone');
-    const emailField = document.getElementById('prof-email');
-    
-    // Split full name into first/last
-    const nameParts = fullname.split(' ');
-    const firstname = nameParts[0] || '';
-    const lastname = nameParts.slice(1).join(' ') || '';
-    
-    if (fname) fname.value = firstname;
-    if (sname) sname.value = lastname;
-    if (phone) phone.value = mobile;
-    if (emailField) emailField.value = email;
-  }, 100);
+  // Go to Section 2
+  goTo('screen-induction-2');
+}
+
+// ═══════════════════ SECTION 2 FUNCTIONS ═══════════════════
+
+function toggleSubcontractorBlock() {
+  const empType = document.getElementById('ind2-emptype').value;
+  const block = document.getElementById('subcontractor-block');
+  if (block) {
+    block.style.display = (empType === 'Subcontractor') ? 'block' : 'none';
+  }
+}
+
+function togglePrimaryTradeOther() {
+  const primTrade = document.getElementById('ind2-primtrade').value;
+  const block = document.getElementById('primtrade-other-block');
+  if (block) {
+    block.style.display = (primTrade === 'Other') ? 'block' : 'none';
+  }
+}
+
+function checkSecondaryTrade() {
+  const primTrade = document.getElementById('ind2-primtrade').value;
+  const secTrade = document.getElementById('ind2-sectrade').value;
+  const error = document.getElementById('sectrade-error');
   
+  if (error && secTrade && secTrade !== 'none' && primTrade === secTrade) {
+    error.style.display = 'block';
+  } else if (error) {
+    error.style.display = 'none';
+  }
+}
+
+function validateAndSaveSection2() {
+  // In demo mode, skip validation and go to next section
+  if (DEMO_MODE || localStorage.getItem('slan_demo') === 'true') {
+    goTo('screen-profile');
+    initSig();
+    checkLocationPermissionStatus();
+    return;
+  }
+  
+  // Get basic employment fields
+  const employer = document.getElementById('ind2-employer').value.trim();
+  const empType = document.getElementById('ind2-emptype').value;
+  const primTrade = document.getElementById('ind2-primtrade').value;
+  const secTrade = document.getElementById('ind2-sectrade').value;
+  
+  // Validate basic fields
+  if (!employer || !empType || !primTrade) {
+    alert('Please fill in all required fields');
+    return;
+  }
+  
+  // If primary trade is "Other", validate the text field
+  if (primTrade === 'Other') {
+    const primTradeOther = document.getElementById('ind2-primtrade-other').value.trim();
+    if (!primTradeOther) {
+      alert('Please specify your primary trade');
+      return;
+    }
+  }
+  
+  // Check secondary trade doesn't match primary
+  if (secTrade && secTrade !== 'none' && primTrade === secTrade) {
+    alert('Secondary trade cannot match primary trade');
+    return;
+  }
+  
+  // Build section2 data object
+  const section2Data = {
+    employer,
+    empType,
+    primTrade,
+    primTradeOther: document.getElementById('ind2-primtrade-other').value.trim(),
+    secTrade
+  };
+  
+  // If subcontractor, validate and save insurance details
+  if (empType === 'Subcontractor') {
+    const abn = document.getElementById('ind2-abn').value.trim();
+    const plInsurer = document.getElementById('ind2-pl-insurer').value.trim();
+    const plPolicy = document.getElementById('ind2-pl-policy').value.trim();
+    const plCoverage = document.getElementById('ind2-pl-coverage').value.trim();
+    const plExpiry = document.getElementById('ind2-pl-expiry').value;
+    const plCert = document.getElementById('ind2-pl-cert').files[0];
+    const wcInsurer = document.getElementById('ind2-wc-insurer').value.trim();
+    const wcPolicy = document.getElementById('ind2-wc-policy').value.trim();
+    const wcState = document.getElementById('ind2-wc-state').value;
+    const wcExpiry = document.getElementById('ind2-wc-expiry').value;
+    const wcCert = document.getElementById('ind2-wc-cert').files[0];
+    
+    // Validate all subcontractor fields
+    if (!abn || !plInsurer || !plPolicy || !plCoverage || !plExpiry || !plCert ||
+        !wcInsurer || !wcPolicy || !wcState || !wcExpiry || !wcCert) {
+      alert('Please complete all insurance details for subcontractors');
+      return;
+    }
+    
+    // Add to section2Data
+    section2Data.insurance = {
+      abn,
+      plInsurer,
+      plPolicy,
+      plCoverage,
+      plExpiry,
+      plCertName: plCert.name,
+      wcInsurer,
+      wcPolicy,
+      wcState,
+      wcExpiry,
+      wcCertName: wcCert.name
+    };
+  }
+  
+  // Save to localStorage
+  localStorage.setItem('slan_induction_section2', JSON.stringify(section2Data));
+  
+  // Go to profile (later this will go to Section 3)
   goTo('screen-profile');
   initSig();
   checkLocationPermissionStatus();
