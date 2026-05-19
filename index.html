@@ -15423,6 +15423,29 @@ document.addEventListener('DOMContentLoaded',()=>{
     showDemoBanner();
   }
 
+  // iOS PWA reload guard: when iOS Safari evicts the WebView while the
+  // camera takes over (during a permit photo, SDS photo, incident photo)
+  // and reloads us on return, checkOnboarding() routes the user back to
+  // Home and they think the form was lost. If we left a recent form-screen
+  // breadcrumb behind in goTo(), restore that screen here. The form's own
+  // restore-draft banner (e.g. hwMaybeRestoreDraft) then offers to bring
+  // the photos and field values back. 60 min TTL — past that we assume the
+  // user actually meant to leave.
+  try {
+    var _lastScr = localStorage.getItem('slan_last_screen');
+    var _lastScrTs = parseInt(localStorage.getItem('slan_last_screen_ts') || '0', 10);
+    if (_lastScr
+        && typeof SLAN_RESTORABLE_SCREENS === 'object'
+        && SLAN_RESTORABLE_SCREENS[_lastScr]
+        && document.getElementById(_lastScr)
+        && (Date.now() - _lastScrTs) < 60 * 60 * 1000) {
+      // Defer to next tick so checkOnboarding's routing finishes first.
+      setTimeout(function() {
+        try { goTo(_lastScr); } catch(e) { console.warn('Screen restore failed:', e); }
+      }, 0);
+    }
+  } catch(e) {}
+
   // Prepopulate demo incidents for director portal
   if (typeof prepopulateDemoIncidents === 'function') {
     console.log('🚀 Loading demo incidents...');
@@ -19102,9 +19125,36 @@ function handlePhotoUpload(e) {
   reader.readAsDataURL(file);
 }
 
+// Screen IDs we want to "remember" so that an OS-triggered PWA reload
+// (most notoriously, iOS Safari evicting the WebView while the camera
+// takes over for a permit/SDS/incident photo) doesn't drop the user
+// back at Home with a "wait, where did my form go?" experience. When
+// the user navigates to one of these screens we stash the ID + a
+// timestamp; on boot we restore them (see DOMContentLoaded handler).
+var SLAN_RESTORABLE_SCREENS = {
+  'screen-hw-form': 1, 'screen-cs-form': 1, 'screen-exc-form': 1,
+  'screen-demo-form': 1, 'screen-lift-form': 1, 'screen-conc-form': 1,
+  'screen-pen-form': 1, 'screen-elec-form': 1, 'screen-asb-form': 1,
+  'screen-mp-form': 1, 'screen-trf-form': 1, 'screen-wah-form': 1,
+  'screen-cs-form': 1, 'screen-incident': 1, 'screen-hazard': 1,
+  'screen-sds': 1
+};
+
 function goTo(id){
   // Restore DEMO_MODE on every navigation so it never drops out
   if (localStorage.getItem('slan_demo') === 'true') DEMO_MODE = true;
+
+  // Remember the user's place on form screens so a PWA reload after a
+  // camera invocation can route them back. Cleared when they leave.
+  try {
+    if (SLAN_RESTORABLE_SCREENS[id]) {
+      localStorage.setItem('slan_last_screen', id);
+      localStorage.setItem('slan_last_screen_ts', String(Date.now()));
+    } else {
+      localStorage.removeItem('slan_last_screen');
+      localStorage.removeItem('slan_last_screen_ts');
+    }
+  } catch(e) {}
   // ROLE-AWARE HOME ROUTING: when a supervisor or director taps any back
   // button that hard-codes 'screen-home' (the worker home), redirect them
   // to their proper dashboard. This fixes the long-standing bug where
