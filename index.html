@@ -6164,6 +6164,27 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
+  <div class="fcard" id="lift-critical-fields" style="display:none">
+    <div class="fcard-hdr">Critical Lift Requirements <span class="req">*</span></div>
+    <div class="fcard-body">
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:4px;line-height:1.45">Required for a critical / complex lift — these document the engineered controls.</div>
+      <div class="fgroup">
+        <label class="flabel">Engineered lift study / lift plan reference</label>
+        <input type="text" id="lift-crit-study" placeholder="e.g. LS-2026-014 rev B — prepared by competent rigger/engineer" oninput="liftValidate()" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Load as % of crane capacity (SWL)</label>
+        <input type="text" id="lift-crit-capacity" placeholder="e.g. 78%" oninput="liftValidate()" inputmode="numeric" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
+      </div>
+      <div class="check-row" id="lift-crit-ground" onclick="toggleCheck('lift-crit-ground'); liftValidate()"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Ground bearing capacity assessed; crane matting / outrigger pads in place</div></div>
+      <div class="check-row" id="lift-crit-exclusion" onclick="toggleCheck('lift-crit-exclusion'); liftValidate()"><div class="check-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><div class="check-text">Exclusion zone established and controlled — no persons under the suspended load</div></div>
+      <div class="fgroup">
+        <label class="flabel">Lift coordinator / dual-crane plan (if applicable)</label>
+        <input type="text" id="lift-crit-coordinator" placeholder="Lift coordinator name, or 'single crane'" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;width:100%;outline:none" autocomplete="off">
+      </div>
+    </div>
+  </div>
+
   <div class="fcard">
     <div class="fcard-hdr">Lifting / Crane Details <span class="req">*</span></div>
     <div class="fcard-body">
@@ -27697,6 +27718,8 @@ function liftSetClass(type) {
   if (cb) cb.classList.toggle('pass', type === 'critical');
   var warn = document.getElementById('lift-critical-warning');
   if (warn) warn.style.display = (type === 'critical' && !liftHasRiggerOrCrane()) ? 'block' : 'none';
+  var critFields = document.getElementById('lift-critical-fields');
+  if (critFields) critFields.style.display = (type === 'critical') ? 'block' : 'none';
   liftValidate();
 }
 
@@ -27787,6 +27810,9 @@ function liftInitForm() {
   var _lcr = document.getElementById('lift-class-routine'); if (_lcr) _lcr.classList.remove('pass');
   var _lcc = document.getElementById('lift-class-critical'); if (_lcc) _lcc.classList.remove('pass');
   var _lcw = document.getElementById('lift-critical-warning'); if (_lcw) _lcw.style.display = 'none';
+  var _lcf = document.getElementById('lift-critical-fields'); if (_lcf) _lcf.style.display = 'none';
+  ['lift-crit-study','lift-crit-capacity','lift-crit-coordinator'].forEach(function(id){ var el = document.getElementById(id); if (el) el.value = ''; });
+  ['lift-crit-ground','lift-crit-exclusion'].forEach(function(id){ var el = document.getElementById(id); if (el) el.classList.remove('checked'); });
   
   ['lift-description','lift-location','lift-num-workers','lift-start','lift-end','lift-weight','lift-swl','lift-radius','lift-height','lift-equipment','lift-operator','lift-dogger','lift-wind','lift-ground','lift-rescue'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -28153,6 +28179,16 @@ function liftValidate() {
   // worker to hold a rigger or crane licence (not just dogging).
   if (!_liftClass) ok = false;
   if (_liftClass === 'critical' && !liftHasRiggerOrCrane()) ok = false;
+  if (_liftClass === 'critical') {
+    var _cStudy = (document.getElementById('lift-crit-study') || {}).value || '';
+    var _cCap   = (document.getElementById('lift-crit-capacity') || {}).value || '';
+    var _cGrd   = document.getElementById('lift-crit-ground');
+    var _cExc   = document.getElementById('lift-crit-exclusion');
+    if (!_cStudy.trim()) ok = false;
+    if (!_cCap.trim()) ok = false;
+    if (!_cGrd || !_cGrd.classList.contains('checked')) ok = false;
+    if (!_cExc || !_cExc.classList.contains('checked')) ok = false;
+  }
 
   const btn = document.getElementById('lift-submit-btn');
   if (btn) { btn.disabled = !ok; btn.style.opacity = ok ? '1' : '0.5'; }
