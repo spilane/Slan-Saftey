@@ -10159,6 +10159,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
+    <!-- Toolbox Talks (Director Only) -->
+    <div class="fcard" style="overflow:hidden;padding:0">
+      <div onclick="goToDirectorToolbox()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;background:#FFF5D6;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#7A6020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--text)">Toolbox Talks</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px" id="an-tbt-summary">Loading toolbox compliance...</div>
+          </div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
     <!-- Safety Performance -->
     <div class="fcard" style="overflow:hidden;padding:0">
       <div onclick="anToggleSection('safety')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer">
@@ -10390,6 +10406,106 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <!-- ═══════════════════ DIRECTOR INCIDENTS SCREEN ═══ -->
 <!-- ═══════════════════ MONTHLY SCORECARD ═══ -->
+<div id="screen-dir-toolbox" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goToAnalytics('director')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="dir-tbt-logo" src="" alt="Slán Safety" style="height:80px;object-fit:contain;display:block"></div>
+      <div class="badge" style="background:rgba(184,150,12,.25);border:1.5px solid rgba(184,150,12,.5);color:#B8960C;font-size:10px;font-weight:700;letter-spacing:0.5px">DIRECTOR</div>
+    </div>
+    <div class="form-greeting">
+      <h1 style="color:#fff">Toolbox Talks</h1>
+      <p id="dir-tbt-period" style="color:rgba(255,255,255,0.8)">Current talk · All sites</p>
+    </div>
+  </div>
+
+  <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
+
+    <!-- Tab Navigation -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;padding:4px;background:linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
+      <button id="main-tbt-tab-overview" onclick="switchMainToolboxTab('overview')" style="flex:1;padding:10px 16px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;box-shadow:0 2px 4px rgba(184,150,12,0.3)">Overview</button>
+      <button id="main-tbt-tab-sites" onclick="switchMainToolboxTab('sites')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">By Site</button>
+      <button id="main-tbt-tab-details" onclick="switchMainToolboxTab('details')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">History</button>
+    </div>
+
+    <!-- TAB 1: OVERVIEW -->
+    <div id="main-tbt-tab-content-overview" class="main-tbt-tab-content">
+
+      <!-- ACTIONS I CAN TAKE NOW -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🎯 Actions I Can Take Now</div>
+        <div style="padding:10px">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainToolboxTab('sites')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px">⚠️ <span id="dtbt-outstanding-count">—</span> workers haven't signed today's talk</div>
+                <div style="font-size:10px;color:#78350F">Review outstanding sign-offs by site</div>
+              </div>
+              <div style="font-size:20px;color:#92400E">→</div>
+            </div>
+          </button>
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #E6F3F0 0%, #D4EDE5 100%);border:2px solid #1B3A2D;border-radius:10px;cursor:pointer;box-shadow:0 2px 6px rgba(27,58,45,0.15)" onclick="switchMainToolboxTab('details')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#1B3A2D;margin-bottom:4px">📄 Export audit pack</div>
+                <div style="font-size:10px;color:#3B6D11">Signed toolbox rosters for insurers / regulators</div>
+              </div>
+              <div style="font-size:20px;color:#1B3A2D">→</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- TODAY'S COMPLIANCE -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 Today's Compliance</div>
+        <div style="padding:10px">
+          <div style="font-size:11px;color:#666;margin-bottom:10px">Active talk: <strong id="dtbt-active-talk" style="color:#1A2A1F">—</strong></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:15px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #D4AF37">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Signed</div>
+              <div style="font-size:32px;font-weight:800;color:#15803D;line-height:1" id="dtbt-signed-count">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:15px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #D4AF37">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Outstanding</div>
+              <div style="font-size:32px;font-weight:800;color:#D97706;line-height:1" id="dtbt-outstanding-count-2">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:15px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #D4AF37">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Completion</div>
+              <div style="font-size:32px;font-weight:800;color:#1A2A1F;line-height:1" id="dtbt-completion">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BY SITE (mini) -->
+      <div class="fcard">
+        <div class="fcard-hdr">🏗️ By Site</div>
+        <div id="dtbt-sites-mini" style="padding:10px"></div>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: BY SITE -->
+    <div id="main-tbt-tab-content-sites" class="main-tbt-tab-content" style="display:none">
+      <div class="fcard">
+        <div class="fcard-hdr">🏗️ Site Breakdown — Today's Talk</div>
+        <div id="dtbt-sites-full" style="padding:10px"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: HISTORY -->
+    <div id="main-tbt-tab-content-details" class="main-tbt-tab-content" style="display:none">
+      <div class="fcard">
+        <div class="fcard-hdr">🗂️ Talk History &amp; Audit Rosters</div>
+        <div id="dtbt-history" style="padding:10px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <div id="screen-dir-incidents" class="screen">
   <div class="sb"></div>
   <div class="topbar" style="padding-bottom:14px">
@@ -36807,6 +36923,8 @@ function anToggleSection(id) {
 
 function populateDirectorIncidents() {
   // ═══════════════════════════════════════════════════════════════
+  // Also refresh the Toolbox Talks dashboard tile summary on this pass.
+  try { updateDirToolboxSummary(); } catch(e) {}
   console.log('📊 populateDirectorIncidents() called');
   var list = document.getElementById('dir-inc-list'); // FIXED: was 'dinc-incidents-list'
   var summary = document.getElementById('an-inc-summary');
@@ -38467,6 +38585,111 @@ var dincCurrentIncident = null; // Store current incident for modal
 // ════════════════════════════════════════════════════════════════════
 // DIRECTOR INCIDENTS FUNCTIONS
 // ════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// DIRECTOR PORTAL — TOOLBOX TALKS (company-wide oversight)
+// Self-contained demo dataset (browser-only prototype). The per-site
+// rollups are representative seeded numbers across the three demo sites;
+// the active talk title is read live from getActiveTalk() so it tracks
+// whatever the supervisor has set as the current talk.
+// ═══════════════════════════════════════════════════════════════
+var DIR_TBT_SITES = [
+  { name: 'Parramatta Metro Stage 2', signed: 18, total: 20 },
+  { name: 'Blacktown Interchange',    signed: 12, total: 15 },
+  { name: 'Liverpool Civic Tower',    signed: 9,  total: 14 }
+];
+
+var DIR_TBT_HISTORY = [
+  { title: 'Working at Heights — Fall Prevention', date: '19/05/2026', signed: 47, total: 49 },
+  { title: 'Manual Handling — Team Lifts',          date: '12/05/2026', signed: 49, total: 49 },
+  { title: 'Silica Dust — Cutting & Grinding',      date: '05/05/2026', signed: 44, total: 48 },
+  { title: 'Heat Stress & Hydration',               date: '28/04/2026', signed: 46, total: 47 }
+];
+
+function goToDirectorToolbox() {
+  goTo('screen-dir-toolbox');
+  var logo = document.getElementById('dir-tbt-logo');
+  if (logo) { var src = document.querySelector('.tbar-logo img'); if (src) logo.src = src.src; }
+  switchMainToolboxTab('overview');
+  dirToolboxRender();
+}
+
+function switchMainToolboxTab(tabName) {
+  ['overview', 'sites', 'details'].forEach(function(t) {
+    var content = document.getElementById('main-tbt-tab-content-' + t);
+    if (content) content.style.display = (t === tabName) ? 'block' : 'none';
+    var btn = document.getElementById('main-tbt-tab-' + t);
+    if (btn) {
+      if (t === tabName) {
+        btn.style.background = 'linear-gradient(135deg, #B8960C 0%, #D4A72C 100%)';
+        btn.style.color = '#fff';
+        btn.style.boxShadow = '0 2px 4px rgba(184,150,12,0.3)';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = '#666';
+        btn.style.boxShadow = 'none';
+      }
+    }
+  });
+}
+
+function _dirTbtTotals() {
+  var signed = DIR_TBT_SITES.reduce(function(a, s) { return a + s.signed; }, 0);
+  var total  = DIR_TBT_SITES.reduce(function(a, s) { return a + s.total; }, 0);
+  return { signed: signed, total: total, outstanding: total - signed, pct: total ? Math.round(signed / total * 100) : 0 };
+}
+
+function _dirTbtSiteRow(s) {
+  var sp = s.total ? Math.round(s.signed / s.total * 100) : 0;
+  var colour = sp >= 95 ? '#15803D' : (sp >= 80 ? '#D97706' : '#B83232');
+  return '<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid #E8E8E8;border-radius:8px;margin-bottom:8px;background:#fff">' +
+    '<div style="min-width:0;flex:1">' +
+      '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + s.name + '</div>' +
+      '<div style="height:6px;background:#EEE;border-radius:3px;margin-top:6px;overflow:hidden"><div style="height:100%;width:' + sp + '%;background:' + colour + '"></div></div>' +
+    '</div>' +
+    '<div style="text-align:right;margin-left:12px;flex-shrink:0">' +
+      '<div style="font-size:15px;font-weight:800;color:' + colour + '">' + sp + '%</div>' +
+      '<div style="font-size:10px;color:#888">' + s.signed + '/' + s.total + ' signed</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function dirToolboxRender() {
+  var t = _dirTbtTotals();
+  var activeTalk = (typeof getActiveTalk === 'function' && getActiveTalk()) ? getActiveTalk().title : 'Toolbox Talk';
+  var set = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+  set('dtbt-active-talk', activeTalk);
+  set('dtbt-signed-count', t.signed);
+  set('dtbt-outstanding-count', t.outstanding);
+  set('dtbt-outstanding-count-2', t.outstanding);
+  set('dtbt-completion', t.pct + '%');
+
+  var siteHtml = DIR_TBT_SITES.map(_dirTbtSiteRow).join('');
+  var mini = document.getElementById('dtbt-sites-mini'); if (mini) mini.innerHTML = siteHtml;
+  var full = document.getElementById('dtbt-sites-full'); if (full) full.innerHTML = siteHtml;
+
+  var hist = document.getElementById('dtbt-history');
+  if (hist) {
+    hist.innerHTML = DIR_TBT_HISTORY.map(function(h) {
+      var hp = h.total ? Math.round(h.signed / h.total * 100) : 0;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border-bottom:1px solid #EEE;gap:12px">' +
+        '<div style="min-width:0;flex:1">' +
+          '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + h.title + '</div>' +
+          '<div style="font-size:10.5px;color:#888;margin-top:2px">' + h.date + ' · ' + h.signed + '/' + h.total + ' signed (' + hp + '%)</div>' +
+        '</div>' +
+        '<button onclick="slanToast && slanToast(\'Roster PDF export is coming for the director audit pack.\', \'info\')" style="padding:6px 12px;background:#1F495C;color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:\'DM Sans\',sans-serif">PDF</button>' +
+      '</div>';
+    }).join('');
+  }
+}
+
+// Populates the "Toolbox Talks" summary line on the director dashboard tile.
+function updateDirToolboxSummary() {
+  var el = document.getElementById('an-tbt-summary');
+  if (!el) return;
+  var t = _dirTbtTotals();
+  el.textContent = t.signed + ' of ' + t.total + ' signed today · ' + t.pct + '% across ' + DIR_TBT_SITES.length + ' sites';
+}
 
 function goToDirectorIncidents() {
   goTo('screen-dir-incidents');
