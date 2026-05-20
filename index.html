@@ -10468,6 +10468,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="main-ptw-tab-approvals" onclick="switchMainPtwTab('approvals')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Approvals</button>
     </div>
 
+    <div id="dptw-site-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+
     <!-- OVERVIEW -->
     <div id="main-ptw-tab-content-overview" class="main-ptw-tab-content">
       <div class="fcard" style="margin-bottom:12px">
@@ -10528,6 +10530,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🏗️ By Site</div>
+        <div id="dptw-bysite" style="padding:10px"></div>
       </div>
 
       <div class="fcard" style="margin-bottom:12px">
@@ -39337,20 +39344,51 @@ function _dptwStatusMeta(status) {
   }
 }
 
-function _dptwStats() {
+var dptwSite = 'All'; // current site filter ('All' or a site name)
+
+function _dptwSites() {
+  var seen = {}, out = [];
+  DIR_PTW_PERMITS.forEach(function(p) { if (p.site && !seen[p.site]) { seen[p.site] = true; out.push(p.site); } });
+  return out.sort();
+}
+
+function _dptwActivePermits() {
+  if (dptwSite === 'All') return DIR_PTW_PERMITS.slice();
+  return DIR_PTW_PERMITS.filter(function(p) { return p.site === dptwSite; });
+}
+
+function _dptwStats(list) {
+  list = list || DIR_PTW_PERMITS;
   var by = { active: 0, pending: 0, closed: 0, rejected: 0, revoked: 0 };
   var sites = {};
-  DIR_PTW_PERMITS.forEach(function(p) {
+  list.forEach(function(p) {
     if (by[p.status] !== undefined) by[p.status]++;
     if (p.site) sites[p.site] = true;
   });
   return {
-    total: DIR_PTW_PERMITS.length,
+    total: list.length,
     active: by.active, pending: by.pending, closed: by.closed,
     rejected: by.rejected, revoked: by.revoked,
     flagged: by.rejected + by.revoked,
     sites: Object.keys(sites).length
   };
+}
+
+function dptwSetSite(site) {
+  dptwSite = site;
+  dirPtwRender();
+}
+
+function dptwRenderSiteFilter() {
+  var box = document.getElementById('dptw-site-filter');
+  if (!box) return;
+  var chips = ['All'].concat(_dptwSites());
+  box.innerHTML = chips.map(function(s) {
+    var on = (s === dptwSite);
+    var label = (s === 'All') ? 'All sites' : s;
+    return '<button onclick="dptwSetSite(\'' + s.replace(/'/g, "\\'") + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid ' +
+      (on ? '#B8960C' : '#D8D8D8') + ';background:' + (on ? '#B8960C' : '#fff') + ';color:' + (on ? '#fff' : '#666') + '">' + label + '</button>';
+  }).join('');
 }
 
 function goToDirectorPermits() {
@@ -39389,7 +39427,9 @@ function _dptwCard(p) {
 }
 
 function dirPtwRender() {
-  var s = _dptwStats();
+  dptwRenderSiteFilter();
+  var list = _dptwActivePermits();
+  var s = _dptwStats(list);
   var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
   set('dptw-active', s.active);
   set('dptw-pending', s.pending);
@@ -39397,12 +39437,15 @@ function dirPtwRender() {
   set('dptw-flagged', s.flagged);
   set('dptw-pending-count', s.pending);
   set('dptw-flagged-count', s.flagged);
-  set('dptw-activity-line', s.total + ' permits this month · ' + s.sites + ' sites');
+  set('dptw-activity-line', (dptwSite === 'All') ? (s.total + ' permits this month · ' + s.sites + ' sites') : (s.total + ' permits this month · ' + dptwSite));
 
-  // Attention banner — surface rejected/revoked outcomes
+  var per = document.getElementById('dir-ptw-period');
+  if (per) per.textContent = (dptwSite === 'All') ? 'Company-wide · All sites' : ('Filtered · ' + dptwSite);
+
+  // Attention banner — surface rejected/revoked outcomes (within current filter)
   var att = document.getElementById('dptw-attention');
   if (att) {
-    var flagged = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; });
+    var flagged = list.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; });
     if (flagged.length) {
       att.style.display = 'block';
       att.innerHTML = '<div style="padding:13px 15px;background:#FCE9E9;border:1.5px solid #A32D2D;border-radius:10px;margin-bottom:12px">' +
@@ -39412,11 +39455,28 @@ function dirPtwRender() {
     } else { att.style.display = 'none'; att.innerHTML = ''; }
   }
 
-  // Status by permit type
+  // By site — always shows all sites so the director can compare and tap to filter
+  var bs = document.getElementById('dptw-bysite');
+  if (bs) {
+    var sites = _dptwSites();
+    bs.innerHTML = sites.map(function(name) {
+      var items = DIR_PTW_PERMITS.filter(function(p) { return p.site === name; });
+      var a = items.filter(function(p) { return p.status === 'active'; }).length;
+      var pd = items.filter(function(p) { return p.status === 'pending'; }).length;
+      var fl = items.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; }).length;
+      var sel = (name === dptwSite);
+      return '<div onclick="dptwSetSite(\'' + name.replace(/'/g, "\\'") + '\')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid ' + (sel ? '#B8960C' : '#E8E8E8') + ';border-radius:8px;margin-bottom:8px;background:' + (sel ? '#FDF8E8' : '#fff') + ';cursor:pointer">' +
+        '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F">' + name + '</div>' +
+        '<div style="font-size:11px;color:#5C6B62"><span style="color:#15803D;font-weight:700">' + a + '</span> active · <span style="color:#D97706;font-weight:700">' + pd + '</span> pending' + (fl ? ' · <span style="color:#B83232;font-weight:700">' + fl + '</span> flagged' : '') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Status by permit type (within current filter)
   var bt = document.getElementById('dptw-bytype');
   if (bt) {
     var rows = DIR_PTW_TYPE_ORDER.map(function(tp) {
-      var items = DIR_PTW_PERMITS.filter(function(p) { return p.type === tp; });
+      var items = list.filter(function(p) { return p.type === tp; });
       if (!items.length) return '';
       var parts = [];
       ['active','pending','closed','rejected','revoked'].forEach(function(st) {
@@ -39428,22 +39488,22 @@ function dirPtwRender() {
         '<div style="font-size:10.5px;text-align:right;flex-shrink:0">' + parts.join(' · ') + '</div>' +
       '</div>';
     }).join('');
-    bt.innerHTML = rows || '<div style="font-size:12.5px;color:#888;text-align:center;padding:12px">No permits this month.</div>';
+    bt.innerHTML = rows || '<div style="font-size:12.5px;color:#888;text-align:center;padding:12px">No permits for this site.</div>';
   }
 
-  // Register — full log (newest first by ref-date order as seeded)
+  // Register — filtered log
   var reg = document.getElementById('dptw-register');
-  if (reg) reg.innerHTML = DIR_PTW_PERMITS.map(_dptwCard).join('');
+  if (reg) reg.innerHTML = list.length ? list.map(_dptwCard).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No permits for this site.</div>';
 
-  // Approvals — pending + flagged
+  // Approvals — pending + flagged (within current filter)
   var pend = document.getElementById('dptw-pending-list');
   if (pend) {
-    var p1 = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'pending'; });
+    var p1 = list.filter(function(p) { return p.status === 'pending'; });
     pend.innerHTML = p1.length ? p1.map(_dptwCard).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No permits awaiting approval.</div>';
   }
   var flag = document.getElementById('dptw-flagged-list');
   if (flag) {
-    var p2 = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; });
+    var p2 = list.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; });
     flag.innerHTML = p2.length ? p2.map(_dptwCard).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No rejected or revoked permits.</div>';
   }
 }
