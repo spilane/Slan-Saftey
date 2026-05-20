@@ -19345,6 +19345,10 @@ function goTo(id){
       }
     } catch(e) {}
   }
+  // Restore any in-progress SDS report-missing photos (survives iOS reload)
+  if (id === 'screen-sds') {
+    try { if (typeof sdsRestoreDraftPhotos === 'function') setTimeout(sdsRestoreDraftPhotos, 0); } catch(e) {}
+  }
   // Re-render incident list when arriving at it
   if (id === 'screen-incident-list') {
     try { if (typeof renderIncidentList === 'function') renderIncidentList(); } catch(e) {}
@@ -42134,29 +42138,66 @@ function slanOpenPhoto(inputId) {
 }
 
 function handleSdsPhoto(idx, e) {
-  // Rebuilt simple + bulletproof. Read the picked file and show it directly
-  // as an <img> — NO canvas (canvas was silently failing to render the photo
-  // on the phone) and the input has NO capture attribute (which caused the
-  // iOS double-camera). A raw FileReader data URL always displays.
   var file = e.target && e.target.files && e.target.files[0];
   if (!file) return;
   var reader = new FileReader();
   reader.onload = function(ev) {
-    var dataUrl = ev.target.result;
-    sdsPhotos[idx] = dataUrl;
-    var slot = document.getElementById('sds-slot-' + idx);
-    if (slot) {
-      slot.classList.add('filled');
-      slot.innerHTML = '<button type="button" class="hw-photo-remove" onclick="event.preventDefault();event.stopPropagation();handleSdsPhotoRemove(' + idx + ')">×</button>' +
-        '<img src="' + dataUrl + '" alt="SDS photo ' + (idx + 1) + '">';
-    }
-    if (typeof sdsValidateForm === 'function') sdsValidateForm();
+    var raw = ev.target.result;
+    // Compress via canvas to keep storage small, but fall back to the raw
+    // data URL if canvas fails — so the photo ALWAYS displays.
+    var img = new window.Image();
+    img.onload = function() {
+      var dataUrl = raw;
+      try {
+        var w = img.width, h = img.height, MAX = 1000;
+        if (w > MAX || h > MAX) { var r = Math.min(MAX / w, MAX / h); w = Math.round(w * r); h = Math.round(h * r); }
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        dataUrl = c.toDataURL('image/jpeg', 0.7);
+      } catch (err) { dataUrl = raw; }
+      sdsShowPhoto(idx, dataUrl);
+    };
+    img.onerror = function() { sdsShowPhoto(idx, raw); };
+    img.src = raw;
   };
   reader.readAsDataURL(file);
 }
 
+function sdsShowPhoto(idx, dataUrl) {
+  sdsPhotos[idx] = dataUrl;
+  var slot = document.getElementById('sds-slot-' + idx);
+  if (slot) {
+    slot.classList.add('filled');
+    slot.innerHTML = '<button type="button" class="hw-photo-remove" onclick="event.preventDefault();event.stopPropagation();handleSdsPhotoRemove(' + idx + ')">×</button>' +
+      '<img src="' + dataUrl + '" alt="SDS photo ' + (idx + 1) + '">';
+  }
+  // Persist immediately so the photo survives an iOS PWA reload (the reason
+  // Hot Work survived a camera-triggered reload and SDS didn't).
+  try { localStorage.setItem('slan_sds_draft_photos', JSON.stringify(sdsPhotos)); } catch (err) {}
+  if (typeof sdsValidateForm === 'function') sdsValidateForm();
+}
+
+function sdsRestoreDraftPhotos() {
+  try {
+    var saved = JSON.parse(localStorage.getItem('slan_sds_draft_photos') || 'null');
+    if (!saved) return;
+    [0, 1].forEach(function(i) {
+      if (saved[i]) {
+        sdsPhotos[i] = saved[i];
+        var slot = document.getElementById('sds-slot-' + i);
+        if (slot && !slot.classList.contains('filled')) {
+          slot.classList.add('filled');
+          slot.innerHTML = '<button type="button" class="hw-photo-remove" onclick="event.preventDefault();event.stopPropagation();handleSdsPhotoRemove(' + i + ')">×</button>' +
+            '<img src="' + saved[i] + '" alt="SDS photo ' + (i + 1) + '">';
+        }
+      }
+    });
+  } catch (err) {}
+}
+
 function handleSdsPhotoRemove(idx) {
   sdsPhotos[idx] = null;
+  try { localStorage.setItem('slan_sds_draft_photos', JSON.stringify(sdsPhotos)); } catch (err) {}
   const slot = document.getElementById('sds-slot-' + idx);
   if (slot) {
     const num = idx + 1;
