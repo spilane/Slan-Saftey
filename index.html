@@ -10646,6 +10646,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div style="font-size:32px;font-weight:800;color:#15803D;line-height:1" id="dsds-coverage">—</div>
             </div>
           </div>
+          <div id="dsds-dg-line" style="margin-top:10px"></div>
         </div>
       </div>
 
@@ -37171,26 +37172,8 @@ function anPopulateDemoMetrics() {
   set('an-val-vis', '14'); set('an-sub-vis', 'This period');
   set('an-val-psych', '1'); set('an-sub-psych', 'Under review');
 
-  // Director alerts
-  var alertsList = document.getElementById('an-dir-alerts-list');
-  if (alertsList) {
-    alertsList.innerHTML =
-      '<div style="background:#FFF0F0;border:1.5px solid rgba(184,50,50,.25);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">' +
-        '<div style="width:8px;height:8px;border-radius:50%;background:#B83232;flex-shrink:0;margin-top:3px"></div>' +
-        '<div><div style="font-size:12px;font-weight:600;color:#B83232">SDS Expired — Solvent Cleaner MEK</div>' +
-        '<div style="font-size:11px;color:#C06060;margin-top:2px">Liverpool — expired 32 days ago. Chemical must not be used on site until renewed.</div></div>' +
-      '</div>' +
-      '<div style="background:#FDF8E8;border:1.5px solid rgba(184,150,12,.3);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">' +
-        '<div style="width:8px;height:8px;border-radius:50%;background:#B8960C;flex-shrink:0;margin-top:3px"></div>' +
-        '<div><div style="font-size:12px;font-weight:600;color:#8B6914">3 licences expiring within 30 days</div>' +
-        '<div style="font-size:11px;color:#A07020;margin-top:2px">L. O\'Brien — HRWL — 20 Apr &nbsp;&middot;&nbsp; M. Flynn — White Card — 28 Apr &nbsp;&middot;&nbsp; D. Murphy — First Aid — 2 May</div></div>' +
-      '</div>' +
-      '<div style="background:#FDF8E8;border:1.5px solid rgba(184,150,12,.3);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px">' +
-        '<div style="width:8px;height:8px;border-radius:50%;background:#B8960C;flex-shrink:0;margin-top:3px"></div>' +
-        '<div><div style="font-size:12px;font-weight:600;color:#8B6914">2 rigging items overdue for inspection</div>' +
-        '<div style="font-size:11px;color:#A07020;margin-top:2px">Parramatta — 2T Chain Sling CS-004 &nbsp;·&nbsp; 3T Wire Rope WR-002 — due 5 Apr</div></div>' +
-      '</div>';
-  }
+  // Director alerts — live "requires attention" feed across all areas
+  try { renderDirAttentionFeed(); } catch (e) {}
   // Stars
   if (!AN_STARS || AN_STARS.length === 0) {
     AN_STARS = [
@@ -37200,6 +37183,69 @@ function anPopulateDemoMetrics() {
     ];
     if (typeof anRenderStars === 'function') anRenderStars();
   }
+}
+
+// Live company-wide "requires attention" feed for the director dashboard.
+// Aggregates the real director datasets (SDS / Permits / Toolbox). Always
+// company-wide — ignores the per-tile site filters. Each row jumps to its tile.
+function renderDirAttentionFeed() {
+  var list = document.getElementById('an-dir-alerts-list');
+  if (!list) return;
+  var parent = document.getElementById('an-dir-alerts');
+  var alerts = [];
+
+  // SDS — expired (critical) and expiring/urgent (warning)
+  try {
+    var chems = (typeof _sdsAllChems === 'function') ? _sdsAllChems() : [];
+    chems.filter(function(c) { return c.status === 'expired'; }).forEach(function(c) {
+      alerts.push({ level: 'critical', title: 'SDS expired — ' + c.name, detail: (c.sites || '') + ' · must not be used on site until renewed', go: 'goToDirectorSds' });
+    });
+    var urgent = chems.filter(function(c) { return c.status === 'urgent'; });
+    if (urgent.length) alerts.push({ level: 'warn', title: urgent.length + ' SDS expiring soon', detail: urgent.map(function(c) { return c.name; }).slice(0, 3).join(' · '), go: 'goToDirectorSds' });
+  } catch (e) {}
+
+  // Permits — rejected/revoked (critical) and high-risk active now (warning)
+  try {
+    if (typeof DIR_PTW_PERMITS !== 'undefined') {
+      var flagged = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; });
+      if (flagged.length) alerts.push({ level: 'critical', title: flagged.length + ' permit' + (flagged.length > 1 ? 's' : '') + ' rejected or revoked', detail: flagged.map(function(p) { return p.ref + ' (' + p.site + ')'; }).join(' · '), go: 'goToDirectorPermits' });
+      var HIGH = { 'Confined Space': 1, 'Hot Works': 1, 'Asbestos': 1, 'Electrical': 1, 'Lifting': 1 };
+      var hr = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'active' && HIGH[p.type]; });
+      if (hr.length) alerts.push({ level: 'warn', title: hr.length + ' high-risk permit' + (hr.length > 1 ? 's' : '') + ' active now', detail: hr.map(function(p) { return p.type + ' (' + p.site + ')'; }).slice(0, 4).join(' · '), go: 'goToDirectorPermits' });
+    }
+  } catch (e) {}
+
+  // Toolbox — sites below the company target
+  try {
+    if (typeof DIR_TBT_SITES !== 'undefined') {
+      var tgt = (typeof DIR_TBT_TARGET !== 'undefined') ? DIR_TBT_TARGET : 95;
+      DIR_TBT_SITES.forEach(function(s) {
+        var pct = s.total ? Math.round(s.signed / s.total * 100) : 100;
+        if (pct < tgt) alerts.push({ level: pct < 80 ? 'critical' : 'warn', title: 'Toolbox ' + pct + '% — ' + s.name, detail: s.signed + '/' + s.total + ' signed this month · below ' + tgt + '% target', go: 'goToDirectorToolbox' });
+      });
+    }
+  } catch (e) {}
+
+  if (!alerts.length) {
+    if (parent) parent.style.display = 'none';
+    list.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px">No critical alerts at this time.</div>';
+    return;
+  }
+  if (parent) parent.style.display = 'flex';
+  alerts.sort(function(a, b) { return (a.level === 'critical' ? 0 : 1) - (b.level === 'critical' ? 0 : 1); });
+  list.innerHTML = alerts.map(function(a) {
+    var crit = a.level === 'critical';
+    var bg = crit ? '#FFF0F0' : '#FDF8E8';
+    var bd = crit ? 'rgba(184,50,50,.25)' : 'rgba(184,150,12,.3)';
+    var dot = crit ? '#B83232' : '#B8960C';
+    var tc = crit ? '#B83232' : '#8B6914';
+    var dc = crit ? '#C06060' : '#A07020';
+    return '<div onclick="' + a.go + '()" style="background:' + bg + ';border:1.5px solid ' + bd + ';border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;cursor:pointer">' +
+      '<div style="width:8px;height:8px;border-radius:50%;background:' + dot + ';flex-shrink:0;margin-top:3px"></div>' +
+      '<div style="min-width:0"><div style="font-size:12px;font-weight:600;color:' + tc + '">' + a.title + '</div>' +
+      '<div style="font-size:11px;color:' + dc + ';margin-top:2px">' + a.detail + '</div></div>' +
+    '</div>';
+  }).join('');
 }
 
 // ─── Analytics section toggle ──────────────────────────────
@@ -39349,6 +39395,17 @@ function dirSdsRender() {
   var per = document.getElementById('dir-sds-period');
   if (per) per.textContent = (sdsSite === 'All') ? 'Company-wide · All sites' : ('Filtered · ' + sdsSite);
 
+  // Dangerous goods + high-risk counts (regulator-relevant, from dg + risk fields)
+  var dgEl = document.getElementById('dsds-dg-line');
+  if (dgEl) {
+    var dg = list.filter(function(c) { return c.dg && !/^\s*n\/a/i.test(c.dg); }).length;
+    var hi = list.filter(function(c) { return c.risk === 'High' || c.risk === 'Extreme'; }).length;
+    dgEl.innerHTML = '<div style="display:flex;gap:8px">' +
+      '<div style="flex:1;background:#FFF5EC;border:1px solid rgba(217,119,6,0.25);border-radius:8px;padding:9px 11px;text-align:center"><div style="font-size:9px;color:#92400E;text-transform:uppercase;letter-spacing:0.6px;font-weight:700">Dangerous Goods</div><div style="font-size:18px;font-weight:800;color:#C2410C">' + dg + '</div></div>' +
+      '<div style="flex:1;background:#FCE9E9;border:1px solid rgba(163,45,45,0.22);border-radius:8px;padding:9px 11px;text-align:center"><div style="font-size:9px;color:#A32D2D;text-transform:uppercase;letter-spacing:0.6px;font-weight:700">High / Extreme risk</div><div style="font-size:18px;font-weight:800;color:#B83232">' + hi + '</div></div>' +
+    '</div>';
+  }
+
   var att = document.getElementById('dsds-attention');
   if (att) {
     var flagged = s.chems.filter(function(c) { return c.status === 'expired' || c.status === 'urgent'; });
@@ -39588,17 +39645,27 @@ function dirPtwRender() {
   var per = document.getElementById('dir-ptw-period');
   if (per) per.textContent = (dptwSite === 'All') ? 'Company-wide · All sites' : ('Filtered · ' + dptwSite);
 
-  // Attention banner — surface rejected/revoked outcomes (within current filter)
+  // Attention banner — high-risk permits active now (amber) + rejected/revoked
+  // outcomes needing review (red), both within the current site filter.
   var att = document.getElementById('dptw-attention');
   if (att) {
+    var html = '';
+    var HIGH_RISK = { 'Confined Space': 1, 'Hot Works': 1, 'Asbestos': 1, 'Electrical': 1, 'Lifting': 1 };
+    var hr = list.filter(function(p) { return p.status === 'active' && HIGH_RISK[p.type]; });
+    if (hr.length) {
+      html += '<div style="padding:13px 15px;background:#FEF3E2;border:1.5px solid #D97706;border-radius:10px;margin-bottom:12px">' +
+        '<div style="font-size:11px;font-weight:700;color:#92400E;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">▲ High-risk permits active now (' + hr.length + ')</div>' +
+        hr.map(function(p) { return '<div style="font-size:12.5px;color:#5E3A1A;line-height:1.5"><b>' + p.type + '</b> · ' + p.subtype + ' (' + p.site + ') — ' + p.ref + '</div>'; }).join('') +
+        '</div>';
+    }
     var flagged = list.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; });
     if (flagged.length) {
-      att.style.display = 'block';
-      att.innerHTML = '<div style="padding:13px 15px;background:#FCE9E9;border:1.5px solid #A32D2D;border-radius:10px;margin-bottom:12px">' +
+      html += '<div style="padding:13px 15px;background:#FCE9E9;border:1.5px solid #A32D2D;border-radius:10px;margin-bottom:12px">' +
         '<div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">⚠ Permits needing review</div>' +
         flagged.map(function(p) { return '<div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>' + p.ref + '</b> (' + p.site + ') — ' + _dptwStatusMeta(p.status).label + ': ' + p.note + '</div>'; }).join('') +
         '</div>';
-    } else { att.style.display = 'none'; att.innerHTML = ''; }
+    }
+    if (html) { att.style.display = 'block'; att.innerHTML = html; } else { att.style.display = 'none'; att.innerHTML = ''; }
   }
 
   // By site — always shows all sites so the director can compare and tap to filter
