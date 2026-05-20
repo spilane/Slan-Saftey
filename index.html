@@ -42227,18 +42227,22 @@ function handleSdsPhoto(idx, e) {
       const compressed = canvas.toDataURL('image/jpeg', 0.7);
       sdsPhotos[idx] = compressed;
 
-      // Show the photo as the slot background and hide the placeholder, but
-      // KEEP the file input overlay so a re-tap can replace the photo (and so
-      // we never destroy the native input — that's what avoids the iOS
-      // double-camera bug).
+      // Show the photo as a real <img> element (a base64 data-URL set as a
+      // CSS background often fails to render on mobile). Keep the file input
+      // overlay on top so a re-tap can replace the photo and we never destroy
+      // the native input — that's what avoids the iOS double-camera bug.
       const slot = document.getElementById('sds-slot-' + idx);
       if (slot) {
-        slot.style.backgroundImage = 'url(' + compressed + ')';
-        slot.style.backgroundSize = 'cover';
-        slot.style.backgroundPosition = 'center';
+        var _prev = slot.querySelector('img.sds-preview');
+        if (_prev) _prev.remove();
+        var _im = document.createElement('img');
+        _im.className = 'sds-preview';
+        _im.src = compressed;
+        _im.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;z-index:1';
+        slot.appendChild(_im);
         slot.classList.add('filled');
         Array.prototype.forEach.call(slot.children, function(c) {
-          if (c.tagName !== 'INPUT') c.style.display = 'none';
+          if (c.tagName !== 'INPUT' && c !== _im) c.style.display = 'none';
         });
       }
       
