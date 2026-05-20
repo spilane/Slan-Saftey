@@ -38911,25 +38911,53 @@ var DIR_TBT_SITES = [
   { name: 'Liverpool',  signed: 9,  total: 14, supervisor: 'Brendan Kelly', outstanding: ['Kevin Nash', 'Niall Costello', 'Mick Doyle', 'Shane Connolly', 'Gary Tully'] }
 ];
 
-// Past monthly toolbox talks. Per-site breakdown (bysite) lets the History
-// tab and the trend respect the site filter. Company totals are summed live.
-var DIR_TBT_HISTORY = [
-  { title: 'Working at Heights — Fall Prevention', month: 'Apr 2026', date: '02/04/2026', bysite: { Parramatta: { s: 19, t: 20 }, Blacktown: { s: 14, t: 15 }, Liverpool: { s: 13, t: 14 } } },
-  { title: 'Manual Handling — Team Lifts',          month: 'Mar 2026', date: '04/03/2026', bysite: { Parramatta: { s: 20, t: 20 }, Blacktown: { s: 15, t: 15 }, Liverpool: { s: 14, t: 14 } } },
-  { title: 'Silica Dust — Cutting & Grinding',      month: 'Feb 2026', date: '05/02/2026', bysite: { Parramatta: { s: 18, t: 20 }, Blacktown: { s: 13, t: 15 }, Liverpool: { s: 13, t: 14 } } },
-  { title: 'Heat Stress & Hydration',               month: 'Jan 2026', date: '08/01/2026', bysite: { Parramatta: { s: 20, t: 20 }, Blacktown: { s: 14, t: 15 }, Liverpool: { s: 12, t: 14 } } }
-];
+// Each site runs its OWN monthly toolbox talks (distinct topics per site).
+// History shows a site's own talks when filtered; "All sites" lists every
+// site's talks tagged with the site, and the trend aggregates by month.
+var DIR_TBT_SITE_TALKS = {
+  'Parramatta': [
+    { title: 'Working at Heights — Fall Prevention', month: 'Apr 2026', signed: 19, total: 20 },
+    { title: 'Crane Lifts & Exclusion Zones',         month: 'Mar 2026', signed: 20, total: 20 },
+    { title: 'Silica Dust — Cutting & Grinding',      month: 'Feb 2026', signed: 18, total: 20 },
+    { title: 'Heat Stress & Hydration',               month: 'Jan 2026', signed: 20, total: 20 }
+  ],
+  'Blacktown': [
+    { title: 'Excavation & Trench Safety',            month: 'Apr 2026', signed: 14, total: 15 },
+    { title: 'Mobile Plant & Spotter Awareness',      month: 'Mar 2026', signed: 15, total: 15 },
+    { title: 'Hazardous Substances & SDS',            month: 'Feb 2026', signed: 13, total: 15 },
+    { title: 'Manual Handling — Team Lifts',          month: 'Jan 2026', signed: 14, total: 15 }
+  ],
+  'Liverpool': [
+    { title: 'Concrete Pours — Safe Work Method',     month: 'Apr 2026', signed: 13, total: 14 },
+    { title: 'Traffic Management & Pedestrians',      month: 'Mar 2026', signed: 13, total: 14 },
+    { title: 'Confined Space Awareness',              month: 'Feb 2026', signed: 12, total: 14 },
+    { title: 'Fatigue Management',                    month: 'Jan 2026', signed: 12, total: 14 }
+  ]
+};
 
-// Signed/total/pct for a past talk, scoped to a site ('All' = company-wide sum).
-function _tbtHistTotals(h, site) {
-  var bs = h.bysite || {};
-  if (site && site !== 'All') {
-    var one = bs[site] || { s: 0, t: 0 };
-    return { signed: one.s, total: one.t, pct: one.t ? Math.round(one.s / one.t * 100) : 0 };
-  }
-  var s = 0, t = 0;
-  Object.keys(bs).forEach(function(k) { s += bs[k].s; t += bs[k].t; });
-  return { signed: s, total: t, pct: t ? Math.round(s / t * 100) : 0 };
+// All sites' talks flattened and tagged with site (for the "All sites" view).
+function _tbtAllTalks() {
+  var out = [];
+  Object.keys(DIR_TBT_SITE_TALKS).forEach(function(site) {
+    (DIR_TBT_SITE_TALKS[site] || []).forEach(function(tk) { out.push({ site: site, title: tk.title, month: tk.month, signed: tk.signed, total: tk.total }); });
+  });
+  return out;
+}
+
+// Company-wide completion per month (summed across sites), most recent first.
+function _tbtMonthlyTrend() {
+  var byMonth = {}, order = [];
+  _tbtAllTalks().forEach(function(tk) {
+    if (!byMonth[tk.month]) { byMonth[tk.month] = { signed: 0, total: 0 }; order.push(tk.month); }
+    byMonth[tk.month].signed += tk.signed; byMonth[tk.month].total += tk.total;
+  });
+  return order.map(function(m) { var x = byMonth[m]; return { month: m, pct: x.total ? Math.round(x.signed / x.total * 100) : 0 }; });
+}
+
+// Talks for the current filter: a single site's own list, or all sites tagged.
+function _tbtTalksForFilter() {
+  if (tbtSite === 'All') return _tbtAllTalks();
+  return (DIR_TBT_SITE_TALKS[tbtSite] || []).map(function(tk) { return { site: tbtSite, title: tk.title, month: tk.month, signed: tk.signed, total: tk.total }; });
 }
 
 function goToDirectorToolbox() {
@@ -39060,7 +39088,8 @@ function dirToolboxRender() {
   var trend = document.getElementById('dtbt-trend');
   if (trend) {
     var pts = [{ label: 'This month', pct: t.pct }];
-    DIR_TBT_HISTORY.slice(0, 3).forEach(function(h) { pts.push({ label: h.month, pct: _tbtHistTotals(h, tbtSite).pct }); });
+    var trendSrc = (tbtSite === 'All') ? _tbtMonthlyTrend() : (DIR_TBT_SITE_TALKS[tbtSite] || []).map(function(tk) { return { month: tk.month, pct: tk.total ? Math.round(tk.signed / tk.total * 100) : 0 }; });
+    trendSrc.slice(0, 3).forEach(function(m) { pts.push({ label: m.month, pct: m.pct }); });
     trend.innerHTML = pts.map(function(w) {
       var c = w.pct >= 95 ? '#15803D' : (w.pct >= 80 ? '#D97706' : '#B83232');
       return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
@@ -39078,16 +39107,17 @@ function dirToolboxRender() {
 
   var hist = document.getElementById('dtbt-history');
   if (hist) {
-    hist.innerHTML = DIR_TBT_HISTORY.map(function(h) {
-      var ht = _tbtHistTotals(h, tbtSite);
+    var talks = _tbtTalksForFilter();
+    hist.innerHTML = talks.length ? talks.map(function(tk) {
+      var pct = tk.total ? Math.round(tk.signed / tk.total * 100) : 0;
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border-bottom:1px solid #EEE;gap:12px">' +
         '<div style="min-width:0;flex:1">' +
-          '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + h.title + '</div>' +
-          '<div style="font-size:10.5px;color:#888;margin-top:2px">' + h.month + ' · ' + ht.signed + '/' + ht.total + ' signed (' + ht.pct + '%)' + (tbtSite !== 'All' ? ' · ' + tbtSite : '') + '</div>' +
+          '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + tk.title + '</div>' +
+          '<div style="font-size:10.5px;color:#888;margin-top:2px">' + tk.month + ' · ' + tk.site + ' · ' + tk.signed + '/' + tk.total + ' signed (' + pct + '%)</div>' +
         '</div>' +
         '<button onclick="dirToolboxExportPDF()" style="padding:6px 12px;background:#1F495C;color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:\'DM Sans\',sans-serif">PDF</button>' +
       '</div>';
-    }).join('');
+    }).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No talks recorded for this site.</div>';
   }
 }
 
@@ -39239,10 +39269,10 @@ function dirToolboxExportPDF() {
   ];
   if (outLines.length) sections.push({ type: 'lines', title: 'NOT YET SIGNED', lines: outLines });
   sections.push({ type: 'table', title: 'RECENT TALKS', columns: [
-    { label: 'Talk', x: 0, w: 92 }, { label: 'Month', x: 92, w: 34 }, { label: 'Signed', x: 126, w: 22 }, { label: '%', x: 148, w: 22 }
-  ], rows: DIR_TBT_HISTORY.map(function(h) {
-    var ht = _tbtHistTotals(h, tbtSite);
-    return [ { text: h.title }, { text: h.month }, { text: ht.signed + '/' + ht.total }, { text: ht.pct + '%' } ];
+    { label: 'Talk', x: 0, w: 78 }, { label: 'Site', x: 78, w: 28 }, { label: 'Month', x: 106, w: 28 }, { label: 'Signed', x: 134, w: 18 }, { label: '%', x: 152, w: 18 }
+  ], rows: _tbtTalksForFilter().map(function(tk) {
+    var pct = tk.total ? Math.round(tk.signed / tk.total * 100) : 0;
+    return [ { text: tk.title }, { text: tk.site }, { text: tk.month }, { text: tk.signed + '/' + tk.total }, { text: pct + '%' } ];
   }) });
   slanDirRegisterPDF({
     title: 'TOOLBOX COMPLIANCE REPORT',
