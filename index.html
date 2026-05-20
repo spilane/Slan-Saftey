@@ -10469,6 +10469,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
 
+      <!-- SITE NEEDS ATTENTION (auto-surfaced) -->
+      <div id="dtbt-attention" style="display:none"></div>
+
       <!-- TODAY'S COMPLIANCE -->
       <div class="fcard" style="margin-bottom:12px">
         <div class="fcard-hdr">📊 Today's Compliance</div>
@@ -10488,7 +10491,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div style="font-size:32px;font-weight:800;color:#1A2A1F;line-height:1" id="dtbt-completion">—</div>
             </div>
           </div>
+          <div id="dtbt-target" style="font-size:11.5px;color:#666;margin-top:10px;text-align:center;padding:8px;background:#F8F9FA;border-radius:6px"></div>
         </div>
+      </div>
+
+      <!-- COMPLETION TREND -->
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📈 Completion Trend</div>
+        <div id="dtbt-trend" style="padding:12px"></div>
       </div>
 
       <!-- BY SITE (mini) -->
@@ -38656,10 +38666,12 @@ var dincCurrentIncident = null; // Store current incident for modal
 // the active talk title is read live from getActiveTalk() so it tracks
 // whatever the supervisor has set as the current talk.
 // ═══════════════════════════════════════════════════════════════
+var DIR_TBT_TARGET = 95; // company-wide compliance target (%)
+
 var DIR_TBT_SITES = [
-  { name: 'Parramatta Metro Stage 2', signed: 18, total: 20 },
-  { name: 'Blacktown Interchange',    signed: 12, total: 15 },
-  { name: 'Liverpool Civic Tower',    signed: 9,  total: 14 }
+  { name: 'Parramatta Metro Stage 2', signed: 18, total: 20, supervisor: 'Eoin Burke', outstanding: ['Liam Brennan', 'Niall Costello'] },
+  { name: 'Blacktown Interchange',    signed: 12, total: 15, supervisor: 'Dave Whelan', outstanding: ['Dean Mc Grath', 'Paul Sheridan', 'Tom Healy'] },
+  { name: 'Liverpool Civic Tower',    signed: 9,  total: 14, supervisor: 'Carl Reid',   outstanding: ['Kevin Nash', 'Mick Doyle', 'Sean Walsh', 'Pat Ryan', 'Jack Nolan'] }
 ];
 
 var DIR_TBT_HISTORY = [
@@ -38667,6 +38679,15 @@ var DIR_TBT_HISTORY = [
   { title: 'Manual Handling — Team Lifts',          date: '12/05/2026', signed: 49, total: 49 },
   { title: 'Silica Dust — Cutting & Grinding',      date: '05/05/2026', signed: 44, total: 48 },
   { title: 'Heat Stress & Hydration',               date: '28/04/2026', signed: 46, total: 47 }
+];
+
+// Week-over-week completion trend (most recent first). "This week" is filled
+// live from the current per-site totals in dirToolboxRender().
+var DIR_TBT_TREND = [
+  { week: 'This week', pct: 0 },
+  { week: 'Last week', pct: 88 },
+  { week: '2 wks ago', pct: 91 },
+  { week: '3 wks ago', pct: 79 }
 ];
 
 function goToDirectorToolbox() {
@@ -38702,19 +38723,29 @@ function _dirTbtTotals() {
   return { signed: signed, total: total, outstanding: total - signed, pct: total ? Math.round(signed / total * 100) : 0 };
 }
 
-function _dirTbtSiteRow(s) {
+function _dirTbtSiteRow(s, showNames) {
   var sp = s.total ? Math.round(s.signed / s.total * 100) : 0;
   var colour = sp >= 95 ? '#15803D' : (sp >= 80 ? '#D97706' : '#B83232');
-  return '<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid #E8E8E8;border-radius:8px;margin-bottom:8px;background:#fff">' +
-    '<div style="min-width:0;flex:1">' +
-      '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + s.name + '</div>' +
-      '<div style="height:6px;background:#EEE;border-radius:3px;margin-top:6px;overflow:hidden"><div style="height:100%;width:' + sp + '%;background:' + colour + '"></div></div>' +
-    '</div>' +
-    '<div style="text-align:right;margin-left:12px;flex-shrink:0">' +
-      '<div style="font-size:15px;font-weight:800;color:' + colour + '">' + sp + '%</div>' +
-      '<div style="font-size:10px;color:#888">' + s.signed + '/' + s.total + ' signed</div>' +
-    '</div>' +
-  '</div>';
+  var html = '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-radius:8px;margin-bottom:8px;background:#fff">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between">' +
+      '<div style="min-width:0;flex:1">' +
+        '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + s.name + '</div>' +
+        (showNames && s.supervisor ? '<div style="font-size:10px;color:#888;margin-top:1px">Supervisor: ' + s.supervisor + '</div>' : '') +
+        '<div style="height:6px;background:#EEE;border-radius:3px;margin-top:6px;overflow:hidden"><div style="height:100%;width:' + sp + '%;background:' + colour + '"></div></div>' +
+      '</div>' +
+      '<div style="text-align:right;margin-left:12px;flex-shrink:0">' +
+        '<div style="font-size:15px;font-weight:800;color:' + colour + '">' + sp + '%</div>' +
+        '<div style="font-size:10px;color:#888">' + s.signed + '/' + s.total + ' signed</div>' +
+      '</div>' +
+    '</div>';
+  if (showNames && s.outstanding && s.outstanding.length) {
+    html += '<div style="margin-top:9px;padding-top:9px;border-top:1px dashed #E8E8E8">' +
+      '<div style="font-size:10px;font-weight:700;color:#92400E;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Not signed (' + s.outstanding.length + ')</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:5px">' +
+        s.outstanding.map(function(n) { return '<span style="font-size:11px;background:#FEF3E2;color:#92400E;border:1px solid #F2C994;border-radius:12px;padding:3px 9px">' + n + '</span>'; }).join('') +
+      '</div></div>';
+  }
+  return html + '</div>';
 }
 
 function dirToolboxRender() {
@@ -38727,9 +38758,45 @@ function dirToolboxRender() {
   set('dtbt-outstanding-count-2', t.outstanding);
   set('dtbt-completion', t.pct + '%');
 
-  var siteHtml = DIR_TBT_SITES.map(_dirTbtSiteRow).join('');
-  var mini = document.getElementById('dtbt-sites-mini'); if (mini) mini.innerHTML = siteHtml;
-  var full = document.getElementById('dtbt-sites-full'); if (full) full.innerHTML = siteHtml;
+  // Target benchmark
+  var tgt = document.getElementById('dtbt-target');
+  if (tgt) {
+    var meets = t.pct >= DIR_TBT_TARGET;
+    tgt.innerHTML = 'Company target <b>' + DIR_TBT_TARGET + '%</b> · Current <b style="color:' + (meets ? '#15803D' : '#D97706') + '">' + t.pct + '%</b> ' + (meets ? '✓ on target' : '— below target');
+  }
+
+  // "Site needs attention" — surface the worst-performing site if below target
+  var att = document.getElementById('dtbt-attention');
+  if (att) {
+    var worst = DIR_TBT_SITES.slice().sort(function(a, b) { return (a.signed / a.total) - (b.signed / b.total); })[0];
+    var wp = (worst && worst.total) ? Math.round(worst.signed / worst.total * 100) : 100;
+    if (worst && wp < DIR_TBT_TARGET) {
+      att.style.display = 'block';
+      att.innerHTML = '<div style="padding:13px 15px;background:#FCE9E9;border:1.5px solid #A32D2D;border-radius:10px;margin-bottom:12px">' +
+        '<div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">⚠ Site needs attention</div>' +
+        '<div style="font-size:13px;color:#5E1A1A;line-height:1.45"><b>' + worst.name + '</b> is at <b>' + wp + '%</b> (' + worst.signed + '/' + worst.total + ' signed) — below the ' + DIR_TBT_TARGET + '% target. Supervisor: ' + (worst.supervisor || '—') + '.</div>' +
+      '</div>';
+    } else { att.style.display = 'none'; att.innerHTML = ''; }
+  }
+
+  // Completion trend (fill "this week" live)
+  DIR_TBT_TREND[0].pct = t.pct;
+  var trend = document.getElementById('dtbt-trend');
+  if (trend) {
+    trend.innerHTML = DIR_TBT_TREND.map(function(w) {
+      var c = w.pct >= 95 ? '#15803D' : (w.pct >= 80 ? '#D97706' : '#B83232');
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+        '<div style="font-size:11px;color:#666;width:66px;flex-shrink:0">' + w.week + '</div>' +
+        '<div style="flex:1;height:8px;background:#EEE;border-radius:4px;overflow:hidden"><div style="height:100%;width:' + w.pct + '%;background:' + c + '"></div></div>' +
+        '<div style="font-size:11.5px;font-weight:700;color:' + c + ';width:38px;text-align:right;flex-shrink:0">' + w.pct + '%</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  var miniHtml = DIR_TBT_SITES.map(function(s) { return _dirTbtSiteRow(s, false); }).join('');
+  var fullHtml = DIR_TBT_SITES.map(function(s) { return _dirTbtSiteRow(s, true); }).join('');
+  var mini = document.getElementById('dtbt-sites-mini'); if (mini) mini.innerHTML = miniHtml;
+  var full = document.getElementById('dtbt-sites-full'); if (full) full.innerHTML = fullHtml;
 
   var hist = document.getElementById('dtbt-history');
   if (hist) {
