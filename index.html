@@ -41176,7 +41176,26 @@ function loadSupervisorDashboard() {
   loadSuperDash();
 }
 
+// True if the current worker already has a signing record for today's talk.
+function tbtHasSignedToday() {
+  try {
+    var p = getProfile();
+    if (!p || !p.name) return false;
+    var todayDateStr = new Date().toLocaleDateString('en-AU');
+    var all = (typeof tbtLoadAll === 'function') ? tbtLoadAll() : [];
+    return all.some(function(r){
+      return (r.worker_name || '').toLowerCase() === (p.name || '').toLowerCase()
+        && r.date === todayDateStr;
+    });
+  } catch(e) { return false; }
+}
+
 function toggleCheck(id) {
+  // The two toolbox acknowledgement checkboxes (chk1/chk2) lock once the
+  // worker has signed today's talk — re-toggling them after signing makes
+  // no sense and confused testing. Permit checkboxes (cs-chk1 etc.) are
+  // unaffected because they use prefixed IDs.
+  if ((id === 'chk1' || id === 'chk2') && tbtHasSignedToday()) return;
   var row = document.getElementById(id);
   if (!row) return;
   row.classList.toggle('checked');
@@ -41602,12 +41621,14 @@ function sdsValidateForm() {
   var btn = document.getElementById('sds-submit-btn');
   if (!btn) return;
   
-  // Require: name filled, usage filled, AND both photos uploaded
+  // Require: name + usage. Photos are optional (the form label says
+  // "optional but recommended") — previously the code forced BOTH photo
+  // slots to be filled, which contradicted the label and made users take
+  // two pictures just to submit. A worker can still add 0, 1, or 2 photos.
   var nameValid = name && name.value.trim().length > 0;
   var usageValid = usage && usage.value.trim().length > 0;
-  var photosValid = sdsPhotos[0] !== null && sdsPhotos[1] !== null;
-  
-  var isValid = nameValid && usageValid && photosValid;
+
+  var isValid = nameValid && usageValid;
   
   if (isValid) {
     btn.disabled = false;
