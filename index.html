@@ -27705,11 +27705,14 @@ var PERMIT_TICKETS = {
     }
   },
   lift: {
-    label: 'Rigging or Crane high-risk work licence',
+    label: 'Dogging, Rigging or Crane high-risk work licence',
     find: function(l) {
-      // A crane-lift permit holder needs a rigging or crane HRWL. Plain
-      // dogging (DG) alone does not qualify to raise the lift permit.
-      if (l.hrwl && /rigg|crane|slew|tower|derrick|\bRB\b|\bRI\b|\bRA\b|\bC[0-9]|\bCN\b|\bCV\b/i.test(l.hrwl.type || '')) return l.hrwl;
+      // A standard lift permit can be raised by any lifting HRWL holder:
+      // dogger (DG), rigger (RB/RI/RA), or crane operator (C-class). This
+      // matches common industry practice for routine lifts. (Engineered
+      // critical-lift studies needing a rigger specifically would be a
+      // separate, more advanced control.)
+      if (l.hrwl && /dogg|\bDG\b|rigg|crane|slew|tower|derrick|\bRB\b|\bRI\b|\bRA\b|\bC[0-9]|\bCN\b|\bCV\b/i.test(l.hrwl.type || '')) return l.hrwl;
       return null;
     }
   },
