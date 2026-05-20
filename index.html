@@ -6243,6 +6243,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button type="button" class="ps-btn" data-liftrig="Tag lines" onclick="liftToggleRig(this)">Tag lines</button>
         </div>
       </div>
+      <div class="fgroup">
+        <label class="flabel">Communications method <span class="req">*</span></label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:3px">
+          <button type="button" class="ps-btn" data-liftcomms="Two-way radio" onclick="liftSelectComms(this)">Two-way radio</button>
+          <button type="button" class="ps-btn" data-liftcomms="Hand signals" onclick="liftSelectComms(this)">Hand signals</button>
+          <button type="button" class="ps-btn" data-liftcomms="Radio + hand signals" onclick="liftSelectComms(this)">Radio + hand signals</button>
+          <button type="button" class="ps-btn" data-liftcomms="Spotter relay" onclick="liftSelectComms(this)">Spotter relay</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -27739,7 +27748,7 @@ function liftInitForm() {
   document.getElementById('lift-role').value = p.role || '';
 
   liftSelectedType = null;
-  document.querySelectorAll('#screen-lift-form [data-lifttype], #screen-lift-form [data-liftcat], #screen-lift-form [data-liftrig], #screen-lift-form [data-liftwx]').forEach(b => b.classList.remove('pass'));
+  document.querySelectorAll('#screen-lift-form [data-lifttype], #screen-lift-form [data-liftcat], #screen-lift-form [data-liftrig], #screen-lift-form [data-liftwx], #screen-lift-form [data-liftcomms]').forEach(b => b.classList.remove('pass'));
   
   ['lift-description','lift-location','lift-num-workers','lift-start','lift-end','lift-weight','lift-swl','lift-radius','lift-height','lift-equipment','lift-operator','lift-dogger','lift-wind','lift-ground','lift-rescue'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -28078,12 +28087,13 @@ function liftValidate() {
   const catSelected = !!document.querySelector('#screen-lift-form [data-liftcat].pass');
   const rigSelected = document.querySelectorAll('#screen-lift-form [data-liftrig].pass').length > 0;
   const wxSelected = !!document.querySelector('#screen-lift-form [data-liftwx].pass');
+  const commsSelected = !!document.querySelector('#screen-lift-form [data-liftcomms].pass');
 
   let ok = true;
   if (!type) ok = false;
   if (!desc || !loc || !numW || !start || !end) ok = false;
   if (!weight || !swl || !radius || !height || !equipment || !operator || !dogger || !wind || !ground || !rescue) ok = false;
-  if (!catSelected || !rigSelected || !wxSelected) ok = false;
+  if (!catSelected || !rigSelected || !wxSelected || !commsSelected) ok = false;
 
   if (start && end) {
     const startMs = new Date(start).getTime();
@@ -28135,6 +28145,7 @@ async function submitLift() {
 
     const catEl = document.querySelector('#screen-lift-form [data-liftcat].pass');
     const wxEl = document.querySelector('#screen-lift-form [data-liftwx].pass');
+    const commsEl = document.querySelector('#screen-lift-form [data-liftcomms].pass');
     const rigSel = Array.from(document.querySelectorAll('#screen-lift-form [data-liftrig].pass')).map(el => el.getAttribute('data-liftrig'));
 
     const permit = {
@@ -28159,6 +28170,7 @@ async function submitLift() {
       dogger_rigger: (document.getElementById('lift-dogger').value || '').trim(),
       rigging_gear: rigSel,
       weather: wxEl ? wxEl.getAttribute('data-liftwx') : '',
+      comms_method: commsEl ? commsEl.getAttribute('data-liftcomms') : '',
       wind_speed_kmh: (document.getElementById('lift-wind').value || '').trim(),
       ground_assessment: (document.getElementById('lift-ground').value || '').trim(),
       rescue_plan: (document.getElementById('lift-rescue').value || '').trim(),
@@ -31277,6 +31289,10 @@ function liftSelectCat(btn) {
 function liftToggleRig(btn) { btn.classList.toggle('pass'); liftValidate(); }
 function liftSelectWx(btn) {
   document.querySelectorAll('#screen-lift-form [data-liftwx]').forEach(b => b.classList.remove('pass'));
+  btn.classList.add('pass'); liftValidate();
+}
+function liftSelectComms(btn) {
+  document.querySelectorAll('#screen-lift-form [data-liftcomms]').forEach(b => b.classList.remove('pass'));
   btn.classList.add('pass'); liftValidate();
 }
 
