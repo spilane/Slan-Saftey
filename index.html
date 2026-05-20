@@ -10468,7 +10468,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="main-ptw-tab-approvals" onclick="switchMainPtwTab('approvals')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Approvals</button>
     </div>
 
-    <div id="dptw-site-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+    <div id="dptw-site-filter" style="display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px"></div>
 
     <!-- OVERVIEW -->
     <div id="main-ptw-tab-content-overview" class="main-ptw-tab-content">
@@ -10590,7 +10590,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="main-sds-tab-reports" onclick="switchMainSdsTab('reports')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Reports</button>
     </div>
 
-    <div id="dsds-site-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+    <div id="dsds-site-filter" style="display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px"></div>
 
     <!-- OVERVIEW -->
     <div id="main-sds-tab-content-overview" class="main-sds-tab-content">
@@ -10697,7 +10697,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="main-tbt-tab-details" onclick="switchMainToolboxTab('details')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">History</button>
     </div>
 
-    <div id="dtbt-site-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+    <div id="dtbt-site-filter" style="display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px"></div>
 
     <!-- TAB 1: OVERVIEW -->
     <div id="main-tbt-tab-content-overview" class="main-tbt-tab-content">
@@ -10709,7 +10709,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainToolboxTab('sites')">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
-                <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px">⚠️ <span id="dtbt-outstanding-count">—</span> workers haven't signed today's talk</div>
+                <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px">⚠️ <span id="dtbt-outstanding-count">—</span> workers haven't signed this month's talk</div>
                 <div style="font-size:10px;color:#78350F">Review outstanding sign-offs by site</div>
               </div>
               <div style="font-size:20px;color:#92400E">→</div>
@@ -10732,7 +10732,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
       <!-- TODAY'S COMPLIANCE -->
       <div class="fcard" style="margin-bottom:12px">
-        <div class="fcard-hdr">📊 Today's Compliance</div>
+        <div class="fcard-hdr">📊 This Month's Compliance</div>
         <div style="padding:10px">
           <div style="font-size:11px;color:#666;margin-bottom:10px">Active talk: <strong id="dtbt-active-talk" style="color:#1A2A1F">—</strong></div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
@@ -10755,7 +10755,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
       <!-- COMPLETION TREND -->
       <div class="fcard" style="margin-bottom:12px">
-        <div class="fcard-hdr">📈 Completion Trend</div>
+        <div class="fcard-hdr">📈 Monthly Completion Trend</div>
         <div id="dtbt-trend" style="padding:12px"></div>
       </div>
 
@@ -10770,7 +10770,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- TAB 2: BY SITE -->
     <div id="main-tbt-tab-content-sites" class="main-tbt-tab-content" style="display:none">
       <div class="fcard">
-        <div class="fcard-hdr">🏗️ Site Breakdown — Today's Talk</div>
+        <div class="fcard-hdr">🏗️ Site Breakdown — This Month's Talk</div>
         <div id="dtbt-sites-full" style="padding:10px"></div>
       </div>
     </div>
@@ -38906,21 +38906,26 @@ var DIR_TBT_SITES = [
   { name: 'Liverpool',  signed: 9,  total: 14, supervisor: 'Brendan Kelly', outstanding: ['Kevin Nash', 'Niall Costello', 'Mick Doyle', 'Shane Connolly', 'Gary Tully'] }
 ];
 
+// Past monthly toolbox talks. Per-site breakdown (bysite) lets the History
+// tab and the trend respect the site filter. Company totals are summed live.
 var DIR_TBT_HISTORY = [
-  { title: 'Working at Heights — Fall Prevention', date: '19/05/2026', signed: 47, total: 49 },
-  { title: 'Manual Handling — Team Lifts',          date: '12/05/2026', signed: 49, total: 49 },
-  { title: 'Silica Dust — Cutting & Grinding',      date: '05/05/2026', signed: 44, total: 48 },
-  { title: 'Heat Stress & Hydration',               date: '28/04/2026', signed: 46, total: 47 }
+  { title: 'Working at Heights — Fall Prevention', month: 'Apr 2026', date: '02/04/2026', bysite: { Parramatta: { s: 19, t: 20 }, Blacktown: { s: 14, t: 15 }, Liverpool: { s: 13, t: 14 } } },
+  { title: 'Manual Handling — Team Lifts',          month: 'Mar 2026', date: '04/03/2026', bysite: { Parramatta: { s: 20, t: 20 }, Blacktown: { s: 15, t: 15 }, Liverpool: { s: 14, t: 14 } } },
+  { title: 'Silica Dust — Cutting & Grinding',      month: 'Feb 2026', date: '05/02/2026', bysite: { Parramatta: { s: 18, t: 20 }, Blacktown: { s: 13, t: 15 }, Liverpool: { s: 13, t: 14 } } },
+  { title: 'Heat Stress & Hydration',               month: 'Jan 2026', date: '08/01/2026', bysite: { Parramatta: { s: 20, t: 20 }, Blacktown: { s: 14, t: 15 }, Liverpool: { s: 12, t: 14 } } }
 ];
 
-// Week-over-week completion trend (most recent first). "This week" is filled
-// live from the current per-site totals in dirToolboxRender().
-var DIR_TBT_TREND = [
-  { week: 'This week', pct: 0 },
-  { week: 'Last week', pct: 88 },
-  { week: '2 wks ago', pct: 91 },
-  { week: '3 wks ago', pct: 79 }
-];
+// Signed/total/pct for a past talk, scoped to a site ('All' = company-wide sum).
+function _tbtHistTotals(h, site) {
+  var bs = h.bysite || {};
+  if (site && site !== 'All') {
+    var one = bs[site] || { s: 0, t: 0 };
+    return { signed: one.s, total: one.t, pct: one.t ? Math.round(one.s / one.t * 100) : 0 };
+  }
+  var s = 0, t = 0;
+  Object.keys(bs).forEach(function(k) { s += bs[k].s; t += bs[k].t; });
+  return { signed: s, total: t, pct: t ? Math.round(s / t * 100) : 0 };
+}
 
 function goToDirectorToolbox() {
   goTo('screen-dir-toolbox');
@@ -38979,7 +38984,7 @@ function tbtRenderSiteFilter() {
   box.innerHTML = chips.map(function(s) {
     var on = (s === tbtSite);
     var label = (s === 'All') ? 'All sites' : s;
-    return '<button onclick="tbtSetSite(\'' + s.replace(/'/g, "\\'") + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid ' +
+    return '<button onclick="tbtSetSite(\'' + s.replace(/'/g, "\\'") + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid ' +
       (on ? '#B8960C' : '#D8D8D8') + ';background:' + (on ? '#B8960C' : '#fff') + ';color:' + (on ? '#fff' : '#666') + '">' + label + '</button>';
   }).join('');
 }
@@ -39045,14 +39050,16 @@ function dirToolboxRender() {
     } else { att.style.display = 'none'; att.innerHTML = ''; }
   }
 
-  // Completion trend (fill "this week" live — always company-wide for a coherent trend)
-  DIR_TBT_TREND[0].pct = _dirTbtTotals().pct;
+  // Month-over-month completion trend — this month live, prior months from
+  // history. Respects the site filter (per-site or company-wide).
   var trend = document.getElementById('dtbt-trend');
   if (trend) {
-    trend.innerHTML = DIR_TBT_TREND.map(function(w) {
+    var pts = [{ label: 'This month', pct: t.pct }];
+    DIR_TBT_HISTORY.slice(0, 3).forEach(function(h) { pts.push({ label: h.month, pct: _tbtHistTotals(h, tbtSite).pct }); });
+    trend.innerHTML = pts.map(function(w) {
       var c = w.pct >= 95 ? '#15803D' : (w.pct >= 80 ? '#D97706' : '#B83232');
       return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
-        '<div style="font-size:11px;color:#666;width:66px;flex-shrink:0">' + w.week + '</div>' +
+        '<div style="font-size:11px;color:#666;width:66px;flex-shrink:0">' + w.label + '</div>' +
         '<div style="flex:1;height:8px;background:#EEE;border-radius:4px;overflow:hidden"><div style="height:100%;width:' + w.pct + '%;background:' + c + '"></div></div>' +
         '<div style="font-size:11.5px;font-weight:700;color:' + c + ';width:38px;text-align:right;flex-shrink:0">' + w.pct + '%</div>' +
       '</div>';
@@ -39067,11 +39074,11 @@ function dirToolboxRender() {
   var hist = document.getElementById('dtbt-history');
   if (hist) {
     hist.innerHTML = DIR_TBT_HISTORY.map(function(h) {
-      var hp = h.total ? Math.round(h.signed / h.total * 100) : 0;
+      var ht = _tbtHistTotals(h, tbtSite);
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border-bottom:1px solid #EEE;gap:12px">' +
         '<div style="min-width:0;flex:1">' +
           '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + h.title + '</div>' +
-          '<div style="font-size:10.5px;color:#888;margin-top:2px">' + h.date + ' · ' + h.signed + '/' + h.total + ' signed (' + hp + '%)</div>' +
+          '<div style="font-size:10.5px;color:#888;margin-top:2px">' + h.month + ' · ' + ht.signed + '/' + ht.total + ' signed (' + ht.pct + '%)' + (tbtSite !== 'All' ? ' · ' + tbtSite : '') + '</div>' +
         '</div>' +
         '<button onclick="dirToolboxExportPDF()" style="padding:6px 12px;background:#1F495C;color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:\'DM Sans\',sans-serif">PDF</button>' +
       '</div>';
@@ -39084,7 +39091,7 @@ function updateDirToolboxSummary() {
   var el = document.getElementById('an-tbt-summary');
   if (!el) return;
   var t = _dirTbtTotals();
-  el.textContent = t.signed + ' of ' + t.total + ' signed today · ' + t.pct + '% across ' + DIR_TBT_SITES.length + ' sites';
+  el.textContent = t.signed + ' of ' + t.total + ' signed this month · ' + t.pct + '% across ' + DIR_TBT_SITES.length + ' sites';
 }
 
 // Company-wide toolbox compliance PDF (director audit pack). Uses the same
@@ -39227,10 +39234,10 @@ function dirToolboxExportPDF() {
   ];
   if (outLines.length) sections.push({ type: 'lines', title: 'NOT YET SIGNED', lines: outLines });
   sections.push({ type: 'table', title: 'RECENT TALKS', columns: [
-    { label: 'Talk', x: 0, w: 92 }, { label: 'Date', x: 92, w: 34 }, { label: 'Signed', x: 126, w: 22 }, { label: '%', x: 148, w: 22 }
+    { label: 'Talk', x: 0, w: 92 }, { label: 'Month', x: 92, w: 34 }, { label: 'Signed', x: 126, w: 22 }, { label: '%', x: 148, w: 22 }
   ], rows: DIR_TBT_HISTORY.map(function(h) {
-    var hp = h.total ? Math.round(h.signed / h.total * 100) : 0;
-    return [ { text: h.title }, { text: h.date }, { text: h.signed + '/' + h.total }, { text: hp + '%' } ];
+    var ht = _tbtHistTotals(h, tbtSite);
+    return [ { text: h.title }, { text: h.month }, { text: ht.signed + '/' + ht.total }, { text: ht.pct + '%' } ];
   }) });
   slanDirRegisterPDF({
     title: 'TOOLBOX COMPLIANCE REPORT',
@@ -39321,7 +39328,7 @@ function sdsRenderSiteFilter() {
   box.innerHTML = chips.map(function(s) {
     var on = (s === sdsSite);
     var label = (s === 'All') ? 'All sites' : s;
-    return '<button onclick="sdsSetSite(\'' + s.replace(/'/g, "\\'") + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid ' +
+    return '<button onclick="sdsSetSite(\'' + s.replace(/'/g, "\\'") + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid ' +
       (on ? '#B8960C' : '#D8D8D8') + ';background:' + (on ? '#B8960C' : '#fff') + ';color:' + (on ? '#fff' : '#666') + '">' + label + '</button>';
   }).join('');
 }
@@ -39525,7 +39532,7 @@ function dptwRenderSiteFilter() {
   box.innerHTML = chips.map(function(s) {
     var on = (s === dptwSite);
     var label = (s === 'All') ? 'All sites' : s;
-    return '<button onclick="dptwSetSite(\'' + s.replace(/'/g, "\\'") + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid ' +
+    return '<button onclick="dptwSetSite(\'' + s.replace(/'/g, "\\'") + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid ' +
       (on ? '#B8960C' : '#D8D8D8') + ';background:' + (on ? '#B8960C' : '#fff') + ';color:' + (on ? '#fff' : '#666') + '">' + label + '</button>';
   }).join('');
 }
