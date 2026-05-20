@@ -3941,12 +3941,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="hz-photo-slot" id="sds-slot-0" onclick="document.getElementById('sds-photo-input-0').click()">
+            <div class="hz-photo-slot" id="sds-slot-0" onclick="slanOpenPhoto('sds-photo-input-0')">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <div class="hw-photo-label">1 · Product label</div>
               <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
             </div>
-            <div class="hz-photo-slot" id="sds-slot-1" onclick="document.getElementById('sds-photo-input-1').click()">
+            <div class="hz-photo-slot" id="sds-slot-1" onclick="slanOpenPhoto('sds-photo-input-1')">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <div class="hw-photo-label">2 · Product label</div>
               <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
@@ -41793,6 +41793,23 @@ function sdsValidateForm() {
     btn.style.cursor = 'not-allowed';
     btn.style.opacity = '.65';
   }
+}
+
+// iOS Safari can open the camera TWICE when a file input with `capture` is
+// triggered via a synchronous .click() from inside a tap handler (the first
+// photo gets discarded, the second sticks). Deferring the .click() out of the
+// click event with setTimeout(0) prevents the duplicate activation; a short
+// re-entrancy lock also guards against rapid double-taps. Reusable for any
+// photo slot that opens its input programmatically.
+var _slanPhotoLock = {};
+function slanOpenPhoto(inputId) {
+  if (_slanPhotoLock[inputId]) return;
+  _slanPhotoLock[inputId] = true;
+  setTimeout(function() {
+    var input = document.getElementById(inputId);
+    if (input) input.click();
+  }, 0);
+  setTimeout(function() { _slanPhotoLock[inputId] = false; }, 1500);
 }
 
 function handleSdsPhoto(idx, e) {
