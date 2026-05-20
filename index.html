@@ -10454,11 +10454,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div style="font-size:20px;color:#92400E">→</div>
             </div>
           </button>
-          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #E6F3F0 0%, #D4EDE5 100%);border:2px solid #1B3A2D;border-radius:10px;cursor:pointer;box-shadow:0 2px 6px rgba(27,58,45,0.15)" onclick="switchMainToolboxTab('details')">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #E6F3F0 0%, #D4EDE5 100%);border:2px solid #1B3A2D;border-radius:10px;cursor:pointer;box-shadow:0 2px 6px rgba(27,58,45,0.15)" onclick="dirToolboxExportPDF()">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
-                <div style="font-size:13px;font-weight:700;color:#1B3A2D;margin-bottom:4px">📄 Export audit pack</div>
-                <div style="font-size:10px;color:#3B6D11">Signed toolbox rosters for insurers / regulators</div>
+                <div style="font-size:13px;font-weight:700;color:#1B3A2D;margin-bottom:4px">📄 Export audit pack (PDF)</div>
+                <div style="font-size:10px;color:#3B6D11">Company-wide compliance report for insurers / regulators</div>
               </div>
               <div style="font-size:20px;color:#1B3A2D">→</div>
             </div>
@@ -38776,7 +38776,7 @@ function dirToolboxRender() {
           '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + h.title + '</div>' +
           '<div style="font-size:10.5px;color:#888;margin-top:2px">' + h.date + ' · ' + h.signed + '/' + h.total + ' signed (' + hp + '%)</div>' +
         '</div>' +
-        '<button onclick="slanToast && slanToast(\'Roster PDF export is coming for the director audit pack.\', \'info\')" style="padding:6px 12px;background:#1F495C;color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:\'DM Sans\',sans-serif">PDF</button>' +
+        '<button onclick="dirToolboxExportPDF()" style="padding:6px 12px;background:#1F495C;color:#fff;border:none;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:\'DM Sans\',sans-serif">PDF</button>' +
       '</div>';
     }).join('');
   }
@@ -38788,6 +38788,100 @@ function updateDirToolboxSummary() {
   if (!el) return;
   var t = _dirTbtTotals();
   el.textContent = t.signed + ' of ' + t.total + ' signed today · ' + t.pct + '% across ' + DIR_TBT_SITES.length + ' sites';
+}
+
+// Company-wide toolbox compliance PDF (director audit pack). Uses the same
+// jsPDF style/branding as the supervisor roster PDF (tbtDownloadRosterPDF).
+function dirToolboxExportPDF() {
+  try {
+    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF generator is not loaded yet. Please wait a moment and try again.'); return; }
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    var PAGE_W = 210, PAGE_H = 297, ML = 22, MR = 22, MT = 18;
+    var CW = PAGE_W - ML - MR;
+    var C = (typeof PDF_COLOURS !== 'undefined') ? PDF_COLOURS : {
+      darkGreen: '#2C6B5E', darkText: '#1A2A1F', subLabel: '#5C6B62',
+      greyLabel: '#888888', greyLight: '#dddddd', paleGreen: '#F0F7E8', amberDark: '#BA7517'
+    };
+    function hex(h) { h = h.replace('#', ''); return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
+    function setFill(c) { var r = hex(c); doc.setFillColor(r[0], r[1], r[2]); }
+    function setStroke(c) { var r = hex(c); doc.setDrawColor(r[0], r[1], r[2]); }
+    function setText(c) { var r = hex(c); doc.setTextColor(r[0], r[1], r[2]); }
+
+    var p = (typeof getProfile === 'function') ? getProfile() : null;
+    var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
+    var activeTalk = (typeof getActiveTalk === 'function' && getActiveTalk()) ? getActiveTalk().title : 'Toolbox Talk';
+    var t = _dirTbtTotals();
+    var today = new Date().toLocaleDateString('en-AU');
+
+    var logoW = 30, logoH = 13, logoY = MT;
+    if (window.SLAN_LOGO_B64) { try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', PAGE_W - MR - logoW, logoY, logoW, logoH); } catch (e) {} }
+    setText(C.darkText); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text('TOOLBOX COMPLIANCE REPORT', ML, logoY + 8);
+    setText(C.subLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text(company + '  ·  Company-wide  ·  Generated ' + today, ML, logoY + 14);
+    setStroke(C.darkGreen); doc.setLineWidth(0.5); doc.line(ML, logoY + logoH + 5, PAGE_W - MR, logoY + logoH + 5);
+    var y = logoY + logoH + 13;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); setText(C.darkText);
+    doc.text('Current talk: ' + activeTalk, ML, y); y += 7;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); setText(C.darkText);
+    var meets = t.pct >= DIR_TBT_TARGET;
+    doc.text('Signed ' + t.signed + ' / ' + t.total + '     Outstanding ' + t.outstanding + '     Completion ' + t.pct + '%     (Target ' + DIR_TBT_TARGET + '% — ' + (meets ? 'on target' : 'below target') + ')', ML, y);
+    y += 10;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); setText(C.darkGreen);
+    doc.text('By site', ML, y); y += 5;
+    setFill(C.paleGreen); doc.rect(ML, y, CW, 7, 'F'); setText(C.darkText); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+    doc.text('Site', ML + 2, y + 5); doc.text('Supervisor', ML + 52, y + 5); doc.text('Signed', ML + 112, y + 5); doc.text('%', ML + 150, y + 5);
+    y += 7; doc.setFont('helvetica', 'normal');
+    DIR_TBT_SITES.forEach(function(s) {
+      var sp = s.total ? Math.round(s.signed / s.total * 100) : 0;
+      setText(C.darkText);
+      doc.text(String(s.name), ML + 2, y + 5);
+      doc.text(String(s.supervisor || '—'), ML + 52, y + 5);
+      doc.text(s.signed + ' / ' + s.total, ML + 112, y + 5);
+      doc.text(sp + '%', ML + 150, y + 5);
+      setStroke(C.greyLight); doc.setLineWidth(0.1); doc.line(ML, y + 7, PAGE_W - MR, y + 7);
+      y += 7;
+    });
+    y += 8;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); setText(C.amberDark);
+    doc.text('Outstanding — not signed today', ML, y); y += 6;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); setText(C.darkText);
+    DIR_TBT_SITES.forEach(function(s) {
+      if (s.outstanding && s.outstanding.length) {
+        var wrapped = doc.splitTextToSize(s.name + ': ' + s.outstanding.join(', '), CW);
+        doc.text(wrapped, ML, y); y += wrapped.length * 5 + 2;
+      }
+    });
+    y += 8;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); setText(C.darkGreen);
+    doc.text('Recent talks', ML, y); y += 5;
+    setFill(C.paleGreen); doc.rect(ML, y, CW, 7, 'F'); setText(C.darkText); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+    doc.text('Talk', ML + 2, y + 5); doc.text('Date', ML + 92, y + 5); doc.text('Signed', ML + 122, y + 5); doc.text('%', ML + 152, y + 5);
+    y += 7; doc.setFont('helvetica', 'normal');
+    DIR_TBT_HISTORY.forEach(function(h) {
+      var hp = h.total ? Math.round(h.signed / h.total * 100) : 0;
+      setText(C.darkText);
+      var ti = doc.splitTextToSize(String(h.title), 84);
+      doc.text(ti[0], ML + 2, y + 5);
+      doc.text(String(h.date), ML + 92, y + 5);
+      doc.text(h.signed + '/' + h.total, ML + 122, y + 5);
+      doc.text(hp + '%', ML + 152, y + 5);
+      setStroke(C.greyLight); doc.setLineWidth(0.1); doc.line(ML, y + 7, PAGE_W - MR, y + 7);
+      y += 7;
+    });
+
+    setText(C.greyLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.text('SLS-TBT-DIR · v1.0 · Slán Safety — Confidential', ML, PAGE_H - 12);
+
+    doc.save('Toolbox-Compliance-' + today.replace(/\//g, '-') + '.pdf');
+  } catch (err) {
+    slanAlert('Could not generate the PDF: ' + (err && err.message ? err.message : 'unknown error'));
+  }
 }
 
 function goToDirectorIncidents() {
