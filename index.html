@@ -39089,96 +39089,156 @@ function updateDirToolboxSummary() {
 
 // Company-wide toolbox compliance PDF (director audit pack). Uses the same
 // jsPDF style/branding as the supervisor roster PDF (tbtDownloadRosterPDF).
-function dirToolboxExportPDF() {
+// Shared director-report PDF builder. Matches the Incident Report layout:
+// logo + bold title + dark-green underline header, dark-green section bars,
+// alternating grey rows/tables, and a footer with the doc code + page X of Y.
+// cfg = { title, docCode, metaLine, filename, sections:[...] }
+//   section: { type:'rows',  title, rows:[[label,value],...] }
+//          | { type:'lines', title, lines:[...] }
+//          | { type:'table', title, columns:[{label,x,w}], rows:[[{text,colour?},...],...] }
+function slanDirRegisterPDF(cfg) {
   try {
     if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF generator is not loaded yet. Please wait a moment and try again.'); return; }
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    var PAGE_W = 210, PAGE_H = 297, ML = 22, MR = 22, MT = 18;
+    var PAGE_W = 210, PAGE_H = 297, ML = 20, MR = 20, MT = 20, MB = 20;
     var CW = PAGE_W - ML - MR;
-    var C = (typeof PDF_COLOURS !== 'undefined') ? PDF_COLOURS : {
-      darkGreen: '#2C6B5E', darkText: '#1A2A1F', subLabel: '#5C6B62',
-      greyLabel: '#888888', greyLight: '#dddddd', paleGreen: '#F0F7E8', amberDark: '#BA7517'
-    };
+    var y = MT;
+    var C = { darkGreen: '#2C6B5E', darkText: '#1A2A1F', labelGrey: '#888888', lightGrey: '#F5F5F5', borderGrey: '#DDDDDD', white: '#FFFFFF' };
     function hex(h) { h = h.replace('#', ''); return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
     function setFill(c) { var r = hex(c); doc.setFillColor(r[0], r[1], r[2]); }
     function setStroke(c) { var r = hex(c); doc.setDrawColor(r[0], r[1], r[2]); }
     function setText(c) { var r = hex(c); doc.setTextColor(r[0], r[1], r[2]); }
 
-    var p = (typeof getProfile === 'function') ? getProfile() : null;
-    var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
-    var activeTalk = (typeof getActiveTalk === 'function' && getActiveTalk()) ? getActiveTalk().title : 'Toolbox Talk';
-    var t = _dirTbtTotals();
-    var today = new Date().toLocaleDateString('en-AU');
+    function addHeader() {
+      if (window.SLAN_LOGO_B64) { try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', PAGE_W - MR - 30, y, 30, 13); } catch (e) {} }
+      setText(C.darkText); doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
+      doc.text(String(cfg.title || ''), ML, y + 10);
+      setStroke(C.darkGreen); doc.setLineWidth(0.8); doc.line(ML, y + 15, PAGE_W - MR, y + 15);
+      y += 21;
+      if (cfg.metaLine) { setText(C.labelGrey); doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text(String(cfg.metaLine), ML, y); y += 8; }
+    }
+    function checkPageBreak(need) {
+      if (y + need > PAGE_H - MB - 8) { doc.addPage(); y = MT; addHeader(); return true; }
+      return false;
+    }
+    function addSection(title) {
+      checkPageBreak(16);
+      setFill(C.darkGreen); doc.rect(ML, y, CW, 7, 'F');
+      setText(C.white); doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.text(String(title), ML + 3, y + 5); y += 10;
+    }
+    function addKeyVal(label, value, isFirst) {
+      checkPageBreak(9);
+      if (!isFirst) y += 0.5;
+      setFill(C.lightGrey); doc.rect(ML, y, CW, 6, 'F');
+      setText(C.labelGrey); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+      doc.text(String(label), ML + 3, y + 4);
+      setText(C.darkText); doc.text(value == null ? '—' : String(value), ML + 70, y + 4);
+      y += 6;
+    }
+    function addLines(text) {
+      var lines = doc.splitTextToSize(String(text), CW - 4);
+      setText(C.darkText); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+      lines.forEach(function(ln) { checkPageBreak(6); doc.text(ln, ML, y + 4); y += 5; });
+      y += 2;
+    }
+    function tableHead(cols) {
+      setFill(C.lightGrey); doc.rect(ML, y, CW, 6.5, 'F');
+      setStroke(C.borderGrey); doc.setLineWidth(0.2); doc.line(ML, y + 6.5, PAGE_W - MR, y + 6.5);
+      setText(C.darkText); doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+      cols.forEach(function(col) { doc.text(String(col.label), ML + col.x + 1, y + 4.5); });
+      y += 6.5;
+    }
+    function addTable(sec) {
+      addSection(sec.title);
+      tableHead(sec.columns);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+      sec.rows.forEach(function(cells, i) {
+        if (checkPageBreak(7)) { tableHead(sec.columns); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); }
+        if (i % 2 === 1) { setFill(C.lightGrey); doc.rect(ML, y, CW, 6.5, 'F'); }
+        cells.forEach(function(cell, ci) {
+          var col = sec.columns[ci]; if (!col) return;
+          setText(cell && cell.colour ? cell.colour : C.darkText);
+          var txt = (cell && cell.text != null) ? String(cell.text) : '';
+          var fit = doc.splitTextToSize(txt, (col.w || 30) - 2);
+          doc.text(fit[0] || '', ML + col.x + 1, y + 4.5);
+        });
+        y += 6.5;
+      });
+      y += 4;
+    }
 
-    var logoW = 30, logoH = 13, logoY = MT;
-    if (window.SLAN_LOGO_B64) { try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', PAGE_W - MR - logoW, logoY, logoW, logoH); } catch (e) {} }
-    setText(C.darkText); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
-    doc.text('TOOLBOX COMPLIANCE REPORT', ML, logoY + 8);
-    setText(C.subLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.text(company + '  ·  Company-wide  ·  Generated ' + today, ML, logoY + 14);
-    setStroke(C.darkGreen); doc.setLineWidth(0.5); doc.line(ML, logoY + logoH + 5, PAGE_W - MR, logoY + logoH + 5);
-    var y = logoY + logoH + 13;
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); setText(C.darkText);
-    doc.text('Current talk: ' + activeTalk, ML, y); y += 7;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); setText(C.darkText);
-    var meets = t.pct >= DIR_TBT_TARGET;
-    doc.text('Signed ' + t.signed + ' / ' + t.total + '     Outstanding ' + t.outstanding + '     Completion ' + t.pct + '%     (Target ' + DIR_TBT_TARGET + '% — ' + (meets ? 'on target' : 'below target') + ')', ML, y);
-    y += 10;
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); setText(C.darkGreen);
-    doc.text('By site', ML, y); y += 5;
-    setFill(C.paleGreen); doc.rect(ML, y, CW, 7, 'F'); setText(C.darkText); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
-    doc.text('Site', ML + 2, y + 5); doc.text('Supervisor', ML + 52, y + 5); doc.text('Signed', ML + 112, y + 5); doc.text('%', ML + 150, y + 5);
-    y += 7; doc.setFont('helvetica', 'normal');
-    DIR_TBT_SITES.forEach(function(s) {
-      var sp = s.total ? Math.round(s.signed / s.total * 100) : 0;
-      setText(C.darkText);
-      doc.text(String(s.name), ML + 2, y + 5);
-      doc.text(String(s.supervisor || '—'), ML + 52, y + 5);
-      doc.text(s.signed + ' / ' + s.total, ML + 112, y + 5);
-      doc.text(sp + '%', ML + 150, y + 5);
-      setStroke(C.greyLight); doc.setLineWidth(0.1); doc.line(ML, y + 7, PAGE_W - MR, y + 7);
-      y += 7;
-    });
-    y += 8;
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); setText(C.amberDark);
-    doc.text('Outstanding — not signed today', ML, y); y += 6;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); setText(C.darkText);
-    DIR_TBT_SITES.forEach(function(s) {
-      if (s.outstanding && s.outstanding.length) {
-        var wrapped = doc.splitTextToSize(s.name + ': ' + s.outstanding.join(', '), CW);
-        doc.text(wrapped, ML, y); y += wrapped.length * 5 + 2;
+    addHeader();
+    (cfg.sections || []).forEach(function(sec) {
+      if (!sec) return;
+      if (sec.type === 'rows' && sec.rows && sec.rows.length) {
+        addSection(sec.title);
+        sec.rows.forEach(function(r, i) { addKeyVal(r[0], r[1], i === 0); });
+        y += 4;
+      } else if (sec.type === 'lines' && sec.lines && sec.lines.length) {
+        addSection(sec.title);
+        sec.lines.forEach(function(ln) { addLines(ln); });
+        y += 2;
+      } else if (sec.type === 'table' && sec.rows && sec.rows.length) {
+        addTable(sec);
       }
     });
-    y += 8;
 
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); setText(C.darkGreen);
-    doc.text('Recent talks', ML, y); y += 5;
-    setFill(C.paleGreen); doc.rect(ML, y, CW, 7, 'F'); setText(C.darkText); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
-    doc.text('Talk', ML + 2, y + 5); doc.text('Date', ML + 92, y + 5); doc.text('Signed', ML + 122, y + 5); doc.text('%', ML + 152, y + 5);
-    y += 7; doc.setFont('helvetica', 'normal');
-    DIR_TBT_HISTORY.forEach(function(h) {
-      var hp = h.total ? Math.round(h.signed / h.total * 100) : 0;
-      setText(C.darkText);
-      var ti = doc.splitTextToSize(String(h.title), 84);
-      doc.text(ti[0], ML + 2, y + 5);
-      doc.text(String(h.date), ML + 92, y + 5);
-      doc.text(h.signed + '/' + h.total, ML + 122, y + 5);
-      doc.text(hp + '%', ML + 152, y + 5);
-      setStroke(C.greyLight); doc.setLineWidth(0.1); doc.line(ML, y + 7, PAGE_W - MR, y + 7);
-      y += 7;
-    });
-
-    setText(C.greyLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.text('SLS-TBT-DIR · v1.0 · Slán Safety — Confidential', ML, PAGE_H - 12);
-
-    doc.save('Toolbox-Compliance-' + today.replace(/\//g, '-') + '.pdf');
+    var total = doc.internal.getNumberOfPages();
+    for (var pp = 1; pp <= total; pp++) {
+      doc.setPage(pp);
+      setText(C.labelGrey); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      doc.text(String(cfg.docCode || ''), ML, PAGE_H - MB + 5);
+      doc.text('Page ' + pp + ' of ' + total, PAGE_W - MR, PAGE_H - MB + 5, { align: 'right' });
+    }
+    doc.save(cfg.filename || 'register.pdf');
   } catch (err) {
     slanAlert('Could not generate the PDF: ' + (err && err.message ? err.message : 'unknown error'));
   }
+}
+
+function dirToolboxExportPDF() {
+  var sites = _tbtActiveSites();
+  var t = _dirTbtTotals(sites);
+  var activeTalk = (typeof getActiveTalk === 'function' && getActiveTalk()) ? getActiveTalk().title : 'Toolbox Talk';
+  var today = new Date().toLocaleDateString('en-AU');
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
+  var scope = (tbtSite === 'All') ? 'Company-wide · All sites' : ('Site: ' + tbtSite);
+  var meets = t.pct >= DIR_TBT_TARGET;
+  var outLines = [];
+  sites.forEach(function(s) { if (s.outstanding && s.outstanding.length) outLines.push(s.name + ' (' + s.outstanding.length + '): ' + s.outstanding.join(', ')); });
+  var sections = [
+    { type: 'rows', title: 'SUMMARY', rows: [
+      ['Active talk', activeTalk],
+      ['Signed', t.signed + ' of ' + t.total],
+      ['Completion', t.pct + '%'],
+      ['Company target', DIR_TBT_TARGET + '% (' + (meets ? 'on target' : 'below target') + ')'],
+      ['Outstanding', String(t.outstanding)]
+    ] },
+    { type: 'table', title: 'BY SITE', columns: [
+      { label: 'Site', x: 0, w: 44 }, { label: 'Supervisor', x: 44, w: 56 }, { label: 'Signed', x: 100, w: 34 }, { label: '%', x: 134, w: 36 }
+    ], rows: sites.map(function(s) {
+      var sp = s.total ? Math.round(s.signed / s.total * 100) : 0;
+      var col = sp >= 95 ? '#15803D' : (sp >= 80 ? '#D97706' : '#B83232');
+      return [ { text: s.name }, { text: s.supervisor || '—' }, { text: s.signed + '/' + s.total }, { text: sp + '%', colour: col } ];
+    }) }
+  ];
+  if (outLines.length) sections.push({ type: 'lines', title: 'NOT YET SIGNED', lines: outLines });
+  sections.push({ type: 'table', title: 'RECENT TALKS', columns: [
+    { label: 'Talk', x: 0, w: 92 }, { label: 'Date', x: 92, w: 34 }, { label: 'Signed', x: 126, w: 22 }, { label: '%', x: 148, w: 22 }
+  ], rows: DIR_TBT_HISTORY.map(function(h) {
+    var hp = h.total ? Math.round(h.signed / h.total * 100) : 0;
+    return [ { text: h.title }, { text: h.date }, { text: h.signed + '/' + h.total }, { text: hp + '%' } ];
+  }) });
+  slanDirRegisterPDF({
+    title: 'TOOLBOX COMPLIANCE REPORT',
+    docCode: 'SLS-TBT-DIR · v1.0 · Slán Safety — Confidential',
+    metaLine: company + '  ·  ' + scope + '  ·  Generated ' + today,
+    filename: 'Toolbox-Compliance-' + today.replace(/\//g, '-') + '.pdf',
+    sections: sections
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -39350,67 +39410,36 @@ function updateDirSdsSummary() {
 }
 
 function dirSdsExportPDF() {
-  try {
-    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF generator is not loaded yet. Please wait a moment and try again.'); return; }
-    var jsPDF = window.jspdf.jsPDF;
-    var doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    var PAGE_W = 210, PAGE_H = 297, ML = 18, MR = 18, MT = 18;
-    var CW = PAGE_W - ML - MR;
-    var C = (typeof PDF_COLOURS !== 'undefined') ? PDF_COLOURS : { darkGreen: '#2C6B5E', darkText: '#1A2A1F', subLabel: '#5C6B62', greyLabel: '#888888', greyLight: '#dddddd', paleGreen: '#F0F7E8', amberDark: '#BA7517' };
-    function hex(h) { h = h.replace('#', ''); return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
-    function setFill(c) { var r = hex(c); doc.setFillColor(r[0], r[1], r[2]); }
-    function setStroke(c) { var r = hex(c); doc.setDrawColor(r[0], r[1], r[2]); }
-    function setText(c) { var r = hex(c); doc.setTextColor(r[0], r[1], r[2]); }
-
-    var p = (typeof getProfile === 'function') ? getProfile() : null;
-    var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
-    var s = _sdsRegisterStats();
-    var today = new Date().toLocaleDateString('en-AU');
-
-    var logoW = 30, logoH = 13, logoY = MT;
-    if (window.SLAN_LOGO_B64) { try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', PAGE_W - MR - logoW, logoY, logoW, logoH); } catch (e) {} }
-    setText(C.darkText); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
-    doc.text('CHEMICAL REGISTER (SDS)', ML, logoY + 8);
-    setText(C.subLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.text(company + '  ·  Company-wide  ·  Generated ' + today, ML, logoY + 14);
-    setStroke(C.darkGreen); doc.setLineWidth(0.5); doc.line(ML, logoY + logoH + 5, PAGE_W - MR, logoY + logoH + 5);
-    var y = logoY + logoH + 13;
-
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); setText(C.darkText);
-    doc.text(s.total + ' chemicals registered     ' + s.attention + ' need SDS renewal     ' + s.coverage + '% current', ML, y);
-    y += 10;
-
-    setFill(C.paleGreen); doc.rect(ML, y, CW, 7, 'F'); setText(C.darkText); doc.setFontSize(8.5); doc.setFont('helvetica', 'bold');
-    doc.text('Chemical', ML + 2, y + 5); doc.text('Manufacturer', ML + 64, y + 5); doc.text('Site', ML + 118, y + 5); doc.text('SDS status', ML + 150, y + 5);
-    y += 7; doc.setFont('helvetica', 'normal');
-    s.chems.forEach(function(c) {
-      if (y > PAGE_H - 24) { doc.addPage(); y = MT; }
-      setText(C.darkText);
-      doc.text(doc.splitTextToSize(String(c.name), 60)[0], ML + 2, y + 5);
-      doc.text(doc.splitTextToSize(String(c.manufacturer || ''), 52)[0], ML + 64, y + 5);
-      doc.text(doc.splitTextToSize(String(c.sites || ''), 30)[0], ML + 118, y + 5);
-      setText(c.dot || C.darkText);
-      doc.text(doc.splitTextToSize(String(c.statusLabel || c.status || ''), 42)[0], ML + 150, y + 5);
-      setStroke(C.greyLight); doc.setLineWidth(0.1); doc.line(ML, y + 7, PAGE_W - MR, y + 7);
-      y += 7;
-    });
-    y += 8;
-    if (y > PAGE_H - 40) { doc.addPage(); y = MT; }
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); setText(C.amberDark);
-    doc.text('Missing-chemical reports', ML, y); y += 6;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); setText(C.darkText);
-    DIR_SDS_REPORTS.forEach(function(r) {
-      doc.text(doc.splitTextToSize(r.chemical + ' — ' + r.site + ' · ' + r.reporter + ' · ' + r.date + ' · ' + r.status, CW), ML, y + 4);
-      y += 6;
-    });
-
-    setText(C.greyLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.text('SLS-REG-004 · v1.0 · Slán Safety — Confidential', ML, PAGE_H - 12);
-    doc.save('Chemical-Register-' + today.replace(/\//g, '-') + '.pdf');
-  } catch (err) {
-    slanAlert('Could not generate the PDF: ' + (err && err.message ? err.message : 'unknown error'));
-  }
+  var list = _sdsActiveChems();
+  var s = _sdsRegisterStats(list);
+  var today = new Date().toLocaleDateString('en-AU');
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
+  var scope = (sdsSite === 'All') ? 'Company-wide · All sites' : ('Site: ' + sdsSite);
+  var repList = (sdsSite === 'All') ? DIR_SDS_REPORTS : DIR_SDS_REPORTS.filter(function(r) { return r.site === sdsSite; });
+  var sections = [
+    { type: 'rows', title: 'SUMMARY', rows: [
+      ['Chemicals registered', String(s.total)],
+      ['Need SDS renewal', String(s.attention)],
+      ['Current', String(s.current)],
+      ['Coverage', s.coverage + '%']
+    ] },
+    { type: 'table', title: 'CHEMICAL REGISTER', columns: [
+      { label: 'Chemical', x: 0, w: 56 }, { label: 'Manufacturer', x: 56, w: 48 }, { label: 'Site', x: 104, w: 34 }, { label: 'SDS status', x: 138, w: 32 }
+    ], rows: s.chems.map(function(c) {
+      return [ { text: c.name }, { text: c.manufacturer || '' }, { text: c.sites || '' }, { text: c.statusLabel || c.status || '', colour: c.dot || '#1A2A1F' } ];
+    }) }
+  ];
+  if (repList.length) sections.push({ type: 'lines', title: 'MISSING-CHEMICAL REPORTS', lines: repList.map(function(r) {
+    return r.chemical + ' — ' + r.site + ' · reported by ' + r.reporter + ' · ' + r.date + ' · ' + r.status;
+  }) });
+  slanDirRegisterPDF({
+    title: 'CHEMICAL REGISTER (SDS)',
+    docCode: 'SLS-REG-004 · v1.0 · Slán Safety — Confidential',
+    metaLine: company + '  ·  ' + scope + '  ·  Generated ' + today,
+    filename: 'Chemical-Register-' + today.replace(/\//g, '-') + '.pdf',
+    sections: sections
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -39628,72 +39657,38 @@ function updateDirPtwSummary() {
 
 // Company-wide permits register PDF (director audit pack).
 function dirPtwExportPDF() {
-  try {
-    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF generator is not loaded yet. Please wait a moment and try again.'); return; }
-    var jsPDF = window.jspdf.jsPDF;
-    var doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    var PAGE_W = 210, PAGE_H = 297, ML = 18, MR = 18, MT = 18;
-    var CW = PAGE_W - ML - MR;
-    var C = (typeof PDF_COLOURS !== 'undefined') ? PDF_COLOURS : { darkGreen: '#2C6B5E', darkText: '#1A2A1F', subLabel: '#5C6B62', greyLabel: '#888888', greyLight: '#dddddd', paleGreen: '#F0F7E8', amberDark: '#BA7517' };
-    function hex(h) { h = h.replace('#', ''); return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
-    function setFill(c) { var r = hex(c); doc.setFillColor(r[0], r[1], r[2]); }
-    function setStroke(c) { var r = hex(c); doc.setDrawColor(r[0], r[1], r[2]); }
-    function setText(c) { var r = hex(c); doc.setTextColor(r[0], r[1], r[2]); }
-
-    var p = (typeof getProfile === 'function') ? getProfile() : null;
-    var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
-    var s = _dptwStats();
-    var today = new Date().toLocaleDateString('en-AU');
-
-    var logoW = 30, logoH = 13, logoY = MT;
-    if (window.SLAN_LOGO_B64) { try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', PAGE_W - MR - logoW, logoY, logoW, logoH); } catch (e) {} }
-    setText(C.darkText); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
-    doc.text('PERMITS TO WORK REGISTER', ML, logoY + 8);
-    setText(C.subLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.text(company + '  ·  Company-wide  ·  Generated ' + today, ML, logoY + 14);
-    setStroke(C.darkGreen); doc.setLineWidth(0.5); doc.line(ML, logoY + logoH + 5, PAGE_W - MR, logoY + logoH + 5);
-    var y = logoY + logoH + 13;
-
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); setText(C.darkText);
-    doc.text(s.total + ' permits     ' + s.active + ' active     ' + s.pending + ' pending     ' + s.closed + ' closed     ' + s.flagged + ' rejected/revoked', ML, y);
-    y += 10;
-
-    setFill(C.paleGreen); doc.rect(ML, y, CW, 7, 'F'); setText(C.darkText); doc.setFontSize(8.5); doc.setFont('helvetica', 'bold');
-    doc.text('Permit', ML + 2, y + 5); doc.text('Type', ML + 30, y + 5); doc.text('Site', ML + 92, y + 5); doc.text('Supervisor', ML + 120, y + 5); doc.text('Status', ML + 160, y + 5);
-    y += 7; doc.setFont('helvetica', 'normal');
-    DIR_PTW_PERMITS.forEach(function(pm) {
-      if (y > PAGE_H - 24) { doc.addPage(); y = MT; }
-      setText(C.darkText);
-      doc.text(doc.splitTextToSize(String(pm.ref), 26)[0], ML + 2, y + 5);
-      doc.text(doc.splitTextToSize(String(pm.type), 58)[0], ML + 30, y + 5);
-      doc.text(doc.splitTextToSize(String(pm.site), 26)[0], ML + 92, y + 5);
-      doc.text(doc.splitTextToSize(String(pm.supervisor), 36)[0], ML + 120, y + 5);
-      setText(_dptwStatusMeta(pm.status).colour);
-      doc.text(_dptwStatusMeta(pm.status).label, ML + 160, y + 5);
-      setStroke(C.greyLight); doc.setLineWidth(0.1); doc.line(ML, y + 7, PAGE_W - MR, y + 7);
-      y += 7;
-    });
-    y += 8;
-    if (y > PAGE_H - 40) { doc.addPage(); y = MT; }
-
-    var flagged = DIR_PTW_PERMITS.filter(function(pm) { return pm.status === 'rejected' || pm.status === 'revoked'; });
-    if (flagged.length) {
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); setText(C.amberDark);
-      doc.text('Rejected / revoked — outcomes', ML, y); y += 6;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); setText(C.darkText);
-      flagged.forEach(function(pm) {
-        if (y > PAGE_H - 24) { doc.addPage(); y = MT; }
-        doc.text(doc.splitTextToSize(pm.ref + ' (' + pm.site + ') — ' + _dptwStatusMeta(pm.status).label + ': ' + pm.note, CW), ML, y + 4);
-        y += 8;
-      });
-    }
-
-    setText(C.greyLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.text('SLS-REG-011 · v1.0 · Slán Safety — Confidential', ML, PAGE_H - 12);
-    doc.save('Permits-Register-' + today.replace(/\//g, '-') + '.pdf');
-  } catch (err) {
-    slanAlert('Could not generate the PDF: ' + (err && err.message ? err.message : 'unknown error'));
-  }
+  var list = _dptwActivePermits();
+  var s = _dptwStats(list);
+  var today = new Date().toLocaleDateString('en-AU');
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
+  var scope = (dptwSite === 'All') ? 'Company-wide · All sites' : ('Site: ' + dptwSite);
+  var flagged = list.filter(function(pm) { return pm.status === 'rejected' || pm.status === 'revoked'; });
+  var sections = [
+    { type: 'rows', title: 'SUMMARY', rows: [
+      ['Total permits', String(s.total)],
+      ['Active now', String(s.active)],
+      ['Pending approval', String(s.pending)],
+      ['Closed', String(s.closed)],
+      ['Rejected / revoked', String(s.flagged)]
+    ] },
+    { type: 'table', title: 'PERMIT LOG', columns: [
+      { label: 'Permit', x: 0, w: 24 }, { label: 'Type', x: 24, w: 42 }, { label: 'Site', x: 66, w: 30 }, { label: 'Supervisor', x: 96, w: 40 }, { label: 'Status', x: 136, w: 34 }
+    ], rows: list.map(function(pm) {
+      var m = _dptwStatusMeta(pm.status);
+      return [ { text: pm.ref }, { text: pm.type }, { text: pm.site }, { text: pm.supervisor }, { text: m.label, colour: m.colour } ];
+    }) }
+  ];
+  if (flagged.length) sections.push({ type: 'lines', title: 'REJECTED / REVOKED — OUTCOMES', lines: flagged.map(function(pm) {
+    return pm.ref + ' (' + pm.site + ') — ' + _dptwStatusMeta(pm.status).label + ': ' + pm.note;
+  }) });
+  slanDirRegisterPDF({
+    title: 'PERMITS TO WORK REGISTER',
+    docCode: 'SLS-REG-011 · v1.0 · Slán Safety — Confidential',
+    metaLine: company + '  ·  ' + scope + '  ·  Generated ' + today,
+    filename: 'Permits-Register-' + today.replace(/\//g, '-') + '.pdf',
+    sections: sections
+  });
 }
 
 function goToDirectorIncidents() {
