@@ -10590,6 +10590,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="main-sds-tab-reports" onclick="switchMainSdsTab('reports')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Reports</button>
     </div>
 
+    <div id="dsds-site-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+
     <!-- OVERVIEW -->
     <div id="main-sds-tab-content-overview" class="main-sds-tab-content">
       <div class="fcard" style="margin-bottom:12px">
@@ -10645,6 +10647,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🏗️ By Site</div>
+        <div id="dsds-bysite" style="padding:10px"></div>
       </div>
     </div>
 
@@ -39170,22 +39177,74 @@ function switchMainSdsTab(tabName) {
   });
 }
 
-function _sdsRegisterStats() {
-  var chems = (typeof SDS_CHEMICALS !== 'undefined' && SDS_CHEMICALS) ? SDS_CHEMICALS : [];
+var sdsSite = 'All'; // current SDS site filter
+
+function _sdsAllChems() {
+  return (typeof SDS_CHEMICALS !== 'undefined' && SDS_CHEMICALS) ? SDS_CHEMICALS : [];
+}
+
+function _sdsMatchesSite(chem, site) {
+  if (site === 'All') return true;
+  var ss = chem.sites || '';
+  if (/all sites/i.test(ss)) return true; // chemicals stored "All Sites" appear everywhere
+  return ss.split(',').map(function(x) { return x.trim(); }).indexOf(site) !== -1;
+}
+
+function _sdsSites() {
+  var seen = {}, out = [];
+  _sdsAllChems().forEach(function(c) {
+    (c.sites || '').split(',').forEach(function(s) {
+      s = s.trim();
+      if (s && !/^all sites$/i.test(s) && !seen[s]) { seen[s] = true; out.push(s); }
+    });
+  });
+  return out.sort();
+}
+
+function _sdsActiveChems() {
+  if (sdsSite === 'All') return _sdsAllChems().slice();
+  return _sdsAllChems().filter(function(c) { return _sdsMatchesSite(c, sdsSite); });
+}
+
+function _sdsRegisterStats(list) {
+  var chems = list || _sdsAllChems();
   var attention = chems.filter(function(c) { return c.status === 'expired' || c.status === 'urgent' || c.status === 'expiring'; }).length;
   var current = chems.length - attention;
   return { total: chems.length, attention: attention, current: current, coverage: chems.length ? Math.round(current / chems.length * 100) : 0, chems: chems };
 }
 
+function sdsSetSite(site) {
+  sdsSite = site;
+  dirSdsRender();
+}
+
+function sdsRenderSiteFilter() {
+  var box = document.getElementById('dsds-site-filter');
+  if (!box) return;
+  var chips = ['All'].concat(_sdsSites());
+  box.innerHTML = chips.map(function(s) {
+    var on = (s === sdsSite);
+    var label = (s === 'All') ? 'All sites' : s;
+    return '<button onclick="sdsSetSite(\'' + s.replace(/'/g, "\\'") + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid ' +
+      (on ? '#B8960C' : '#D8D8D8') + ';background:' + (on ? '#B8960C' : '#fff') + ';color:' + (on ? '#fff' : '#666') + '">' + label + '</button>';
+  }).join('');
+}
+
 function dirSdsRender() {
-  var s = _sdsRegisterStats();
-  var pending = DIR_SDS_REPORTS.filter(function(r) { return r.status === 'Pending'; }).length;
+  sdsRenderSiteFilter();
+  var list = _sdsActiveChems();
+  var s = _sdsRegisterStats(list);
+  var repList = (sdsSite === 'All') ? DIR_SDS_REPORTS : DIR_SDS_REPORTS.filter(function(r) { return r.site === sdsSite; });
+  var pending = repList.filter(function(r) { return r.status === 'Pending'; }).length;
   var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
   set('dsds-total', s.total);
   set('dsds-attention-count', s.attention);
   set('dsds-coverage', s.coverage + '%');
   set('dsds-expired-count', s.attention);
   set('dsds-reports-count', pending);
+
+  var per = document.getElementById('dir-sds-period');
+  if (per) per.textContent = (sdsSite === 'All') ? 'Company-wide · All sites' : ('Filtered · ' + sdsSite);
 
   var att = document.getElementById('dsds-attention');
   if (att) {
@@ -39199,9 +39258,24 @@ function dirSdsRender() {
     } else { att.style.display = 'none'; att.innerHTML = ''; }
   }
 
+  // By site — always shows all sites so the director can compare and tap to filter
+  var bs = document.getElementById('dsds-bysite');
+  if (bs) {
+    var sites = _sdsSites();
+    bs.innerHTML = sites.map(function(name) {
+      var items = _sdsAllChems().filter(function(c) { return _sdsMatchesSite(c, name); });
+      var attn = items.filter(function(c) { return c.status === 'expired' || c.status === 'urgent' || c.status === 'expiring'; }).length;
+      var sel = (name === sdsSite);
+      return '<div onclick="sdsSetSite(\'' + name.replace(/'/g, "\\'") + '\')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid ' + (sel ? '#B8960C' : '#E8E8E8') + ';border-radius:8px;margin-bottom:8px;background:' + (sel ? '#FDF8E8' : '#fff') + ';cursor:pointer">' +
+        '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F">' + name + '</div>' +
+        '<div style="font-size:11px;color:#5C6B62">' + items.length + ' chemicals' + (attn ? ' · <span style="color:#B83232;font-weight:700">' + attn + '</span> need renewal' : '') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
   var reg = document.getElementById('dsds-register');
   if (reg) {
-    reg.innerHTML = s.chems.map(function(c) {
+    reg.innerHTML = s.chems.length ? s.chems.map(function(c) {
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid #E8E8E8;border-radius:8px;margin-bottom:8px;background:#fff">' +
         '<div style="min-width:0;flex:1">' +
           '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + c.name + '</div>' +
@@ -39212,12 +39286,12 @@ function dirSdsRender() {
           '<span style="font-size:10px;font-weight:600;color:' + (c.dot || '#888') + ';text-align:right">' + (c.statusLabel || c.status || '') + '</span>' +
         '</div>' +
       '</div>';
-    }).join('');
+    }).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No chemicals registered for this site.</div>';
   }
 
   var rep = document.getElementById('dsds-reports');
   if (rep) {
-    rep.innerHTML = DIR_SDS_REPORTS.length ? DIR_SDS_REPORTS.map(function(r) {
+    rep.innerHTML = repList.length ? repList.map(function(r) {
       var p = r.status === 'Pending';
       return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-radius:8px;margin-bottom:8px;background:#fff">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
