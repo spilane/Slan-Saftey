@@ -24379,6 +24379,7 @@ function wahInitForm() {
   try { wahAutoFillWeather(); } catch(e) {}
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+  try { permitCompetencyGate('wah', 'screen-wah-form'); } catch(e) {}
 
   document.getElementById('wah-permit-id').value = wahGenerateId();
   const now = new Date();
@@ -24514,6 +24515,7 @@ function wahValidate() {
   const cf = document.getElementById('wah-confirm');
   if (!cf || !cf.classList.contains('checked')) ok = false;
 
+  if (_permitCompetencyOk['wah'] === false) ok = false;
   const btn = document.getElementById('wah-submit-btn');
   if (btn) {
     btn.disabled = !ok;
@@ -24523,6 +24525,7 @@ function wahValidate() {
 }
 
 async function submitWAH() {
+  if (_permitCompetencyOk['wah'] === false) { slanAlert('You can’t submit this permit without a current ' + PERMIT_TICKETS.wah.label + ' on file. See your supervisor to have your ticket recorded.'); return; }
   if (window._wahSubmitting) return;
   window._wahSubmitting = true;
   const btn = document.getElementById('wah-submit-btn');
@@ -27590,6 +27593,7 @@ function liftInitForm() {
   try { liftResetPhotoSlots(); } catch(e) {}
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+  try { permitCompetencyGate('lift', 'screen-lift-form'); } catch(e) {}
 
   document.getElementById('lift-permit-id').value = liftGenerateId();
   const now = new Date();
@@ -27689,6 +27693,55 @@ var PERMIT_TICKETS = {
       if (l.cs) return l.cs;
       if (l.hrwl && /confined|RIIWHS202|MSMPER20[05]/i.test(l.hrwl.type || '')) return l.hrwl;
       if (l.voc && /confined/i.test(l.voc.type || '')) return l.voc;
+      return null;
+    }
+  },
+  wah: {
+    label: 'Working at Heights ticket',
+    find: function(l) {
+      if (l.wah || l.heights) return l.wah || l.heights;
+      if (l.hrwl && /height|EWP|scaffold|RIIWHS204|\bWP\b|\bYL\b/i.test(l.hrwl.type || '')) return l.hrwl;
+      return null;
+    }
+  },
+  lift: {
+    label: 'Rigging or Crane high-risk work licence',
+    find: function(l) {
+      // A crane-lift permit holder needs a rigging or crane HRWL. Plain
+      // dogging (DG) alone does not qualify to raise the lift permit.
+      if (l.hrwl && /rigg|crane|slew|tower|derrick|\bRB\b|\bRI\b|\bRA\b|\bC[0-9]|\bCN\b|\bCV\b/i.test(l.hrwl.type || '')) return l.hrwl;
+      return null;
+    }
+  },
+  elec: {
+    label: 'Electrical licence',
+    find: function(l) {
+      if (l.electrical) return l.electrical;
+      if (l.hrwl && /electric/i.test(l.hrwl.type || '')) return l.hrwl;
+      return null;
+    }
+  },
+  asb: {
+    label: 'Asbestos removal licence',
+    find: function(l) {
+      if (l.asbestos) return l.asbestos;
+      if (l.hrwl && /asbestos|RIICCM/i.test(l.hrwl.type || '')) return l.hrwl;
+      return null;
+    }
+  },
+  trf: {
+    label: 'Traffic control / management ticket',
+    find: function(l) {
+      if (l.traffic) return l.traffic;
+      if (l.hrwl && /traffic|RIIWHS205|\bTMP\b|\bTC\b/i.test(l.hrwl.type || '')) return l.hrwl;
+      return null;
+    }
+  },
+  mp: {
+    label: 'high-risk work licence / VOC for this plant',
+    find: function(l) {
+      if (l.plant || l.voc) return l.plant || l.voc;
+      if (l.hrwl && /forklift|\bLF\b|\bLO\b|excavat|loader|roller|dozer|telehandler|EWP|boom|scissor|slew|crane/i.test(l.hrwl.type || '')) return l.hrwl;
       return null;
     }
   }
@@ -27910,12 +27963,14 @@ function liftValidate() {
   const cf = document.getElementById('lift-confirm');
   if (!cf || !cf.classList.contains('checked')) ok = false;
 
+  if (_permitCompetencyOk['lift'] === false) ok = false;
   const btn = document.getElementById('lift-submit-btn');
   if (btn) { btn.disabled = !ok; btn.style.opacity = ok ? '1' : '0.5'; }
   return ok;
 }
 
 async function submitLift() {
+  if (_permitCompetencyOk['lift'] === false) { slanAlert('You can’t submit this permit without a current ' + PERMIT_TICKETS.lift.label + ' on file. See your supervisor to have your ticket recorded.'); return; }
   if (window._liftSubmitting) return;
   window._liftSubmitting = true;
   const btn = document.getElementById('lift-submit-btn');
@@ -30127,6 +30182,7 @@ function elecInitForm() {
   try { elecResetPhotoSlots(); } catch(e) {}
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+  try { permitCompetencyGate('elec', 'screen-elec-form'); } catch(e) {}
 
   document.getElementById('elec-permit-id').value = elecGenerateId();
   const now = new Date();
@@ -30256,6 +30312,7 @@ function elecValidate() {
   const cf = document.getElementById('elec-confirm');
   if (!cf || !cf.classList.contains('checked')) ok = false;
 
+  if (_permitCompetencyOk['elec'] === false) ok = false;
   const btn = document.getElementById('elec-submit-btn');
   if (btn) {
     btn.disabled = !ok;
@@ -30265,6 +30322,7 @@ function elecValidate() {
 }
 
 async function submitElec() {
+  if (_permitCompetencyOk['elec'] === false) { slanAlert('You can’t submit this permit without a current ' + PERMIT_TICKETS.elec.label + ' on file. See your supervisor to have your ticket recorded.'); return; }
   if (window._elecSubmitting) return;
   window._elecSubmitting = true;
   const btn = document.getElementById('elec-submit-btn');
@@ -31470,6 +31528,7 @@ function asbInitForm() {
   try { asbResetPhotoSlots(); } catch(e) {}
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+  try { permitCompetencyGate('asb', 'screen-asb-form'); } catch(e) {}
 
   document.getElementById('asb-permit-id').value = asbGenerateId();
   const now = new Date();
@@ -31587,12 +31646,14 @@ function asbValidate() {
   const cf = document.getElementById('asb-confirm');
   if (!cf || !cf.classList.contains('checked')) ok = false;
 
+  if (_permitCompetencyOk['asb'] === false) ok = false;
   const btn = document.getElementById('asb-submit-btn');
   if (btn) { btn.disabled = !ok; btn.style.opacity = ok ? '1' : '0.5'; }
   return ok;
 }
 
 async function submitAsb() {
+  if (_permitCompetencyOk['asb'] === false) { slanAlert('You can’t submit this permit without a current ' + PERMIT_TICKETS.asb.label + ' on file. See your supervisor to have your ticket recorded.'); return; }
   if (window._asbSubmitting) return;
   window._asbSubmitting = true;
   const btn = document.getElementById('asb-submit-btn');
@@ -32257,6 +32318,7 @@ function mpInitForm() {
   try { mpResetPhotoSlots(); } catch(e) {}
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+  try { permitCompetencyGate('mp', 'screen-mp-form'); } catch(e) {}
 
   document.getElementById('mp-permit-id').value = mpGenerateId();
   const now = new Date();
@@ -32373,12 +32435,14 @@ function mpValidate() {
   const cf = document.getElementById('mp-confirm');
   if (!cf || !cf.classList.contains('checked')) ok = false;
 
+  if (_permitCompetencyOk['mp'] === false) ok = false;
   const btn = document.getElementById('mp-submit-btn');
   if (btn) { btn.disabled = !ok; btn.style.opacity = ok ? '1' : '0.5'; }
   return ok;
 }
 
 async function submitMp() {
+  if (_permitCompetencyOk['mp'] === false) { slanAlert('You can’t submit this permit without a current ' + PERMIT_TICKETS.mp.label + ' on file. See your supervisor to have your ticket recorded.'); return; }
   if (window._mpSubmitting) return;
   window._mpSubmitting = true;
   const btn = document.getElementById('mp-submit-btn');
@@ -33049,6 +33113,7 @@ function trfInitForm() {
   try { trfResetPhotoSlots(); } catch(e) {}
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
+  try { permitCompetencyGate('trf', 'screen-trf-form'); } catch(e) {}
 
   document.getElementById('trf-permit-id').value = trfGenerateId();
   const now = new Date();
@@ -33167,12 +33232,14 @@ function trfValidate() {
   const cf = document.getElementById('trf-confirm');
   if (!cf || !cf.classList.contains('checked')) ok = false;
 
+  if (_permitCompetencyOk['trf'] === false) ok = false;
   const btn = document.getElementById('trf-submit-btn');
   if (btn) { btn.disabled = !ok; btn.style.opacity = ok ? '1' : '0.5'; }
   return ok;
 }
 
 async function submitTrf() {
+  if (_permitCompetencyOk['trf'] === false) { slanAlert('You can’t submit this permit without a current ' + PERMIT_TICKETS.trf.label + ' on file. See your supervisor to have your ticket recorded.'); return; }
   if (window._trfSubmitting) return;
   window._trfSubmitting = true;
   const btn = document.getElementById('trf-submit-btn');
