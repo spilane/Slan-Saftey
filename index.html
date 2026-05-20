@@ -42139,26 +42139,21 @@ function slanOpenPhoto(inputId) {
 
 var SDS_PHOTO_MAX = 1280;
 function handleSdsPhoto(idx, e) {
-  // ── TEMPORARY DIAGNOSTICS — popups trace where the photo step breaks.
-  //    Niall reads these back; removed once the cause is confirmed. ──
   var file = e.target && e.target.files && e.target.files[0];
-  if (!file) { slanAlert('DEBUG 1: no file came back from the camera/picker.'); return; }
-  slanAlert('DEBUG 1: got file — ' + (file.size / 1048576).toFixed(2) + ' MB, type "' + (file.type || 'unknown') + '". Processing…');
+  if (!file) return;
+  // Decode + shrink straight from the file (memory-efficient for big photos).
   if (window.createImageBitmap) {
     createImageBitmap(file).then(function(bmp) {
       try {
         var w = bmp.width, h = bmp.height;
-        slanAlert('DEBUG 2: decoded ' + w + '×' + h + 'px. Drawing…');
         if (w > SDS_PHOTO_MAX || h > SDS_PHOTO_MAX) { var r = Math.min(SDS_PHOTO_MAX / w, SDS_PHOTO_MAX / h); w = Math.round(w * r); h = Math.round(h * r); }
         var c = document.createElement('canvas'); c.width = w; c.height = h;
         c.getContext('2d').drawImage(bmp, 0, 0, w, h);
         try { bmp.close && bmp.close(); } catch (e2) {}
         sdsShowPhoto(idx, c.toDataURL('image/jpeg', 0.6));
-        slanAlert('DEBUG 3: done — photo should be in the slot now.');
-      } catch (err) { slanAlert('DEBUG ERR (draw): ' + (err && err.message)); sdsPhotoFallback(idx, file); }
-    }).catch(function(err) { slanAlert('DEBUG ERR (decode): ' + (err && err.message)); sdsPhotoFallback(idx, file); });
+      } catch (err) { sdsPhotoFallback(idx, file); }
+    }).catch(function() { sdsPhotoFallback(idx, file); });
   } else {
-    slanAlert('DEBUG: createImageBitmap not supported — using fallback.');
     sdsPhotoFallback(idx, file);
   }
 }
