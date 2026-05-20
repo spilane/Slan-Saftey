@@ -27664,6 +27664,79 @@ function liftClampEndTime() {
   liftValidate();
 }
 
+// ═══════════════════════════════════════════════════════════════
+// PERMIT COMPETENCY GATE
+// ───────────────────────────────────────────────────────────────
+// Some permits legally require the worker to hold a specific ticket
+// to be the entrant / operator (e.g. a Confined Space entry unit).
+// On form open we look the worker up in the personnel register
+// (DEMO_WORKERS), and if they don't hold a current ticket we:
+//   1. show a red warning banner at the TOP of the form (so they
+//      don't waste time filling it out), and
+//   2. hard-block submit (the per-permit validate() reads the flag
+//      below and keeps the submit button disabled).
+//
+// To add another permit type, add an entry here and call
+// permitCompetencyGate('<key>', '<form-screen-id>') in that permit's
+// form-init function, plus one line in its validate():
+//     if (!_permitCompetencyOk['<key>']) ok = false;
+// ═══════════════════════════════════════════════════════════════
+var PERMIT_TICKETS = {
+  cs: {
+    label: 'Confined Space entry ticket',
+    find: function(l) {
+      if (l.confinedspace) return l.confinedspace;
+      if (l.cs) return l.cs;
+      if (l.hrwl && /confined|RIIWHS202|MSMPER20[05]/i.test(l.hrwl.type || '')) return l.hrwl;
+      if (l.voc && /confined/i.test(l.voc.type || '')) return l.voc;
+      return null;
+    }
+  }
+};
+
+// Latest competency result per permit key. true = allowed, false = blocked.
+var _permitCompetencyOk = {};
+
+function permitCompetencyGate(permitKey, formScreenId) {
+  var cfg = PERMIT_TICKETS[permitKey];
+  if (!cfg) { _permitCompetencyOk[permitKey] = true; return true; }
+
+  var bannerId = permitKey + '-competency-warning';
+  var oldBanner = document.getElementById(bannerId);
+  if (oldBanner) oldBanner.remove();
+
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  var name = (p && p.name) ? p.name : '';
+  var workers = (typeof DEMO_WORKERS !== 'undefined' && DEMO_WORKERS) ? DEMO_WORKERS : [];
+  var w = workers.find(function(x) { return (x.name || '').toLowerCase() === name.toLowerCase(); });
+  var lic = (w && w.licences) ? cfg.find(w.licences) : null;
+  var expired = !!(lic && lic.ok === false);
+  var ok = !!(lic && !expired);
+
+  _permitCompetencyOk[permitKey] = ok;
+
+  if (!ok) {
+    var screen = document.getElementById(formScreenId);
+    if (screen) {
+      var banner = document.createElement('div');
+      banner.id = bannerId;
+      banner.style.cssText = 'margin:12px 14px 0;padding:13px 15px;background:#FCE9E9;border:1.5px solid #A32D2D;border-radius:var(--rs);color:#5E1A1A;font-size:13px;line-height:1.5';
+      var why = expired
+        ? ('Your ' + cfg.label + ' has <strong>expired</strong>' + (lic.expiry ? ' (' + lic.expiry + ')' : '') + '.')
+        : ('There is <strong>no ' + cfg.label + '</strong> on file for ' + (name || 'you') + ' in the training matrix.');
+      banner.innerHTML = '<strong>⛔ You can’t submit this permit.</strong><br>' + why +
+        ' This ticket is legally required to be the entrant/operator. See your supervisor to have your ticket recorded, or to be added to a permit raised by a ticketed worker.';
+      var greeting = screen.querySelector('.form-greeting');
+      if (greeting && greeting.parentNode) {
+        greeting.parentNode.insertBefore(banner, greeting.nextSibling);
+      } else {
+        screen.insertBefore(banner, screen.firstChild);
+      }
+    }
+  }
+  return ok;
+}
+
 // Live HRWL licence lookup against the personnel register. Shows status under the name input.
 // Auto-check the CURRENT WORKER's licence/ticket on form load (used by ELEC, WAH, ASB, TRF).
 // Looks them up in the personnel register and fills the status div + a hidden value field.
@@ -33814,6 +33887,10 @@ function csInitForm() {
   const p = getProfile();
   if (!p) { goTo('screen-profile'); if (typeof initSig === 'function') initSig(); return; }
 
+  // Competency gate — warns + hard-blocks if the worker has no Confined
+  // Space entry ticket on file. Runs before they fill anything in.
+  try { permitCompetencyGate('cs', 'screen-cs-form'); } catch(e) {}
+
   document.getElementById('cs-permit-id').value = csGenerateId();
   const now = new Date();
   document.getElementById('cs-date').value = now.toLocaleDateString('en-AU');
@@ -33983,6 +34060,10 @@ function csValidate() {
   const cf = document.getElementById('cs-confirm');
   if (!cf || !cf.classList.contains('checked')) ok = false;
 
+  // Competency hard-block — no valid Confined Space ticket = can't submit,
+  // no matter how complete the rest of the form is.
+  if (_permitCompetencyOk['cs'] === false) ok = false;
+
   const btn = document.getElementById('cs-submit-btn');
   if (btn) {
     btn.disabled = !ok;
@@ -33992,6 +34073,10 @@ function csValidate() {
 }
 
 async function submitCS() {
+  if (_permitCompetencyOk['cs'] === false) {
+    slanAlert('You can’t submit this permit without a current Confined Space entry ticket on file. See your supervisor to have your ticket recorded, or to be added to a permit raised by a ticketed worker.');
+    return;
+  }
   if (window._csSubmitting) return;
   window._csSubmitting = true;
   const btn = document.getElementById('cs-submit-btn');
