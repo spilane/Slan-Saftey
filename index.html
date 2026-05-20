@@ -42137,25 +42137,43 @@ function slanOpenPhoto(inputId) {
   setTimeout(function() { _slanPhotoLock[inputId] = false; }, 1500);
 }
 
+var SDS_PHOTO_MAX = 1280;
 function handleSdsPhoto(idx, e) {
   var file = e.target && e.target.files && e.target.files[0];
   if (!file) return;
+  // Big phone-camera photos (12–50 MP) can crash a mobile browser if decoded
+  // at full size. createImageBitmap decodes straight from the file blob (no
+  // giant data URL kept in memory) and we draw it onto a small canvas. Falls
+  // back to the classic FileReader path only if createImageBitmap is absent.
+  if (window.createImageBitmap) {
+    createImageBitmap(file).then(function(bmp) {
+      try {
+        var w = bmp.width, h = bmp.height;
+        if (w > SDS_PHOTO_MAX || h > SDS_PHOTO_MAX) { var r = Math.min(SDS_PHOTO_MAX / w, SDS_PHOTO_MAX / h); w = Math.round(w * r); h = Math.round(h * r); }
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(bmp, 0, 0, w, h);
+        try { bmp.close && bmp.close(); } catch (e2) {}
+        sdsShowPhoto(idx, c.toDataURL('image/jpeg', 0.6));
+      } catch (err) { sdsPhotoFallback(idx, file); }
+    }).catch(function() { sdsPhotoFallback(idx, file); });
+  } else {
+    sdsPhotoFallback(idx, file);
+  }
+}
+
+function sdsPhotoFallback(idx, file) {
   var reader = new FileReader();
   reader.onload = function(ev) {
     var raw = ev.target.result;
-    // Compress via canvas to keep storage small, but fall back to the raw
-    // data URL if canvas fails — so the photo ALWAYS displays.
     var img = new window.Image();
     img.onload = function() {
-      var dataUrl = raw;
       try {
-        var w = img.width, h = img.height, MAX = 1000;
-        if (w > MAX || h > MAX) { var r = Math.min(MAX / w, MAX / h); w = Math.round(w * r); h = Math.round(h * r); }
+        var w = img.width, h = img.height;
+        if (w > SDS_PHOTO_MAX || h > SDS_PHOTO_MAX) { var r = Math.min(SDS_PHOTO_MAX / w, SDS_PHOTO_MAX / h); w = Math.round(w * r); h = Math.round(h * r); }
         var c = document.createElement('canvas'); c.width = w; c.height = h;
         c.getContext('2d').drawImage(img, 0, 0, w, h);
-        dataUrl = c.toDataURL('image/jpeg', 0.7);
-      } catch (err) { dataUrl = raw; }
-      sdsShowPhoto(idx, dataUrl);
+        sdsShowPhoto(idx, c.toDataURL('image/jpeg', 0.6));
+      } catch (err) { sdsShowPhoto(idx, raw); }
     };
     img.onerror = function() { sdsShowPhoto(idx, raw); };
     img.src = raw;
