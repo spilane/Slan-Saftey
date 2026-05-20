@@ -15529,6 +15529,18 @@ document.addEventListener('DOMContentLoaded',()=>{
   //     if (!refreshing) { refreshing = true; window.location.reload(); }
   //   });
   // }
+  // CAPTURE the form-screen breadcrumb BEFORE checkOnboarding() runs.
+  // checkOnboarding() navigates to Home (worker default), and goTo() clears
+  // slan_last_screen whenever it lands on a non-restorable screen — so if we
+  // read it *after* checkOnboarding it would already be wiped. This capture
+  // is what makes the iOS-reload restore below actually work.
+  var _restoreScr = '';
+  var _restoreScrTs = 0;
+  try {
+    _restoreScr   = localStorage.getItem('slan_last_screen') || '';
+    _restoreScrTs = parseInt(localStorage.getItem('slan_last_screen_ts') || '0', 10);
+  } catch(e) {}
+
   initFirebase();
   checkOnboarding();
 
@@ -15542,22 +15554,19 @@ document.addEventListener('DOMContentLoaded',()=>{
   // iOS PWA reload guard: when iOS Safari evicts the WebView while the
   // camera takes over (during a permit photo, SDS photo, incident photo)
   // and reloads us on return, checkOnboarding() routes the user back to
-  // Home and they think the form was lost. If we left a recent form-screen
-  // breadcrumb behind in goTo(), restore that screen here. The form's own
-  // restore-draft banner (e.g. hwMaybeRestoreDraft) then offers to bring
-  // the photos and field values back. 60 min TTL — past that we assume the
-  // user actually meant to leave.
+  // Home and they think the form was lost. Using the breadcrumb captured
+  // ABOVE (before checkOnboarding wiped it), restore that screen here. The
+  // form's own restore-draft banner then offers to bring values back.
+  // 60 min TTL — past that we assume the user actually meant to leave.
   try {
-    var _lastScr = localStorage.getItem('slan_last_screen');
-    var _lastScrTs = parseInt(localStorage.getItem('slan_last_screen_ts') || '0', 10);
-    if (_lastScr
+    if (_restoreScr
         && typeof SLAN_RESTORABLE_SCREENS === 'object'
-        && SLAN_RESTORABLE_SCREENS[_lastScr]
-        && document.getElementById(_lastScr)
-        && (Date.now() - _lastScrTs) < 60 * 60 * 1000) {
+        && SLAN_RESTORABLE_SCREENS[_restoreScr]
+        && document.getElementById(_restoreScr)
+        && (Date.now() - _restoreScrTs) < 60 * 60 * 1000) {
       // Defer to next tick so checkOnboarding's routing finishes first.
       setTimeout(function() {
-        try { goTo(_lastScr); } catch(e) { console.warn('Screen restore failed:', e); }
+        try { goTo(_restoreScr); } catch(e) { console.warn('Screen restore failed:', e); }
       }, 0);
     }
   } catch(e) {}
