@@ -10145,9 +10145,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <!-- Director alerts (hidden unless there are alerts) -->
-    <div id="an-dir-alerts" style="display:none;flex-direction:column;gap:8px">
-      <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Requires attention</div>
-      <div id="an-dir-alerts-list" style="font-size:13px;color:var(--muted);text-align:center;padding:12px">No critical alerts at this time.</div>
+    <div id="an-dir-alerts" class="fcard" style="display:none;flex-direction:column;padding:0;overflow:hidden;margin-bottom:12px">
+      <div class="fcard-hdr" id="an-dir-alerts-hdr">Requires Attention</div>
+      <div id="an-dir-alerts-list"></div>
     </div>
 
     <!-- ── EXPANDABLE TILES ─────────────────── -->
@@ -37192,16 +37192,16 @@ function renderDirAttentionFeed() {
   var list = document.getElementById('an-dir-alerts-list');
   if (!list) return;
   var parent = document.getElementById('an-dir-alerts');
+  var hdr = document.getElementById('an-dir-alerts-hdr');
   var alerts = [];
 
-  // SDS — expired (critical) and expiring/urgent (warning)
+  // SDS — expired (critical) and expiring/urgent (warning), grouped
   try {
     var chems = (typeof _sdsAllChems === 'function') ? _sdsAllChems() : [];
-    chems.filter(function(c) { return c.status === 'expired'; }).forEach(function(c) {
-      alerts.push({ level: 'critical', title: 'SDS expired — ' + c.name, detail: (c.sites || '') + ' · must not be used on site until renewed', go: 'goToDirectorSds' });
-    });
+    var expired = chems.filter(function(c) { return c.status === 'expired'; });
+    if (expired.length) alerts.push({ level: 'critical', title: expired.length + ' SDS expired', detail: expired.map(function(c) { return c.name + ' (' + (c.sites || '') + ')'; }).join(' · '), go: 'goToDirectorSds' });
     var urgent = chems.filter(function(c) { return c.status === 'urgent'; });
-    if (urgent.length) alerts.push({ level: 'warn', title: urgent.length + ' SDS expiring soon', detail: urgent.map(function(c) { return c.name; }).slice(0, 3).join(' · '), go: 'goToDirectorSds' });
+    if (urgent.length) alerts.push({ level: 'warn', title: urgent.length + ' SDS expiring soon', detail: urgent.map(function(c) { return c.name; }).join(' · '), go: 'goToDirectorSds' });
   } catch (e) {}
 
   // Permits — rejected/revoked (critical) and high-risk active now (warning)
@@ -37211,39 +37211,40 @@ function renderDirAttentionFeed() {
       if (flagged.length) alerts.push({ level: 'critical', title: flagged.length + ' permit' + (flagged.length > 1 ? 's' : '') + ' rejected or revoked', detail: flagged.map(function(p) { return p.ref + ' (' + p.site + ')'; }).join(' · '), go: 'goToDirectorPermits' });
       var HIGH = { 'Confined Space': 1, 'Hot Works': 1, 'Asbestos': 1, 'Electrical': 1, 'Lifting': 1 };
       var hr = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'active' && HIGH[p.type]; });
-      if (hr.length) alerts.push({ level: 'warn', title: hr.length + ' high-risk permit' + (hr.length > 1 ? 's' : '') + ' active now', detail: hr.map(function(p) { return p.type + ' (' + p.site + ')'; }).slice(0, 4).join(' · '), go: 'goToDirectorPermits' });
+      if (hr.length) alerts.push({ level: 'warn', title: hr.length + ' high-risk permit' + (hr.length > 1 ? 's' : '') + ' active now', detail: hr.map(function(p) { return p.type + ' (' + p.site + ')'; }).join(' · '), go: 'goToDirectorPermits' });
     }
   } catch (e) {}
 
-  // Toolbox — sites below the company target
+  // Toolbox — all below-target sites grouped into one row
   try {
     if (typeof DIR_TBT_SITES !== 'undefined') {
       var tgt = (typeof DIR_TBT_TARGET !== 'undefined') ? DIR_TBT_TARGET : 95;
-      DIR_TBT_SITES.forEach(function(s) {
-        var pct = s.total ? Math.round(s.signed / s.total * 100) : 100;
-        if (pct < tgt) alerts.push({ level: pct < 80 ? 'critical' : 'warn', title: 'Toolbox ' + pct + '% — ' + s.name, detail: s.signed + '/' + s.total + ' signed this month · below ' + tgt + '% target', go: 'goToDirectorToolbox' });
-      });
+      var below = DIR_TBT_SITES.map(function(s) { return { name: s.name, pct: s.total ? Math.round(s.signed / s.total * 100) : 100 }; }).filter(function(s) { return s.pct < tgt; });
+      if (below.length) alerts.push({ level: below.some(function(b) { return b.pct < 80; }) ? 'critical' : 'warn', title: below.length + ' site' + (below.length > 1 ? 's' : '') + ' below toolbox target', detail: below.map(function(b) { return b.name + ' ' + b.pct + '%'; }).join(' · ') + ' · target ' + tgt + '%', go: 'goToDirectorToolbox' });
     }
   } catch (e) {}
 
+  if (hdr) hdr.textContent = 'Requires Attention' + (alerts.length ? ' · ' + alerts.length : '');
   if (!alerts.length) {
     if (parent) parent.style.display = 'none';
-    list.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px">No critical alerts at this time.</div>';
+    list.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No critical alerts at this time.</div>';
     return;
   }
   if (parent) parent.style.display = 'flex';
   alerts.sort(function(a, b) { return (a.level === 'critical' ? 0 : 1) - (b.level === 'critical' ? 0 : 1); });
-  list.innerHTML = alerts.map(function(a) {
+  var warnSvg = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:19px;height:19px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  list.innerHTML = alerts.map(function(a, i) {
     var crit = a.level === 'critical';
-    var bg = crit ? '#FFF0F0' : '#FDF8E8';
-    var bd = crit ? 'rgba(184,50,50,.25)' : 'rgba(184,150,12,.3)';
-    var dot = crit ? '#B83232' : '#B8960C';
-    var tc = crit ? '#B83232' : '#8B6914';
-    var dc = crit ? '#C06060' : '#A07020';
-    return '<div onclick="' + a.go + '()" style="background:' + bg + ';border:1.5px solid ' + bd + ';border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;cursor:pointer">' +
-      '<div style="width:8px;height:8px;border-radius:50%;background:' + dot + ';flex-shrink:0;margin-top:3px"></div>' +
-      '<div style="min-width:0"><div style="font-size:12px;font-weight:600;color:' + tc + '">' + a.title + '</div>' +
-      '<div style="font-size:11px;color:' + dc + ';margin-top:2px">' + a.detail + '</div></div>' +
+    var icBg = crit ? '#FAEBEB' : '#FDF2D8';
+    var icStroke = crit ? '#B83232' : '#906500';
+    var divider = (i < alerts.length - 1) ? 'border-bottom:1px solid var(--border);' : '';
+    return '<div onclick="' + a.go + '()" style="display:flex;align-items:center;gap:12px;padding:12px 15px;background:#fff;cursor:pointer;' + divider + '">' +
+      '<div style="width:36px;height:36px;border-radius:10px;background:' + icBg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;color:' + icStroke + '">' + warnSvg.replace('stroke-width', 'stroke="' + icStroke + '" stroke-width') + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--text)">' + a.title + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.detail + '</div>' +
+      '</div>' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:18px;height:18px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>' +
     '</div>';
   }).join('');
 }
