@@ -3940,15 +3940,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="hz-photo-slot" id="sds-slot-0" style="position:relative">
-              <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" onchange="handleSdsPhoto(0,event)" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:3;font-size:0">
+          <div class="hw-photo-grid">
+            <div class="hw-photo-slot" id="sds-slot-0">
+              <input type="file" id="sds-photo-input-0" class="hw-photo-fileinput" accept="image/*" capture="environment" onchange="handleSdsPhoto(0,event)">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <div class="hw-photo-label">1 · Product label</div>
               <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
             </div>
-            <div class="hz-photo-slot" id="sds-slot-1" style="position:relative">
-              <input type="file" id="sds-photo-input-1" accept="image/*" capture="environment" onchange="handleSdsPhoto(1,event)" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:3;font-size:0">
+            <div class="hw-photo-slot" id="sds-slot-1">
+              <input type="file" id="sds-photo-input-1" class="hw-photo-fileinput" accept="image/*" capture="environment" onchange="handleSdsPhoto(1,event)">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <div class="hw-photo-label">2 · Product label</div>
               <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
@@ -42227,23 +42227,15 @@ function handleSdsPhoto(idx, e) {
       const compressed = canvas.toDataURL('image/jpeg', 0.7);
       sdsPhotos[idx] = compressed;
 
-      // Show the photo as a real <img> element (a base64 data-URL set as a
-      // CSS background often fails to render on mobile). Keep the file input
-      // overlay on top so a re-tap can replace the photo and we never destroy
-      // the native input — that's what avoids the iOS double-camera bug.
+      // Display exactly like Hot Work (hwPhotoStoreUI): replace the slot with
+      // a remove button + <img>. The .hw-photo-slot.filled img CSS makes it
+      // fill. Tap the × to clear and re-take.
       const slot = document.getElementById('sds-slot-' + idx);
       if (slot) {
-        var _prev = slot.querySelector('img.sds-preview');
-        if (_prev) _prev.remove();
-        var _im = document.createElement('img');
-        _im.className = 'sds-preview';
-        _im.src = compressed;
-        _im.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;z-index:1';
-        slot.appendChild(_im);
         slot.classList.add('filled');
-        Array.prototype.forEach.call(slot.children, function(c) {
-          if (c.tagName !== 'INPUT' && c !== _im) c.style.display = 'none';
-        });
+        slot.innerHTML = '<button type="button" class="hw-photo-remove" onclick="event.preventDefault();event.stopPropagation();handleSdsPhotoRemove(' + idx + ')">×</button>' +
+          '<img src="' + compressed + '" alt="SDS photo ' + (idx + 1) + '">' +
+          '<div class="hw-photo-label">' + (idx + 1) + ' · Product label</div>';
       }
       
       // Trigger validation check
@@ -42259,10 +42251,9 @@ function handleSdsPhotoRemove(idx) {
   const slot = document.getElementById('sds-slot-' + idx);
   if (slot) {
     const num = idx + 1;
-    slot.style.backgroundImage = '';
     slot.classList.remove('filled');
-    // Rebuild the overlay placeholder (transparent input + icon + labels).
-    slot.innerHTML = '<input type="file" id="sds-photo-input-' + idx + '" accept="image/*" capture="environment" onchange="handleSdsPhoto(' + idx + ',event)" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:3;font-size:0">' +
+    // Rebuild the .hw-photo-fileinput overlay placeholder (matches Hot Work).
+    slot.innerHTML = '<input type="file" id="sds-photo-input-' + idx + '" class="hw-photo-fileinput" accept="image/*" capture="environment" onchange="handleSdsPhoto(' + idx + ',event)">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
       '<div class="hw-photo-label">' + num + ' · Product label</div>' +
       '<div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>';
