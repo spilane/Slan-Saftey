@@ -3941,19 +3941,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fgroup">
           <label class="flabel">Photos of product label (optional but recommended)</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="hz-photo-slot" id="sds-slot-0" onclick="slanOpenPhoto('sds-photo-input-0')">
+            <div class="hz-photo-slot" id="sds-slot-0" style="position:relative">
+              <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" onchange="handleSdsPhoto(0,event)" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:3;font-size:0">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <div class="hw-photo-label">1 · Product label</div>
               <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
             </div>
-            <div class="hz-photo-slot" id="sds-slot-1" onclick="slanOpenPhoto('sds-photo-input-1')">
+            <div class="hz-photo-slot" id="sds-slot-1" style="position:relative">
+              <input type="file" id="sds-photo-input-1" accept="image/*" capture="environment" onchange="handleSdsPhoto(1,event)" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:3;font-size:0">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               <div class="hw-photo-label">2 · Product label</div>
               <div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>
             </div>
           </div>
-          <input type="file" id="sds-photo-input-0" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(0,event)">
-          <input type="file" id="sds-photo-input-1" accept="image/*" capture="environment" style="display:none" onchange="handleSdsPhoto(1,event)">
         </div>
         <button id="sds-submit-btn" onclick="sdsReportMissing()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:#C8C8C8;color:#fff;font-size:14px;font-weight:600;cursor:not-allowed;font-family:inherit;opacity:.65" disabled>Report Missing Chemical</button>
         <div id="sds-missing-confirm" style="display:none;text-align:center;font-size:13px;font-weight:600;color:#1B6E3A;padding:8px">Reported - supervisor has been notified</div>
@@ -38668,10 +38668,12 @@ var dincCurrentIncident = null; // Store current incident for modal
 // ═══════════════════════════════════════════════════════════════
 var DIR_TBT_TARGET = 95; // company-wide compliance target (%)
 
+// Names below are all real people from the DEMO_WORKERS personnel register,
+// so the director view stays consistent with permits / toolbox / incidents.
 var DIR_TBT_SITES = [
-  { name: 'Parramatta Metro Stage 2', signed: 18, total: 20, supervisor: 'Eoin Burke', outstanding: ['Liam Brennan', 'Niall Costello'] },
-  { name: 'Blacktown Interchange',    signed: 12, total: 15, supervisor: 'Dave Whelan', outstanding: ['Dean Mc Grath', 'Paul Sheridan', 'Tom Healy'] },
-  { name: 'Liverpool Civic Tower',    signed: 9,  total: 14, supervisor: 'Carl Reid',   outstanding: ['Kevin Nash', 'Mick Doyle', 'Sean Walsh', 'Pat Ryan', 'Jack Nolan'] }
+  { name: 'Parramatta Metro Stage 2', signed: 18, total: 20, supervisor: 'Eoin Burke',    outstanding: ['Liam Brennan', 'Paul Sheridan'] },
+  { name: 'Blacktown Interchange',    signed: 12, total: 15, supervisor: "Lee O'Brien",   outstanding: ['Dean Mc Grath', 'Aaron Farrell', 'James Riordan'] },
+  { name: 'Liverpool Civic Tower',    signed: 9,  total: 14, supervisor: 'Brendan Kelly', outstanding: ['Kevin Nash', 'Niall Costello', 'Mick Doyle', 'Shane Connolly', 'Gary Tully'] }
 ];
 
 var DIR_TBT_HISTORY = [
@@ -42189,11 +42191,19 @@ function handleSdsPhoto(idx, e) {
       const compressed = canvas.toDataURL('image/jpeg', 0.7);
       sdsPhotos[idx] = compressed;
 
-      // Replace slot content with image
+      // Show the photo as the slot background and hide the placeholder, but
+      // KEEP the file input overlay so a re-tap can replace the photo (and so
+      // we never destroy the native input — that's what avoids the iOS
+      // double-camera bug).
       const slot = document.getElementById('sds-slot-' + idx);
       if (slot) {
-        slot.innerHTML = `<img src="${compressed}" alt="SDS photo" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+        slot.style.backgroundImage = 'url(' + compressed + ')';
+        slot.style.backgroundSize = 'cover';
+        slot.style.backgroundPosition = 'center';
         slot.classList.add('filled');
+        Array.prototype.forEach.call(slot.children, function(c) {
+          if (c.tagName !== 'INPUT') c.style.display = 'none';
+        });
       }
       
       // Trigger validation check
@@ -42207,15 +42217,17 @@ function handleSdsPhoto(idx, e) {
 function handleSdsPhotoRemove(idx) {
   sdsPhotos[idx] = null;
   const slot = document.getElementById('sds-slot-' + idx);
-  const input = document.getElementById('sds-photo-input-' + idx);
-  
   if (slot) {
     const num = idx + 1;
-    slot.innerHTML = `<label for="sds-photo-input-${idx}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><div class="hw-photo-label">${num} · Product label</div><div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div></label>`;
+    slot.style.backgroundImage = '';
     slot.classList.remove('filled');
+    // Rebuild the overlay placeholder (transparent input + icon + labels).
+    slot.innerHTML = '<input type="file" id="sds-photo-input-' + idx + '" accept="image/*" capture="environment" onchange="handleSdsPhoto(' + idx + ',event)" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:3;font-size:0">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;stroke:var(--muted)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
+      '<div class="hw-photo-label">' + num + ' · Product label</div>' +
+      '<div style="font-size:10px;color:var(--muted);font-weight:500;margin-top:2px">Tap to take photo</div>';
   }
-  if (input) input.value = '';
-  
+
   // Trigger validation check
   sdsValidateForm();
 }
