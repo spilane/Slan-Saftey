@@ -10200,6 +10200,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
+    <!-- Permits to Work (Director Only) -->
+    <div class="fcard" style="overflow:hidden;padding:0">
+      <div onclick="goToDirectorPermits()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;background:#EAF0FA;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2D5BA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M9 2h6a1 1 0 0 1 1 1v1h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1z"/><path d="M9 14l2 2 4-4"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--text)">Permits to Work</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px" id="an-permits-summary">Loading permit activity…</div>
+          </div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:20px;height:20px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
     <!-- Safety Performance -->
     <div class="fcard" style="overflow:hidden;padding:0">
       <div onclick="anToggleSection('safety')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer">
@@ -10423,6 +10439,120 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
         <div class="tile-name">Scorecard</div>
         <div class="tile-sub">Monthly RAG report</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ DIRECTOR PERMITS SCREEN ═══ -->
+<div id="screen-dir-permits" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goToAnalytics('director')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="dir-ptw-logo" src="" alt="Slán Safety" style="height:80px;object-fit:contain;display:block"></div>
+      <div class="badge" style="background:rgba(184,150,12,.25);border:1.5px solid rgba(184,150,12,.5);color:#B8960C;font-size:10px;font-weight:700;letter-spacing:0.5px">DIRECTOR</div>
+    </div>
+    <div class="form-greeting">
+      <h1 style="color:#fff">Permits to Work</h1>
+      <p id="dir-ptw-period" style="color:rgba(255,255,255,0.8)">Company-wide · All sites</p>
+    </div>
+  </div>
+
+  <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
+
+    <div style="display:flex;gap:4px;margin-bottom:16px;padding:4px;background:linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
+      <button id="main-ptw-tab-overview" onclick="switchMainPtwTab('overview')" style="flex:1;padding:10px 16px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;box-shadow:0 2px 4px rgba(184,150,12,0.3)">Overview</button>
+      <button id="main-ptw-tab-register" onclick="switchMainPtwTab('register')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Register</button>
+      <button id="main-ptw-tab-approvals" onclick="switchMainPtwTab('approvals')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Approvals</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div id="main-ptw-tab-content-overview" class="main-ptw-tab-content">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🎯 Actions I Can Take Now</div>
+        <div style="padding:10px">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainPtwTab('approvals')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px">⏳ <span id="dptw-pending-count">—</span> permits pending approval</div>
+                <div style="font-size:10px;color:#78350F">Awaiting supervisor or director sign-off before work starts</div>
+              </div>
+              <div style="font-size:20px;color:#92400E">→</div>
+            </div>
+          </button>
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);border:2px solid #DC2626;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(220,38,38,0.15)" onclick="switchMainPtwTab('approvals')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#991B1B;margin-bottom:4px">🚨 <span id="dptw-flagged-count">—</span> permits rejected or revoked</div>
+                <div style="font-size:10px;color:#7F1D1D">Review outcomes — work stopped or resubmission required</div>
+              </div>
+              <div style="font-size:20px;color:#991B1B">→</div>
+            </div>
+          </button>
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #E6F3F0 0%, #D4EDE5 100%);border:2px solid #1B3A2D;border-radius:10px;cursor:pointer;box-shadow:0 2px 6px rgba(27,58,45,0.15)" onclick="dirPtwExportPDF()">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#1B3A2D;margin-bottom:4px">📄 Export permits register (PDF)</div>
+                <div style="font-size:10px;color:#3B6D11">Full permit log with status for audits / regulators</div>
+              </div>
+              <div style="font-size:20px;color:#1B3A2D">→</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div id="dptw-attention" style="display:none"></div>
+
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 Permit Activity</div>
+        <div style="padding:10px">
+          <div style="font-size:11px;color:#888;margin-bottom:10px;text-align:center" id="dptw-activity-line">—</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #15803D">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Active Now</div>
+              <div style="font-size:30px;font-weight:800;color:#15803D;line-height:1" id="dptw-active">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #D97706">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Pending</div>
+              <div style="font-size:30px;font-weight:800;color:#D97706;line-height:1" id="dptw-pending">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #1F495C">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Closed</div>
+              <div style="font-size:30px;font-weight:800;color:#1F495C;line-height:1" id="dptw-closed">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #B83232">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Flagged</div>
+              <div style="font-size:30px;font-weight:800;color:#B83232;line-height:1" id="dptw-flagged">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🗂️ Status by Permit Type</div>
+        <div id="dptw-bytype" style="padding:10px"></div>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="main-ptw-tab-content-register" class="main-ptw-tab-content" style="display:none">
+      <div class="fcard">
+        <div class="fcard-hdr">📋 Permit Log</div>
+        <div id="dptw-register" style="padding:10px"></div>
+      </div>
+    </div>
+
+    <!-- APPROVALS -->
+    <div id="main-ptw-tab-content-approvals" class="main-ptw-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">⏳ Pending Approval</div>
+        <div id="dptw-pending-list" style="padding:10px"></div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-hdr">🚨 Rejected / Revoked</div>
+        <div id="dptw-flagged-list" style="padding:10px"></div>
       </div>
     </div>
 
@@ -37080,6 +37210,7 @@ function populateDirectorIncidents() {
   // Also refresh the Toolbox Talks dashboard tile summary on this pass.
   try { updateDirToolboxSummary(); } catch(e) {}
   try { updateDirSdsSummary(); } catch(e) {}
+  try { updateDirPtwSummary(); } catch(e) {}
   console.log('📊 populateDirectorIncidents() called');
   var list = document.getElementById('dir-inc-list'); // FIXED: was 'dinc-incidents-list'
   var summary = document.getElementById('an-inc-summary');
@@ -39160,6 +39291,236 @@ function dirSdsExportPDF() {
     setText(C.greyLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
     doc.text('SLS-REG-004 · v1.0 · Slán Safety — Confidential', ML, PAGE_H - 12);
     doc.save('Chemical-Register-' + today.replace(/\//g, '-') + '.pdf');
+  } catch (err) {
+    slanAlert('Could not generate the PDF: ' + (err && err.message ? err.message : 'unknown error'));
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DIRECTOR — PERMITS TO WORK (company-wide oversight)
+// Mirrors the Director Toolbox/SDS pattern. Seed data is modelled on
+// the real SLS-REG-011 Permits register (subtypes, sites, outcomes).
+// ═══════════════════════════════════════════════════════════════
+var DIR_PTW_TYPE_ORDER = ['Hot Works','Working at Heights','Confined Space','Excavation','Electrical','Demolition','Lifting','Concrete Pour','Penetration','Asbestos','Mobile Plant','Traffic'];
+
+var DIR_PTW_PERMITS = [
+  { ref:'HW-001',   type:'Hot Works',          subtype:'Welding',                worker:'Jake Ryan',     location:'Level 2 north',      site:'Parramatta', supervisor:'Eoin Burke',    status:'active',   date:'20/05/2026', note:'' },
+  { ref:'HW-002',   type:'Hot Works',          subtype:'Grinding',               worker:'Mark Flynn',    location:'Basement carpark',   site:'Parramatta', supervisor:'Eoin Burke',    status:'closed',   date:'18/05/2026', note:'' },
+  { ref:'WAH-003',  type:'Working at Heights', subtype:'EWP work (4m)',          worker:'Sam Carroll',   location:'Roof bay 4',         site:'Blacktown',  supervisor:"Lee O'Brien",   status:'active',   date:'20/05/2026', note:'' },
+  { ref:'WAH-004',  type:'Working at Heights', subtype:'Roof access (6m)',       worker:'Tom Burke',     location:'Loading dock',       site:'Liverpool',  supervisor:'Brendan Kelly', status:'pending',  date:'20/05/2026', note:'' },
+  { ref:'CS-005',   type:'Confined Space',     subtype:'Tank entry',             worker:'Chris Walsh',   location:'Tower crane base',   site:'Blacktown',  supervisor:"Lee O'Brien",   status:'rejected', date:'19/05/2026', note:'Insufficient detail in rescue plan; resubmit.' },
+  { ref:'CS-006',   type:'Confined Space',     subtype:'Pit entry',              worker:"Lee O'Brien",   location:'Service riser 3',    site:'Parramatta', supervisor:'Eoin Burke',    status:'active',   date:'19/05/2026', note:'' },
+  { ref:'EXC-007',  type:'Excavation',         subtype:'Trenching (2.0m)',       worker:'Brendan Kelly', location:'Plant room',         site:'Liverpool',  supervisor:'Brendan Kelly', status:'closed',   date:'17/05/2026', note:'' },
+  { ref:'EXC-008',  type:'Excavation',         subtype:'Pile cap (1.6m)',        worker:'Mick Doyle',    location:'Loading bay',        site:'Blacktown',  supervisor:"Lee O'Brien",   status:'revoked',  date:'16/05/2026', note:'Wind exceeded safe limits — work stopped, area secured.' },
+  { ref:'ELEC-009', type:'Electrical',         subtype:'LV switchboard',         worker:'Kevin Nash',    location:'Substation A',       site:'Parramatta', supervisor:'Eoin Burke',    status:'active',   date:'20/05/2026', note:'' },
+  { ref:'ELEC-010', type:'Electrical',         subtype:'Cable installation',     worker:'Aaron Farrell', location:'Riser 2',            site:'Liverpool',  supervisor:'Brendan Kelly', status:'pending',  date:'20/05/2026', note:'' },
+  { ref:'DEMO-011', type:'Demolition',         subtype:'Soft strip',             worker:'Shane Connolly',location:'Level 1 west',       site:'Blacktown',  supervisor:"Lee O'Brien",   status:'closed',   date:'15/05/2026', note:'' },
+  { ref:'LIFT-013', type:'Lifting',            subtype:'Routine (under 75% SWL)',worker:'Gary Tully',    location:'Grid B Level 1',     site:'Parramatta', supervisor:'Eoin Burke',    status:'pending',  date:'20/05/2026', note:'Critical lift checks not complete — escalate to lift supervisor.' },
+  { ref:'LIFT-014', type:'Lifting',            subtype:'Critical (>90% SWL)',    worker:'Wayne Slattery',location:'Tower crane',        site:'Liverpool',  supervisor:'Brendan Kelly', status:'active',   date:'19/05/2026', note:'' },
+  { ref:'CONC-015', type:'Concrete Pour',      subtype:'Columns (12m³)',         worker:'Pat Healy',     location:'Cores Level 3',      site:'Parramatta', supervisor:'Eoin Burke',    status:'closed',   date:'14/05/2026', note:'' },
+  { ref:'CONC-016', type:'Concrete Pour',      subtype:'Slab (40m³)',            worker:'Dave Murphy',   location:'Podium slab',        site:'Blacktown',  supervisor:"Lee O'Brien",   status:'revoked',  date:'13/05/2026', note:'Pump failure — pour suspended, alternative arranged.' },
+  { ref:'PEN-017',  type:'Penetration',        subtype:'Through-floor',          worker:'Paul Sheridan', location:'Level 4',            site:'Liverpool',  supervisor:'Brendan Kelly', status:'closed',   date:'12/05/2026', note:'' },
+  { ref:'ASB-019',  type:'Asbestos',           subtype:'Class B (Cement sheet)', worker:'James Riordan', location:'Old amenities block',site:'Parramatta', supervisor:'Eoin Burke',    status:'active',   date:'20/05/2026', note:'' },
+  { ref:'MP-021',   type:'Mobile Plant',       subtype:'Excavator',              worker:'Dean Mc Grath', location:'Bulk earthworks',    site:'Blacktown',  supervisor:"Lee O'Brien",   status:'active',   date:'20/05/2026', note:'Pre-start check incomplete — operator briefed.' },
+  { ref:'TRF-023',  type:'Traffic',            subtype:'Lane closure',           worker:'Liam Brennan',  location:'Site frontage',      site:'Liverpool',  supervisor:'Brendan Kelly', status:'active',   date:'20/05/2026', note:'' },
+  { ref:'TRF-024',  type:'Traffic',            subtype:'Footpath closure',       worker:'Niall Costello',location:'North entry',        site:'Parramatta', supervisor:'Eoin Burke',    status:'closed',   date:'11/05/2026', note:'Pedestrian incident — immediately closed, signage upgraded.' }
+];
+
+function _dptwStatusMeta(status) {
+  switch (status) {
+    case 'active':   return { label: 'Active',   colour: '#15803D', bg: '#E6F5ED' };
+    case 'pending':  return { label: 'Pending',  colour: '#D97706', bg: '#FEF3E2' };
+    case 'closed':   return { label: 'Closed',   colour: '#1F495C', bg: '#EAF0F3' };
+    case 'rejected': return { label: 'Rejected', colour: '#B83232', bg: '#FCE9E9' };
+    case 'revoked':  return { label: 'Revoked',  colour: '#B83232', bg: '#FCE9E9' };
+    default:         return { label: status || '—', colour: '#888', bg: '#F0F0F0' };
+  }
+}
+
+function _dptwStats() {
+  var by = { active: 0, pending: 0, closed: 0, rejected: 0, revoked: 0 };
+  var sites = {};
+  DIR_PTW_PERMITS.forEach(function(p) {
+    if (by[p.status] !== undefined) by[p.status]++;
+    if (p.site) sites[p.site] = true;
+  });
+  return {
+    total: DIR_PTW_PERMITS.length,
+    active: by.active, pending: by.pending, closed: by.closed,
+    rejected: by.rejected, revoked: by.revoked,
+    flagged: by.rejected + by.revoked,
+    sites: Object.keys(sites).length
+  };
+}
+
+function goToDirectorPermits() {
+  goTo('screen-dir-permits');
+  var logo = document.getElementById('dir-ptw-logo');
+  if (logo) { var src = document.querySelector('.tbar-logo img'); if (src) logo.src = src.src; }
+  switchMainPtwTab('overview');
+  dirPtwRender();
+}
+
+function switchMainPtwTab(tabName) {
+  ['overview', 'register', 'approvals'].forEach(function(t) {
+    var content = document.getElementById('main-ptw-tab-content-' + t);
+    if (content) content.style.display = (t === tabName) ? 'block' : 'none';
+    var btn = document.getElementById('main-ptw-tab-' + t);
+    if (btn) {
+      if (t === tabName) { btn.style.background = 'linear-gradient(135deg, #B8960C 0%, #D4A72C 100%)'; btn.style.color = '#fff'; btn.style.boxShadow = '0 2px 4px rgba(184,150,12,0.3)'; }
+      else { btn.style.background = 'transparent'; btn.style.color = '#666'; btn.style.boxShadow = 'none'; }
+    }
+  });
+}
+
+function _dptwCard(p) {
+  var m = _dptwStatusMeta(p.status);
+  return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-radius:8px;margin-bottom:8px;background:#fff">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+      '<div style="min-width:0;flex:1">' +
+        '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + p.type + ' · ' + p.subtype + '</div>' +
+      '</div>' +
+      '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;flex-shrink:0;background:' + m.bg + ';color:' + m.colour + '">' + m.label + '</span>' +
+    '</div>' +
+    '<div style="font-size:10.5px;color:#888;margin-top:3px">' + p.ref + ' · ' + p.site + ' · ' + p.location + ' · ' + p.date + '</div>' +
+    '<div style="font-size:11px;color:#5C6B62;margin-top:2px">' + p.worker + ' · approved by ' + p.supervisor + '</div>' +
+    (p.note ? '<div style="font-size:11px;color:' + m.colour + ';margin-top:5px;padding:6px 9px;background:' + m.bg + ';border-radius:6px;line-height:1.4">' + p.note + '</div>' : '') +
+  '</div>';
+}
+
+function dirPtwRender() {
+  var s = _dptwStats();
+  var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+  set('dptw-active', s.active);
+  set('dptw-pending', s.pending);
+  set('dptw-closed', s.closed);
+  set('dptw-flagged', s.flagged);
+  set('dptw-pending-count', s.pending);
+  set('dptw-flagged-count', s.flagged);
+  set('dptw-activity-line', s.total + ' permits this month · ' + s.sites + ' sites');
+
+  // Attention banner — surface rejected/revoked outcomes
+  var att = document.getElementById('dptw-attention');
+  if (att) {
+    var flagged = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; });
+    if (flagged.length) {
+      att.style.display = 'block';
+      att.innerHTML = '<div style="padding:13px 15px;background:#FCE9E9;border:1.5px solid #A32D2D;border-radius:10px;margin-bottom:12px">' +
+        '<div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">⚠ Permits needing review</div>' +
+        flagged.map(function(p) { return '<div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>' + p.ref + '</b> (' + p.site + ') — ' + _dptwStatusMeta(p.status).label + ': ' + p.note + '</div>'; }).join('') +
+        '</div>';
+    } else { att.style.display = 'none'; att.innerHTML = ''; }
+  }
+
+  // Status by permit type
+  var bt = document.getElementById('dptw-bytype');
+  if (bt) {
+    var rows = DIR_PTW_TYPE_ORDER.map(function(tp) {
+      var items = DIR_PTW_PERMITS.filter(function(p) { return p.type === tp; });
+      if (!items.length) return '';
+      var parts = [];
+      ['active','pending','closed','rejected','revoked'].forEach(function(st) {
+        var n = items.filter(function(p) { return p.status === st; }).length;
+        if (n) parts.push('<span style="color:' + _dptwStatusMeta(st).colour + '">' + n + ' ' + _dptwStatusMeta(st).label.toLowerCase() + '</span>');
+      });
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 4px;border-bottom:1px solid #EEE;gap:10px">' +
+        '<div style="font-size:12px;font-weight:600;color:#1A2A1F;min-width:0;flex:1">' + tp + '</div>' +
+        '<div style="font-size:10.5px;text-align:right;flex-shrink:0">' + parts.join(' · ') + '</div>' +
+      '</div>';
+    }).join('');
+    bt.innerHTML = rows || '<div style="font-size:12.5px;color:#888;text-align:center;padding:12px">No permits this month.</div>';
+  }
+
+  // Register — full log (newest first by ref-date order as seeded)
+  var reg = document.getElementById('dptw-register');
+  if (reg) reg.innerHTML = DIR_PTW_PERMITS.map(_dptwCard).join('');
+
+  // Approvals — pending + flagged
+  var pend = document.getElementById('dptw-pending-list');
+  if (pend) {
+    var p1 = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'pending'; });
+    pend.innerHTML = p1.length ? p1.map(_dptwCard).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No permits awaiting approval.</div>';
+  }
+  var flag = document.getElementById('dptw-flagged-list');
+  if (flag) {
+    var p2 = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; });
+    flag.innerHTML = p2.length ? p2.map(_dptwCard).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No rejected or revoked permits.</div>';
+  }
+}
+
+// Populates the "Permits to Work" summary line on the director dashboard tile.
+function updateDirPtwSummary() {
+  var el = document.getElementById('an-permits-summary');
+  if (!el) return;
+  var s = _dptwStats();
+  el.textContent = s.active + ' active · ' + s.pending + ' pending approval · ' + s.sites + ' sites';
+}
+
+// Company-wide permits register PDF (director audit pack).
+function dirPtwExportPDF() {
+  try {
+    if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF generator is not loaded yet. Please wait a moment and try again.'); return; }
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    var PAGE_W = 210, PAGE_H = 297, ML = 18, MR = 18, MT = 18;
+    var CW = PAGE_W - ML - MR;
+    var C = (typeof PDF_COLOURS !== 'undefined') ? PDF_COLOURS : { darkGreen: '#2C6B5E', darkText: '#1A2A1F', subLabel: '#5C6B62', greyLabel: '#888888', greyLight: '#dddddd', paleGreen: '#F0F7E8', amberDark: '#BA7517' };
+    function hex(h) { h = h.replace('#', ''); return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
+    function setFill(c) { var r = hex(c); doc.setFillColor(r[0], r[1], r[2]); }
+    function setStroke(c) { var r = hex(c); doc.setDrawColor(r[0], r[1], r[2]); }
+    function setText(c) { var r = hex(c); doc.setTextColor(r[0], r[1], r[2]); }
+
+    var p = (typeof getProfile === 'function') ? getProfile() : null;
+    var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
+    var s = _dptwStats();
+    var today = new Date().toLocaleDateString('en-AU');
+
+    var logoW = 30, logoH = 13, logoY = MT;
+    if (window.SLAN_LOGO_B64) { try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', PAGE_W - MR - logoW, logoY, logoW, logoH); } catch (e) {} }
+    setText(C.darkText); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text('PERMITS TO WORK REGISTER', ML, logoY + 8);
+    setText(C.subLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text(company + '  ·  Company-wide  ·  Generated ' + today, ML, logoY + 14);
+    setStroke(C.darkGreen); doc.setLineWidth(0.5); doc.line(ML, logoY + logoH + 5, PAGE_W - MR, logoY + logoH + 5);
+    var y = logoY + logoH + 13;
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); setText(C.darkText);
+    doc.text(s.total + ' permits     ' + s.active + ' active     ' + s.pending + ' pending     ' + s.closed + ' closed     ' + s.flagged + ' rejected/revoked', ML, y);
+    y += 10;
+
+    setFill(C.paleGreen); doc.rect(ML, y, CW, 7, 'F'); setText(C.darkText); doc.setFontSize(8.5); doc.setFont('helvetica', 'bold');
+    doc.text('Permit', ML + 2, y + 5); doc.text('Type', ML + 30, y + 5); doc.text('Site', ML + 92, y + 5); doc.text('Supervisor', ML + 120, y + 5); doc.text('Status', ML + 160, y + 5);
+    y += 7; doc.setFont('helvetica', 'normal');
+    DIR_PTW_PERMITS.forEach(function(pm) {
+      if (y > PAGE_H - 24) { doc.addPage(); y = MT; }
+      setText(C.darkText);
+      doc.text(doc.splitTextToSize(String(pm.ref), 26)[0], ML + 2, y + 5);
+      doc.text(doc.splitTextToSize(String(pm.type), 58)[0], ML + 30, y + 5);
+      doc.text(doc.splitTextToSize(String(pm.site), 26)[0], ML + 92, y + 5);
+      doc.text(doc.splitTextToSize(String(pm.supervisor), 36)[0], ML + 120, y + 5);
+      setText(_dptwStatusMeta(pm.status).colour);
+      doc.text(_dptwStatusMeta(pm.status).label, ML + 160, y + 5);
+      setStroke(C.greyLight); doc.setLineWidth(0.1); doc.line(ML, y + 7, PAGE_W - MR, y + 7);
+      y += 7;
+    });
+    y += 8;
+    if (y > PAGE_H - 40) { doc.addPage(); y = MT; }
+
+    var flagged = DIR_PTW_PERMITS.filter(function(pm) { return pm.status === 'rejected' || pm.status === 'revoked'; });
+    if (flagged.length) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); setText(C.amberDark);
+      doc.text('Rejected / revoked — outcomes', ML, y); y += 6;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); setText(C.darkText);
+      flagged.forEach(function(pm) {
+        if (y > PAGE_H - 24) { doc.addPage(); y = MT; }
+        doc.text(doc.splitTextToSize(pm.ref + ' (' + pm.site + ') — ' + _dptwStatusMeta(pm.status).label + ': ' + pm.note, CW), ML, y + 4);
+        y += 8;
+      });
+    }
+
+    setText(C.greyLabel); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.text('SLS-REG-011 · v1.0 · Slán Safety — Confidential', ML, PAGE_H - 12);
+    doc.save('Permits-Register-' + today.replace(/\//g, '-') + '.pdf');
   } catch (err) {
     slanAlert('Could not generate the PDF: ' + (err && err.message ? err.message : 'unknown error'));
   }
