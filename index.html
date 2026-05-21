@@ -39419,6 +39419,36 @@ function slanDirRegisterPDF(cfg) {
       });
       y += 4;
     }
+    function addActionItem(it, n) {
+      checkPageBreak(28);
+      var col = it.colour || C.darkText;
+      setFill(col); doc.circle(ML + 1.6, y + 2.4, 1.3, 'F');
+      setText(C.darkText); doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
+      doc.text(n + '. ' + String(it.title || ''), ML + 6, y + 3.5);
+      y += 7;
+      ['Finding', 'Action'].forEach(function(k) {
+        var v = it[k.toLowerCase()];
+        if (!v) return;
+        setText(C.labelGrey); doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+        doc.text(k + ':', ML + 6, y + 3);
+        setText(C.darkText); doc.setFont('helvetica', 'normal');
+        var lines = doc.splitTextToSize(String(v), CW - 26);
+        lines.forEach(function(ln, i) { if (i > 0) checkPageBreak(5); doc.text(ln, ML + 24, y + 3); if (i < lines.length - 1) y += 4.2; });
+        y += 5.5;
+      });
+      setStroke(C.borderGrey); doc.setLineWidth(0.1); doc.line(ML, y, PAGE_W - MR, y);
+      y += 5;
+    }
+    function addSignBlock(text, fields) {
+      if (text) { setText(C.darkText); doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.splitTextToSize(String(text), CW - 4).forEach(function(ln) { checkPageBreak(6); doc.text(ln, ML, y + 4); y += 5; }); y += 8; }
+      fields.forEach(function(f) {
+        checkPageBreak(16);
+        setText(C.labelGrey); doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+        doc.text(String(f).toUpperCase(), ML, y + 2);
+        setStroke(C.borderGrey); doc.setLineWidth(0.3); doc.line(ML + 42, y + 2, PAGE_W - MR, y + 2);
+        y += 13;
+      });
+    }
 
     addHeader();
     (cfg.sections || []).forEach(function(sec) {
@@ -39433,6 +39463,14 @@ function slanDirRegisterPDF(cfg) {
         y += 2;
       } else if (sec.type === 'table' && sec.rows && sec.rows.length) {
         addTable(sec);
+      } else if (sec.type === 'actions' && sec.items && sec.items.length) {
+        addSection(sec.title);
+        sec.items.forEach(function(it, i) { addActionItem(it, i + 1); });
+        y += 2;
+      } else if (sec.type === 'sign') {
+        addSection(sec.title);
+        addSignBlock(sec.text, sec.fields || ['Name', 'Signature', 'Date']);
+        y += 2;
       }
     });
 
@@ -40258,8 +40296,8 @@ function renderCompCharts() {
     destroy('trend');
     compCharts.trend = new Chart(trendEl, {
       type: 'line',
-      data: { labels: t.labels, datasets: [{ data: t.vals, borderColor: '#2D6A45', backgroundColor: 'rgba(45,106,69,0.12)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#2D6A45' }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 50, max: 100, ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 9 } }, grid: { display: false } } } }
+      data: { labels: t.labels, datasets: [{ label: 'Compliance', data: t.vals, borderColor: '#2D6A45', backgroundColor: 'rgba(45,106,69,0.12)', fill: true, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointHitRadius: 16, pointBackgroundColor: '#2D6A45' }] },
+      options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false }, tooltip: { displayColors: false, padding: 9, titleFont: { size: 12 }, bodyFont: { size: 13, weight: 'bold' }, callbacks: { title: function(items) { return items[0].label + ' 2026'; }, label: function(ctx) { return 'Compliance: ' + ctx.parsed.y + '%'; } } } }, scales: { y: { min: 50, max: 100, ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 9 } }, grid: { display: false } } } }
     });
   }
 
@@ -40304,14 +40342,12 @@ function dirCompExportPDF() {
       return [ { text: c.name }, { text: c.score + '%' }, { text: c.weight + '%' }, { text: r.label, colour: r.col }, { text: a.a + ' (was ' + c.prev + '%)' } ];
     }) }
   ];
-  if (o.actions.length) sections.push({ type: 'lines', title: 'ACTION ITEMS — AMBER & RED', lines: o.actions.map(function(c) {
-    return c.name + ' (' + c.score + '%) — ' + (c.issue || '') + ' → ' + (c.action || '');
+  if (o.actions.length) sections.push({ type: 'actions', title: 'ACTION ITEMS — AMBER & RED', items: o.actions.map(function(c) {
+    return { title: c.name + '  (' + _compRag(c.score).label + ' · ' + c.score + '%)', finding: c.issue || '', action: c.action || '', colour: _compRag(c.score).col };
   }) });
-  sections.push({ type: 'rows', title: 'CLIENT ACKNOWLEDGEMENT', rows: [
-    ['Director / Site Manager', '_______________________'],
-    ['Signature', '_______________________'],
-    ['Date', '_______________________']
-  ] });
+  sections.push({ type: 'sign', title: 'CLIENT ACKNOWLEDGEMENT',
+    text: 'I confirm receipt of this Monthly WHS Compliance Scorecard prepared by Slán Safety Pty Ltd. I understand that categories rated RED or AMBER require corrective action in accordance with the Slán Safety WHS Management System.',
+    fields: ['Director / Site Manager', 'Signature', 'Date'] });
   slanDirRegisterPDF({
     title: 'MONTHLY WHS COMPLIANCE SCORECARD',
     docCode: 'SLS-SCO-001 · v1.3 · Slán Safety — Confidential',
