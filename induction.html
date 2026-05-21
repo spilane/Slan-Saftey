@@ -448,6 +448,31 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ═══ SUBMITTED — PENDING APPROVAL ═══ -->
+<div class="ob-screen" id="ob-pending">
+  <div class="ob-cong-hero">
+    <div class="ob-tick-circle"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-l)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div>
+    <div class="ob-cong-title">Induction Submitted</div>
+    <div class="ob-cong-name" id="ob-pend-hname"></div>
+    <div class="ob-cong-sub">Your induction has been submitted and is now awaiting approval.<br>You&rsquo;ll get a notification in the app the moment it&rsquo;s approved and your access is unlocked &mdash; no email to wait on.</div>
+  </div>
+  <div class="ob-panel">
+    <div class="ob-details">
+      <div class="ob-det"><div class="ob-di" style="background:#F3EEFF"><svg viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="ob-dlbl">Worker</div><div class="ob-dval" id="ob-pend-cname">&mdash;</div></div></div>
+      <div class="ob-det"><div class="ob-di" style="background:#E6F5ED"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div><div class="ob-dlbl">Site</div><div class="ob-dval" id="ob-pend-csite">&mdash;</div></div></div>
+      <div class="ob-det"><div class="ob-di" style="background:#FFF5D6"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="ob-dlbl">Date Submitted</div><div class="ob-dval" id="ob-pend-cdate">&mdash;</div></div></div>
+      <div class="ob-det"><div class="ob-di" style="background:#FFF5D6"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><rect x="3" y="4" width="16" height="16" rx="2"/><path d="M7 8h10M7 12h6"/></svg></div><div><div class="ob-dlbl">Reference Number</div><div class="ob-dval" id="ob-pend-cref" style="font-family:monospace;letter-spacing:.04em">&mdash;</div></div></div>
+      <div class="ob-det"><div class="ob-di" style="background:#FFF8E8"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div><div><div class="ob-dlbl">Status</div><div class="ob-dval" style="color:#B8960C">&#9203; Pending approval</div></div></div>
+    </div>
+    <div style="margin-bottom:28px">
+      <div class="ob-ns-title">What happens next</div>
+      <div class="ob-ns-item"><div class="ob-ns-num">1</div><div class="ob-ns-text">Your induction and documents go to your site management for review and approval</div></div>
+      <div class="ob-ns-item"><div class="ob-ns-num">2</div><div class="ob-ns-text">You&rsquo;ll get a notification in the app the moment you&rsquo;re approved &mdash; nothing to check by email</div></div>
+      <div class="ob-ns-item"><div class="ob-ns-num">3</div><div class="ob-ns-text">Once approved, the app unlocks and you set up your profile, then sign in to site</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ INTRO SCREEN ═══ -->
 <div id="introScreen" style="display:none">
   
@@ -1711,13 +1736,14 @@ function getAssistiveDevices(){
 
 // ─── SUBMIT
 function submitForm(){
+  if(window._indBrowse){ document.getElementById("mainForm").style.display="none"; obShowPending(); return; } // demo: skip gates → show pending screen
   if(!sigHasCon){document.getElementById("sigErr").classList.add("show");alert("Please provide your digital signature before submitting.");return;}
   document.getElementById("sigErr").classList.remove("show");
   if(!document.getElementById("allDeclarations").closest(".cbi").classList.contains("ck")){alert("Please confirm all declarations before submitting.");return;}
   // PLACEHOLDER: Wire up your form submission endpoint here
   // Example: fetch("YOUR_ENDPOINT_URL", { method:"POST", body: JSON.stringify(getFormData()) })
   document.getElementById("mainForm").style.display="none";
-  obShowCongrats();
+  obShowPending();
 }
 </script>
 <script>
@@ -1755,6 +1781,27 @@ function obStartInduction() {
   // Show induction intro screen
   var intro = document.getElementById('introScreen');
   if(intro){ intro.style.display = 'block'; window.scrollTo(0,0); }
+}
+
+function obShowPending() {
+  var intro = document.getElementById('introScreen');
+  var main  = document.getElementById('mainForm');
+  if(intro) intro.style.display = 'none';
+  if(main)  main.style.display  = 'none';
+  var now = new Date();
+  var pad = function(n,l){ return String(n).padStart(l,'0'); };
+  var ref = 'IND-' + now.getFullYear() + pad(now.getMonth()+1,2) + pad(now.getDate(),2) + '-' + pad(Math.floor(Math.random()*9000)+1000,4);
+  var nameEl = document.getElementById('fullName');
+  var worker = nameEl && nameEl.value ? nameEl.value : 'Worker';
+  var first  = worker.split(' ')[0];
+  var g = function(id){ return document.getElementById(id); };
+  if(g('ob-pend-hname')) g('ob-pend-hname').textContent = 'Thanks, ' + first + '!';
+  if(g('ob-pend-cname')) g('ob-pend-cname').textContent = worker;
+  if(g('ob-pend-csite')) g('ob-pend-csite').textContent = obSiteName || '—';
+  if(g('ob-pend-cdate')) g('ob-pend-cdate').textContent = now.toLocaleDateString('en-AU',{day:'2-digit',month:'long',year:'numeric'});
+  if(g('ob-pend-cref'))  g('ob-pend-cref').textContent  = ref;
+  obGoTo('ob-pending');
+  window.scrollTo(0,0);
 }
 
 function obShowCongrats() {
