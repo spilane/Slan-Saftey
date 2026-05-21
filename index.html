@@ -10172,6 +10172,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-name">Permits to Work</div>
         <div class="tile-sub" id="an-permits-summary">Loading permit activity…</div>
       </div>
+      <div class="tile" onclick="goToDirectorCompliance()" style="grid-column:1 / -1;border:1.5px solid rgba(184,150,12,.35);background:linear-gradient(135deg,#FDF8E8 0%,#fff 60%)">
+        <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg></div>
+        <div class="tile-name">Monthly Compliance Scorecard</div>
+        <div class="tile-sub" id="an-comp-summary">Loading compliance score…</div>
+      </div>
     </div>
 
     <!-- Safety Performance -->
@@ -10771,6 +10776,91 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard">
         <div class="fcard-hdr">🗂️ Talk History &amp; Audit Rosters</div>
         <div id="dtbt-history" style="padding:10px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ DIRECTOR COMPLIANCE SCORECARD ═══ -->
+<div id="screen-dir-compliance" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goToAnalytics('director')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="dir-comp-logo" src="" alt="Slán Safety" style="height:80px;object-fit:contain;display:block"></div>
+      <div class="badge" style="background:rgba(184,150,12,.25);border:1.5px solid rgba(184,150,12,.5);color:#B8960C;font-size:10px;font-weight:700;letter-spacing:0.5px">DIRECTOR</div>
+    </div>
+    <div class="form-greeting">
+      <h1 style="color:#fff">Monthly Compliance Scorecard</h1>
+      <p id="dir-comp-period" style="color:rgba(255,255,255,0.8)">May 2026 · Company-wide</p>
+    </div>
+  </div>
+
+  <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
+
+    <div style="display:flex;gap:4px;margin-bottom:16px;padding:4px;background:linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
+      <button id="main-comp-tab-overview" onclick="switchMainCompTab('overview')" style="flex:1;padding:10px 16px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;box-shadow:0 2px 4px rgba(184,150,12,0.3)">Overview</button>
+      <button id="main-comp-tab-analytics" onclick="switchMainCompTab('analytics')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Analytics</button>
+      <button id="main-comp-tab-details" onclick="switchMainCompTab('details')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Details</button>
+    </div>
+
+    <div id="dcomp-site-filter" style="display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px"></div>
+
+    <!-- OVERVIEW -->
+    <div id="main-comp-tab-content-overview" class="main-comp-tab-content">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🎯 Overall Compliance Score</div>
+        <div style="padding:18px 14px;text-align:center">
+          <div style="font-size:54px;font-weight:800;line-height:1" id="dcomp-score">—</div>
+          <div id="dcomp-rag-label" style="display:inline-block;margin-top:8px;font-size:11px;font-weight:700;padding:4px 12px;border-radius:14px">—</div>
+          <div id="dcomp-trend" style="font-size:11.5px;color:#666;margin-top:8px">—</div>
+          <div style="display:flex;justify-content:center;gap:16px;margin-top:14px">
+            <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:#15803D"><span style="width:10px;height:10px;border-radius:50%;background:#15803D"></span><b id="dcomp-green">—</b> Green</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:#D97706"><span style="width:10px;height:10px;border-radius:50%;background:#D97706"></span><b id="dcomp-amber">—</b> Amber</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:#B83232"><span style="width:10px;height:10px;border-radius:50%;background:#B83232"></span><b id="dcomp-red">—</b> Red</span>
+          </div>
+          <div style="font-size:10.5px;color:#888;margin-top:10px"><b id="dcomp-actions-count">—</b> open action(s) · Green ≥85% · Amber 70–84% · Red &lt;70%</div>
+        </div>
+      </div>
+
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📋 Compliance by Category</div>
+        <div id="dcomp-categories" style="padding:10px"></div>
+      </div>
+
+      <div class="fcard">
+        <div style="padding:10px">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #E6F3F0 0%, #D4EDE5 100%);border:2px solid #1B3A2D;border-radius:10px;cursor:pointer;box-shadow:0 2px 6px rgba(27,58,45,0.15)" onclick="dirCompExportPDF()">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#1B3A2D;margin-bottom:4px">📄 Export monthly scorecard (PDF)</div>
+                <div style="font-size:10px;color:#3B6D11">Signable client deliverable for the board / insurer</div>
+              </div>
+              <div style="font-size:20px;color:#1B3A2D">→</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="main-comp-tab-content-analytics" class="main-comp-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📈 12-Month Compliance Trend</div>
+        <div style="padding:12px"><div style="height:200px;position:relative"><canvas id="dcomp-chart-trend"></canvas></div></div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-hdr">⚖️ Category Contribution</div>
+        <div style="padding:12px"><div style="height:230px;position:relative"><canvas id="dcomp-chart-cats"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- DETAILS -->
+    <div id="main-comp-tab-content-details" class="main-comp-tab-content" style="display:none">
+      <div class="fcard">
+        <div class="fcard-hdr">⚠️ Action Items — Amber &amp; Red</div>
+        <div id="dcomp-actions" style="padding:10px"></div>
       </div>
     </div>
 
@@ -36505,16 +36595,9 @@ function goToSwmsLibrary() {
 // MONTHLY SCORECARD
 // ═══════════════════════════════════════════════════════════════
 function goToScorecard() {
-  var p = getProfile();
-  // Director only
-  if (p && p.role !== 'Company Director') {
-    slanAlert('The Monthly Scorecard is restricted to the Company Director. Please ask your director to access this feature.');
-    return;
-  }
+  // Superseded by the SLS-SCO-001 Compliance Scorecard screen.
+  if (typeof goToDirectorCompliance === 'function') { goToDirectorCompliance(); return; }
   goTo('screen-scorecard');
-  var logoEl = document.getElementById('sc-logo');
-  if (logoEl) { var src = document.querySelector('.tbar-logo img'); if (src) logoEl.src = src.src; }
-  scPopulateDemoData();
 }
 
 function scPopulateDemoData() {
@@ -37265,6 +37348,7 @@ function populateDirectorIncidents() {
   try { updateDirToolboxSummary(); } catch(e) {}
   try { updateDirSdsSummary(); } catch(e) {}
   try { updateDirPtwSummary(); } catch(e) {}
+  try { updateDirCompSummary(); } catch(e) {}
   console.log('📊 populateDirectorIncidents() called');
   var list = document.getElementById('dir-inc-list'); // FIXED: was 'dinc-incidents-list'
   var summary = document.getElementById('an-inc-summary');
@@ -40029,6 +40113,198 @@ function dirPtwExportPDF() {
     docCode: 'SLS-REG-011 · v1.0 · Slán Safety — Confidential',
     metaLine: company + '  ·  ' + scope + '  ·  Generated ' + today,
     filename: 'Permits-Register-' + today.replace(/\//g, '-') + '.pdf',
+    sections: sections
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DIRECTOR — MONTHLY COMPLIANCE SCORECARD (SLS-SCO-001)
+// 10 weighted categories → overall weighted % + RAG. Toolbox/SDS/Permits
+// scores come live from the app data; the rest are realistic seeded demo
+// values until the backend feeds every register. RAG: Green ≥85, Amber 70-84, Red <70.
+// ═══════════════════════════════════════════════════════════════
+function _compModel() {
+  function pct(n, d) { return d ? Math.round(n / d * 100) : 0; }
+  var tbtPct = 80, sdsPct = 70, ptwPct = 85;
+  try { if (typeof _dirTbtTotals === 'function') tbtPct = _dirTbtTotals().pct; } catch (e) {}
+  try { if (typeof _sdsRegisterStats === 'function') sdsPct = _sdsRegisterStats().coverage; } catch (e) {}
+  try { if (typeof DIR_PTW_PERMITS !== 'undefined') { var fl = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; }).length; ptwPct = DIR_PTW_PERMITS.length ? pct(DIR_PTW_PERMITS.length - fl, DIR_PTW_PERMITS.length) : 100; } } catch (e) {}
+  return [
+    { name: 'Plant Pre-Starts',         score: 91,     weight: 10, prev: 88, source: 'SLS-REG-010', issue: '2 pre-starts missing operator sign-off', action: 'Supervisors to confirm daily pre-start completion' },
+    { name: 'SWMS Sign-Offs',           score: 86,     weight: 12, prev: 90, source: 'SWMS Register' },
+    { name: 'Toolbox Talks',            score: tbtPct, weight: 10, prev: 78, source: 'Toolbox Register', issue: 'Liverpool below the 95% target', action: 'Site supervisor to chase outstanding sign-offs' },
+    { name: 'Licence Currency',         score: 93,     weight: 12, prev: 93, source: 'SLS-REG-002 Training Matrix' },
+    { name: 'SDS Register',             score: sdsPct, weight: 8,  prev: 66, source: 'SLS-REG-005', issue: '1 SDS expired, 1 expiring soon', action: 'Source current SDS from the manufacturer' },
+    { name: 'Subcontractor Paperwork',  score: 78,     weight: 8,  prev: 74, source: 'SLS-REG-004', issue: '2 subcontractors missing current insurance', action: 'Request renewed certificates of currency' },
+    { name: 'Plant Service Currency',   score: 88,     weight: 8,  prev: 85, source: 'SLS-REG-010 Service Schedule' },
+    { name: 'Incident Reports',         score: 92,     weight: 14, prev: 92, source: 'SLS-REG-006' },
+    { name: 'Hazard Reports (Leading)', score: 82,     weight: 10, prev: 76, source: 'SLS-REG-008', issue: 'Proactive reporting below target', action: 'Promote hazard reporting at toolbox talks' },
+    { name: 'Psychosocial',             score: 69,     weight: 8,  prev: 65, source: 'SLS-REG-009', issue: 'Survey completion low + 1 open matter', action: 'Schedule wellbeing check-ins; close open matter' }
+  ];
+}
+function _compRag(s) { return s >= 85 ? { label: 'GREEN', col: '#15803D', bg: '#E6F5ED' } : (s >= 70 ? { label: 'AMBER', col: '#D97706', bg: '#FEF3E2' } : { label: 'RED', col: '#B83232', bg: '#FCE9E9' }); }
+function _compTrendArrow(cur, prev) { if (cur > prev + 1) return { a: '▲', c: '#15803D' }; if (cur < prev - 1) return { a: '▼', c: '#B83232' }; return { a: '▬', c: '#888' }; }
+function _compOverall() {
+  var cats = _compModel(), w = 0, ws = 0, pw = 0, pws = 0;
+  cats.forEach(function(c) { w += c.weight; ws += c.score * c.weight; pw += c.weight; pws += c.prev * c.weight; });
+  return {
+    cats: cats,
+    overall: w ? Math.round(ws / w) : 0,
+    prev: pw ? Math.round(pws / pw) : 0,
+    green: cats.filter(function(c) { return c.score >= 85; }).length,
+    amber: cats.filter(function(c) { return c.score >= 70 && c.score < 85; }).length,
+    red: cats.filter(function(c) { return c.score < 70; }).length,
+    actions: cats.filter(function(c) { return c.score < 85 && c.issue; })
+  };
+}
+function _comp12mo(currentOverall) {
+  var labels = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
+  var vals = [76, 78, 77, 80, 79, 81, 80, 82, 81, 83, 82, currentOverall];
+  return { labels: labels, vals: vals };
+}
+
+function goToDirectorCompliance() {
+  goTo('screen-dir-compliance');
+  var logo = document.getElementById('dir-comp-logo');
+  if (logo) { var src = document.querySelector('.tbar-logo img'); if (src) logo.src = src.src; }
+  switchMainCompTab('overview');
+  dirCompRender();
+}
+
+function switchMainCompTab(tabName) {
+  ['overview', 'analytics', 'details'].forEach(function(t) {
+    var content = document.getElementById('main-comp-tab-content-' + t);
+    if (content) content.style.display = (t === tabName) ? 'block' : 'none';
+    var btn = document.getElementById('main-comp-tab-' + t);
+    if (btn) {
+      if (t === tabName) { btn.style.background = 'linear-gradient(135deg, #B8960C 0%, #D4A72C 100%)'; btn.style.color = '#fff'; btn.style.boxShadow = '0 2px 4px rgba(184,150,12,0.3)'; }
+      else { btn.style.background = 'transparent'; btn.style.color = '#666'; btn.style.boxShadow = 'none'; }
+    }
+  });
+  if (tabName === 'analytics') { setTimeout(renderCompCharts, 80); }
+}
+
+function dirCompRender() {
+  var f = document.getElementById('dcomp-site-filter'); if (f) f.style.display = 'none'; // company-wide scorecard
+  var o = _compOverall();
+  var rag = _compRag(o.overall);
+  var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+  var scoreEl = document.getElementById('dcomp-score');
+  if (scoreEl) { scoreEl.textContent = o.overall + '%'; scoreEl.style.color = rag.col; }
+  var lab = document.getElementById('dcomp-rag-label');
+  if (lab) { lab.textContent = rag.label; lab.style.background = rag.bg; lab.style.color = rag.col; }
+  var tr = _compTrendArrow(o.overall, o.prev);
+  var trEl = document.getElementById('dcomp-trend');
+  if (trEl) { trEl.innerHTML = '<span style="color:' + tr.c + ';font-weight:700">' + tr.a + ' ' + (o.overall - o.prev >= 0 ? '+' : '') + (o.overall - o.prev) + '%</span> vs last month (' + o.prev + '%)'; }
+  set('dcomp-green', o.green); set('dcomp-amber', o.amber); set('dcomp-red', o.red);
+  set('dcomp-actions-count', o.actions.length);
+
+  var cont = document.getElementById('dcomp-categories');
+  if (cont) {
+    cont.innerHTML = o.cats.map(function(c) {
+      var r = _compRag(c.score), a = _compTrendArrow(c.score, c.prev);
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid #EEE">' +
+        '<span style="width:9px;height:9px;border-radius:50%;background:' + r.col + ';flex-shrink:0"></span>' +
+        '<div style="min-width:0;flex:1">' +
+          '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F">' + c.name + '</div>' +
+          '<div style="font-size:10px;color:#999;margin-top:1px">' + c.source + ' · weight ' + c.weight + '%</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:' + a.c + ';font-weight:700;flex-shrink:0;width:16px;text-align:center">' + a.a + '</div>' +
+        '<div style="font-size:15px;font-weight:800;color:' + r.col + ';flex-shrink:0;width:42px;text-align:right">' + c.score + '%</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  var act = document.getElementById('dcomp-actions');
+  if (act) {
+    act.innerHTML = o.actions.length ? o.actions.map(function(c) {
+      var r = _compRag(c.score);
+      return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + r.col + ';border-radius:8px;margin-bottom:8px;background:#fff">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+          '<div style="font-size:12.5px;font-weight:700;color:#1A2A1F">' + c.name + '</div>' +
+          '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;flex-shrink:0;background:' + r.bg + ';color:' + r.col + '">' + r.label + ' · ' + c.score + '%</span>' +
+        '</div>' +
+        '<div style="font-size:11.5px;color:#5E1A1A;margin-top:5px"><b>Finding:</b> ' + (c.issue || '') + '</div>' +
+        '<div style="font-size:11.5px;color:#3B6D11;margin-top:2px"><b>Action:</b> ' + (c.action || '') + '</div>' +
+      '</div>';
+    }).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No action items — all categories Green.</div>';
+  }
+
+  var anaEl = document.getElementById('main-comp-tab-content-analytics');
+  if (anaEl && anaEl.style.display !== 'none') { setTimeout(renderCompCharts, 30); }
+}
+
+var compCharts = {};
+function renderCompCharts() {
+  if (typeof Chart === 'undefined') return;
+  var o = _compOverall();
+  function destroy(k) { if (compCharts[k]) { try { compCharts[k].destroy(); } catch (e) {} compCharts[k] = null; } }
+
+  var trendEl = document.getElementById('dcomp-chart-trend');
+  if (trendEl) {
+    var t = _comp12mo(o.overall);
+    destroy('trend');
+    compCharts.trend = new Chart(trendEl, {
+      type: 'line',
+      data: { labels: t.labels, datasets: [{ data: t.vals, borderColor: '#2D6A45', backgroundColor: 'rgba(45,106,69,0.12)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#2D6A45' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 50, max: 100, ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 9 } }, grid: { display: false } } } }
+    });
+  }
+
+  var catsEl = document.getElementById('dcomp-chart-cats');
+  if (catsEl) {
+    destroy('cats');
+    compCharts.cats = new Chart(catsEl, {
+      type: 'bar',
+      data: { labels: o.cats.map(function(c) { return c.name; }), datasets: [{ data: o.cats.map(function(c) { return c.score; }), backgroundColor: o.cats.map(function(c) { return _compRag(c.score).col; }), borderRadius: 4 }] },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; }, font: { size: 9 } }, grid: { color: '#eee' } }, y: { ticks: { font: { size: 9 } }, grid: { display: false } } } }
+    });
+  }
+}
+
+function updateDirCompSummary() {
+  var el = document.getElementById('an-comp-summary');
+  if (!el) return;
+  var o = _compOverall();
+  var rag = _compRag(o.overall);
+  el.textContent = 'Overall ' + o.overall + '% · ' + rag.label.charAt(0) + rag.label.slice(1).toLowerCase() + ' · ' + o.actions.length + ' action' + (o.actions.length === 1 ? '' : 's');
+}
+
+function dirCompExportPDF() {
+  var o = _compOverall();
+  var rag = _compRag(o.overall);
+  var today = new Date().toLocaleDateString('en-AU');
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
+  var tr = _compTrendArrow(o.overall, o.prev);
+  var sections = [
+    { type: 'rows', title: 'SUMMARY', rows: [
+      ['Overall compliance score', o.overall + '%  (' + rag.label + ')'],
+      ['Trend vs last month', tr.a + ' ' + (o.overall - o.prev >= 0 ? '+' : '') + (o.overall - o.prev) + '%  (was ' + o.prev + '%)'],
+      ['Categories Green / Amber / Red', o.green + ' / ' + o.amber + ' / ' + o.red],
+      ['Open actions', String(o.actions.length)],
+      ['RAG bands', 'Green >=85%  ·  Amber 70-84%  ·  Red <70%']
+    ] },
+    { type: 'table', title: 'COMPLIANCE BY CATEGORY', columns: [
+      { label: 'Category', x: 0, w: 64 }, { label: 'Score', x: 64, w: 22 }, { label: 'Weight', x: 86, w: 24 }, { label: 'RAG', x: 110, w: 26 }, { label: 'Trend', x: 136, w: 34 }
+    ], rows: o.cats.map(function(c) {
+      var r = _compRag(c.score), a = _compTrendArrow(c.score, c.prev);
+      return [ { text: c.name }, { text: c.score + '%' }, { text: c.weight + '%' }, { text: r.label, colour: r.col }, { text: a.a + ' (was ' + c.prev + '%)' } ];
+    }) }
+  ];
+  if (o.actions.length) sections.push({ type: 'lines', title: 'ACTION ITEMS — AMBER & RED', lines: o.actions.map(function(c) {
+    return c.name + ' (' + c.score + '%) — ' + (c.issue || '') + ' → ' + (c.action || '');
+  }) });
+  sections.push({ type: 'rows', title: 'CLIENT ACKNOWLEDGEMENT', rows: [
+    ['Director / Site Manager', '_______________________'],
+    ['Signature', '_______________________'],
+    ['Date', '_______________________']
+  ] });
+  slanDirRegisterPDF({
+    title: 'MONTHLY WHS COMPLIANCE SCORECARD',
+    docCode: 'SLS-SCO-001 · v1.3 · Slán Safety — Confidential',
+    metaLine: company + '  ·  Company-wide  ·  ' + today,
+    filename: 'Compliance-Scorecard-' + today.replace(/\//g, '-') + '.pdf',
     sections: sections
   });
 }
