@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slán Safety — Plant &amp; Equipment</title>
+<style>
+:root{
+  --deep:#1B3A2D; --mid:#2D6A45; --gold:#B8960C; --gold-l:#D4AA30;
+  --bg:#F0F3F1; --card:#FFFFFF; --border:#D4DEDB;
+  --t1:#1A2E25; --t2:#4B6358; --t3:#7A938B;
+  --pass:#1B6E3A; --pass-bg:#E9F6EE;
+  --warn:#A06000; --warn-bg:#FFF6E6;
+  --fail:#A32D2D; --fail-bg:#FBECEC;
+  --r:12px; --rs:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;font-size:15px;line-height:1.5;padding-bottom:40px}
+.topbar{background:var(--deep);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.brand{display:flex;flex-direction:column;line-height:1.15}
+.brand b{color:var(--gold-l);font-size:16px;font-weight:700;letter-spacing:.02em}
+.brand span{color:#9FC4AE;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+.who{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:6px 12px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;font-family:inherit}
+.who small{color:#9FC4AE;font-weight:500}
+.wrap{max-width:560px;margin:0 auto;padding:18px 16px}
+.h1{font-size:21px;font-weight:700;color:var(--deep);margin-bottom:3px}
+.sub{font-size:13px;color:var(--t2);margin-bottom:18px}
+.asset{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:11px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:box-shadow .15s,border-color .15s;text-align:left;width:100%;font-family:inherit}
+.asset:hover{box-shadow:0 4px 14px rgba(0,0,0,.08);border-color:var(--gold)}
+.a-ic{width:46px;height:46px;border-radius:10px;background:#EAF1ED;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.a-main{flex:1;min-width:0}
+.a-code{font-size:15px;font-weight:700;color:var(--t1)}
+.a-mm{font-size:12.5px;color:var(--t2)}
+.a-badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.bg-op{background:var(--pass-bg);color:var(--pass)}
+.bg-flt{background:var(--warn-bg);color:var(--warn)}
+.bg-out{background:var(--fail-bg);color:var(--fail)}
+.chev{color:var(--t3);font-size:20px;flex-shrink:0}
+
+/* GATE RESULT */
+.gate-hero{padding:30px 20px 22px;text-align:center;border-radius:var(--r) var(--r) 0 0;color:#fff}
+.gate-hero.green{background:linear-gradient(135deg,#1B6E3A,#13502A)}
+.gate-hero.amber{background:linear-gradient(135deg,#A06000,#7A4A00)}
+.gate-hero.red{background:linear-gradient(135deg,#A32D2D,#7E2020)}
+.gate-ic{width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:38px}
+.gate-title{font-size:21px;font-weight:800;letter-spacing:.01em}
+.gate-asset{font-size:13px;color:rgba(255,255,255,.8);margin-top:5px}
+.gate-msg{font-size:14px;font-weight:600;background:rgba(0,0,0,.12);border-radius:9px;padding:11px 14px;margin:16px 16px 0;line-height:1.45}
+.panel{background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:16px;margin-bottom:18px}
+.check{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-bottom:1px solid #EEF2F0}
+.check:last-child{border-bottom:none}
+.ck-dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;margin-top:1px}
+.ck-pass{background:var(--pass)} .ck-warn{background:var(--warn)} .ck-fail{background:var(--fail)}
+.ck-name{font-size:13.5px;font-weight:600;color:var(--t1)}
+.ck-detail{font-size:12px;color:var(--t2);margin-top:1px}
+.btn{display:block;width:100%;padding:15px;border-radius:var(--rs);border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;margin-top:6px}
+.btn-green{background:var(--pass);color:#fff}
+.btn-amber{background:var(--warn);color:#fff}
+.btn-ghost{background:#fff;color:var(--deep);border:1.5px solid var(--border)}
+.ovr{background:var(--warn-bg);border:1px solid #EAD2A0;border-radius:var(--rs);padding:14px;margin-top:14px}
+.ovr label{font-size:12.5px;font-weight:700;color:var(--warn);display:block;margin-bottom:6px}
+.ovr input,.ovr textarea{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;margin-bottom:10px;outline:none}
+.ovr input:focus,.ovr textarea:focus{border-color:var(--gold)}
+.notify{font-size:12.5px;color:var(--fail);font-weight:600;text-align:center;margin-top:6px}
+/* sheet */
+.sheet-bk{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.sheet-bk.on{display:flex}
+.sheet{background:#fff;border-radius:18px 18px 0 0;width:100%;max-width:560px;padding:20px 16px calc(28px + env(safe-area-inset-bottom))}
+.sheet h3{font-size:16px;color:var(--deep);margin-bottom:4px}
+.sheet p{font-size:12.5px;color:var(--t2);margin-bottom:14px}
+.wbtn{width:100%;text-align:left;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:13px;margin-bottom:9px;cursor:pointer;font-family:inherit}
+.wbtn b{font-size:14px;color:var(--t1)} .wbtn span{display:block;font-size:11.5px;color:var(--t2);margin-top:2px}
+.demobar{position:fixed;bottom:0;left:0;right:0;background:var(--deep);color:var(--gold-l);font-size:11px;font-weight:600;text-align:center;padding:7px;z-index:40;letter-spacing:.05em}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><b>Slán Safety</b><span>Plant &amp; Equipment</span></div>
+  <button class="who" onclick="openWorkerSheet()"><span id="who-name">—</span></button>
+</div>
+
+<!-- PICK A MACHINE -->
+<div class="wrap" id="screen-pick">
+  <div class="h1">Start a Pre-Start</div>
+  <div class="sub">Choose the machine you're about to operate. We'll check you're cleared to run it.</div>
+  <div id="asset-list"></div>
+</div>
+
+<!-- GATE RESULT -->
+<div class="wrap" id="screen-gate" style="display:none"></div>
+
+<!-- worker switch sheet -->
+<div class="sheet-bk" id="worker-sheet" onclick="if(event.target===this)closeWorkerSheet()">
+  <div class="sheet">
+    <h3>View as worker</h3>
+    <p>Switch operator to see how the Ticket Gate responds — green, amber or red.</p>
+    <div id="worker-btns"></div>
+  </div>
+</div>
+
+<div class="demobar">DEMO — sample data</div>
+
+<script>
+/* ---------- helpers ---------- */
+function dOffset(days){ var d=new Date(); d.setDate(d.getDate()+days); return d; }
+function iso(d){ return d.toISOString().slice(0,10); }
+function fmt(d){ return new Date(d).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}); }
+function daysBetween(a,b){ return Math.round((new Date(a)-new Date(b))/86400000); }
+
+/* ---------- licence labels ---------- */
+var LIC={ white_card:'White Card', excavator:'Excavator ticket', telehandler:'Telehandler ticket',
+  hrwl_LF:'Forklift (LF) High Risk Work Licence', bulldozer:'Dozer ticket', drivers_C:'Car Licence (C)',
+  drivers_HR:'Heavy Rigid Licence (HR)' };
+function licName(c){ return LIC[c]||c; }
+
+/* ---------- WORKERS (fresh demo data) ---------- */
+var WORKERS=[
+  { id:'w1', name:"Liam O'Brien", trade:'Plant Operator', induction_expiry:iso(dOffset(300)),
+    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
+              {cls:'excavator',expiry:iso(dOffset(400)),verified:true},
+              {cls:'hrwl_LF',expiry:iso(dOffset(380)),verified:true} ],
+    voc:[ {cls:'excavator',make:'Caterpillar',model:'320'} ] },
+  { id:'w2', name:'Tom Walker', trade:'Plant Operator', induction_expiry:iso(dOffset(200)),
+    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
+              {cls:'excavator',expiry:iso(dOffset(14)),verified:true},
+              {cls:'hrwl_LF',expiry:iso(dOffset(300)),verified:true} ],
+    voc:[ {cls:'excavator',make:'Caterpillar',model:'320'} ] },
+  { id:'w3', name:'Jake Murray', trade:'Labourer', induction_expiry:iso(dOffset(200)),
+    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true} ],
+    voc:[] },
+  { id:'w4', name:'Pete Singh', trade:'Plant Operator', induction_expiry:iso(dOffset(200)),
+    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
+              {cls:'excavator',expiry:iso(dOffset(-30)),verified:true} ],
+    voc:[] }
+];
+
+/* ---------- ASSETS (fresh demo data) ---------- */
+var ASSETS=[
+  { code:'EXC-001', type:'Excavator', icon:'🚧', make:'Caterpillar', model:'320', status:'operational',
+    required:['excavator'], voc_required:true, rego_expiry:null, insurance_expiry:iso(dOffset(200)),
+    service_due:iso(dOffset(60)), critical_fault:false },
+  { code:'FLT-002', type:'Forklift', icon:'🏭', make:'Toyota', model:'8FG25', status:'operational',
+    required:['hrwl_LF'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(200)),
+    service_due:iso(dOffset(40)), critical_fault:false },
+  { code:'TLH-003', type:'Telehandler', icon:'🔧', make:'Manitou', model:'MT1840', status:'operational',
+    required:['telehandler'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(150)),
+    service_due:iso(dOffset(20)), critical_fault:false },
+  { code:'GEN-005', type:'Generator', icon:'⚡', make:'Denyo', model:'DCA-45', status:'operational',
+    required:[], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(200)),
+    service_due:iso(dOffset(-12)), critical_fault:false },
+  { code:'UTE-12', type:'Ute', icon:'🛻', make:'Toyota', model:'Hilux', status:'operational',
+    required:['drivers_C'], voc_required:false, rego_expiry:iso(dOffset(-9)), insurance_expiry:iso(dOffset(150)),
+    service_due:iso(dOffset(90)), critical_fault:false },
+  { code:'DOZ-004', type:'Dozer', icon:'🚩', make:'Komatsu', model:'D61', status:'fault_reported',
+    required:['bulldozer'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(150)),
+    service_due:iso(dOffset(70)), critical_fault:false }
+];
+
+var currentWorker=WORKERS[0];
+
+/* ---------- TICKET GATE (the hero) ---------- */
+function ticketGate(w, a){
+  var today=new Date(); today.setHours(0,0,0,0);
+  var checks=[];
+  function add(name,status,detail){ checks.push({name:name,status:status,detail:detail}); }
+
+  // Asset out of service / retired
+  if(a.status==='out_of_service'||a.status==='retired'){
+    add('Machine availability','fail','This machine is '+a.status.replace('_',' ')+' and must not be operated.');
+  } else { add('Machine availability','pass','Machine is available for use.'); }
+
+  // Critical fault
+  if(a.critical_fault){ add('Open critical fault','fail','This machine has an open critical fault. Do not operate.'); }
+  else if(a.status==='fault_reported'){ add('Reported fault','warn','A fault has been reported on this machine — supervisor sign-off required.'); }
+
+  // Registration
+  if(a.rego_expiry){
+    if(new Date(a.rego_expiry)<today){ add('Registration','fail','Registration expired '+fmt(a.rego_expiry)+'.'); }
+    else { add('Registration','pass','Registered to '+fmt(a.rego_expiry)+'.'); }
+  }
+  // Insurance
+  if(a.insurance_expiry){
+    if(new Date(a.insurance_expiry)<today){ add('Insurance','fail','Insurance expired '+fmt(a.insurance_expiry)+'.'); }
+  }
+
+  // Required licences
+  (a.required||[]).forEach(function(cls){
+    var t=w.tickets.find(function(x){return x.cls===cls;});
+    if(!t){ add('Holds '+licName(cls),'fail','You do not hold a '+licName(cls)+'.'); return; }
+    var exp=t.expiry?new Date(t.expiry):null;
+    if(exp && exp<today){ add('Holds '+licName(cls),'fail','Your '+licName(cls)+' expired '+fmt(t.expiry)+'.'); return; }
+    if(exp){
+      var d=daysBetween(t.expiry,today);
+      if(d<=30){ add('Holds '+licName(cls),'warn','Your '+licName(cls)+' expires in '+d+' day'+(d===1?'':'s')+' ('+fmt(t.expiry)+').'); return; }
+      if(d<=60){ add('Holds '+licName(cls),'warn','Your '+licName(cls)+' expires in '+d+' days — renew soon.','note'); return; }
+    }
+    add('Holds '+licName(cls),'pass',licName(cls)+' current to '+fmt(t.expiry)+(t.verified?'':' (not yet verified).'));
+  });
+
+  // VOC
+  if(a.voc_required){
+    var v=(w.voc||[]).find(function(x){return x.make===a.make && x.model===a.model;});
+    if(v){ add('Verification of Competency','pass','VOC on file for '+a.make+' '+a.model+'.'); }
+    else { add('Verification of Competency','warn','No VOC on file for '+a.make+' '+a.model+' — supervisor sign-off required.'); }
+  }
+
+  // Induction currency
+  if(w.induction_expiry && new Date(w.induction_expiry)<today){
+    add('Site induction','warn','Your induction is overdue for renewal.');
+  }
+
+  // Service currency
+  if(a.service_due && new Date(a.service_due)<today){
+    add('Service currency','warn','Machine service is overdue (due '+fmt(a.service_due)+').');
+  }
+
+  var hasFail=checks.some(function(c){return c.status==='fail';});
+  var hasWarn=checks.some(function(c){return c.status==='warn';});
+  var outcome=hasFail?'red':(hasWarn?'amber':'green');
+  var first=(checks.filter(function(c){return c.status==='fail';})[0]) || (checks.filter(function(c){return c.status==='warn';})[0]);
+  var msg = outcome==='green' ? 'You are authorised to operate '+a.code+' — '+a.make+' '+a.model+'.'
+          : (first?first.detail:'');
+  return { outcome:outcome, canProceed:outcome!=='red', requiresOverride:outcome==='amber', checks:checks, primary_message:msg };
+}
+
+/* ---------- RENDER ---------- */
+function badge(a){
+  if(a.status==='operational') return '<span class="a-badge bg-op">Operational</span>';
+  if(a.status==='fault_reported') return '<span class="a-badge bg-flt">Fault reported</span>';
+  return '<span class="a-badge bg-out">'+a.status.replace('_',' ')+'</span>';
+}
+function renderAssets(){
+  document.getElementById('asset-list').innerHTML = ASSETS.map(function(a,i){
+    return '<button class="asset" onclick="openGate('+i+')">'+
+      '<div class="a-ic">'+a.icon+'</div>'+
+      '<div class="a-main"><div class="a-code">'+a.code+'</div><div class="a-mm">'+a.type+' · '+a.make+' '+a.model+'</div></div>'+
+      badge(a)+'<div class="chev">›</div></button>';
+  }).join('');
+}
+function openGate(i){
+  var a=ASSETS[i];
+  var r=ticketGate(currentWorker,a);
+  var titles={green:'Authorised',amber:'Supervisor Approval Required',red:'Not Authorised'};
+  var icons={green:'✓',amber:'⚠',red:'✕'};
+  var html='<button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:13px;margin-bottom:14px" onclick="backToPick()">‹ Back</button>'+
+    '<div class="gate-hero '+r.outcome+'"><div class="gate-ic">'+icons[r.outcome]+'</div>'+
+      '<div class="gate-title">'+titles[r.outcome]+'</div>'+
+      '<div class="gate-asset">'+currentWorker.name+'  ·  '+a.code+' '+a.make+' '+a.model+'</div></div>'+
+    '<div class="gate-msg '+r.outcome+'">'+r.primary_message+'</div>'+
+    '<div class="panel">'+
+      r.checks.map(function(c){
+        var cls=c.status==='pass'?'ck-pass':(c.status==='warn'?'ck-warn':'ck-fail');
+        var sym=c.status==='pass'?'✓':(c.status==='warn'?'!':'✕');
+        return '<div class="check"><div class="ck-dot '+cls+'">'+sym+'</div><div><div class="ck-name">'+c.name+'</div><div class="ck-detail">'+c.detail+'</div></div></div>';
+      }).join('');
+
+  if(r.outcome==='green'){
+    html+='<button class="btn btn-green" onclick="beginPrestart()">Begin Pre-Start →</button>';
+  } else if(r.outcome==='amber'){
+    html+='<div class="ovr"><label>Supervisor PIN to override</label>'+
+      '<input id="ovr-pin" type="tel" inputmode="numeric" placeholder="Enter 4-digit PIN" maxlength="4">'+
+      '<label>Reason for override</label>'+
+      '<textarea id="ovr-reason" rows="2" placeholder="e.g. Renewal booked, supervisor approved for today"></textarea>'+
+      '<button class="btn btn-amber" onclick="doOverride()">Override &amp; Begin Pre-Start</button></div>'+
+      '<button class="btn btn-ghost" onclick="backToPick()">Cancel</button>';
+  } else {
+    html+='<div class="notify">✉ Your supervisor has been notified.</div>'+
+      '<button class="btn btn-ghost" onclick="backToPick()">Back to machines</button>';
+  }
+  html+='</div>';
+  document.getElementById('screen-gate').innerHTML=html;
+  document.getElementById('screen-pick').style.display='none';
+  document.getElementById('screen-gate').style.display='block';
+  window.scrollTo(0,0);
+}
+function backToPick(){
+  document.getElementById('screen-gate').style.display='none';
+  document.getElementById('screen-pick').style.display='block';
+  window.scrollTo(0,0);
+}
+function doOverride(){
+  var pin=(document.getElementById('ovr-pin').value||'').trim();
+  var reason=(document.getElementById('ovr-reason').value||'').trim();
+  if(pin!=='4827'){ alert('Incorrect supervisor PIN.'); return; }
+  if(!reason){ alert('Please enter a reason for the override.'); return; }
+  beginPrestart();
+}
+function beginPrestart(){
+  alert('Pre-Start checklist — coming next.\n\n(This is where the machine-specific pre-start form opens.)');
+}
+
+/* ---------- worker switch ---------- */
+function openWorkerSheet(){
+  document.getElementById('worker-btns').innerHTML = WORKERS.map(function(w,i){
+    return '<button class="wbtn" onclick="pickWorker('+i+')"><b>'+w.name+'</b><span>'+w.trade+'</span></button>';
+  }).join('');
+  document.getElementById('worker-sheet').classList.add('on');
+}
+function closeWorkerSheet(){ document.getElementById('worker-sheet').classList.remove('on'); }
+function pickWorker(i){
+  currentWorker=WORKERS[i];
+  document.getElementById('who-name').textContent=currentWorker.name;
+  closeWorkerSheet();
+  backToPick();
+}
+
+/* ---------- init ---------- */
+document.getElementById('who-name').textContent=currentWorker.name;
+renderAssets();
+</script>
+</body>
+</html>
