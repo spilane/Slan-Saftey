@@ -47727,28 +47727,101 @@ function showIncidentSummary(incidentRef) {
   };
 }
 
-// Open the real, downloadable incident PDF in a full-screen in-app viewer.
-// Renders the actual PDF (not an HTML look-alike); same document the export produces.
-// Opens the PDF as a top-level page so the device's native full-screen PDF viewer
-// shows it immediately. (Chrome won't render a PDF inside an iframe — it forces an
-// extra "Open" tap — so we deliberately avoid iframes here.)
+// Open the generated PDF INSIDE the app as a scrollable, viewable document
+// (rendered with PDF.js) so it just opens — it does NOT download. A gold Download
+// button lets the user save it only if they choose to. Mobile Chrome downloads
+// blob/iframe PDFs instead of viewing them, so we render the pages ourselves.
+var _pdfJsPromise = null;
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (_pdfJsPromise) return _pdfJsPromise;
+  _pdfJsPromise = new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+    s.onload = function() {
+      try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js'; } catch (e) {}
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = function() { _pdfJsPromise = null; reject(new Error('pdfjs failed to load')); };
+    document.head.appendChild(s);
+  });
+  return _pdfJsPromise;
+}
+
+function _downloadPdfBytes(bytes, filename) {
+  try {
+    var u = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+    var a = document.createElement('a');
+    a.href = u; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function() { try { URL.revokeObjectURL(u); } catch (e) {} }, 15000);
+  } catch (e) {}
+}
+
 function openPdfDoc(doc, filename) {
-  var url;
-  try { url = URL.createObjectURL(doc.output('blob')); }
+  var bytes;
+  try { bytes = new Uint8Array(doc.output('arraybuffer')); }
   catch (e) { try { doc.save(filename); } catch (e2) {} return; }
-  var opened = null;
-  try { opened = window.open(url, '_blank'); } catch (e) { opened = null; }
-  if (!opened) {
-    // Installed/standalone mode can block window.open — open via a real link click
-    try {
-      var a = document.createElement('a');
-      a.href = url; a.target = '_blank'; a.rel = 'noopener';
-      document.body.appendChild(a); a.click(); a.remove();
-    } catch (e2) {
-      try { doc.save(filename); } catch (e3) {}
-    }
-  }
-  setTimeout(function() { try { URL.revokeObjectURL(url); } catch (e) {} }, 120000);
+
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;top:0;left:0;right:0;bottom:0;z-index:100000;background:#525659;display:flex;flex-direction:column';
+  var bar = document.createElement('div');
+  bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#1B3A2D;flex-shrink:0';
+  bar.innerHTML = '<div style="color:#fff;font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + filename.replace(/\.pdf$/i, '') + '</div>';
+  var btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:8px;flex-shrink:0';
+  var dl = document.createElement('button');
+  dl.textContent = '⬇ Download';
+  dl.style.cssText = 'padding:8px 14px;background:#B8960C;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit';
+  dl.onclick = function() { _downloadPdfBytes(bytes, filename); };
+  var cl = document.createElement('button');
+  cl.textContent = '✕ Close';
+  cl.style.cssText = 'padding:8px 14px;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit';
+  cl.onclick = function() { ov.remove(); };
+  btns.appendChild(dl); btns.appendChild(cl); bar.appendChild(btns);
+
+  var scroll = document.createElement('div');
+  scroll.style.cssText = 'flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px';
+  var status = document.createElement('div');
+  status.textContent = 'Loading…';
+  status.style.cssText = 'color:#fff;opacity:.85;font-size:13px;margin-top:24px;font-family:inherit';
+  scroll.appendChild(status);
+
+  ov.appendChild(bar); ov.appendChild(scroll);
+  document.body.appendChild(ov);
+
+  loadPdfJs().then(function(pdfjsLib) {
+    return pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+  }).then(function(pdf) {
+    if (status.parentNode) status.parentNode.removeChild(status);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var seq = Promise.resolve();
+    var renderOne = function(n) {
+      seq = seq.then(function() {
+        return pdf.getPage(n).then(function(page) {
+          var base = page.getViewport({ scale: 1 });
+          var targetW = Math.min(scroll.clientWidth - 24, 900);
+          var scale = targetW / base.width;
+          var vp = page.getViewport({ scale: scale * dpr });
+          var canvas = document.createElement('canvas');
+          canvas.width = vp.width; canvas.height = vp.height;
+          canvas.style.width = (vp.width / dpr) + 'px';
+          canvas.style.height = (vp.height / dpr) + 'px';
+          canvas.style.background = '#fff';
+          canvas.style.boxShadow = '0 2px 10px rgba(0,0,0,.45)';
+          canvas.style.borderRadius = '2px';
+          scroll.appendChild(canvas);
+          return page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        });
+      });
+    };
+    for (var i = 1; i <= pdf.numPages; i++) { renderOne(i); }
+    return seq;
+  }).catch(function() {
+    // PDF.js unavailable (e.g. offline) — fall back to a normal download
+    if (status) status.textContent = '';
+    _downloadPdfBytes(bytes, filename);
+  });
 }
 
 function openIncidentPDF(incidentRef) {
