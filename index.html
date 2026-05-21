@@ -10172,6 +10172,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-name">Permits to Work</div>
         <div class="tile-sub" id="an-permits-summary">Loading permit activity…</div>
       </div>
+      <div class="tile" onclick="goToDirectorHazard()">
+        <div class="tile-icon" style="background:#FEF0E6"><svg viewBox="0 0 24 24" fill="none" stroke="#D4630A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="tile-name">Hazard Register</div>
+        <div class="tile-sub" id="an-haz-summary">Loading hazards…</div>
+      </div>
       <div class="tile" onclick="goToDirectorCompliance()">
         <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg></div>
         <div class="tile-name">Compliance Scorecard</div>
@@ -10776,6 +10781,135 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard">
         <div class="fcard-hdr">🗂️ Talk History &amp; Audit Rosters</div>
         <div id="dtbt-history" style="padding:10px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ DIRECTOR HAZARD REGISTER ═══ -->
+<div id="screen-dir-hazard" class="screen">
+  <div class="sb"></div>
+  <div class="topbar" style="padding-bottom:14px">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goToAnalytics('director')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="tbar-logo" style="padding:2px 0"><img id="dir-haz-logo" src="" alt="Slán Safety" style="height:80px;object-fit:contain;display:block"></div>
+      <div class="badge" style="background:rgba(184,150,12,.25);border:1.5px solid rgba(184,150,12,.5);color:#B8960C;font-size:10px;font-weight:700;letter-spacing:0.5px">DIRECTOR</div>
+    </div>
+    <div class="form-greeting">
+      <h1 style="color:#fff">Hazard Register</h1>
+      <p id="dir-haz-period" style="color:rgba(255,255,255,0.8)">Company-wide · All sites</p>
+    </div>
+  </div>
+
+  <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
+
+    <div style="display:flex;gap:4px;margin-bottom:16px;padding:4px;background:linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
+      <button id="main-haz-tab-overview" onclick="switchMainHazTab('overview')" style="flex:1;padding:10px 16px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;box-shadow:0 2px 4px rgba(184,150,12,0.3)">Overview</button>
+      <button id="main-haz-tab-analytics" onclick="switchMainHazTab('analytics')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Analytics</button>
+      <button id="main-haz-tab-details" onclick="switchMainHazTab('details')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Details</button>
+    </div>
+
+    <div id="dhaz-site-filter" style="display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px"></div>
+
+    <!-- OVERVIEW -->
+    <div id="main-haz-tab-content-overview" class="main-haz-tab-content">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🎯 Actions I Can Take Now</div>
+        <div style="padding:10px">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);border:2px solid #DC2626;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(220,38,38,0.15)" onclick="switchMainHazTab('details')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#991B1B;margin-bottom:4px">🚨 <span id="dhaz-overdue-count">—</span> hazards overdue — close out now</div>
+                <div style="font-size:10px;color:#7F1D1D">Past their due date and not yet closed</div>
+              </div>
+              <div style="font-size:20px;color:#991B1B">→</div>
+            </div>
+          </button>
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainHazTab('details')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px">⚠️ <span id="dhaz-open-count">—</span> open hazards to action</div>
+                <div style="font-size:10px;color:#78350F">Identified and awaiting corrective action</div>
+              </div>
+              <div style="font-size:20px;color:#92400E">→</div>
+            </div>
+          </button>
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #E6F3F0 0%, #D4EDE5 100%);border:2px solid #1B3A2D;border-radius:10px;cursor:pointer;box-shadow:0 2px 6px rgba(27,58,45,0.15)" onclick="dirHazExportPDF()">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#1B3A2D;margin-bottom:4px">📄 Export hazard register (PDF)</div>
+                <div style="font-size:10px;color:#3B6D11">Leading-indicator register for audits / regulators</div>
+              </div>
+              <div style="font-size:20px;color:#1B3A2D">→</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div id="dhaz-attention" style="display:none"></div>
+
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 Hazard Overview</div>
+        <div style="padding:10px">
+          <div style="font-size:11px;color:#888;margin-bottom:10px;text-align:center" id="dhaz-activity-line">—</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #1F495C">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Reported</div>
+              <div style="font-size:30px;font-weight:800;color:#1F495C;line-height:1" id="dhaz-total">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #D97706">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Open</div>
+              <div style="font-size:30px;font-weight:800;color:#D97706;line-height:1" id="dhaz-open">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #15803D">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Closed</div>
+              <div style="font-size:30px;font-weight:800;color:#15803D;line-height:1" id="dhaz-closed">—</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #fff 0%, #f8f9fa 100%);border-radius:8px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.12);border:1px solid #E8E8E8;border-top:3px solid #B8960C">
+              <div style="font-size:9px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Close-out</div>
+              <div style="font-size:30px;font-weight:800;color:#B8960C;line-height:1" id="dhaz-closerate">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🏗️ By Site</div>
+        <div id="dhaz-bysite" style="padding:10px"></div>
+      </div>
+
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🗂️ By Hazard Type</div>
+        <div id="dhaz-bytype" style="padding:10px"></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="main-haz-tab-content-analytics" class="main-haz-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 Hazards by Type</div>
+        <div style="padding:12px"><div style="height:230px;position:relative"><canvas id="dhaz-chart-type"></canvas></div></div>
+      </div>
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">⚠️ Severity Breakdown</div>
+        <div style="padding:12px"><div style="height:200px;position:relative"><canvas id="dhaz-chart-sev"></canvas></div></div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-hdr">🏗️ Hazards by Site</div>
+        <div style="padding:12px"><div style="height:190px;position:relative"><canvas id="dhaz-chart-site"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- DETAILS -->
+    <div id="main-haz-tab-content-details" class="main-haz-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📋 Hazard Register</div>
+        <div id="dhaz-register" style="padding:10px"></div>
+      </div>
+      <div class="fcard">
+        <div class="fcard-hdr">🚨 Overdue Hazards</div>
+        <div id="dhaz-overdue-list" style="padding:10px"></div>
       </div>
     </div>
 
@@ -37353,6 +37487,7 @@ function populateDirectorIncidents() {
   try { updateDirToolboxSummary(); } catch(e) {}
   try { updateDirSdsSummary(); } catch(e) {}
   try { updateDirPtwSummary(); } catch(e) {}
+  try { updateDirHazSummary(); } catch(e) {}
   try { updateDirCompSummary(); } catch(e) {}
   console.log('📊 populateDirectorIncidents() called');
   var list = document.getElementById('dir-inc-list'); // FIXED: was 'dinc-incidents-list'
@@ -40181,9 +40316,10 @@ function dirPtwExportPDF() {
 function _compModel() {
   function pct(n, d) { return d ? Math.round(n / d * 100) : 0; }
   // Live figures (Toolbox + SDS pulled from real app data); rest seeded for demo.
-  var tbtS = 39, tbtT = 49, sdsC = 7, sdsT = 10;
+  var tbtS = 39, tbtT = 49, sdsC = 7, sdsT = 10, hazC = 11, hazT = 14;
   try { if (typeof _dirTbtTotals === 'function') { var tt = _dirTbtTotals(); tbtS = tt.signed; tbtT = tt.total; } } catch (e) {}
   try { if (typeof _sdsRegisterStats === 'function') { var ss = _sdsRegisterStats(); sdsT = ss.total; sdsC = ss.current; } } catch (e) {}
+  try { if (typeof _hazStats === 'function') { var hh = _hazStats(); hazC = hh.closed; hazT = hh.total; } } catch (e) {}
   // S = seeded (possible + score → compliant); L = live (compliant/possible → score)
   function S(name, weight, prev, source, possible, score, issue, action) { return { name: name, weight: weight, prev: prev, source: source, possible: possible, compliant: Math.round(possible * score / 100), score: score, issue: issue, action: action }; }
   function L(name, weight, prev, source, compliant, possible, issue, action) { return { name: name, weight: weight, prev: prev, source: source, possible: possible, compliant: compliant, score: pct(compliant, possible), issue: issue, action: action }; }
@@ -40196,7 +40332,7 @@ function _compModel() {
     S('Subcontractor Paperwork',  8,  74, 'SLS-REG-004',                18, 78, '2 subcontractors missing current insurance', 'Request renewed certificates of currency'),
     S('Plant Service Currency',   8,  85, 'SLS-REG-010 Service Schedule', 16, 88),
     S('Incident Reports',         14, 92, 'SLS-REG-006',                25, 92),
-    S('Hazard Reports (Leading)', 10, 76, 'SLS-REG-008',                30, 82, 'Proactive reporting below target', 'Promote hazard reporting at toolbox talks'),
+    L('Hazard Reports (Leading)', 10, 76, 'SLS-REG-008',                hazC, hazT, 'Open hazards still past due date', 'Close out overdue hazards and review controls'),
     S('Psychosocial',             8,  65, 'SLS-REG-009',                20, 69, 'Survey completion low + 1 open matter', 'Schedule wellbeing check-ins; close open matter')
   ];
 }
@@ -40407,6 +40543,230 @@ function dirCompExportPDF() {
     filename: 'Compliance-Scorecard-' + today.replace(/\//g, '-') + '.pdf',
     sections: sections
   });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DIRECTOR — HAZARD REGISTER (SLS-REG-008, leading indicator)
+// Hazards spotted before any incident. Feeds the Compliance Scorecard.
+// ═══════════════════════════════════════════════════════════════
+var DIR_HAZ_TYPES = ['Housekeeping', 'Plant & Equipment', 'Electrical', 'Working at Height', 'Manual Handling', 'Chemical / Substance', 'Traffic & Plant Movement', 'Structural', 'Environmental', 'Psychological / Fatigue'];
+
+var DIR_HAZ_REGISTER = [
+  { id: 'HAZ-001', date: '20/05/2026', type: 'Working at Height', severity: 'High',     reporter: 'Sam Carroll',    site: 'Blacktown',  location: 'Roof bay 4 — edge protection gap', status: 'closed', due: '23/05/2026', recurring: false, swms: true,  description: 'Missing handrail section on east edge of roof bay 4.', action: 'Temporary barricade installed; permanent rail ordered.' },
+  { id: 'HAZ-002', date: '20/05/2026', type: 'Housekeeping',       severity: 'Low',      reporter: 'Niall Costello', site: 'Parramatta', location: 'Level 1 walkway',                   status: 'closed',     due: '24/05/2026', recurring: true,  swms: true,  description: 'Off-cuts and debris blocking the walkway.', action: 'Clean-up scheduled; bins added to work zone.' },
+  { id: 'HAZ-003', date: '19/05/2026', type: 'Electrical',         severity: 'Critical', reporter: 'Kevin Nash',     site: 'Parramatta', location: 'Substation A',                      status: 'closed', due: '21/05/2026', recurring: false, swms: true,  description: 'Damaged lead on temporary power board.', action: 'Board isolated and tagged out; electrician engaged.' },
+  { id: 'HAZ-004', date: '18/05/2026', type: 'Manual Handling',    severity: 'Medium',   reporter: 'Pat Healy',      site: 'Liverpool',  location: 'Loading dock',                      status: 'open',     due: '15/05/2026', recurring: false, swms: false, description: 'Repetitive heavy lifting of formwork without mechanical aid.', action: 'Provide trolley; brief team on team-lift procedure.' },
+  { id: 'HAZ-005', date: '18/05/2026', type: 'Chemical / Substance', severity: 'High',   reporter: 'Dean Mc Grath',  site: 'Blacktown',  location: 'Chemical store shed 1',             status: 'closed',   due: '20/05/2026', recurring: false, swms: true,  description: 'Solvent stored without secondary bunding.', action: 'Bund installed; SDS reviewed and on site.' },
+  { id: 'HAZ-006', date: '17/05/2026', type: 'Traffic & Plant Movement', severity: 'High', reporter: 'Liam Brennan', site: 'Liverpool',  location: 'Site frontage',                     status: 'closed', due: '22/05/2026', recurring: true,  swms: true,  description: 'Pedestrians crossing plant movement zone without spotter.', action: 'Spotter assigned; exclusion zone re-signed.' },
+  { id: 'HAZ-007', date: '16/05/2026', type: 'Structural',         severity: 'Medium',   reporter: 'Mick Doyle',     site: 'Blacktown',  location: 'Podium slab edge',                  status: 'closed',   due: '19/05/2026', recurring: false, swms: true,  description: 'Penetration left uncovered overnight.', action: 'Covered and signed; daily check added to pre-start.' },
+  { id: 'HAZ-008', date: '15/05/2026', type: 'Housekeeping',       severity: 'Low',      reporter: 'Aaron Farrell',  site: 'Liverpool',  location: 'Amenities',                         status: 'closed',   due: '18/05/2026', recurring: false, swms: false, description: 'Slip hazard from leaking tap near amenities.', action: 'Tap repaired; area dried and matted.' },
+  { id: 'HAZ-009', date: '14/05/2026', type: 'Plant & Equipment',  severity: 'High',     reporter: 'Gary Tully',     site: 'Parramatta', location: 'Bulk earthworks',                   status: 'open',     due: '13/05/2026', recurring: false, swms: true,  description: 'Excavator reversing alarm intermittent.', action: 'Plant tagged; service booked.' },
+  { id: 'HAZ-010', date: '13/05/2026', type: 'Psychological / Fatigue', severity: 'Medium', reporter: 'Shane Connolly', site: 'Blacktown', location: 'Site-wide',                       status: 'progress', due: '27/05/2026', recurring: false, swms: false, description: 'Crew reporting fatigue after extended overtime run.', action: 'Review roster; schedule wellbeing check-ins.' },
+  { id: 'HAZ-011', date: '12/05/2026', type: 'Environmental',      severity: 'Low',      reporter: 'Paul Sheridan',  site: 'Liverpool',  location: 'Stormwater point',                  status: 'closed',   due: '16/05/2026', recurring: false, swms: true,  description: 'Sediment control fence damaged near stormwater drain.', action: 'Fence repaired; spill kit restocked.' },
+  { id: 'HAZ-012', date: '11/05/2026', type: 'Working at Height',  severity: 'Critical', reporter: 'Tom Burke',      site: 'Parramatta', location: 'Scaffold — north elevation',        status: 'closed',   due: '13/05/2026', recurring: false, swms: true,  description: 'Incomplete scaffold tag and missing toe-board.', action: 'Scaffold rectified, re-inspected and tagged.' },
+  { id: 'HAZ-013', date: '10/05/2026', type: 'Electrical',         severity: 'Medium',   reporter: 'Mark Flynn',     site: 'Blacktown',  location: 'Basement carpark',                  status: 'closed',   due: '14/05/2026', recurring: false, swms: true,  description: 'Leads run across wet floor without protection.', action: 'Leads elevated on stands; RCD verified.' },
+  { id: 'HAZ-014', date: '09/05/2026', type: 'Manual Handling',    severity: 'Low',      reporter: 'Chris Walsh',    site: 'Liverpool',  location: 'Store',                             status: 'closed',   due: '13/05/2026', recurring: false, swms: false, description: 'Materials stacked above shoulder height.', action: 'Restacked to safe height; shelving labelled.' }
+];
+
+function _hazSevMeta(sev) {
+  switch (sev) {
+    case 'Critical': return { col: '#B83232', bg: '#FCE9E9' };
+    case 'High':     return { col: '#D4630A', bg: '#FFF0E6' };
+    case 'Medium':   return { col: '#D97706', bg: '#FEF3E2' };
+    default:         return { col: '#15803D', bg: '#E6F5ED' };
+  }
+}
+function _hazStatusMeta(st) {
+  switch (st) {
+    case 'open':     return { label: 'Open',        col: '#D97706', bg: '#FEF3E2' };
+    case 'progress': return { label: 'In Progress', col: '#1F495C', bg: '#EAF0F3' };
+    case 'closed':   return { label: 'Closed',      col: '#15803D', bg: '#E6F5ED' };
+    default:         return { label: st || '—',     col: '#888', bg: '#F0F0F0' };
+  }
+}
+function _hazIsOverdue(h) {
+  if (h.status === 'closed') return false;
+  var p = (h.due || '').split('/'); if (p.length !== 3) return false;
+  return new Date(+p[2], +p[1] - 1, +p[0]) < new Date('2026-05-21');
+}
+var hazSite = 'All';
+function _hazSites() { var seen = {}, out = []; DIR_HAZ_REGISTER.forEach(function(h) { if (h.site && !seen[h.site]) { seen[h.site] = true; out.push(h.site); } }); return out.sort(); }
+function _hazActive() { return (hazSite === 'All') ? DIR_HAZ_REGISTER.slice() : DIR_HAZ_REGISTER.filter(function(h) { return h.site === hazSite; }); }
+function _hazStats(list) {
+  list = list || DIR_HAZ_REGISTER;
+  var open = list.filter(function(h) { return h.status === 'open'; }).length;
+  var prog = list.filter(function(h) { return h.status === 'progress'; }).length;
+  var closed = list.filter(function(h) { return h.status === 'closed'; }).length;
+  var overdue = list.filter(_hazIsOverdue).length;
+  var recurring = list.filter(function(h) { return h.recurring; }).length;
+  var sites = {}; list.forEach(function(h) { if (h.site) sites[h.site] = true; });
+  return { total: list.length, open: open, prog: prog, closed: closed, overdue: overdue, recurring: recurring, closeRate: list.length ? Math.round(closed / list.length * 100) : 0, sites: Object.keys(sites).length };
+}
+
+function goToDirectorHazard() {
+  goTo('screen-dir-hazard');
+  var logo = document.getElementById('dir-haz-logo');
+  if (logo) { var src = document.querySelector('.tbar-logo img'); if (src) logo.src = src.src; }
+  switchMainHazTab('overview');
+  dirHazRender();
+}
+function switchMainHazTab(tabName) {
+  ['overview', 'analytics', 'details'].forEach(function(t) {
+    var content = document.getElementById('main-haz-tab-content-' + t);
+    if (content) content.style.display = (t === tabName) ? 'block' : 'none';
+    var btn = document.getElementById('main-haz-tab-' + t);
+    if (btn) {
+      if (t === tabName) { btn.style.background = 'linear-gradient(135deg, #B8960C 0%, #D4A72C 100%)'; btn.style.color = '#fff'; btn.style.boxShadow = '0 2px 4px rgba(184,150,12,0.3)'; }
+      else { btn.style.background = 'transparent'; btn.style.color = '#666'; btn.style.boxShadow = 'none'; }
+    }
+  });
+  if (tabName === 'analytics') { setTimeout(renderHazCharts, 80); }
+}
+function hazSetSite(site) { hazSite = site; dirHazRender(); }
+function hazRenderSiteFilter() {
+  var box = document.getElementById('dhaz-site-filter'); if (!box) return;
+  var chips = ['All'].concat(_hazSites());
+  box.innerHTML = chips.map(function(s) {
+    var on = (s === hazSite), label = (s === 'All') ? 'All sites' : s;
+    return '<button onclick="hazSetSite(\'' + s.replace(/'/g, "\\'") + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid ' + (on ? '#B8960C' : '#D8D8D8') + ';background:' + (on ? '#B8960C' : '#fff') + ';color:' + (on ? '#fff' : '#666') + '">' + label + '</button>';
+  }).join('');
+}
+function _hazCard(h) {
+  var sv = _hazSevMeta(h.severity), st = _hazStatusMeta(h.status), od = _hazIsOverdue(h);
+  return '<div onclick="hazShowDetail(\'' + h.id + '\')" style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + sv.col + ';border-radius:8px;margin-bottom:8px;background:#fff;cursor:pointer">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+      '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + h.type + '</div>' +
+      '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;flex-shrink:0;background:' + st.bg + ';color:' + st.col + '">' + st.label + '</span>' +
+    '</div>' +
+    '<div style="font-size:10.5px;color:#888;margin-top:3px">' + h.id + ' · ' + h.site + ' · ' + h.location + ' · ' + h.date + (od ? ' · <span style="color:#B83232;font-weight:700">OVERDUE</span>' : '') + '</div>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px">' +
+      '<div style="font-size:11px;color:#5C6B62">' + h.severity + ' severity · ' + h.reporter + '</div>' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>' +
+    '</div>' +
+  '</div>';
+}
+function dirHazRender() {
+  hazRenderSiteFilter();
+  var list = _hazActive(), s = _hazStats(list);
+  var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+  set('dhaz-total', s.total); set('dhaz-open', s.open + s.prog); set('dhaz-closed', s.closed); set('dhaz-closerate', s.closeRate + '%');
+  set('dhaz-open-count', s.open + s.prog); set('dhaz-overdue-count', s.overdue);
+  set('dhaz-activity-line', (hazSite === 'All') ? (s.total + ' hazards reported · ' + s.sites + ' sites') : (s.total + ' hazards · ' + hazSite));
+  var per = document.getElementById('dir-haz-period');
+  if (per) per.textContent = (hazSite === 'All') ? 'Company-wide · All sites' : ('Filtered · ' + hazSite);
+
+  var att = document.getElementById('dhaz-attention');
+  if (att) {
+    var overdue = list.filter(_hazIsOverdue);
+    if (overdue.length) {
+      att.style.display = 'block';
+      att.innerHTML = '<div style="padding:13px 15px;background:#FCE9E9;border:1.5px solid #A32D2D;border-radius:10px;margin-bottom:12px">' +
+        '<div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">⚠ Overdue hazards</div>' +
+        overdue.map(function(h) { return '<div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>' + h.id + '</b> (' + h.site + ') — ' + h.type + ': due ' + h.due + '</div>'; }).join('') +
+        '</div>';
+    } else { att.style.display = 'none'; att.innerHTML = ''; }
+  }
+
+  var bs = document.getElementById('dhaz-bysite');
+  if (bs) {
+    bs.innerHTML = _hazSites().map(function(name) {
+      var items = DIR_HAZ_REGISTER.filter(function(h) { return h.site === name; });
+      var op = items.filter(function(h) { return h.status !== 'closed'; }).length;
+      var od = items.filter(_hazIsOverdue).length;
+      var sel = (name === hazSite);
+      return '<div onclick="hazSetSite(\'' + name.replace(/'/g, "\\'") + '\')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid ' + (sel ? '#B8960C' : '#E8E8E8') + ';border-radius:8px;margin-bottom:8px;background:' + (sel ? '#FDF8E8' : '#fff') + ';cursor:pointer">' +
+        '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F">' + name + '</div>' +
+        '<div style="font-size:11px;color:#5C6B62">' + items.length + ' reported · <span style="color:#D97706;font-weight:700">' + op + '</span> open' + (od ? ' · <span style="color:#B83232;font-weight:700">' + od + '</span> overdue' : '') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  var bt = document.getElementById('dhaz-bytype');
+  if (bt) {
+    var rows = DIR_HAZ_TYPES.map(function(tp) {
+      var n = list.filter(function(h) { return h.type === tp; }).length;
+      if (!n) return '';
+      var op = list.filter(function(h) { return h.type === tp && h.status !== 'closed'; }).length;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 4px;border-bottom:1px solid #EEE;gap:10px">' +
+        '<div style="font-size:12px;font-weight:600;color:#1A2A1F;min-width:0;flex:1">' + tp + '</div>' +
+        '<div style="font-size:11px;color:#5C6B62;flex-shrink:0">' + n + ' total' + (op ? ' · <span style="color:#D97706;font-weight:700">' + op + '</span> open' : '') + '</div>' +
+      '</div>';
+    }).join('');
+    bt.innerHTML = rows || '<div style="font-size:12.5px;color:#888;text-align:center;padding:12px">No hazards for this site.</div>';
+  }
+
+  var reg = document.getElementById('dhaz-register');
+  if (reg) reg.innerHTML = list.length ? list.map(_hazCard).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No hazards for this site.</div>';
+  var ov = document.getElementById('dhaz-overdue-list');
+  if (ov) { var odl = list.filter(_hazIsOverdue); ov.innerHTML = odl.length ? odl.map(_hazCard).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No overdue hazards.</div>'; }
+
+  var anaEl = document.getElementById('main-haz-tab-content-analytics');
+  if (anaEl && anaEl.style.display !== 'none') { setTimeout(renderHazCharts, 30); }
+}
+var hazCharts = {};
+function renderHazCharts() {
+  if (typeof Chart === 'undefined') return;
+  var list = _hazActive();
+  function destroy(k) { if (hazCharts[k]) { try { hazCharts[k].destroy(); } catch (e) {} hazCharts[k] = null; } }
+  var typeEl = document.getElementById('dhaz-chart-type');
+  if (typeEl) {
+    var tc = DIR_HAZ_TYPES.map(function(tp) { return { tp: tp, n: list.filter(function(h) { return h.type === tp; }).length }; }).filter(function(x) { return x.n > 0; });
+    destroy('type');
+    hazCharts.type = new Chart(typeEl, { type: 'bar', data: { labels: tc.map(function(x) { return x.tp; }), datasets: [{ data: tc.map(function(x) { return x.n; }), backgroundColor: '#D4630A', borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } }, grid: { color: '#eee' } }, y: { ticks: { font: { size: 9 } }, grid: { display: false } } } } });
+  }
+  var sevEl = document.getElementById('dhaz-chart-sev');
+  if (sevEl) {
+    var order = ['Critical', 'High', 'Medium', 'Low'];
+    destroy('sev');
+    hazCharts.sev = new Chart(sevEl, { type: 'doughnut', data: { labels: order, datasets: [{ data: order.map(function(sv) { return list.filter(function(h) { return h.severity === sv; }).length; }), backgroundColor: order.map(function(sv) { return _hazSevMeta(sv).col; }), borderWidth: 1, borderColor: '#fff' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } } } } });
+  }
+  var siteEl = document.getElementById('dhaz-chart-site');
+  if (siteEl) {
+    var sites = _hazSites();
+    destroy('site');
+    hazCharts.site = new Chart(siteEl, { type: 'bar', data: { labels: sites, datasets: [{ data: sites.map(function(s) { return DIR_HAZ_REGISTER.filter(function(h) { return h.site === s; }).length; }), backgroundColor: '#B8960C', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 10 } }, grid: { display: false } } } } });
+  }
+}
+function hazShowDetail(id) {
+  var h = null; for (var i = 0; i < DIR_HAZ_REGISTER.length; i++) { if (DIR_HAZ_REGISTER[i].id === id) { h = DIR_HAZ_REGISTER[i]; break; } }
+  if (!h) return;
+  var sv = _hazSevMeta(h.severity), st = _hazStatusMeta(h.status);
+  function row(label, val) { return val ? '<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:8px"><div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">' + label + '</div><div style="font-size:13px;color:var(--text);line-height:1.45">' + val + '</div></div>' : ''; }
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  sheet.onclick = function(e) { if (e.target === sheet) sheet.remove(); };
+  sheet.innerHTML = '<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;padding:24px 20px calc(32px + env(safe-area-inset-bottom))">' +
+    '<div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>' +
+    '<div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:16px;gap:10px">' +
+      '<div><div style="font-size:17px;font-weight:700;color:var(--text)">' + h.type + '</div><div style="font-size:12px;color:var(--muted);margin-top:2px">' + h.id + ' · ' + h.date + '</div></div>' +
+      '<span style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;flex-shrink:0;background:' + st.bg + ';color:' + st.col + '">' + st.label + '</span>' +
+    '</div>' +
+    '<div style="display:inline-block;font-size:11px;font-weight:700;padding:4px 11px;border-radius:14px;margin-bottom:12px;background:' + sv.bg + ';color:' + sv.col + '">' + h.severity + ' severity</div>' +
+    row('Site', h.site) + row('Location', h.location) + row('Reported by', h.reporter) + row('Hazard description', h.description) +
+    row('Corrective action', h.action) + row('Due date', h.due + (_hazIsOverdue(h) ? '  (OVERDUE)' : '')) + row('SWMS in place', h.swms ? 'Yes' : 'No') + row('Recurring hazard', h.recurring ? 'Yes' : 'No') +
+    '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="width:100%;padding:14px;background:var(--mid);border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;color:#fff;cursor:pointer;margin-top:8px">Close</button>' +
+  '</div>';
+  document.body.appendChild(sheet);
+}
+function updateDirHazSummary() {
+  var el = document.getElementById('an-haz-summary'); if (!el) return;
+  var s = _hazStats();
+  el.innerHTML = (s.open + s.prog) + ' open · ' + s.overdue + ' overdue · ' + s.closeRate + '% closed' + (typeof _trendSpan === 'function' ? _trendSpan(s.closeRate, 71, true, '%') : '');
+}
+function dirHazExportPDF() {
+  var list = _hazActive(), s = _hazStats(list);
+  var today = new Date().toLocaleDateString('en-AU');
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  var company = (p && p.company) ? p.company : 'Murphy Civil Construction';
+  var scope = (hazSite === 'All') ? 'Company-wide · All sites' : ('Site: ' + hazSite);
+  var overdue = list.filter(_hazIsOverdue);
+  var sections = [
+    { type: 'rows', title: 'SUMMARY', rows: [ ['Hazards reported', String(s.total)], ['Open / in progress', String(s.open + s.prog)], ['Closed', String(s.closed)], ['Overdue', String(s.overdue)], ['Close-out rate', s.closeRate + '%'], ['Recurring', String(s.recurring)] ] },
+    { type: 'table', title: 'HAZARD REGISTER', columns: [ { label: 'ID', x: 0, w: 22 }, { label: 'Type', x: 22, w: 46 }, { label: 'Site', x: 68, w: 28 }, { label: 'Severity', x: 96, w: 28 }, { label: 'Status', x: 124, w: 46 } ],
+      rows: list.map(function(h) { return [ { text: h.id }, { text: h.type }, { text: h.site }, { text: h.severity, colour: _hazSevMeta(h.severity).col }, { text: _hazStatusMeta(h.status).label + (_hazIsOverdue(h) ? ' (overdue)' : ''), colour: _hazStatusMeta(h.status).col } ]; }) }
+  ];
+  if (overdue.length) sections.push({ type: 'lines', title: 'OVERDUE HAZARDS', lines: overdue.map(function(h) { return h.id + ' (' + h.site + ') — ' + h.type + ' · due ' + h.due + ' · ' + h.action; }) });
+  slanDirRegisterPDF({ title: 'HAZARD REGISTER', docCode: 'SLS-REG-008 · v1.0 · Slán Safety — Confidential', metaLine: company + '  ·  ' + scope + '  ·  Generated ' + today, filename: 'Hazard-Register-' + today.replace(/\//g, '-') + '.pdf', sections: sections });
 }
 
 function goToDirectorIncidents() {
