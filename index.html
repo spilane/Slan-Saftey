@@ -39623,6 +39623,8 @@ function slanDirRegisterPDF(cfg) {
     var total = doc.internal.getNumberOfPages();
     for (var pp = 1; pp <= total; pp++) {
       doc.setPage(pp);
+      // Gold accent line (matches the header) above the footer text
+      setStroke('#B8960C'); doc.setLineWidth(0.5); doc.line(ML, PAGE_H - MB + 1, PAGE_W - MR, PAGE_H - MB + 1);
       setText(C.labelGrey); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
       doc.text(String(cfg.docCode || ''), ML, PAGE_H - MB + 5);
       doc.text('Page ' + pp + ' of ' + total, PAGE_W - MR, PAGE_H - MB + 5, { align: 'right' });
@@ -47727,33 +47729,26 @@ function showIncidentSummary(incidentRef) {
 
 // Open the real, downloadable incident PDF in a full-screen in-app viewer.
 // Renders the actual PDF (not an HTML look-alike); same document the export produces.
+// Opens the PDF as a top-level page so the device's native full-screen PDF viewer
+// shows it immediately. (Chrome won't render a PDF inside an iframe — it forces an
+// extra "Open" tap — so we deliberately avoid iframes here.)
 function openPdfDoc(doc, filename) {
   var url;
   try { url = URL.createObjectURL(doc.output('blob')); }
   catch (e) { try { doc.save(filename); } catch (e2) {} return; }
-  var ov = document.createElement('div');
-  ov.style.cssText = 'position:fixed;inset:0;top:0;left:0;right:0;bottom:0;z-index:100000;background:#525659;display:flex;flex-direction:column';
-  var bar = document.createElement('div');
-  bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#1B3A2D;flex-shrink:0';
-  bar.innerHTML = '<div style="color:#fff;font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + filename.replace(/\.pdf$/i, '') + '</div>';
-  var btns = document.createElement('div');
-  btns.style.cssText = 'display:flex;gap:8px;flex-shrink:0';
-  var dl = document.createElement('a');
-  dl.textContent = '⬇ Download';
-  dl.href = url;
-  dl.setAttribute('download', filename);
-  dl.style.cssText = 'padding:8px 14px;background:#B8960C;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center';
-  var cl = document.createElement('button');
-  cl.textContent = '✕ Close';
-  cl.style.cssText = 'padding:8px 14px;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit';
-  cl.onclick = function() { ov.remove(); try { URL.revokeObjectURL(url); } catch (e) {} };
-  btns.appendChild(dl); btns.appendChild(cl); bar.appendChild(btns);
-  var frame = document.createElement('iframe');
-  frame.style.cssText = 'flex:1;width:100%;border:none;background:#525659';
-  frame.setAttribute('title', filename);
-  frame.src = url;
-  ov.appendChild(bar); ov.appendChild(frame);
-  document.body.appendChild(ov);
+  var opened = null;
+  try { opened = window.open(url, '_blank'); } catch (e) { opened = null; }
+  if (!opened) {
+    // Installed/standalone mode can block window.open — open via a real link click
+    try {
+      var a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+    } catch (e2) {
+      try { doc.save(filename); } catch (e3) {}
+    }
+  }
+  setTimeout(function() { try { URL.revokeObjectURL(url); } catch (e) {} }, 120000);
 }
 
 function openIncidentPDF(incidentRef) {
