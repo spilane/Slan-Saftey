@@ -108,7 +108,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .wbtn{width:100%;text-align:left;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:13px;margin-bottom:9px;cursor:pointer;font-family:inherit}
 .wbtn b{font-size:14px;color:var(--t1)} .wbtn span{display:block;font-size:11.5px;color:var(--t2);margin-top:2px}
 .demobar{position:fixed;bottom:0;left:0;right:0;background:var(--deep);color:var(--gold-l);font-size:11px;font-weight:600;text-align:center;padding:7px;z-index:40;letter-spacing:.05em}
+/* QR stickers */
+.qr-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qr-card{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:14px 12px;text-align:center}
+.qr-brand{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.qr-imgwrap img{width:150px;height:150px;image-rendering:pixelated}
+.qr-code{font-size:16px;font-weight:800;color:var(--t1);margin-top:6px}
+.qr-mm{font-size:11px;color:var(--t2)}
+.qr-cap{font-size:9.5px;color:var(--t3);margin-top:4px}
+@media print{
+  .topbar,.demobar,.qr-noprint{display:none!important}
+  body{background:#fff;padding-bottom:0}
+  .qr-card{border:1px dashed #999;page-break-inside:avoid}
+}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -435,7 +449,8 @@ function renderOversight(){
     chipRow+
     '<div class="sec-h">Open work orders ('+open.length+')</div><div class="tile">'+(woHtml||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No open work orders.</div></div></div>')+'</div>'+
     '<div class="sec-h">Machines needing attention</div><div class="tile">'+(attHtml||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines operational.</div></div></div>')+'</div>'+
-    '<button class="cta" style="margin-top:16px" onclick="showList()">View all machines →</button>';
+    '<button class="cta" style="margin-top:16px" onclick="showList()">View all machines →</button>'+
+    '<button class="cta qr-noprint" style="margin-top:10px;background:#fff;color:var(--deep);border:1.5px solid var(--border)" onclick="renderQR()">🖨  Print QR stickers</button>';
   var ov=document.getElementById('screen-oversight'); ov.innerHTML=html;
   document.getElementById('screen-list').style.display='none';
   document.getElementById('screen-detail').style.display='none';
@@ -456,6 +471,24 @@ function completeWO(wo){
   var w=WORKORDERS.find(function(x){return x.wo===wo;}); if(w){ w.status='Returned to service'; }
   alert('Work order '+wo+' completed.\nMachine marked returned to service.');
   renderOversight();
+}
+function renderQR(){
+  var base=location.origin+location.pathname; // .../plant.html
+  var cards=ASSETS.map(function(a){
+    var url=base+'?machine='+a.code;
+    var img='';
+    try{ var qr=qrcode(0,'M'); qr.addData(url); qr.make(); img=qr.createImgTag(4,6); }
+    catch(e){ img='<div style="font-size:10px;color:#A32D2D;padding:30px 0">QR unavailable</div>'; }
+    return '<div class="qr-card"><div class="qr-brand">Slán Safety</div><div class="qr-imgwrap">'+img+'</div><div class="qr-code">'+a.code+'</div><div class="qr-mm">'+a.make+' '+a.model+'</div><div class="qr-cap">Scan to open pre-start &amp; machine info</div></div>';
+  }).join('');
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back qr-noprint" onclick="renderOversight()">‹ Back</button>'+
+    '<div class="h1">QR Stickers</div>'+
+    '<div class="sub qr-noprint">Print and stick one on each machine. A worker scans it to open that machine\'s pre-start.</div>'+
+    '<button class="cta qr-noprint" onclick="window.print()" style="margin-bottom:14px">🖨  Print all stickers</button>'+
+    '<div class="qr-grid">'+cards+'</div>'+
+    '</div>';
+  showDetail(html);
 }
 
 /* ---------- init ---------- */
