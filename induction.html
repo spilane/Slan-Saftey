@@ -1808,6 +1808,24 @@ function downloadCertificate() {
     window.scrollTo(0,0);
     var b=document.getElementById('demoBrowseBtn'); if(b){ b.textContent='⚡ Browse mode — tap the dots or Next'; }
   };
+  function _showCompleted(){
+    // "View my induction" — show the completed certificate for the current
+    // (demo) user, read from the app's saved profile (same-origin localStorage).
+    var name='Worker';
+    try{ var p=JSON.parse(localStorage.getItem('slan_profile')||'null'); if(p&&p.name) name=p.name; }catch(e){}
+    var first=name.split(' ')[0];
+    var now=new Date(), pad=function(n,l){return String(n).padStart(l,'0');};
+    var ref='IND-'+now.getFullYear()+pad(now.getMonth()+1,2)+pad(now.getDate(),2)+'-'+pad(Math.floor(Math.random()*9000)+1000,4);
+    var g=function(id){return document.getElementById(id);};
+    if(g('ob-cong-hname')) g('ob-cong-hname').textContent='Well done, '+first+'!';
+    if(g('ob-cname')) g('ob-cname').textContent=name;
+    if(g('ob-csite')) g('ob-csite').innerHTML='Parramatta';
+    if(g('ob-cdate')) g('ob-cdate').textContent=now.toLocaleDateString('en-AU',{day:'2-digit',month:'long',year:'numeric'});
+    if(g('ob-ctime')) g('ob-ctime').textContent=now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true});
+    if(g('ob-cref')) g('ob-cref').textContent=ref;
+    if(typeof obGoTo==='function') obGoTo('ob-congrats');
+    window.scrollTo(0,0);
+  }
   function _init(){
     if(!_isDemo()) return;
     var btn=document.createElement('button');
@@ -1817,6 +1835,8 @@ function downloadCertificate() {
     btn.style.cssText='position:fixed;top:10px;right:10px;z-index:99999;background:#B8960C;color:#1B3A2D;border:none;border-radius:20px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.35)';
     btn.onclick=window.indBrowse;
     document.body.appendChild(btn);
+    // ?view=1 → open straight on the completed-induction certificate
+    if(/[?&]view=1/.test(location.search)) _showCompleted();
   }
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',_init); } else { _init(); }
 })();
