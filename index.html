@@ -10556,8 +10556,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <div style="display:flex;gap:4px;margin-bottom:16px;padding:4px;background:linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
       <button id="main-sds-tab-overview" onclick="switchMainSdsTab('overview')" style="flex:1;padding:10px 16px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;box-shadow:0 2px 4px rgba(184,150,12,0.3)">Overview</button>
-      <button id="main-sds-tab-register" onclick="switchMainSdsTab('register')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Register</button>
-      <button id="main-sds-tab-reports" onclick="switchMainSdsTab('reports')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Reports</button>
+      <button id="main-sds-tab-analytics" onclick="switchMainSdsTab('analytics')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Analytics</button>
+      <button id="main-sds-tab-details" onclick="switchMainSdsTab('details')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Details</button>
     </div>
 
     <div id="dsds-site-filter" style="display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px"></div>
@@ -10567,7 +10567,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard" style="margin-bottom:12px">
         <div class="fcard-hdr">🎯 Actions I Can Take Now</div>
         <div style="padding:10px">
-          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);border:2px solid #DC2626;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(220,38,38,0.15)" onclick="switchMainSdsTab('register')">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);border:2px solid #DC2626;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(220,38,38,0.15)" onclick="switchMainSdsTab('details')">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
                 <div style="font-size:13px;font-weight:700;color:#991B1B;margin-bottom:4px">🚨 <span id="dsds-expired-count">—</span> SDS expired or expiring — renew now</div>
@@ -10576,7 +10576,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div style="font-size:20px;color:#991B1B">→</div>
             </div>
           </button>
-          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainSdsTab('reports')">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainSdsTab('details')">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
                 <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px">⚠️ <span id="dsds-reports-count">—</span> missing-chemical reports to action</div>
@@ -10626,16 +10626,28 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <!-- REGISTER -->
-    <div id="main-sds-tab-content-register" class="main-sds-tab-content" style="display:none">
+    <!-- ANALYTICS -->
+    <div id="main-sds-tab-content-analytics" class="main-sds-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🔵 SDS Status</div>
+        <div style="padding:12px"><div style="height:200px;position:relative"><canvas id="dsds-chart-status"></canvas></div></div>
+      </div>
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">⚠️ Risk Level</div>
+        <div style="padding:12px"><div style="height:190px;position:relative"><canvas id="dsds-chart-risk"></canvas></div></div>
+      </div>
       <div class="fcard">
-        <div class="fcard-hdr">🧪 Chemical Register</div>
-        <div id="dsds-register" style="padding:10px"></div>
+        <div class="fcard-hdr">🏗️ Chemicals by Site</div>
+        <div style="padding:12px"><div style="height:190px;position:relative"><canvas id="dsds-chart-site"></canvas></div></div>
       </div>
     </div>
 
-    <!-- REPORTS -->
-    <div id="main-sds-tab-content-reports" class="main-sds-tab-content" style="display:none">
+    <!-- DETAILS -->
+    <div id="main-sds-tab-content-details" class="main-sds-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🧪 Chemical Register</div>
+        <div id="dsds-register" style="padding:10px"></div>
+      </div>
       <div class="fcard">
         <div class="fcard-hdr">⚠️ Missing-Chemical Reports</div>
         <div id="dsds-reports" style="padding:10px"></div>
@@ -39316,7 +39328,7 @@ function goToDirectorSds() {
 }
 
 function switchMainSdsTab(tabName) {
-  ['overview', 'register', 'reports'].forEach(function(t) {
+  ['overview', 'analytics', 'details'].forEach(function(t) {
     var content = document.getElementById('main-sds-tab-content-' + t);
     if (content) content.style.display = (t === tabName) ? 'block' : 'none';
     var btn = document.getElementById('main-sds-tab-' + t);
@@ -39325,6 +39337,88 @@ function switchMainSdsTab(tabName) {
       else { btn.style.background = 'transparent'; btn.style.color = '#666'; btn.style.boxShadow = 'none'; }
     }
   });
+  if (tabName === 'analytics') { setTimeout(renderSdsCharts, 80); }
+}
+
+var sdsCharts = {};
+function renderSdsCharts() {
+  if (typeof Chart === 'undefined') return;
+  var list = _sdsActiveChems();
+  function destroy(k) { if (sdsCharts[k]) { try { sdsCharts[k].destroy(); } catch (e) {} sdsCharts[k] = null; } }
+
+  // SDS status (doughnut): current / expiring / urgent / expired
+  var statusEl = document.getElementById('dsds-chart-status');
+  if (statusEl) {
+    var sOrder = [
+      { k: 'current', label: 'Current', col: '#15803D' },
+      { k: 'expiring', label: 'Expiring soon', col: '#B8960C' },
+      { k: 'urgent', label: 'Expiring (urgent)', col: '#D97706' },
+      { k: 'expired', label: 'Expired', col: '#B83232' }
+    ];
+    destroy('status');
+    sdsCharts.status = new Chart(statusEl, {
+      type: 'doughnut',
+      data: { labels: sOrder.map(function(x) { return x.label; }), datasets: [{ data: sOrder.map(function(x) { return list.filter(function(c) { return c.status === x.k; }).length; }), backgroundColor: sOrder.map(function(x) { return x.col; }), borderWidth: 1, borderColor: '#fff' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } } } }
+    });
+  }
+
+  // Risk level (bar): Low / Medium / High / Extreme
+  var riskEl = document.getElementById('dsds-chart-risk');
+  if (riskEl) {
+    var rOrder = ['Low', 'Medium', 'High', 'Extreme'];
+    var rCol = { Low: '#15803D', Medium: '#B8960C', High: '#D97706', Extreme: '#B83232' };
+    destroy('risk');
+    sdsCharts.risk = new Chart(riskEl, {
+      type: 'bar',
+      data: { labels: rOrder, datasets: [{ data: rOrder.map(function(r) { return list.filter(function(c) { return c.risk === r; }).length; }), backgroundColor: rOrder.map(function(r) { return rCol[r]; }), borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
+    });
+  }
+
+  // By site (bar)
+  var siteEl = document.getElementById('dsds-chart-site');
+  if (siteEl) {
+    var sites = _sdsSites();
+    destroy('site');
+    sdsCharts.site = new Chart(siteEl, {
+      type: 'bar',
+      data: { labels: sites, datasets: [{ data: sites.map(function(s) { return _sdsAllChems().filter(function(c) { return _sdsMatchesSite(c, s); }).length; }), backgroundColor: '#136D65', borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
+    });
+  }
+}
+
+function sdsShowChemDetail(name) {
+  var c = null, all = _sdsAllChems();
+  for (var i = 0; i < all.length; i++) { if (all[i].name === name) { c = all[i]; break; } }
+  if (!c) return;
+  function row(label, val) { return val ? '<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:8px"><div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">' + label + '</div><div style="font-size:13px;color:var(--text);line-height:1.45">' + val + '</div></div>' : ''; }
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  sheet.onclick = function(e) { if (e.target === sheet) sheet.remove(); };
+  sheet.innerHTML =
+    '<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;padding:24px 20px calc(32px + env(safe-area-inset-bottom))">' +
+      '<div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>' +
+      '<div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:16px;gap:10px">' +
+        '<div><div style="font-size:17px;font-weight:700;color:var(--text)">' + c.name + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + (c.manufacturer || '') + '</div></div>' +
+        '<span style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;flex-shrink:0;background:' + (c.colour || '#F0F0F0') + ';color:' + (c.dot || '#888') + '">' + (c.statusLabel || c.status || '') + '</span>' +
+      '</div>' +
+      row('Sites', c.sites) +
+      row('Dangerous goods', c.dg) +
+      row('Risk level', c.risk) +
+      row('Form', c.form) +
+      row('Storage', c.storage) +
+      row('Used for', c.usage) +
+      row('Key hazards', c.hazard) +
+      row('PPE required', c.ppe) +
+      row('Emergency response', c.emergency) +
+      row('SDS issued', c.sds) +
+      row('SDS expiry', c.expiry) +
+      '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="width:100%;padding:14px;background:var(--mid);border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;color:#fff;cursor:pointer;margin-top:8px">Close</button>' +
+    '</div>';
+  document.body.appendChild(sheet);
 }
 
 var sdsSite = 'All'; // current SDS site filter
@@ -39437,7 +39531,7 @@ function dirSdsRender() {
   var reg = document.getElementById('dsds-register');
   if (reg) {
     reg.innerHTML = s.chems.length ? s.chems.map(function(c) {
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid #E8E8E8;border-radius:8px;margin-bottom:8px;background:#fff">' +
+      return '<div onclick="sdsShowChemDetail(\'' + (c.name || '').replace(/'/g, "\\'") + '\')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid #E8E8E8;border-radius:8px;margin-bottom:8px;background:#fff;cursor:pointer">' +
         '<div style="min-width:0;flex:1">' +
           '<div style="font-size:12.5px;font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + c.name + '</div>' +
           '<div style="font-size:10.5px;color:#888;margin-top:2px">' + (c.manufacturer || '') + ' · ' + (c.sites || '') + '</div>' +
@@ -39445,6 +39539,7 @@ function dirSdsRender() {
         '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:10px">' +
           '<span style="width:8px;height:8px;border-radius:50%;background:' + (c.dot || '#888') + ';display:inline-block"></span>' +
           '<span style="font-size:10px;font-weight:600;color:' + (c.dot || '#888') + ';text-align:right">' + (c.statusLabel || c.status || '') + '</span>' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>' +
         '</div>' +
       '</div>';
     }).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No chemicals registered for this site.</div>';
@@ -39464,6 +39559,10 @@ function dirSdsRender() {
       '</div>';
     }).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No missing-chemical reports.</div>';
   }
+
+  // Refresh charts if the Analytics tab is currently open (e.g. after a filter change)
+  var anaEl = document.getElementById('main-sds-tab-content-analytics');
+  if (anaEl && anaEl.style.display !== 'none') { setTimeout(renderSdsCharts, 30); }
 }
 
 function updateDirSdsSummary() {
