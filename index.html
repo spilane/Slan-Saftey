@@ -10422,8 +10422,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <div style="display:flex;gap:4px;margin-bottom:16px;padding:4px;background:linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
       <button id="main-ptw-tab-overview" onclick="switchMainPtwTab('overview')" style="flex:1;padding:10px 16px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;box-shadow:0 2px 4px rgba(184,150,12,0.3)">Overview</button>
-      <button id="main-ptw-tab-register" onclick="switchMainPtwTab('register')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Register</button>
-      <button id="main-ptw-tab-approvals" onclick="switchMainPtwTab('approvals')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Approvals</button>
+      <button id="main-ptw-tab-analytics" onclick="switchMainPtwTab('analytics')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Analytics</button>
+      <button id="main-ptw-tab-details" onclick="switchMainPtwTab('details')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Details</button>
     </div>
 
     <div id="dptw-site-filter" style="display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px"></div>
@@ -10433,7 +10433,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard" style="margin-bottom:12px">
         <div class="fcard-hdr">🎯 Actions I Can Take Now</div>
         <div style="padding:10px">
-          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainPtwTab('approvals')">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainPtwTab('details')">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
                 <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px">⏳ <span id="dptw-pending-count">—</span> permits pending approval</div>
@@ -10442,7 +10442,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div style="font-size:20px;color:#92400E">→</div>
             </div>
           </button>
-          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);border:2px solid #DC2626;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(220,38,38,0.15)" onclick="switchMainPtwTab('approvals')">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);border:2px solid #DC2626;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(220,38,38,0.15)" onclick="switchMainPtwTab('details')">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
                 <div style="font-size:13px;font-weight:700;color:#991B1B;margin-bottom:4px">🚨 <span id="dptw-flagged-count">—</span> permits rejected or revoked</div>
@@ -10501,16 +10501,28 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <!-- REGISTER -->
-    <div id="main-ptw-tab-content-register" class="main-ptw-tab-content" style="display:none">
+    <!-- ANALYTICS -->
+    <div id="main-ptw-tab-content-analytics" class="main-ptw-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 Permits by Type</div>
+        <div style="padding:12px"><div style="height:230px;position:relative"><canvas id="dptw-chart-type"></canvas></div></div>
+      </div>
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🔵 Status Breakdown</div>
+        <div style="padding:12px"><div style="height:200px;position:relative"><canvas id="dptw-chart-status"></canvas></div></div>
+      </div>
       <div class="fcard">
-        <div class="fcard-hdr">📋 Permit Log</div>
-        <div id="dptw-register" style="padding:10px"></div>
+        <div class="fcard-hdr">🏗️ Permits by Site</div>
+        <div style="padding:12px"><div style="height:190px;position:relative"><canvas id="dptw-chart-site"></canvas></div></div>
       </div>
     </div>
 
-    <!-- APPROVALS -->
-    <div id="main-ptw-tab-content-approvals" class="main-ptw-tab-content" style="display:none">
+    <!-- DETAILS -->
+    <div id="main-ptw-tab-content-details" class="main-ptw-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📋 Permit Log</div>
+        <div id="dptw-register" style="padding:10px"></div>
+      </div>
       <div class="fcard" style="margin-bottom:12px">
         <div class="fcard-hdr">⏳ Pending Approval</div>
         <div id="dptw-pending-list" style="padding:10px"></div>
@@ -39592,7 +39604,7 @@ function goToDirectorPermits() {
 }
 
 function switchMainPtwTab(tabName) {
-  ['overview', 'register', 'approvals'].forEach(function(t) {
+  ['overview', 'analytics', 'details'].forEach(function(t) {
     var content = document.getElementById('main-ptw-tab-content-' + t);
     if (content) content.style.display = (t === tabName) ? 'block' : 'none';
     var btn = document.getElementById('main-ptw-tab-' + t);
@@ -39601,6 +39613,51 @@ function switchMainPtwTab(tabName) {
       else { btn.style.background = 'transparent'; btn.style.color = '#666'; btn.style.boxShadow = 'none'; }
     }
   });
+  if (tabName === 'analytics') { setTimeout(renderPtwCharts, 80); }
+}
+
+var ptwCharts = {};
+function renderPtwCharts() {
+  if (typeof Chart === 'undefined') return;
+  var list = _dptwActivePermits();
+  function destroy(k) { if (ptwCharts[k]) { try { ptwCharts[k].destroy(); } catch (e) {} ptwCharts[k] = null; } }
+
+  // By type (horizontal bar) — only types present
+  var typeEl = document.getElementById('dptw-chart-type');
+  if (typeEl) {
+    var tCounts = DIR_PTW_TYPE_ORDER.map(function(tp) { return { tp: tp, n: list.filter(function(p) { return p.type === tp; }).length }; }).filter(function(x) { return x.n > 0; });
+    destroy('type');
+    ptwCharts.type = new Chart(typeEl, {
+      type: 'bar',
+      data: { labels: tCounts.map(function(x) { return x.tp; }), datasets: [{ data: tCounts.map(function(x) { return x.n; }), backgroundColor: '#2D6A45', borderRadius: 4 }] },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } }, grid: { color: '#eee' } }, y: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
+    });
+  }
+
+  // Status breakdown (doughnut)
+  var statusEl = document.getElementById('dptw-chart-status');
+  if (statusEl) {
+    var order = ['active', 'pending', 'closed', 'rejected', 'revoked'];
+    var sCounts = order.map(function(st) { return list.filter(function(p) { return p.status === st; }).length; });
+    destroy('status');
+    ptwCharts.status = new Chart(statusEl, {
+      type: 'doughnut',
+      data: { labels: order.map(function(st) { return _dptwStatusMeta(st).label; }), datasets: [{ data: sCounts, backgroundColor: order.map(function(st) { return _dptwStatusMeta(st).colour; }), borderWidth: 1, borderColor: '#fff' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } } } }
+    });
+  }
+
+  // By site (vertical bar)
+  var siteEl = document.getElementById('dptw-chart-site');
+  if (siteEl) {
+    var sites = _dptwSites();
+    destroy('site');
+    ptwCharts.site = new Chart(siteEl, {
+      type: 'bar',
+      data: { labels: sites, datasets: [{ data: sites.map(function(s) { return list.filter(function(p) { return p.site === s; }).length; }), backgroundColor: '#B8960C', borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
+    });
+  }
 }
 
 function _dptwCard(p) {
@@ -39708,6 +39765,10 @@ function dirPtwRender() {
     var p2 = list.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; });
     flag.innerHTML = p2.length ? p2.map(_dptwCard).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No rejected or revoked permits.</div>';
   }
+
+  // Refresh charts if the Analytics tab is currently open (e.g. after a filter change)
+  var anaEl = document.getElementById('main-ptw-tab-content-analytics');
+  if (anaEl && anaEl.style.display !== 'none') { setTimeout(renderPtwCharts, 30); }
 }
 
 // Populates the "Permits to Work" summary line on the director dashboard tile.
