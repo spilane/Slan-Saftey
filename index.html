@@ -10470,15 +10470,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div style="font-size:20px;color:#1B3A2D">→</div>
             </div>
           </button>
-          <button style="width:100%;padding:14px;background:#fff;border:2px solid #136D65;border-radius:10px;margin-top:10px;cursor:pointer" onclick="dptwExportCSV()">
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <div style="text-align:left">
-                <div style="font-size:13px;font-weight:700;color:#136D65;margin-bottom:4px">📊 Export to Excel (CSV)</div>
-                <div style="font-size:10px;color:#5C6B62">Open the register in Excel / Google Sheets</div>
-              </div>
-              <div style="font-size:20px;color:#136D65">→</div>
-            </div>
-          </button>
         </div>
       </div>
 
@@ -10613,15 +10604,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div style="font-size:20px;color:#1B3A2D">→</div>
             </div>
           </button>
-          <button style="width:100%;padding:14px;background:#fff;border:2px solid #136D65;border-radius:10px;margin-top:10px;cursor:pointer" onclick="sdsExportCSV()">
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <div style="text-align:left">
-                <div style="font-size:13px;font-weight:700;color:#136D65;margin-bottom:4px">📊 Export to Excel (CSV)</div>
-                <div style="font-size:10px;color:#5C6B62">Open the register in Excel / Google Sheets</div>
-              </div>
-              <div style="font-size:20px;color:#136D65">→</div>
-            </div>
-          </button>
         </div>
       </div>
 
@@ -10733,15 +10715,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
                 <div style="font-size:10px;color:#3B6D11">Company-wide compliance report for insurers / regulators</div>
               </div>
               <div style="font-size:20px;color:#1B3A2D">→</div>
-            </div>
-          </button>
-          <button style="width:100%;padding:14px;background:#fff;border:2px solid #136D65;border-radius:10px;margin-top:10px;cursor:pointer" onclick="tbtExportCSV()">
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <div style="text-align:left">
-                <div style="font-size:13px;font-weight:700;color:#136D65;margin-bottom:4px">📊 Export to Excel (CSV)</div>
-                <div style="font-size:10px;color:#5C6B62">Open the register in Excel / Google Sheets</div>
-              </div>
-              <div style="font-size:20px;color:#136D65">→</div>
             </div>
           </button>
         </div>
@@ -10869,15 +10842,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
                 <div style="font-size:10px;color:#3B6D11">Leading-indicator register for audits / regulators</div>
               </div>
               <div style="font-size:20px;color:#1B3A2D">→</div>
-            </div>
-          </button>
-          <button style="width:100%;padding:14px;background:#fff;border:2px solid #136D65;border-radius:10px;margin-top:10px;cursor:pointer" onclick="hazExportCSV()">
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <div style="text-align:left">
-                <div style="font-size:13px;font-weight:700;color:#136D65;margin-bottom:4px">📊 Export to Excel (CSV)</div>
-                <div style="font-size:10px;color:#5C6B62">Open the register in Excel / Google Sheets</div>
-              </div>
-              <div style="font-size:20px;color:#136D65">→</div>
             </div>
           </button>
         </div>
@@ -11118,15 +11082,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
                 <div style="font-size:10px;color:#7F1D1D"><span id="dinc-highrisk-count">2</span> high-risk incidents this week need review</div>
               </div>
               <div style="font-size:20px;color:#991B1B">→</div>
-            </div>
-          </button>
-          <button style="width:100%;padding:14px;background:#fff;border:2px solid #136D65;border-radius:10px;margin-top:10px;cursor:pointer" onclick="incExportCSV()">
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <div style="text-align:left">
-                <div style="font-size:13px;font-weight:700;color:#136D65;margin-bottom:4px">📊 Export to Excel (CSV)</div>
-                <div style="font-size:10px;color:#5C6B62">Open the incident register in Excel / Google Sheets</div>
-              </div>
-              <div style="font-size:20px;color:#136D65">→</div>
             </div>
           </button>
 
@@ -40812,41 +40767,6 @@ function dirHazExportPDF() {
   ];
   if (overdue.length) sections.push({ type: 'lines', title: 'OVERDUE HAZARDS', lines: overdue.map(function(h) { return h.id + ' (' + h.site + ') — ' + h.type + ' · due ' + h.due + ' · ' + h.action; }) });
   slanDirRegisterPDF({ title: 'HAZARD REGISTER', docCode: 'SLS-REG-008 · v1.0 · Slán Safety — Confidential', metaLine: company + '  ·  ' + scope + '  ·  Generated ' + today, filename: 'Hazard-Register-' + today.replace(/\//g, '-') + '.pdf', sections: sections });
-}
-
-// ── Excel/CSV export — turns a director tile's live data into a spreadsheet ──
-function dirExportCSV(filename, headers, rows) {
-  function esc(v) { v = (v == null ? '' : String(v)); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
-  var lines = [headers.map(esc).join(',')];
-  rows.forEach(function(r) { lines.push(r.map(esc).join(',')); });
-  var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click();
-  setTimeout(function() { try { document.body.removeChild(a); } catch (e) {} URL.revokeObjectURL(url); }, 200);
-}
-function _csvDate() { return new Date().toLocaleDateString('en-AU').replace(/\//g, '-'); }
-function dptwExportCSV() {
-  var rows = _dptwActivePermits().map(function(p) { return [p.ref, p.type, p.subtype, p.site, p.supervisor, p.worker, _dptwStatusMeta(p.status).label, p.date, p.note || '']; });
-  dirExportCSV('Permits-Register-' + _csvDate() + '.csv', ['Permit', 'Type', 'Subtype', 'Site', 'Supervisor', 'Worker', 'Status', 'Date', 'Note'], rows);
-}
-function sdsExportCSV() {
-  var rows = _sdsActiveChems().map(function(c) { return [c.name, c.manufacturer || '', c.sites || '', c.dg || '', c.risk || '', c.statusLabel || c.status || '', c.expiry || '']; });
-  dirExportCSV('Chemical-Register-' + _csvDate() + '.csv', ['Chemical', 'Manufacturer', 'Sites', 'Dangerous Goods', 'Risk', 'SDS Status', 'Expiry'], rows);
-}
-function tbtExportCSV() {
-  var rows = _tbtActiveSites().map(function(s) { var pct = s.total ? Math.round(s.signed / s.total * 100) : 0; return [s.name, s.supervisor || '', s.signed, s.total, pct + '%', (s.outstanding || []).join('; ')]; });
-  dirExportCSV('Toolbox-Register-' + _csvDate() + '.csv', ['Site', 'Supervisor', 'Signed', 'Total', 'Completion', 'Not signed'], rows);
-}
-function hazExportCSV() {
-  var rows = _hazActive().map(function(h) { return [h.id, h.date, h.type, h.severity, h.site, h.location, h.reporter, _hazStatusMeta(h.status).label, h.due, _hazIsOverdue(h) ? 'Yes' : 'No', h.action || '']; });
-  dirExportCSV('Hazard-Register-' + _csvDate() + '.csv', ['ID', 'Date', 'Type', 'Severity', 'Site', 'Location', 'Reporter', 'Status', 'Due', 'Overdue', 'Corrective Action'], rows);
-}
-function incExportCSV() {
-  var all = (typeof incLoadAll === 'function') ? incLoadAll() : [];
-  var rows = all.map(function(i) { return [i.ref || '', i.incident_date || '', i.incident_type || '', i.severity || '', i.site || '', i.location || '', i.reporter_name || '', i.status || '']; });
-  dirExportCSV('Incident-Register-' + _csvDate() + '.csv', ['Reference', 'Date', 'Type', 'Severity', 'Site', 'Location', 'Reporter', 'Status'], rows);
 }
 
 function goToDirectorIncidents() {
