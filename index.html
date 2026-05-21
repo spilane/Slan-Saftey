@@ -23607,16 +23607,9 @@ function downloadIncidentPdf() {
     }
 
     const filename = 'Incident_' + (r.ref || 'report').replace(/[^A-Z0-9-]/gi,'_') + '.pdf';
-    
-    // Open PDF in new tab instead of downloading
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    window.open(pdfUrl, '_blank');
-    
-    // Clean up the URL after a delay
-    setTimeout(function() {
-      URL.revokeObjectURL(pdfUrl);
-    }, 1000);
+
+    // Download the PDF (window.open with a blob is blocked in mobile PWAs)
+    doc.save(filename);
   } catch (e) {
     console.error('Incident PDF generation failed:', e);
     slanAlert('Could not generate PDF', 'Something went wrong building the PDF. Please try again or contact support.');
@@ -39034,12 +39027,11 @@ function viewIncidentPDF(incident) {
     
     // Add footer to final page
     addFooter();
-    
-    // Open PDF
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    window.open(pdfUrl, '_blank');
-    
+
+    // Save/download the PDF (window.open with a blob is blocked in mobile PWAs)
+    var _ref = (incident && incident.ref) ? incident.ref : 'report';
+    doc.save('Incident-Report-' + _ref + '.pdf');
+
   } catch(err) {
     console.error('PDF generation error:', err);
     alert('Error generating PDF: ' + err.message);
