@@ -37370,7 +37370,7 @@ function populateDirectorIncidents() {
   if (summary && incidents.length > 0) {
     var open = incidents.filter(i => i.status === 'open').length;
     if (open > 0) {
-      summary.textContent = open + ' incident' + (open !== 1 ? 's' : '') + ' open';
+      summary.innerHTML = open + ' incident' + (open !== 1 ? 's' : '') + ' open' + (typeof _trendSpan === 'function' ? _trendSpan(open, 8, false, '') : '');
     } else {
       summary.textContent = 'All incidents closed';
     }
@@ -39318,12 +39318,24 @@ function dirToolboxRender() {
   if (anaEl && anaEl.style.display !== 'none') { setTimeout(renderTbtCharts, 30); }
 }
 
+// Small month-over-month trend chip. higherIsBetter flips the good/bad colour
+// (e.g. incidents going DOWN is good). Demo baselines are seeded until the
+// backend provides real history.
+function _trendSpan(cur, prev, higherIsBetter, unit) {
+  unit = unit || '';
+  var d = cur - prev;
+  if (d === 0) return ' · <span style="color:#999;font-weight:700">▬ 0' + unit + '</span>';
+  var up = d > 0;
+  var good = higherIsBetter ? up : !up;
+  return ' · <span style="color:' + (good ? '#15803D' : '#B83232') + ';font-weight:700">' + (up ? '▲' : '▼') + ' ' + (d > 0 ? '+' : '') + d + unit + '</span>';
+}
+
 // Populates the "Toolbox Talks" summary line on the director dashboard tile.
 function updateDirToolboxSummary() {
   var el = document.getElementById('an-tbt-summary');
   if (!el) return;
   var t = _dirTbtTotals();
-  el.textContent = t.signed + ' of ' + t.total + ' signed this month · ' + t.pct + '% across ' + DIR_TBT_SITES.length + ' sites';
+  el.innerHTML = t.signed + ' of ' + t.total + ' signed this month · ' + t.pct + '%' + _trendSpan(t.pct, 78, true, '%');
 }
 
 // Company-wide toolbox compliance PDF (director audit pack). Uses the same
@@ -39742,8 +39754,7 @@ function updateDirSdsSummary() {
   var el = document.getElementById('an-sds-summary');
   if (!el) return;
   var s = _sdsRegisterStats();
-  var pending = DIR_SDS_REPORTS.filter(function(r) { return r.status === 'Pending'; }).length;
-  el.textContent = s.total + ' chemicals · ' + s.attention + ' need renewal · ' + pending + ' missing reports';
+  el.innerHTML = s.total + ' chemicals · ' + s.attention + ' need renewal · ' + s.coverage + '% current' + _trendSpan(s.coverage, 66, true, '%');
 }
 
 function dirSdsExportPDF() {
@@ -40078,7 +40089,8 @@ function updateDirPtwSummary() {
   var el = document.getElementById('an-permits-summary');
   if (!el) return;
   var s = _dptwStats();
-  el.textContent = s.active + ' active · ' + s.pending + ' pending approval · ' + s.sites + ' sites';
+  var health = s.total ? Math.round((s.total - s.flagged) / s.total * 100) : 100;
+  el.innerHTML = s.active + ' active · ' + s.pending + ' pending · ' + s.sites + ' sites' + _trendSpan(health, 80, true, '%');
 }
 
 // Company-wide permits register PDF (director audit pack).
