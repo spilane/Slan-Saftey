@@ -10676,8 +10676,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- Tab Navigation -->
     <div style="display:flex;gap:4px;margin-bottom:16px;padding:4px;background:linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
       <button id="main-tbt-tab-overview" onclick="switchMainToolboxTab('overview')" style="flex:1;padding:10px 16px;background:linear-gradient(135deg, #B8960C 0%, #D4A72C 100%);color:#fff;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;box-shadow:0 2px 4px rgba(184,150,12,0.3)">Overview</button>
-      <button id="main-tbt-tab-sites" onclick="switchMainToolboxTab('sites')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">By Site</button>
-      <button id="main-tbt-tab-details" onclick="switchMainToolboxTab('details')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">History</button>
+      <button id="main-tbt-tab-analytics" onclick="switchMainToolboxTab('analytics')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Analytics</button>
+      <button id="main-tbt-tab-details" onclick="switchMainToolboxTab('details')" style="flex:1;padding:10px 16px;background:transparent;color:#666;border:none;border-radius:7px;font-weight:600;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px">Details</button>
     </div>
 
     <div id="dtbt-site-filter" style="display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px"></div>
@@ -10689,7 +10689,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard" style="margin-bottom:12px">
         <div class="fcard-hdr">🎯 Actions I Can Take Now</div>
         <div style="padding:10px">
-          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainToolboxTab('sites')">
+          <button style="width:100%;padding:16px;background:linear-gradient(135deg, #FEF3E2 0%, #FAC775 100%);border:2px solid #D97706;border-radius:10px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.15)" onclick="switchMainToolboxTab('analytics')">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
                 <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:4px">⚠️ <span id="dtbt-outstanding-count">—</span> workers haven't signed this month's talk</div>
@@ -10750,15 +10750,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     </div>
 
-    <!-- TAB 2: BY SITE -->
-    <div id="main-tbt-tab-content-sites" class="main-tbt-tab-content" style="display:none">
+    <!-- TAB 2: ANALYTICS -->
+    <div id="main-tbt-tab-content-analytics" class="main-tbt-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📊 Completion by Site</div>
+        <div style="padding:12px"><div style="height:190px;position:relative"><canvas id="dtbt-chart-site"></canvas></div></div>
+      </div>
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📈 Monthly Trend</div>
+        <div style="padding:12px"><div style="height:190px;position:relative"><canvas id="dtbt-chart-trend"></canvas></div></div>
+      </div>
       <div class="fcard">
         <div class="fcard-hdr">🏗️ Site Breakdown — This Month's Talk</div>
         <div id="dtbt-sites-full" style="padding:10px"></div>
       </div>
     </div>
 
-    <!-- TAB 3: HISTORY -->
+    <!-- TAB 3: DETAILS (History) -->
     <div id="main-tbt-tab-content-details" class="main-tbt-tab-content" style="display:none">
       <div class="fcard">
         <div class="fcard-hdr">🗂️ Talk History &amp; Audit Rosters</div>
@@ -38993,7 +39001,7 @@ function goToDirectorToolbox() {
 }
 
 function switchMainToolboxTab(tabName) {
-  ['overview', 'sites', 'details'].forEach(function(t) {
+  ['overview', 'analytics', 'details'].forEach(function(t) {
     var content = document.getElementById('main-tbt-tab-content-' + t);
     if (content) content.style.display = (t === tabName) ? 'block' : 'none';
     var btn = document.getElementById('main-tbt-tab-' + t);
@@ -39009,6 +39017,44 @@ function switchMainToolboxTab(tabName) {
       }
     }
   });
+  if (tabName === 'analytics') { setTimeout(renderTbtCharts, 80); }
+}
+
+var tbtCharts = {};
+function renderTbtCharts() {
+  if (typeof Chart === 'undefined') return;
+  function destroy(k) { if (tbtCharts[k]) { try { tbtCharts[k].destroy(); } catch (e) {} tbtCharts[k] = null; } }
+  function pctColour(p) { return p >= 95 ? '#15803D' : (p >= 80 ? '#D97706' : '#B83232'); }
+
+  // Completion by site (bar, 0-100%)
+  var siteEl = document.getElementById('dtbt-chart-site');
+  if (siteEl) {
+    var rows = (tbtSite === 'All') ? DIR_TBT_SITES : DIR_TBT_SITES.filter(function(s) { return s.name === tbtSite; });
+    var pcts = rows.map(function(s) { return s.total ? Math.round(s.signed / s.total * 100) : 0; });
+    destroy('site');
+    tbtCharts.site = new Chart(siteEl, {
+      type: 'bar',
+      data: { labels: rows.map(function(s) { return s.name; }), datasets: [{ data: pcts, backgroundColor: pcts.map(pctColour), borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
+    });
+  }
+
+  // Monthly trend (bar) — this month + history months, company or site-scoped
+  var trendEl = document.getElementById('dtbt-chart-trend');
+  if (trendEl) {
+    var sites = _tbtActiveSites();
+    var t = _dirTbtTotals(sites);
+    var pts = [{ label: 'This month', pct: t.pct }];
+    var src = (tbtSite === 'All') ? _tbtMonthlyTrend() : (DIR_TBT_SITE_TALKS[tbtSite] || []).map(function(tk) { return { month: tk.month, pct: tk.total ? Math.round(tk.signed / tk.total * 100) : 0 }; });
+    src.slice(0, 4).forEach(function(m) { pts.push({ label: m.month, pct: m.pct }); });
+    pts.reverse();
+    destroy('trend');
+    tbtCharts.trend = new Chart(trendEl, {
+      type: 'bar',
+      data: { labels: pts.map(function(p) { return p.label; }), datasets: [{ data: pts.map(function(p) { return p.pct; }), backgroundColor: pts.map(function(p) { return pctColour(p.pct); }), borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 9 } }, grid: { display: false } } } }
+    });
+  }
 }
 
 var tbtSite = 'All'; // current toolbox site filter
@@ -39143,6 +39189,10 @@ function dirToolboxRender() {
       '</div>';
     }).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No talks recorded for this site.</div>';
   }
+
+  // Refresh charts if the Analytics tab is currently open (e.g. after a filter change)
+  var anaEl = document.getElementById('main-tbt-tab-content-analytics');
+  if (anaEl && anaEl.style.display !== 'none') { setTimeout(renderTbtCharts, 30); }
 }
 
 // Populates the "Toolbox Talks" summary line on the director dashboard tile.
