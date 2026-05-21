@@ -38873,7 +38873,7 @@ function viewIncidentPDF(incident) {
       doc.text('INCIDENT REPORT', ML, y + 10);
       // Gold accent line (Slán house style)
       setStroke('#B8960C');
-      doc.setLineWidth(1);
+      doc.setLineWidth(0.5);
       doc.line(ML, y + 15, PAGE_W - MR, y + 15);
       y += 22;
     };
@@ -39505,7 +39505,7 @@ function slanDirRegisterPDF(cfg) {
       if (window.SLAN_LOGO_B64) { try { doc.addImage(window.SLAN_LOGO_B64, 'PNG', PAGE_W - MR - 30, y, 30, 13); } catch (e) {} }
       setText(C.darkText); doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
       doc.text(String(cfg.title || ''), ML, y + 10);
-      setStroke('#B8960C'); doc.setLineWidth(1); doc.line(ML, y + 15, PAGE_W - MR, y + 15);
+      setStroke('#B8960C'); doc.setLineWidth(0.5); doc.line(ML, y + 15, PAGE_W - MR, y + 15);
       y += 21;
       if (cfg.metaLine) { setText(C.labelGrey); doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text(String(cfg.metaLine), ML, y); y += 8; }
     }
