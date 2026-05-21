@@ -10850,6 +10850,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="fcard-hdr">📈 12-Month Compliance Trend</div>
         <div style="padding:12px"><div style="height:200px;position:relative"><canvas id="dcomp-chart-trend"></canvas></div></div>
       </div>
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🚦 RAG Breakdown</div>
+        <div style="padding:12px"><div style="height:180px;position:relative"><canvas id="dcomp-chart-rag"></canvas></div></div>
+      </div>
       <div class="fcard">
         <div class="fcard-hdr">⚖️ Category Contribution</div>
         <div style="padding:12px"><div style="height:230px;position:relative"><canvas id="dcomp-chart-cats"></canvas></div></div>
@@ -10858,6 +10862,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- DETAILS -->
     <div id="main-comp-tab-content-details" class="main-comp-tab-content" style="display:none">
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">📋 Category Breakdown</div>
+        <div id="dcomp-cattable" style="padding:8px"></div>
+      </div>
+      <div class="fcard" style="margin-bottom:12px">
+        <div class="fcard-hdr">🗂️ Action Tracker</div>
+        <div id="dcomp-tracker" style="padding:10px"></div>
+      </div>
       <div class="fcard">
         <div class="fcard-hdr">⚠️ Action Items — Amber &amp; Red</div>
         <div id="dcomp-actions" style="padding:10px"></div>
@@ -40175,23 +40187,28 @@ function dirPtwExportPDF() {
 // ═══════════════════════════════════════════════════════════════
 function _compModel() {
   function pct(n, d) { return d ? Math.round(n / d * 100) : 0; }
-  var tbtPct = 80, sdsPct = 70, ptwPct = 85;
-  try { if (typeof _dirTbtTotals === 'function') tbtPct = _dirTbtTotals().pct; } catch (e) {}
-  try { if (typeof _sdsRegisterStats === 'function') sdsPct = _sdsRegisterStats().coverage; } catch (e) {}
-  try { if (typeof DIR_PTW_PERMITS !== 'undefined') { var fl = DIR_PTW_PERMITS.filter(function(p) { return p.status === 'rejected' || p.status === 'revoked'; }).length; ptwPct = DIR_PTW_PERMITS.length ? pct(DIR_PTW_PERMITS.length - fl, DIR_PTW_PERMITS.length) : 100; } } catch (e) {}
+  // Live figures (Toolbox + SDS pulled from real app data); rest seeded for demo.
+  var tbtS = 39, tbtT = 49, sdsC = 7, sdsT = 10;
+  try { if (typeof _dirTbtTotals === 'function') { var tt = _dirTbtTotals(); tbtS = tt.signed; tbtT = tt.total; } } catch (e) {}
+  try { if (typeof _sdsRegisterStats === 'function') { var ss = _sdsRegisterStats(); sdsT = ss.total; sdsC = ss.current; } } catch (e) {}
+  // S = seeded (possible + score → compliant); L = live (compliant/possible → score)
+  function S(name, weight, prev, source, possible, score, issue, action) { return { name: name, weight: weight, prev: prev, source: source, possible: possible, compliant: Math.round(possible * score / 100), score: score, issue: issue, action: action }; }
+  function L(name, weight, prev, source, compliant, possible, issue, action) { return { name: name, weight: weight, prev: prev, source: source, possible: possible, compliant: compliant, score: pct(compliant, possible), issue: issue, action: action }; }
   return [
-    { name: 'Plant Pre-Starts',         score: 91,     weight: 10, prev: 88, source: 'SLS-REG-010', issue: '2 pre-starts missing operator sign-off', action: 'Supervisors to confirm daily pre-start completion' },
-    { name: 'SWMS Sign-Offs',           score: 86,     weight: 12, prev: 90, source: 'SWMS Register' },
-    { name: 'Toolbox Talks',            score: tbtPct, weight: 10, prev: 78, source: 'Toolbox Register', issue: 'Liverpool below the 95% target', action: 'Site supervisor to chase outstanding sign-offs' },
-    { name: 'Licence Currency',         score: 93,     weight: 12, prev: 93, source: 'SLS-REG-002 Training Matrix' },
-    { name: 'SDS Register',             score: sdsPct, weight: 8,  prev: 66, source: 'SLS-REG-005', issue: '1 SDS expired, 1 expiring soon', action: 'Source current SDS from the manufacturer' },
-    { name: 'Subcontractor Paperwork',  score: 78,     weight: 8,  prev: 74, source: 'SLS-REG-004', issue: '2 subcontractors missing current insurance', action: 'Request renewed certificates of currency' },
-    { name: 'Plant Service Currency',   score: 88,     weight: 8,  prev: 85, source: 'SLS-REG-010 Service Schedule' },
-    { name: 'Incident Reports',         score: 92,     weight: 14, prev: 92, source: 'SLS-REG-006' },
-    { name: 'Hazard Reports (Leading)', score: 82,     weight: 10, prev: 76, source: 'SLS-REG-008', issue: 'Proactive reporting below target', action: 'Promote hazard reporting at toolbox talks' },
-    { name: 'Psychosocial',             score: 69,     weight: 8,  prev: 65, source: 'SLS-REG-009', issue: 'Survey completion low + 1 open matter', action: 'Schedule wellbeing check-ins; close open matter' }
+    S('Plant Pre-Starts',         10, 88, 'SLS-REG-010',                42, 91),
+    S('SWMS Sign-Offs',           12, 90, 'SWMS Register',              28, 86),
+    L('Toolbox Talks',            10, 78, 'Toolbox Register',           tbtS, tbtT, 'Liverpool below the 95% target', 'Site supervisor to chase outstanding sign-offs'),
+    S('Licence Currency',         12, 93, 'SLS-REG-002 Training Matrix', 44, 93),
+    L('SDS Register',             8,  66, 'SLS-REG-005',                sdsC, sdsT, '1 SDS expired, 1 expiring soon', 'Source current SDS from the manufacturer'),
+    S('Subcontractor Paperwork',  8,  74, 'SLS-REG-004',                18, 78, '2 subcontractors missing current insurance', 'Request renewed certificates of currency'),
+    S('Plant Service Currency',   8,  85, 'SLS-REG-010 Service Schedule', 16, 88),
+    S('Incident Reports',         14, 92, 'SLS-REG-006',                25, 92),
+    S('Hazard Reports (Leading)', 10, 76, 'SLS-REG-008',                30, 82, 'Proactive reporting below target', 'Promote hazard reporting at toolbox talks'),
+    S('Psychosocial',             8,  65, 'SLS-REG-009',                20, 69, 'Survey completion low + 1 open matter', 'Schedule wellbeing check-ins; close open matter')
   ];
 }
+// Cumulative action tracker (seeded for demo — from SLS-SCO-001 action log)
+var COMP_ACTION_TRACKER = { open: 3, progress: 2, overdue: 1, closed: 8 };
 function _compRag(s) { return s >= 85 ? { label: 'GREEN', col: '#15803D', bg: '#E6F5ED' } : (s >= 70 ? { label: 'AMBER', col: '#D97706', bg: '#FEF3E2' } : { label: 'RED', col: '#B83232', bg: '#FCE9E9' }); }
 function _compTrendArrow(cur, prev) { if (cur > prev + 1) return { a: '▲', c: '#15803D' }; if (cur < prev - 1) return { a: '▼', c: '#B83232' }; return { a: '▬', c: '#888' }; }
 function _compOverall() {
@@ -40280,6 +40297,38 @@ function dirCompRender() {
     }).join('') : '<div style="font-size:12.5px;color:#888;text-align:center;padding:14px">No action items — all categories Green.</div>';
   }
 
+  // Full category breakdown table (matches the SLS-SCO-001 spreadsheet)
+  var tbl = document.getElementById('dcomp-cattable');
+  if (tbl) {
+    var head = '<div style="display:flex;font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.3px;padding:6px 4px;border-bottom:1.5px solid #E8E8E8">' +
+      '<div style="flex:1;min-width:0">Category</div><div style="width:46px;text-align:center">Items</div><div style="width:38px;text-align:right">%</div><div style="width:34px;text-align:right">Wt</div><div style="width:30px;text-align:right">RAG</div></div>';
+    tbl.innerHTML = head + o.cats.map(function(c) {
+      var r = _compRag(c.score), a = _compTrendArrow(c.score, c.prev);
+      return '<div style="display:flex;align-items:center;font-size:11.5px;padding:8px 4px;border-bottom:1px solid #F0F0F0">' +
+        '<div style="flex:1;min-width:0"><div style="font-weight:600;color:#1A2A1F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + c.name + '</div><div style="font-size:9px;color:#aaa">' + c.source + '</div></div>' +
+        '<div style="width:46px;text-align:center;color:#666">' + c.compliant + '/' + c.possible + '</div>' +
+        '<div style="width:38px;text-align:right;font-weight:700;color:' + r.col + '">' + c.score + '%</div>' +
+        '<div style="width:34px;text-align:right;color:#888">' + c.weight + '%</div>' +
+        '<div style="width:30px;text-align:right;color:' + a.c + ';font-weight:700">' + a.a + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Cumulative action tracker (Open / In Progress / Overdue / Closed)
+  var trk = document.getElementById('dcomp-tracker');
+  if (trk) {
+    var T = (typeof COMP_ACTION_TRACKER !== 'undefined') ? COMP_ACTION_TRACKER : { open: 0, progress: 0, overdue: 0, closed: 0 };
+    var cells = [
+      { n: T.open, label: 'Open', col: '#D97706', bg: '#FEF3E2' },
+      { n: T.progress, label: 'In Progress', col: '#1F495C', bg: '#EAF0F3' },
+      { n: T.overdue, label: 'Overdue', col: '#B83232', bg: '#FCE9E9' },
+      { n: T.closed, label: 'Closed', col: '#15803D', bg: '#E6F5ED' }
+    ];
+    trk.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">' + cells.map(function(c) {
+      return '<div style="background:' + c.bg + ';border-radius:8px;padding:12px 6px;text-align:center"><div style="font-size:24px;font-weight:800;color:' + c.col + ';line-height:1">' + c.n + '</div><div style="font-size:9.5px;color:' + c.col + ';margin-top:5px;font-weight:600">' + c.label + '</div></div>';
+    }).join('') + '</div>';
+  }
+
   var anaEl = document.getElementById('main-comp-tab-content-analytics');
   if (anaEl && anaEl.style.display !== 'none') { setTimeout(renderCompCharts, 30); }
 }
@@ -40298,6 +40347,16 @@ function renderCompCharts() {
       type: 'line',
       data: { labels: t.labels, datasets: [{ label: 'Compliance', data: t.vals, borderColor: '#2D6A45', backgroundColor: 'rgba(45,106,69,0.12)', fill: true, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointHitRadius: 16, pointBackgroundColor: '#2D6A45' }] },
       options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: false }, tooltip: { displayColors: false, padding: 9, titleFont: { size: 12 }, bodyFont: { size: 13, weight: 'bold' }, callbacks: { title: function(items) { return items[0].label + ' 2026'; }, label: function(ctx) { return 'Compliance: ' + ctx.parsed.y + '%'; } } } }, scales: { y: { min: 50, max: 100, ticks: { callback: function(v) { return v + '%'; }, font: { size: 10 } }, grid: { color: '#eee' } }, x: { ticks: { font: { size: 9 } }, grid: { display: false } } } }
+    });
+  }
+
+  var ragEl = document.getElementById('dcomp-chart-rag');
+  if (ragEl) {
+    destroy('rag');
+    compCharts.rag = new Chart(ragEl, {
+      type: 'doughnut',
+      data: { labels: ['Green (≥85%)', 'Amber (70–84%)', 'Red (<70%)'], datasets: [{ data: [o.green, o.amber, o.red], backgroundColor: ['#15803D', '#D97706', '#B83232'], borderWidth: 1, borderColor: '#fff' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } }, tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed; } } } } }
     });
   }
 
