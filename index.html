@@ -10172,9 +10172,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-name">Permits to Work</div>
         <div class="tile-sub" id="an-permits-summary">Loading permit activity…</div>
       </div>
-      <div class="tile" onclick="goToDirectorCompliance()" style="grid-column:1 / -1;border:1.5px solid rgba(184,150,12,.35);background:linear-gradient(135deg,#FDF8E8 0%,#fff 60%)">
+      <div class="tile" onclick="goToDirectorCompliance()">
         <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg></div>
-        <div class="tile-name">Monthly Compliance Scorecard</div>
+        <div class="tile-name">Compliance Scorecard</div>
         <div class="tile-sub" id="an-comp-summary">Loading compliance score…</div>
       </div>
     </div>
@@ -37374,10 +37374,11 @@ function populateDirectorIncidents() {
   // Simple home tile summary - just show open count
   if (summary && incidents.length > 0) {
     var open = incidents.filter(i => i.status === 'open').length;
+    var trend = (typeof _trendSpan === 'function') ? _trendSpan(open, 5, false, '') : '';
     if (open > 0) {
-      summary.innerHTML = open + ' incident' + (open !== 1 ? 's' : '') + ' open' + (typeof _trendSpan === 'function' ? _trendSpan(open, 8, false, '') : '');
+      summary.innerHTML = open + ' incident' + (open !== 1 ? 's' : '') + ' open' + trend;
     } else {
-      summary.textContent = 'All incidents closed';
+      summary.innerHTML = 'All incidents closed' + trend;
     }
   }
   
@@ -47762,14 +47763,29 @@ function openIncidentPDF(incidentRef) {
 </body>
 </html>`;
   
-  // Open in new tab
-  const newWindow = window.open('', '_blank');
-  if (newWindow) {
-    newWindow.document.write(htmlContent);
-    newWindow.document.close();
-  } else {
-    alert('Please allow popups to view the incident report');
-  }
+  // Open the report in a full-screen in-app viewer (window.open is blocked in
+  // mobile PWAs). Includes Download (print → Save as PDF) and Close.
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;top:0;left:0;right:0;bottom:0;z-index:100000;background:#525659;display:flex;flex-direction:column';
+  var bar = document.createElement('div');
+  bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#1B3A2D;flex-shrink:0';
+  bar.innerHTML = '<div style="color:#fff;font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Incident Report — ' + (incident.ref || '') + '</div>';
+  var btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:8px;flex-shrink:0';
+  var dl = document.createElement('button');
+  dl.textContent = '⬇ Download / Print';
+  dl.style.cssText = 'padding:8px 14px;background:#B8960C;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit';
+  dl.onclick = function() { try { var f = ov.querySelector('iframe'); f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { try { window.print(); } catch (e2) {} } };
+  var cl = document.createElement('button');
+  cl.textContent = '✕ Close';
+  cl.style.cssText = 'padding:8px 14px;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit';
+  cl.onclick = function() { ov.remove(); };
+  btns.appendChild(dl); btns.appendChild(cl); bar.appendChild(btns);
+  var frame = document.createElement('iframe');
+  frame.style.cssText = 'flex:1;width:100%;border:none;background:#fff';
+  frame.setAttribute('srcdoc', htmlContent);
+  ov.appendChild(bar); ov.appendChild(frame);
+  document.body.appendChild(ov);
 }
 
 
