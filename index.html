@@ -2280,7 +2280,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
 
       <!-- Plant & Equipment (opens the plant platform) -->
-      <div class="tile" onclick="location.href='plant.html?role=manager'">
+      <div class="tile" onclick="location.href='plant.html?role=supervisor&site=Parramatta'">
         <div class="tile-icon" style="background:#E6F5ED"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l2 2 4-4"/></svg></div>
         <div class="tile-name">Plant &amp; Equipment</div>
         <div class="tile-sub">Machines, pre-starts &amp; service</div>
@@ -10807,11 +10807,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="form-greeting">
       <h1 style="color:#fff">Plant &amp; Equipment</h1>
-      <p style="color:rgba(255,255,255,0.8)">Fleet compliance · all sites</p>
+      <p id="dir-plant-period" style="color:rgba(255,255,255,0.8)">Company-wide · All sites</p>
     </div>
   </div>
 
   <div class="fbody" style="padding-bottom:90px;background:#F8F8F8">
+
+    <div id="dplant-site-filter" style="display:flex;flex-wrap:nowrap;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px"></div>
 
     <div class="fcard" style="margin-bottom:12px">
       <div class="fcard-hdr">📊 Fleet Overview</div>
@@ -10845,7 +10847,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <button onclick="location.href='plant.html?role=manager'" style="width:100%;padding:16px;background:linear-gradient(135deg,#1B3A2D 0%,#2D6A45 100%);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(27,58,45,0.25)">Open full Plant platform →</button>
+    <button onclick="location.href='plant.html?role=director'" style="width:100%;padding:16px;background:linear-gradient(135deg,#1B3A2D 0%,#2D6A45 100%);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(27,58,45,0.25)">Open full Plant platform →</button>
     <div style="font-size:11px;color:#888;text-align:center;margin-top:8px">Full asset register, machine pages, work orders & service history</div>
 
   </div>
@@ -40679,29 +40681,53 @@ function _hazStats(list) {
   return { total: list.length, open: open, prog: prog, closed: closed, overdue: overdue, recurring: recurring, closeRate: list.length ? Math.round(closed / list.length * 100) : 0, sites: Object.keys(sites).length };
 }
 
-var DIR_PLANT = { total:24, operational:20, attention:4, blocked_month:7, spend12mo:86400, spend6mo:41200,
-  attentionItems:[
-    {t:'GEN-005 · Denyo Generator', s:'Service overdue 12 days', sev:'warn'},
-    {t:'UTE-12 · Toyota Hilux', s:'Registration expired', sev:'fail'},
-    {t:'DOZ-004 · Komatsu Dozer', s:'Fault reported — awaiting mechanic', sev:'warn'},
-    {t:'CRN-007 · Franna Crane', s:'Periodic inspection (green sticker) due in 14 days', sev:'warn'}
-  ] };
+var DIR_PLANT_SITES = {
+  'Parramatta': { total:9, operational:8, attention:1, blocked:3, spend12mo:31200,
+    attentionItems:[ {t:'UTE-12 · Toyota Hilux', s:'Registration expired', sev:'fail'} ] },
+  'Blacktown': { total:8, operational:7, attention:1, blocked:2, spend12mo:27600,
+    attentionItems:[ {t:'GEN-005 · Denyo Generator', s:'Service overdue 12 days', sev:'warn'} ] },
+  'Liverpool': { total:7, operational:5, attention:2, blocked:2, spend12mo:27600,
+    attentionItems:[ {t:'DOZ-004 · Komatsu Dozer', s:'Fault reported — awaiting mechanic', sev:'warn'}, {t:'CRN-007 · Franna Crane', s:'Periodic inspection (green sticker) due in 14 days', sev:'warn'} ] }
+};
+var DPLANT_SITES = ['Parramatta','Blacktown','Liverpool'];
+var dplantSite = 'All';
+function _dplantData(site) {
+  if (site && site !== 'All') return DIR_PLANT_SITES[site];
+  var agg = { total:0, operational:0, attention:0, blocked:0, spend12mo:0, attentionItems:[] };
+  DPLANT_SITES.forEach(function(s) { var d = DIR_PLANT_SITES[s];
+    agg.total+=d.total; agg.operational+=d.operational; agg.attention+=d.attention; agg.blocked+=d.blocked; agg.spend12mo+=d.spend12mo;
+    d.attentionItems.forEach(function(it) { agg.attentionItems.push({ t: it.t + ' (' + s + ')', s: it.s, sev: it.sev }); });
+  });
+  return agg;
+}
+function dirPlantSetSite(s) { dplantSite = s; dirPlantRender(); }
 function goToDirectorPlant() {
   goTo('screen-dir-plant');
   var logo = document.getElementById('dir-plant-logo');
   if (logo) { var src = document.querySelector('.tbar-logo img'); if (src) logo.src = src.src; }
+  dplantSite = 'All';
   dirPlantRender();
 }
 function dirPlantRender() {
+  var d = _dplantData(dplantSite);
   var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
-  set('dplant-total', DIR_PLANT.total); set('dplant-op', DIR_PLANT.operational);
-  set('dplant-att', DIR_PLANT.attention); set('dplant-blocked', DIR_PLANT.blocked_month);
-  set('dplant-blocked2', DIR_PLANT.blocked_month);
-  set('dplant-spend12', '$' + DIR_PLANT.spend12mo.toLocaleString());
-  set('dplant-spend6', '$' + DIR_PLANT.spend6mo.toLocaleString());
+  set('dplant-total', d.total); set('dplant-op', d.operational);
+  set('dplant-att', d.attention); set('dplant-blocked', d.blocked); set('dplant-blocked2', d.blocked);
+  set('dplant-spend12', '$' + d.spend12mo.toLocaleString());
+  set('dplant-spend6', '$' + Math.round(d.spend12mo * 0.45).toLocaleString());
+  var per = document.getElementById('dir-plant-period');
+  if (per) per.textContent = (dplantSite === 'All') ? 'Company-wide · All sites' : ('Filtered · ' + dplantSite);
+  var fb = document.getElementById('dplant-site-filter');
+  if (fb) {
+    fb.innerHTML = ['All'].concat(DPLANT_SITES).map(function(s) {
+      var on = (s === dplantSite), label = (s === 'All') ? 'All sites' : s;
+      return '<button onclick="dirPlantSetSite(\'' + s + '\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid ' + (on ? '#B8960C' : '#D8D8D8') + ';background:' + (on ? '#B8960C' : '#fff') + ';color:' + (on ? '#fff' : '#666') + '">' + label + '</button>';
+    }).join('');
+  }
   var att = document.getElementById('dplant-attention');
   if (att) {
-    att.innerHTML = DIR_PLANT.attentionItems.map(function(it) {
+    var items = d.attentionItems.length ? d.attentionItems : [{ t: 'All machines operational', s: 'Nothing needs attention', sev: 'warn' }];
+    att.innerHTML = items.map(function(it) {
       var col = it.sev === 'fail' ? '#A32D2D' : '#A06000';
       return '<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #EEF2F0"><span style="width:9px;height:9px;border-radius:50%;background:' + col + ';margin-top:5px;flex-shrink:0"></span><div><div style="font-size:13px;font-weight:600;color:#1A2A1F">' + it.t + '</div><div style="font-size:11.5px;color:' + col + '">' + it.s + '</div></div></div>';
     }).join('');
@@ -40709,7 +40735,8 @@ function dirPlantRender() {
 }
 function updateDirPlantSummary() {
   var el = document.getElementById('an-plant-summary'); if (!el) return;
-  el.textContent = DIR_PLANT.operational + ' of ' + DIR_PLANT.total + ' operational · ' + DIR_PLANT.attention + ' need attention';
+  var d = _dplantData('All');
+  el.textContent = d.operational + ' of ' + d.total + ' operational · ' + d.attention + ' need attention';
 }
 function goToDirectorHazard() {
   goTo('screen-dir-hazard');

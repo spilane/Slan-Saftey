@@ -395,6 +395,12 @@ function pickWorker(i){ currentWorker=WORKERS[i]; document.getElementById('who-n
 
 /* ---------- manager / supervisor oversight ---------- */
 function getRole(){ var m=/[?&]role=([a-z]+)/.exec(location.search); return m?m[1]:'worker'; }
+function getSiteParam(){ var m=/[?&]site=([^&]+)/.exec(location.search); return m?decodeURIComponent(m[1]):null; }
+var PLANT_SITE_BY_CODE={ 'EXC-001':'Parramatta','FLT-002':'Parramatta','UTE-12':'Parramatta','TLH-003':'Blacktown','GEN-005':'Blacktown','CRN-007':'Liverpool','DOZ-004':'Liverpool' };
+function assetSite(code){ return PLANT_SITE_BY_CODE[code]||'Parramatta'; }
+var PLANT_SITES=['Parramatta','Blacktown','Liverpool'];
+var oversightSite='All';
+function plantSetSite(s){ oversightSite=s; renderOversight(); }
 var WORKORDERS=[
   {wo:'WO-2026-0041', code:'DOZ-004', machine:'Komatsu D61 Dozer', fault:'Hydraulic leak at boom cylinder — flagged on a pre-start', priority:'High', status:'Raised', raised:"today · Lee O'Brien"},
   {wo:'WO-2026-0039', code:'GEN-005', machine:'Denyo DCA-45 Generator', fault:'250 hr service overdue', priority:'Medium', status:'In progress', raised:'2 days ago · scheduled'},
@@ -402,18 +408,31 @@ var WORKORDERS=[
 ];
 function _prioCol(p){ return p==='High'?'#A32D2D':(p==='Medium'?'#A06000':'#4B6358'); }
 function renderOversight(){
-  document.getElementById('who-name').textContent='Manager view';
-  var open=WORKORDERS.filter(function(w){return w.status!=='Returned to service';});
-  var woHtml=open.map(function(w,i){
-    return '<button class="row" onclick="openWO('+i+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+w.fault+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
+  var supLocked = (getRole()==='supervisor');
+  if(supLocked){ oversightSite = getSiteParam() || 'Parramatta'; }
+  document.getElementById('who-name').textContent = supLocked ? (oversightSite+' Supervisor') : 'Manager view';
+  var siteMatch=function(code){ return oversightSite==='All' || assetSite(code)===oversightSite; };
+  var open=WORKORDERS.filter(function(w){ return w.status!=='Returned to service' && siteMatch(w.code); });
+  var woHtml=open.map(function(w){
+    var idx=WORKORDERS.indexOf(w);
+    return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
   }).join('');
   var t=new Date();
-  var need=ASSETS.filter(function(a){ return a.status!=='operational' || new Date(a.service_due)<t || (a.rego_expiry && new Date(a.rego_expiry)<t); });
+  var need=ASSETS.filter(function(a){ return siteMatch(a.code) && (a.status!=='operational' || new Date(a.service_due)<t || (a.rego_expiry && new Date(a.rego_expiry)<t)); });
   var attHtml=need.map(function(a){
     var reason = a.status!=='operational'?a.status.replace('_',' '):((a.rego_expiry&&new Date(a.rego_expiry)<t)?'Registration expired':'Service overdue');
-    return '<div class="row" style="cursor:default"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:#A06000">'+reason+'</div></div></div>';
+    return '<div class="row" style="cursor:default"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:#A06000">'+assetSite(a.code)+' · '+reason+'</div></div></div>';
   }).join('');
-  var html='<div class="h1">Plant — Fleet</div><div class="sub">Work orders, machines needing attention, and the full register.</div>'+
+  var chipRow='';
+  if(!supLocked){
+    chipRow='<div style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:14px;padding-bottom:4px">'+['All'].concat(PLANT_SITES).map(function(s){
+      var on=(s===oversightSite),label=(s==='All')?'All sites':s;
+      return '<button onclick="plantSetSite(\''+s+'\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+'">'+label+'</button>';
+    }).join('')+'</div>';
+  }
+  var subText = supLocked ? (oversightSite+' — your site only') : (oversightSite==='All'?'All sites':oversightSite);
+  var html='<div class="h1">Plant — Fleet</div><div class="sub">'+subText+' · work orders, attention &amp; register.</div>'+
+    chipRow+
     '<div class="sec-h">Open work orders ('+open.length+')</div><div class="tile">'+(woHtml||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No open work orders.</div></div></div>')+'</div>'+
     '<div class="sec-h">Machines needing attention</div><div class="tile">'+(attHtml||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines operational.</div></div></div>')+'</div>'+
     '<button class="cta" style="margin-top:16px" onclick="showList()">View all machines →</button>';
@@ -424,8 +443,7 @@ function renderOversight(){
   window.scrollTo(0,0);
 }
 function openWO(i){
-  var open=WORKORDERS.filter(function(x){return x.status!=='Returned to service';});
-  var w=open[i]; if(!w) return;
+  var w=WORKORDERS[i]; if(!w) return;
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="renderOversight()">‹ Work orders</button>'+
     '<div class="hub-head"><div class="hub-ic">🛠️</div><div style="flex:1"><div class="hub-code">'+w.wo+'</div><div class="hub-mm">'+w.code+' · '+w.machine+'</div><div class="hub-hours">'+w.priority+' priority · '+w.status+'</div></div></div>'+
@@ -443,7 +461,7 @@ function completeWO(wo){
 /* ---------- init ---------- */
 document.getElementById('who-name').textContent=currentWorker.name;
 renderAssets();
-if(getRole()==='manager') renderOversight();
+if(['manager','supervisor','director'].indexOf(getRole())>-1) renderOversight();
 </script>
 </body>
 </html>
