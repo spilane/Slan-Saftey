@@ -11028,7 +11028,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div style="font-size:32px">⚠️</div>
               <div style="flex:1">
                 <div style="font-size:12px;font-weight:700;color:#D97706;margin-bottom:4px">Site Needing Attention</div>
-                <div style="font-size:14px;font-weight:800;color:#92400E;margin-bottom:2px" id="dinc-attention-site">Metro Project</div>
+                <div style="font-size:14px;font-weight:800;color:#92400E;margin-bottom:2px" id="dinc-attention-site">Blacktown</div>
                 <div style="font-size:10px;color:#78350F;font-weight:600"><span id="dinc-attention-incidents">5</span> incidents, <span id="dinc-attention-nearmiss">0</span> near misses • Review safety culture</div>
               </div>
             </div>
@@ -11235,29 +11235,29 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="padding:10px">
             <div class="list-item">
               <div class="list-item-header">
+                <span class="list-item-name">Parramatta</span>
+                <span class="list-item-count">10</span>
+              </div>
+              <div class="progress-bg">
+                <div class="progress-bar" style="width: 40%;"></div>
+              </div>
+              <div class="list-item-footer">40% of incidents</div>
+            </div>
+      
+            <div class="list-item">
+              <div class="list-item-header">
+                <span class="list-item-name">Liverpool</span>
+                <span class="list-item-count">10</span>
+              </div>
+              <div class="progress-bg">
+                <div class="progress-bar" style="width: 40%;"></div>
+              </div>
+              <div class="list-item-footer">40% of incidents</div>
+            </div>
+      
+            <div class="list-item">
+              <div class="list-item-header">
                 <span class="list-item-name">Blacktown</span>
-                <span class="list-item-count">10</span>
-              </div>
-              <div class="progress-bg">
-                <div class="progress-bar" style="width: 40%;"></div>
-              </div>
-              <div class="list-item-footer">40% of incidents</div>
-            </div>
-      
-            <div class="list-item">
-              <div class="list-item-header">
-                <span class="list-item-name">Bondi Junction</span>
-                <span class="list-item-count">10</span>
-              </div>
-              <div class="progress-bg">
-                <div class="progress-bar" style="width: 40%;"></div>
-              </div>
-              <div class="list-item-footer">40% of incidents</div>
-            </div>
-      
-            <div class="list-item">
-              <div class="list-item-header">
-                <span class="list-item-name">Metro Project</span>
                 <span class="list-item-count">5</span>
               </div>
               <div class="progress-bg">
@@ -40258,11 +40258,9 @@ function dincRenderList() {
     // Description preview
     var desc = (inc.description || '').slice(0, 110) + ((inc.description || '').length > 110 ? '…' : '');
     
-    // Site name (shortened)
+    // Site name
     var siteName = inc.site || '';
-    if (siteName === 'Liverpool') siteName = 'Bondi Junction';
-    if (siteName === 'Parramatta') siteName = 'Parramatta';
-    
+
     card.innerHTML = 
       '<div style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px">' +
         '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
@@ -40409,9 +40407,6 @@ function dincInitCharts() {
     var siteCounts = {};
     data.forEach(function(inc) {
       var site = inc.site || 'Unknown';
-      // Shorten site names
-      if (site === 'Liverpool') site = 'Bondi Junction';
-      if (site === 'Parramatta') site = 'Parramatta';
       siteCounts[site] = (siteCounts[site] || 0) + 1;
     });
     
