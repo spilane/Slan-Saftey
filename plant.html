@@ -461,7 +461,13 @@ function completeWO(wo){
 /* ---------- init ---------- */
 document.getElementById('who-name').textContent=currentWorker.name;
 renderAssets();
-if(['manager','supervisor','director'].indexOf(getRole())>-1) renderOversight();
+(function(){
+  // QR deep-link: plant.html?machine=EXC-001 opens straight to that machine's hub
+  var m=/[?&]machine=([^&]+)/.exec(location.search);
+  var code=m?decodeURIComponent(m[1]).toUpperCase():null;
+  if(code){ var idx=-1; ASSETS.forEach(function(a,i){ if(a.code===code) idx=i; }); if(idx>-1){ openHub(idx); return; } }
+  if(['manager','supervisor','director'].indexOf(getRole())>-1) renderOversight();
+})();
 </script>
 </body>
 </html>
