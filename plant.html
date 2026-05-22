@@ -600,14 +600,20 @@ var CHECKLISTS={
     {cat:'General',q:'Tyres / tracks & undercarriage'},{cat:'General',q:'General condition & cleanliness'}
   ]
 };
+var COMMON=[
+  {cat:'Final checks',q:'No "Do Not Operate" / out-of-service tag attached',crit:true},
+  {cat:'Final checks',q:'Safety decals & warning signs legible'},
+  {cat:'Final checks',q:'Work area clear & safe to start up'}
+];
 function checklistFor(a){
-  var t=a.type;
-  if(t==='Truck') return CHECKLISTS.truck;
-  if(t==='Telehandler') return CHECKLISTS.telehandler;
-  if(t==='Generator') return CHECKLISTS.generator;
-  if(t==='Lighting Tower') return CHECKLISTS.lighting;
-  if(t==='Slewing Crane'||t==='City Crane'||/Magni/.test(t)) return CHECKLISTS.crane;
-  return CHECKLISTS.default;
+  var t=a.type, base;
+  if(t==='Truck') base=CHECKLISTS.truck;
+  else if(t==='Telehandler') base=CHECKLISTS.telehandler;
+  else if(t==='Generator') base=CHECKLISTS.generator;
+  else if(t==='Lighting Tower') base=CHECKLISTS.lighting;
+  else if(t==='Slewing Crane'||t==='City Crane'||/Magni/.test(t)) base=CHECKLISTS.crane;
+  else base=CHECKLISTS.default;
+  return base.concat(COMMON);
 }
 var _psList=[];
 function _faultQ(it){
