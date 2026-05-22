@@ -493,7 +493,7 @@ function openHub(i){
   var hubQr=''; try{ var _q=qrcode(0,'M'); _q.addData(location.origin+location.pathname+'?machine='+a.code); _q.make(); hubQr=_q.createImgTag(5,6); }catch(e){}
   var dt=plantDetails(a.code), t0=new Date();
   var docs=getDocs(a).map(function(d){
-    return '<button class="row" onclick="alert(\'Opens: '+d.t.replace(/'/g,'')+'\')"><div class="row-ic">'+d.ic+'</div><div class="row-main"><div class="row-t">'+d.t+'</div><div class="row-s">'+d.s+'</div></div><div class="chev">›</div></button>';
+    return '<button class="row" onclick="slanMsg(\'Document\',\'Opens the '+d.t.replace(/'/g,'')+' for this machine (the stored file).\')"><div class="row-ic">'+d.ic+'</div><div class="row-main"><div class="row-t">'+d.t+'</div><div class="row-s">'+d.s+'</div></div><div class="chev">›</div></button>';
   }).join('');
   var rec=recentPrestarts(a).map(function(p){
     var col=p.outcome==='fault'?'var(--warn)':'var(--pass)';
@@ -528,7 +528,7 @@ function openHub(i){
       '<div class="svc-row"><span>Next due</span><span style="color:'+(svcOverdue?'var(--fail)':'var(--pass)')+'">'+fmt(a.service_due)+(svcOverdue?' · OVERDUE':'')+'</span></div>'+
       svcMeterRow+
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
-      '<button class="btn-ghost" onclick="alert(\'Opens the service template for the mechanic to complete.\')">Open service template</button>'+
+      '<button class="btn-ghost" onclick="slanMsg(\'Service template\',\'Opens the service template for the mechanic to complete.\')">Open service template</button>'+
     '</div>'+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
@@ -558,8 +558,8 @@ function openGate(){
 function doOverride(){
   var pin=(document.getElementById('ovr-pin').value||'').trim();
   var reason=(document.getElementById('ovr-reason').value||'').trim();
-  if(pin!=='4827'){ alert('Incorrect supervisor PIN.'); return; }
-  if(!reason){ alert('Please enter a reason for the override.'); return; }
+  if(pin!=='4827'){ slanMsg('Incorrect PIN','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">That supervisor PIN wasn\'t recognised — please try again.</div>'); return; }
+  if(!reason){ slanMsg('Reason required','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please enter a reason for the override.</div>'); return; }
   openPrestart();
 }
 
@@ -855,7 +855,7 @@ function plantComplianceBody(fleet){
 
 /* ---------- AUDIT-PACK PDF ---------- */
 function plantAuditPDF(){
-  if(!window.jspdf){ alert('PDF library still loading — give it a second and try again.'); return; }
+  if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — give it a second and try again.</div>'); return; }
   var fleet=_siteFleet(), today=new Date();
   var doc=new window.jspdf.jsPDF('p','mm','a4');
   var W=210, M=14, GOLD=[184,150,12], GREEN=[44,107,94]; var y=18;
@@ -996,8 +996,7 @@ function openWO(i){
 }
 function completeWO(wo){
   var w=WORKORDERS.find(function(x){return x.wo===wo;}); if(w){ w.status='Returned to service'; }
-  alert('Work order '+wo+' completed.\nMachine marked returned to service.');
-  renderOversight();
+  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Work order complete</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+wo+' completed — machine marked returned to service.</div></div>', function(){ renderOversight(); });
 }
 var QR_SIZE='M'; var QR_ONE=null;
 function _qrPx(){ return QR_SIZE==='S'?105:(QR_SIZE==='L'?300:175); }
