@@ -371,7 +371,7 @@ function recentPrestarts(a){
   for(var i=0;i<n;i++){ out.push({ date:iso(dOffset(-(i+ (a.code.charCodeAt(5)%2)))), worker:names[(i+a.code.length)%names.length], outcome:(i===1&&a.status==='fault_reported')?'fault':'ok' }); }
   // a real pre-start submitted on this device sits on top and is openable as a PDF
   var saved=_loadPlantRecord(a.code);
-  if(saved){ out.unshift({ date:iso(saved.when), worker:saved.worker, outcome:saved.faults>0?'fault':'ok', real:true }); }
+  if(saved){ out.unshift({ date:iso(saved.when), worker:saved.worker, outcome:saved.faults>0?'fault':'ok', real:true, rec:saved }); }
   return out;
 }
 /* service is interval-based on plant — by engine hours (or km for vehicles), not just a date */
@@ -516,7 +516,8 @@ function openHub(i){
     var col=p.outcome==='fault'?'var(--warn)':'var(--pass)';
     var lbl=p.outcome==='fault'?'Fault flagged':'Completed';
     if(p.real){
-      return '<button class="row" onclick="plantViewSavedPDF(\''+a.code+'\')"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+fmtShort(p.date)+' · '+p.worker+'</div><div class="row-s" style="color:var(--gold);font-weight:700">'+lbl+' · 📄 View record (PDF)</div></div><div class="chev">›</div></button>';
+      var o=_recOutcome(p.rec);
+      return '<button class="row" onclick="plantViewSavedPDF(\''+a.code+'\')"><div class="row-ic"><span class="dot" style="background:'+o.col+'"></span></div><div class="row-main"><div class="row-t">'+fmtShort(p.date)+' · '+p.worker+'</div><div class="row-s" style="color:var(--gold);font-weight:700">'+o.label+' · 📄 View record (PDF)</div></div><div class="chev">›</div></button>';
     }
     return '<div class="row" style="cursor:default"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+fmtShort(p.date)+' · '+p.worker+'</div><div class="row-s">'+lbl+'</div></div></div>';
   }).join('');
@@ -857,6 +858,14 @@ function _savePlantRecord(rec){
 }
 function _loadPlantRecord(code){ try{ var map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); var r=map[code]; if(!r) return null; r.when=new Date(r.when); return r; }catch(e){ return null; } }
 function _allPlantRecords(){ try{ var map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); return Object.keys(map).map(function(k){ var r=map[k]; r.when=new Date(r.when); return r; }).sort(function(a,b){ return b.when-a.when; }); }catch(e){ return []; } }
+/* outcome label/colour for a pre-start: all clear / minor (still usable) / major (repair soon) / critical (out of service) */
+function _recOutcome(rec){
+  if(!rec || !rec.faults) return {label:'All clear', col:'var(--pass)'};
+  if(rec.critical) return {label:'Critical — out of service', col:'var(--fail)'};
+  var hasMajor=(rec.items||[]).some(function(it){ return it.status==='f' && /Major/.test(it.sev||''); });
+  if(hasMajor) return {label:rec.faults+' fault'+(rec.faults>1?'s':'')+' — repair soon', col:'var(--warn)'};
+  return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
+}
 function plantViewSavedPDF(code){
   if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; }
   var r=_loadPlantRecord(code);
@@ -1108,9 +1117,9 @@ function renderOversight(){
     var blocked=(oversightSite==='All')?3:1;
     var savedRecs=_allPlantRecords().filter(function(r){ return siteMatch(r.code); });
     var recFeed=savedRecs.length?savedRecs.map(function(r){
-      var col=r.faults>0?(r.critical?'var(--fail)':'var(--warn)'):'var(--pass)';
-      var lbl=r.faults>0?(r.critical?'Critical — out of service':(r.faults+' fault'+(r.faults>1?'s':''))):'All clear';
-      return '<button class="row" onclick="plantViewSavedPDF(\''+r.code+'\')"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+r.code+' · '+r.machine+'</div><div class="row-s">'+fmtShort(iso(r.when))+' · '+r.worker+' · '+lbl+'</div></div><div class="chev" style="color:var(--gold)">📄</div></button>';
+      var o=_recOutcome(r);
+      var ai=ASSETS.map(function(x){return x.code;}).indexOf(r.code);
+      return '<button class="row" onclick="openHub('+ai+')"><div class="row-ic"><span class="dot" style="background:'+o.col+'"></span></div><div class="row-main"><div class="row-t">'+r.code+' · '+r.machine+'</div><div class="row-s">'+fmtShort(iso(r.when))+' · '+r.worker+' · '+o.label+'</div></div><div class="chev">›</div></button>';
     }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts submitted on this device yet — completed pre-starts will appear here.</div></div></div>';
     body='<div class="fcard"><div class="fcard-hdr">📊 Fleet Overview</div><div class="fcard-body"><div class="kpis">'+
         kpi('Machines',fleet.length,'k-blue','🚜','')+
