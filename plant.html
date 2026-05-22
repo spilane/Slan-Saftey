@@ -201,66 +201,80 @@ function fmtShort(d){ return new Date(d).toLocaleDateString('en-AU',{day:'numeri
 function daysBetween(a,b){ return Math.round((new Date(a)-new Date(b))/86400000); }
 function money(n){ return '$'+Number(n).toLocaleString('en-AU'); }
 
-var LIC={ white_card:'White Card', excavator:'Excavator ticket', telehandler:'Telehandler ticket',
-  hrwl_LF:'Forklift (LF) High Risk Work Licence', bulldozer:'Dozer ticket', drivers_C:'Car Licence (C)',
-  hrwl_C2:'Slewing Crane ticket (C2)' };
+var LIC={ white_card:'White Card', telehandler:'Telehandler ticket',
+  crane:'Crane High Risk Work Licence (C2)', truck_hr:'Heavy Rigid (HR) Truck Licence' };
 function licName(c){ return LIC[c]||c; }
 
 /* ---------- WORKERS ---------- */
 var WORKERS=[
-  { id:'w1', name:"Liam O'Brien", trade:'Plant Operator', induction_expiry:iso(dOffset(300)),
+  { id:'w1', name:"Liam O'Brien", trade:'Senior Plant Operator', induction_expiry:iso(dOffset(300)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'excavator',expiry:iso(dOffset(400)),verified:true},
-              {cls:'hrwl_LF',expiry:iso(dOffset(380)),verified:true} ],
-    voc:[ {cls:'excavator',make:'Caterpillar',model:'320'} ] },
+              {cls:'telehandler',expiry:iso(dOffset(400)),verified:true},
+              {cls:'crane',expiry:iso(dOffset(420)),verified:true},
+              {cls:'truck_hr',expiry:iso(dOffset(500)),verified:true} ],
+    voc:[ {cls:'telehandler',make:'Magni',model:'RTH 6.46'}, {cls:'crane',make:'Franna',model:'AT-40'}, {cls:'crane',make:'Tadano',model:'GR-250'} ] },
   { id:'w2', name:'Tom Walker', trade:'Plant Operator', induction_expiry:iso(dOffset(200)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'excavator',expiry:iso(dOffset(14)),verified:true},
-              {cls:'hrwl_LF',expiry:iso(dOffset(300)),verified:true} ],
-    voc:[ {cls:'excavator',make:'Caterpillar',model:'320'} ] },
+              {cls:'telehandler',expiry:iso(dOffset(14)),verified:true},
+              {cls:'truck_hr',expiry:iso(dOffset(300)),verified:true} ], voc:[] },
   { id:'w3', name:'Jake Murray', trade:'Labourer', induction_expiry:iso(dOffset(200)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true} ], voc:[] },
   { id:'w4', name:'Pete Singh', trade:'Plant Operator', induction_expiry:iso(dOffset(200)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'excavator',expiry:iso(dOffset(-30)),verified:true} ], voc:[] }
+              {cls:'telehandler',expiry:iso(dOffset(-30)),verified:true} ], voc:[] }
 ];
 
 /* ---------- ASSETS ---------- */
 var ASSETS=[
-  { code:'EXC-001', type:'Excavator', icon:'🚧', make:'Caterpillar', model:'320', status:'operational',
-    required:['excavator'], voc_required:true, rego_expiry:null, insurance_expiry:iso(dOffset(200)),
-    hours:4146, service_last:iso(dOffset(-40)), service_due:iso(dOffset(60)), critical_fault:false, spend12mo:8240 },
-  { code:'FLT-002', type:'Forklift', icon:'🏭', make:'Toyota', model:'8FG25', status:'operational',
-    required:['hrwl_LF'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(200)),
-    hours:2210, service_last:iso(dOffset(-20)), service_due:iso(dOffset(40)), critical_fault:false, spend12mo:3110 },
+  { code:'TRK-006', type:'Truck', icon:'🚛', make:'Hino', model:'500 Series FG', status:'operational',
+    required:['truck_hr'], voc_required:false, rego_expiry:iso(dOffset(-9)), insurance_expiry:iso(dOffset(160)),
+    hours:0, service_last:iso(dOffset(-60)), service_due:iso(dOffset(70)), critical_fault:false, spend12mo:7200 },
   { code:'TLH-003', type:'Telehandler', icon:'🔧', make:'Manitou', model:'MT1840', status:'operational',
     required:['telehandler'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(150)),
     hours:3580, service_last:iso(dOffset(-90)), service_due:iso(dOffset(20)), critical_fault:false, spend12mo:5980,
     swl:'4,000 kg', lift_note:'Max lift height 17.5 m · See load chart for SWL at radius' },
-  { code:'CRN-007', type:'Slewing Crane', icon:'🏗️', make:'Franna', model:'AT-40', status:'operational',
-    required:['hrwl_C2'], voc_required:true, rego_expiry:iso(dOffset(120)), insurance_expiry:iso(dOffset(200)),
-    hours:6820, service_last:iso(dOffset(-25)), service_due:iso(dOffset(80)), critical_fault:false, spend12mo:14250,
-    swl:'40 t', lift_note:'SWL 40 t @ min radius · De-rates with radius — refer load chart on hook' },
   { code:'GEN-005', type:'Generator', icon:'⚡', make:'Denyo', model:'DCA-45', status:'operational',
     required:[], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(200)),
     hours:1180, service_last:iso(dOffset(-200)), service_due:iso(dOffset(-12)), critical_fault:false, spend12mo:640 },
-  { code:'UTE-12', type:'Ute', icon:'🛻', make:'Toyota', model:'Hilux', status:'operational',
-    required:['drivers_C'], voc_required:false, rego_expiry:iso(dOffset(-9)), insurance_expiry:iso(dOffset(150)),
-    hours:0, service_last:iso(dOffset(-30)), service_due:iso(dOffset(90)), critical_fault:false, spend12mo:1890 },
-  { code:'DOZ-004', type:'Dozer', icon:'🚜', make:'Komatsu', model:'D61', status:'fault_reported',
-    required:['bulldozer'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(150)),
-    hours:5210, service_last:iso(dOffset(-25)), service_due:iso(dOffset(70)), critical_fault:false, spend12mo:9450 }
+  { code:'LT-013', type:'Lighting Tower', icon:'💡', make:'Allight', model:'ML20', status:'operational',
+    required:[], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(180)),
+    hours:620, service_last:iso(dOffset(-30)), service_due:iso(dOffset(120)), critical_fault:false, spend12mo:1100 },
+  { code:'MAG-009', type:'Magni (Rotating Telehandler)', icon:'🏗️', make:'Magni', model:'RTH 6.46', status:'operational',
+    required:['telehandler','crane'], voc_required:true, rego_expiry:null, insurance_expiry:iso(dOffset(170)),
+    hours:2980, service_last:iso(dOffset(-35)), service_due:iso(dOffset(75)), critical_fault:false, spend12mo:11800,
+    swl:'6,000 kg', lift_note:'Rotating telehandler · 360° slew · lifts on a hook (crane-class). Refer load chart; slewing lifts on the hook need a crane HRWL' },
+  { code:'CRN-007', type:'Slewing Crane', icon:'🏗️', make:'Franna', model:'AT-40', status:'operational',
+    required:['crane'], voc_required:true, rego_expiry:iso(dOffset(120)), insurance_expiry:iso(dOffset(200)),
+    hours:6820, service_last:iso(dOffset(-25)), service_due:iso(dOffset(80)), critical_fault:false, spend12mo:14250,
+    swl:'40 t', lift_note:'SWL 40 t @ min radius · De-rates with radius — refer load chart on hook' },
+  { code:'GEN-016', type:'Generator', icon:'⚡', make:'Atlas Copco', model:'QAS 60', status:'operational',
+    required:[], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(190)),
+    hours:540, service_last:iso(dOffset(-40)), service_due:iso(dOffset(110)), critical_fault:false, spend12mo:980 },
+  { code:'CRN-011', type:'City Crane', icon:'🏗️', make:'Tadano', model:'GR-250', status:'fault_reported',
+    required:['crane'], voc_required:true, rego_expiry:iso(dOffset(90)), insurance_expiry:iso(dOffset(200)),
+    hours:4310, service_last:iso(dOffset(-20)), service_due:iso(dOffset(60)), critical_fault:false, spend12mo:16400,
+    swl:'25 t', lift_note:'City crane · SWL 25 t @ min radius · De-rates with radius — refer load chart' },
+  { code:'TLH-012', type:'Telehandler', icon:'🔧', make:'JCB', model:'540-170', status:'operational',
+    required:['telehandler'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(140)),
+    hours:2240, service_last:iso(dOffset(-50)), service_due:iso(dOffset(95)), critical_fault:false, spend12mo:4300,
+    swl:'4,000 kg', lift_note:'Max lift height 17 m · See load chart for SWL at radius' },
+  { code:'LT-014', type:'Lighting Tower', icon:'💡', make:'Atlas Copco', model:'HiLight V5', status:'operational',
+    required:[], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(160)),
+    hours:410, service_last:iso(dOffset(-28)), service_due:iso(dOffset(130)), critical_fault:false, spend12mo:1250 }
 ];
 
 /* full machine record (the platform holds everything; tiles show the headlines) */
 var PLANT_DETAILS={
-  'EXC-001':{ year:2021, vin:'CAT0320EXC21A0451', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884512', km:null },
-  'FLT-002':{ year:2019, vin:'TOY-8FG25-19F2210', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884513', km:null },
+  'TRK-006':{ year:2020, vin:'JHHADM2H50K012233', rego:'DLR-218', rego_state:'NSW', insurer:'Allianz Motor Fleet', policy:'MF-220981', km:142300 },
   'TLH-003':{ year:2020, vin:'MAN-MT1840-20T3580', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884514', km:null },
-  'CRN-007':{ year:2018, vin:'FRA-AT40-18C6820', rego:'XK-42-PL', rego_state:'NSW', insurer:'CGU Plant & Equipment', policy:'PLE-884515', km:48200 },
   'GEN-005':{ year:2022, vin:'DEN-DCA45-22G1180', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884516', km:null },
-  'UTE-12':{ year:2021, vin:'JTEBR3FJ20K112233', rego:'DLR-218', rego_state:'NSW', insurer:'Allianz Motor Fleet', policy:'MF-220981', km:176430 },
-  'DOZ-004':{ year:2017, vin:'KOM-D61-17D2210', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884517', km:null }
+  'LT-013':{ year:2021, vin:'ALL-ML20-21L0620', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884520', km:null },
+  'MAG-009':{ year:2022, vin:'MAG-RTH646-22M2980', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884509', km:null },
+  'CRN-007':{ year:2018, vin:'FRA-AT40-18C6820', rego:'XK-42-PL', rego_state:'NSW', insurer:'CGU Plant & Equipment', policy:'PLE-884515', km:48200 },
+  'GEN-016':{ year:2023, vin:'ATL-QAS60-23G0540', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884521', km:null },
+  'CRN-011':{ year:2019, vin:'TAD-GR250-19C4310', rego:'CN-88-RT', rego_state:'NSW', insurer:'CGU Plant & Equipment', policy:'PLE-884511', km:61500 },
+  'TLH-012':{ year:2021, vin:'JCB-540170-21T2240', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884522', km:null },
+  'LT-014':{ year:2022, vin:'ATL-HILIGHT-22L0410', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884523', km:null }
 };
 function plantDetails(code){ return PLANT_DETAILS[code]||{}; }
 /* docs per machine (type-specific extras for crane/telehandler) */
@@ -269,7 +283,7 @@ function getDocs(a){
           {ic:'🛠️',t:'Service Manual',s:'Maintenance & schedules'},
           {ic:'⚠️',t:'Risk Assessment',s:'Plant risk assessment'},
           {ic:'📄',t:'SWMS',s:'Safe Work Method Statement'} ];
-  if(a.type==='Slewing Crane'||a.type==='Telehandler'){
+  if(a.swl){
     d.push({ic:'🟢',t:'Periodic Inspection (Green Sticker)',s:'Current — next due '+fmt(a.service_due)});
     d.push({ic:'📈',t:'Load Chart / SWL',s:'SWL '+(a.swl||'—')+' · de-rates with radius'});
     d.push({ic:'📓',t:'Plant Logbook',s:'Lift & inspection log'});
@@ -285,10 +299,11 @@ function recentPrestarts(a){
 }
 /* service is interval-based on plant — by engine hours (or km for vehicles), not just a date */
 var SERVICE_METER={
-  'EXC-001':{meter:'hrs',due:4250}, 'FLT-002':{meter:'hrs',due:2300},
-  'TLH-003':{meter:'hrs',due:3600}, 'CRN-007':{meter:'hrs',due:7000},
-  'GEN-005':{meter:'hrs',due:1150}, 'UTE-12':{meter:'km',due:180000},
-  'DOZ-004':{meter:'hrs',due:5400}
+  'TRK-006':{meter:'km',due:145000}, 'TLH-003':{meter:'hrs',due:3600},
+  'GEN-005':{meter:'hrs',due:1150}, 'LT-013':{meter:'hrs',due:800},
+  'MAG-009':{meter:'hrs',due:3200}, 'CRN-007':{meter:'hrs',due:7000},
+  'GEN-016':{meter:'hrs',due:750}, 'CRN-011':{meter:'hrs',due:4500},
+  'TLH-012':{meter:'hrs',due:2500}, 'LT-014':{meter:'hrs',due:600}
 };
 function svcMeter(a){
   var sm=SERVICE_METER[a.code]; if(!sm) return null;
@@ -391,7 +406,7 @@ function openHub(i){
   var lift = a.lift_note ? '<div class="lift"><b>Lifting data</b>SWL '+(a.swl||'—')+'<br>'+a.lift_note+'</div>' : '';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="showList()">‹ All machines</button>'+
-    '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+(a.hours?a.hours.toLocaleString()+' hrs':'')+(dt.km?' · '+dt.km.toLocaleString()+' km':'')+' · '+a.status.replace('_',' ')+'</div></div></div>'+
+    '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace('_',' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
     '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>'+
     '<button class="cta" onclick="openGate()">▶  Start Pre-Start</button>'+
     (getRole()!=='worker' ? ('<div class="sec-h">Machine details</div><div class="svc">'+
@@ -501,15 +516,15 @@ function pickWorker(i){ currentWorker=WORKERS[i]; document.getElementById('who-n
 /* ---------- manager / supervisor oversight ---------- */
 function getRole(){ var m=/[?&]role=([a-z]+)/.exec(location.search); return m?m[1]:'worker'; }
 function getSiteParam(){ var m=/[?&]site=([^&]+)/.exec(location.search); return m?decodeURIComponent(m[1]):null; }
-var PLANT_SITE_BY_CODE={ 'EXC-001':'Parramatta','FLT-002':'Parramatta','UTE-12':'Parramatta','TLH-003':'Blacktown','GEN-005':'Blacktown','CRN-007':'Liverpool','DOZ-004':'Liverpool' };
+var PLANT_SITE_BY_CODE={ 'TRK-006':'Parramatta','TLH-003':'Parramatta','GEN-005':'Parramatta','LT-013':'Parramatta','MAG-009':'Blacktown','CRN-007':'Blacktown','GEN-016':'Blacktown','CRN-011':'Liverpool','TLH-012':'Liverpool','LT-014':'Liverpool' };
 function assetSite(code){ return PLANT_SITE_BY_CODE[code]||'Parramatta'; }
 var PLANT_SITES=['Parramatta','Blacktown','Liverpool'];
 var oversightSite='All';
 function plantSetSite(s){ oversightSite=s; renderOversight(); }
 var WORKORDERS=[
-  {wo:'WO-2026-0041', code:'DOZ-004', machine:'Komatsu D61 Dozer', fault:'Hydraulic leak at boom cylinder — flagged on a pre-start', priority:'High', status:'Raised', raised:"today · Lee O'Brien"},
-  {wo:'WO-2026-0039', code:'GEN-005', machine:'Denyo DCA-45 Generator', fault:'250 hr service overdue', priority:'Medium', status:'In progress', raised:'2 days ago · scheduled'},
-  {wo:'WO-2026-0036', code:'FLT-002', machine:'Toyota 8FG25 Forklift', fault:'Reversing alarm intermittent', priority:'Low', status:'Awaiting parts', raised:'4 days ago · Mark Flynn'}
+  {wo:'WO-2026-0041', code:'CRN-011', machine:'Tadano GR-250 City Crane', fault:'Hydraulic leak at slew ring — flagged on a pre-start', priority:'High', status:'Raised', raised:"today · Lee O'Brien"},
+  {wo:'WO-2026-0039', code:'GEN-005', machine:'Denyo DCA-45 Generator', fault:'500 hr service overdue', priority:'Medium', status:'In progress', raised:'2 days ago · scheduled'},
+  {wo:'WO-2026-0036', code:'TLH-003', machine:'Manitou MT1840 Telehandler', fault:'Reversing alarm intermittent', priority:'Low', status:'Awaiting parts', raised:'4 days ago · Mark Flynn'}
 ];
 function _prioCol(p){ return p==='High'?'#A32D2D':(p==='Medium'?'#A06000':'#4B6358'); }
 var platTab='dashboard';
@@ -574,12 +589,13 @@ function renderOversight(){
         '<td>'+lpCell+'</td>'+
         '<td style="text-align:center">'+woCell+'</td>'+
         '<td>'+money(a.spend12mo||0)+'</td>'+
-        '<td>'+stB+'</td></tr>';
+        '<td>'+stB+'</td>'+
+        '<td><button onclick="event.stopPropagation();openHub('+ASSETS.indexOf(a)+')" style="padding:6px 12px;border-radius:7px;border:1.5px solid var(--border);background:#fff;color:var(--deep);font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap">View ›</button></td></tr>';
     }).join('');
     body='<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
         '<div class="reg-legend"><span><span class="lg-dot" style="background:var(--fail)"></span>Action required</span><span><span class="lg-dot" style="background:var(--warn)"></span>Attention soon</span></div></div>'+
-      '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Last pre-start</th><th>Open WOs</th><th>12-mo spend</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-      '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row to open the full machine record.</div>'+
+      '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Last pre-start</th><th>Open WOs</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>'+
       '<button class="cta qr-noprint" style="margin-top:14px;background:#fff;color:var(--deep);border:1.5px solid var(--border)" onclick="renderQR()">🖨  Print QR stickers</button>';
   } else {
     var woHtml=open.length?open.map(function(w){ var idx=WORKORDERS.indexOf(w);
