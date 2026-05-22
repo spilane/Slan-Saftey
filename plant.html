@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Slán Safety — Plant &amp; Equipment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --deep:#1B3A2D; --mid:#2D6A45; --gold:#B8960C; --gold-l:#D4AA30;
@@ -15,11 +17,11 @@
   --r:12px; --rs:9px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;font-size:15px;line-height:1.5;padding-bottom:44px}
+body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;font-size:15px;line-height:1.5;padding-bottom:44px}
 .topbar{background:var(--deep);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.brand{display:flex;flex-direction:column;line-height:1.15}
-.brand b{color:var(--gold-l);font-size:16px;font-weight:700;letter-spacing:.02em}
-.brand span{color:#9FC4AE;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tbar-logo img{height:62px;object-fit:contain;display:block}
+.badge-dir{background:rgba(184,150,12,.25);border:1.5px solid rgba(184,150,12,.5);color:var(--gold-l);font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:5px 11px;border-radius:20px;white-space:nowrap}
 .who{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:6px 12px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
 .wrap{max-width:560px;margin:0 auto;padding:18px 16px}
 .h1{font-size:21px;font-weight:700;color:var(--deep);margin-bottom:3px}
@@ -136,14 +138,39 @@ table.reg tbody tr:hover{background:#F6FAF7}
   body{background:#fff;padding-bottom:0}
   .qr-card{border:1px dashed #999;page-break-inside:avoid}
 }
+/* director/manager platform — full width on laptop */
+.platform-wrap{max-width:1380px!important;width:100%;margin:0 auto;padding:24px clamp(16px,4vw,44px)!important}
+@media(min-width:900px){
+  .platform-wrap .h1{font-size:25px}
+  .platform-wrap table.reg{font-size:13px}
+  .platform-wrap table.reg th{font-size:10.5px;padding:11px 13px}
+  .platform-wrap table.reg td{padding:12px 13px}
+}
+/* assets register polish */
+.reg-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.reg-legend{display:flex;align-items:center;gap:14px;font-size:11px;color:var(--t3)}
+.reg-legend span{display:inline-flex;align-items:center;gap:5px}
+.lg-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.reg-asset{display:flex;align-items:center;gap:10px}
+.reg-asset .ric{width:34px;height:34px;border-radius:9px;background:#EAF1ED;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+table.reg td.t-asset{min-width:168px}
+table.reg tr.attn-red{background:#FCEFEF}
+table.reg tr.attn-amber{background:#FFF8EC}
+table.reg tr.attn-red:hover{background:#F8E5E5}
+table.reg tr.attn-amber:hover{background:#FBEFD8}
+.cell-sub{color:var(--t3);font-size:11px;margin-top:2px;font-weight:400}
+.svc-go{font-weight:700}
+.svc-go.ok{color:var(--pass)} .svc-go.soon{color:var(--warn)} .svc-go.over{color:var(--fail)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="brand"><b>Slán Safety</b><span>Plant &amp; Equipment</span></div>
-  <button class="who" onclick="openWorkerSheet()"><span id="who-name">—</span></button>
+  <div class="topbar-row">
+    <div class="tbar-logo"><img src="Slan_Safety_No_Border_1.png" alt="Slán Safety"></div>
+    <div id="tb-right"><button class="who" onclick="openWorkerSheet()"><span id="who-name">—</span></button></div>
+  </div>
 </div>
 
 <div class="wrap" id="screen-list">
@@ -153,7 +180,7 @@ table.reg tbody tr:hover{background:#F6FAF7}
 </div>
 
 <div class="wrap" id="screen-detail" style="display:none"></div>
-<div class="wrap" id="screen-oversight" style="display:none"></div>
+<div id="screen-oversight" style="display:none"></div>
 
 <div class="sheet-bk" id="worker-sheet" onclick="if(event.target===this)closeWorkerSheet()">
   <div class="sheet">
@@ -256,9 +283,26 @@ function recentPrestarts(a){
   for(var i=0;i<n;i++){ out.push({ date:iso(dOffset(-(i+ (a.code.charCodeAt(5)%2)))), worker:names[(i+a.code.length)%names.length], outcome:(i===1&&a.status==='fault_reported')?'fault':'ok' }); }
   return out;
 }
+/* service is interval-based on plant — by engine hours (or km for vehicles), not just a date */
+var SERVICE_METER={
+  'EXC-001':{meter:'hrs',due:4250}, 'FLT-002':{meter:'hrs',due:2300},
+  'TLH-003':{meter:'hrs',due:3600}, 'CRN-007':{meter:'hrs',due:7000},
+  'GEN-005':{meter:'hrs',due:1150}, 'UTE-12':{meter:'km',due:180000},
+  'DOZ-004':{meter:'hrs',due:5400}
+};
+function svcMeter(a){
+  var sm=SERVICE_METER[a.code]; if(!sm) return null;
+  var cur = sm.meter==='km' ? (plantDetails(a.code).km||0) : (a.hours||0);
+  return { meter:sm.meter, cur:cur, due:sm.due, toGo:sm.due-cur };
+}
+function svcSoon(sm){ return sm && sm.toGo>=0 && (sm.meter==='hrs'?sm.toGo<=50:sm.toGo<=1000); }
+function lastPrestart(a){ var ps=recentPrestarts(a); if(!ps.length) return null; return ps.map(function(p){return p.date;}).sort().slice(-1)[0]; }
+function openWoCount(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status!=='Returned to service'; }).length; }
 
 var currentWorker=WORKERS[0];
 var curAsset=0;
+function setTopRight(html){ var el=document.getElementById('tb-right'); if(el) el.innerHTML=html; }
+function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><span id="who-name">'+currentWorker.name+'</span></button>'; }
 
 /* ---------- TICKET GATE (verified) ---------- */
 function ticketGate(w, a){
@@ -342,6 +386,8 @@ function openHub(i){
     return '<div class="row" style="cursor:default"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+fmtShort(p.date)+' · '+p.worker+'</div><div class="row-s">'+lbl+'</div></div></div>';
   }).join('');
   var svcOverdue=new Date(a.service_due)<new Date();
+  var _sm=svcMeter(a), svcMeterRow='';
+  if(_sm){ var _over=_sm.toGo<0; svcMeterRow='<div class="svc-row"><span>Service interval</span><span style="color:'+(_over?'var(--fail)':(svcSoon(_sm)?'var(--warn)':'var(--pass)'))+'">'+(_over?('Overdue '+Math.abs(_sm.toGo).toLocaleString()+' '+_sm.meter):('In '+_sm.toGo.toLocaleString()+' '+_sm.meter))+'</span></div>'; }
   var lift = a.lift_note ? '<div class="lift"><b>Lifting data</b>SWL '+(a.swl||'—')+'<br>'+a.lift_note+'</div>' : '';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="showList()">‹ All machines</button>'+
@@ -365,6 +411,7 @@ function openHub(i){
     '<div class="sec-h">Service</div><div class="svc">'+
       '<div class="svc-row"><span>Last service</span><span>'+fmt(a.service_last)+'</span></div>'+
       '<div class="svc-row"><span>Next due</span><span style="color:'+(svcOverdue?'var(--fail)':'var(--pass)')+'">'+fmt(a.service_due)+(svcOverdue?' · OVERDUE':'')+'</span></div>'+
+      svcMeterRow+
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       '<button class="btn-ghost" onclick="alert(\'Opens the service template for the mechanic to complete.\')">Open service template</button>'+
     '</div>'+
@@ -471,7 +518,7 @@ function _expired(d){ return d && new Date(d) < new Date(); }
 function renderOversight(){
   var supLocked = (getRole()==='supervisor');
   if(supLocked){ oversightSite = getSiteParam() || 'Parramatta'; }
-  document.getElementById('who-name').textContent = supLocked ? (oversightSite+' Supervisor') : 'Director / Manager';
+  setTopRight('<div class="badge-dir">'+(supLocked ? (oversightSite+' Supervisor') : 'Director')+'</div>');
   var siteMatch=function(code){ return oversightSite==='All' || assetSite(code)===oversightSite; };
   var fleet=ASSETS.filter(function(a){ return siteMatch(a.code); });
   var open=WORKORDERS.filter(function(w){ return w.status!=='Returned to service' && siteMatch(w.code); });
@@ -504,11 +551,34 @@ function renderOversight(){
   } else if(platTab==='assets'){
     var rows=fleet.map(function(a){
       var dt=plantDetails(a.code);
+      var sm=svcMeter(a), soon=svcSoon(sm);
+      var red = a.status!=='operational' || _expired(a.rego_expiry) || _expired(a.service_due) || _expired(a.insurance_expiry);
+      var amber = !red && soon;
+      var rowCls = red?'attn-red':(amber?'attn-amber':'');
       var stB = a.status==='operational'?'<span class="a-badge bg-op">Operational</span>':(a.status==='fault_reported'?'<span class="a-badge bg-flt">Fault</span>':'<span class="a-badge bg-out">'+a.status.replace('_',' ')+'</span>');
-      var reading=(a.hours?a.hours.toLocaleString()+' hrs':'')+(dt.km?((a.hours?' / ':'')+dt.km.toLocaleString()+' km'):'');
-      return '<tr onclick="openHub('+ASSETS.indexOf(a)+')"><td><b>'+a.code+'</b><div style="color:var(--t3);font-size:11px">'+a.make+' '+a.model+'</div></td><td>'+assetSite(a.code)+'</td><td>'+(reading||'—')+'</td><td style="'+(_expired(a.rego_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?fmt(a.rego_expiry):'—')+'</td><td>'+(a.insurance_expiry?fmt(a.insurance_expiry):'—')+'</td><td style="'+(_expired(a.service_due)?'color:var(--fail);font-weight:700':'')+'">'+fmt(a.service_due)+'</td><td>'+stB+'</td></tr>';
+      var rd=[]; if(a.hours) rd.push(a.hours.toLocaleString()+' hrs'); if(dt.km) rd.push(dt.km.toLocaleString()+' km');
+      var reading = rd.length ? (rd[0] + (rd[1]?'<div class="cell-sub">'+rd[1]+'</div>':'')) : '—';
+      var svcCell;
+      if(sm){ var over=sm.toGo<0, cls=over?'over':(soon?'soon':'ok');
+        svcCell='<span class="svc-go '+cls+'">'+(over?('Overdue '+Math.abs(sm.toGo).toLocaleString()+' '+sm.meter):('In '+sm.toGo.toLocaleString()+' '+sm.meter))+'</span><div class="cell-sub">'+fmtShort(a.service_due)+'</div>';
+      } else { svcCell='<span class="'+(_expired(a.service_due)?'svc-go over':'')+'">'+fmtShort(a.service_due)+'</span>'; }
+      var lp=lastPrestart(a), lpCell = lp?fmtShort(lp):'<span style="color:var(--fail);font-weight:600">None</span>';
+      var woN=openWoCount(a.code), woCell = woN?('<span class="a-badge bg-flt">'+woN+'</span>'):'<span style="color:var(--t3)">—</span>';
+      return '<tr class="'+rowCls+'" onclick="openHub('+ASSETS.indexOf(a)+')">'+
+        '<td class="t-asset"><div class="reg-asset"><div class="ric">'+a.icon+'</div><div><b>'+a.code+'</b><div class="cell-sub">'+a.make+' '+a.model+'</div></div></div></td>'+
+        '<td>'+assetSite(a.code)+'</td>'+
+        '<td>'+reading+'</td>'+
+        '<td>'+svcCell+'</td>'+
+        '<td style="'+(_expired(a.rego_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?fmtShort(a.rego_expiry):'— (plant)')+'</td>'+
+        '<td style="'+(_expired(a.insurance_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.insurance_expiry?fmtShort(a.insurance_expiry):'—')+'</td>'+
+        '<td>'+lpCell+'</td>'+
+        '<td style="text-align:center">'+woCell+'</td>'+
+        '<td>'+money(a.spend12mo||0)+'</td>'+
+        '<td>'+stB+'</td></tr>';
     }).join('');
-    body='<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Rego exp</th><th>Insurance exp</th><th>Service due</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    body='<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
+        '<div class="reg-legend"><span><span class="lg-dot" style="background:var(--fail)"></span>Action required</span><span><span class="lg-dot" style="background:var(--warn)"></span>Attention soon</span></div></div>'+
+      '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Last pre-start</th><th>Open WOs</th><th>12-mo spend</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
       '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row to open the full machine record.</div>'+
       '<button class="cta qr-noprint" style="margin-top:14px;background:#fff;color:var(--deep);border:1.5px solid var(--border)" onclick="renderQR()">🖨  Print QR stickers</button>';
   } else {
@@ -519,7 +589,7 @@ function renderOversight(){
   }
 
   var subText = supLocked ? (oversightSite+' — your site only') : (oversightSite==='All'?'All sites':oversightSite);
-  var html='<div class="wrap wide" style="padding:18px 16px;max-width:980px;margin:0 auto">'+
+  var html='<div class="wrap platform-wrap">'+
     '<div class="h1">Plant &amp; Equipment</div><div class="sub">'+subText+' · fleet management</div>'+
     chipRow + tabNav + body +
     '</div>';
