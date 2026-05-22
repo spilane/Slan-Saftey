@@ -104,6 +104,9 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .notify{font-size:12.5px;color:var(--fail);font-weight:600;text-align:center;margin-top:6px}
 /* prestart checklist */
 .ps-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:9px}
+.ps-item.crit{border-color:#E2A6A6}
+.ps-cat{font-size:10.5px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin:16px 2px 7px}
+.ps-crit{font-size:9px;font-weight:800;color:#fff;background:#A32D2D;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;margin-left:6px;white-space:nowrap}
 .ps-q{font-size:14px;font-weight:600;margin-bottom:9px}
 .seg{display:flex;gap:8px}
 .seg button{flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--t2)}
@@ -542,15 +545,71 @@ function doOverride(){
 }
 
 /* ---------- pre-start checklist ---------- */
-var CHECKLIST=['Engine oil & coolant levels','Hydraulic hoses & leaks','Tyres / tracks & undercarriage','Lights, beacon & horn','Reversing alarm & camera','Seatbelt & ROPS/FOPS','Fire extinguisher present & charged','Guards & emergency stop','Bucket / attachment & pins','General condition & cleanliness'];
+/* pre-start checklists by machine type — each item: {cat, q, crit}. A faulted CRITICAL item takes the machine out of service. */
+var CHECKLISTS={
+  truck:[
+    {cat:'Fluids',q:'Engine oil level'},{cat:'Fluids',q:'Coolant level'},{cat:'Fluids',q:'Fuel level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
+    {cat:'Tyres & brakes',q:'Tyres & wheel nuts',crit:true},{cat:'Tyres & brakes',q:'Brakes & air pressure',crit:true},
+    {cat:'Lights & safety',q:'Lights, indicators & horn'},{cat:'Lights & safety',q:'Reversing alarm & camera'},{cat:'Lights & safety',q:'Seatbelt & mirrors'},
+    {cat:'Load',q:'Load restraint / tie-downs secure',crit:true},
+    {cat:'General',q:'Fire extinguisher present & charged'},{cat:'General',q:'General condition & cleanliness'}
+  ],
+  telehandler:[
+    {cat:'Fluids',q:'Engine oil level'},{cat:'Fluids',q:'Hydraulic oil level'},{cat:'Fluids',q:'Coolant & fuel level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
+    {cat:'Boom & attachment',q:'Forks / attachment & pins secure',crit:true},{cat:'Boom & attachment',q:'Boom, chains & extension'},{cat:'Boom & attachment',q:'Hydraulic hoses & rams',crit:true},{cat:'Boom & attachment',q:'Load chart present & legible',crit:true},
+    {cat:'Tyres',q:'Tyres, pressure & wheel nuts'},
+    {cat:'Safety',q:'Lights, beacon & horn'},{cat:'Safety',q:'Reversing alarm & camera'},{cat:'Safety',q:'Seatbelt & ROPS/FOPS'},{cat:'Safety',q:'Fire extinguisher present & charged'},
+    {cat:'General',q:'General condition & cleanliness'}
+  ],
+  generator:[
+    {cat:'Fluids',q:'Engine oil level'},{cat:'Fluids',q:'Coolant level'},{cat:'Fluids',q:'Fuel level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
+    {cat:'Electrical',q:'Leads, plugs & sockets undamaged',crit:true},{cat:'Electrical',q:'RCD / earth-leakage test OK',crit:true},{cat:'Electrical',q:'Earth stake / bonding connected',crit:true},{cat:'Electrical',q:'Output gauges & meters'},
+    {cat:'Safety',q:'Guards & panels in place'},{cat:'Safety',q:'Fire extinguisher present & charged'},
+    {cat:'General',q:'Housing, doors & general condition'}
+  ],
+  lighting:[
+    {cat:'Fluids',q:'Engine oil level'},{cat:'Fluids',q:'Coolant & fuel level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
+    {cat:'Mast & lights',q:'Outriggers / stabilisers deploy',crit:true},{cat:'Mast & lights',q:'Mast raises, lowers & locking pins',crit:true},{cat:'Mast & lights',q:'All lamps operational'},
+    {cat:'Electrical',q:'Leads & RCD / earth-leakage OK',crit:true},
+    {cat:'Tow & general',q:'Tow coupling, tyres & jockey wheel'},{cat:'Tow & general',q:'General condition & cleanliness'}
+  ],
+  crane:[
+    {cat:'Fluids',q:'Engine oil level'},{cat:'Fluids',q:'Hydraulic oil level'},{cat:'Fluids',q:'Coolant & fuel level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
+    {cat:'Lifting gear',q:'Wire rope, hook & safety latch',crit:true},{cat:'Lifting gear',q:'Load chart present & legible',crit:true},{cat:'Lifting gear',q:'Load moment indicator (LMI) works',crit:true},{cat:'Lifting gear',q:'Anti two-block working',crit:true},{cat:'Lifting gear',q:'Hydraulic hoses & rams',crit:true},
+    {cat:'Stability',q:'Outriggers / stabilisers & pads',crit:true},
+    {cat:'Inspection',q:'Current periodic inspection (green sticker)',crit:true},
+    {cat:'Safety',q:'Lights, beacon & horn'},{cat:'Safety',q:'Seatbelt & cabin controls'},{cat:'Safety',q:'Fire extinguisher present & charged'},
+    {cat:'General',q:'General condition & cleanliness'}
+  ],
+  default:[
+    {cat:'Fluids',q:'Oil, coolant & fuel levels'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
+    {cat:'Safety',q:'Lights, beacon & horn'},{cat:'Safety',q:'Reversing alarm & camera'},{cat:'Safety',q:'Guards & emergency stop',crit:true},{cat:'Safety',q:'Fire extinguisher present & charged'},
+    {cat:'General',q:'Tyres / tracks & undercarriage'},{cat:'General',q:'General condition & cleanliness'}
+  ]
+};
+function checklistFor(a){
+  var t=a.type;
+  if(t==='Truck') return CHECKLISTS.truck;
+  if(t==='Telehandler') return CHECKLISTS.telehandler;
+  if(t==='Generator') return CHECKLISTS.generator;
+  if(t==='Lighting Tower') return CHECKLISTS.lighting;
+  if(t==='Slewing Crane'||t==='City Crane'||/Magni/.test(t)) return CHECKLISTS.crane;
+  return CHECKLISTS.default;
+}
+var _psList=[];
 function openPrestart(){
   var a=ASSETS[curAsset];
-  var items=CHECKLIST.map(function(q,idx){
-    return '<div class="ps-item"><div class="ps-q">'+(idx+1)+'. '+q+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div></div>';
+  _psList=checklistFor(a);
+  var lastCat='';
+  var items=_psList.map(function(it,idx){
+    var head = it.cat!==lastCat ? '<div class="ps-cat">'+it.cat+'</div>' : '';
+    lastCat=it.cat;
+    var badge = it.crit ? ' <span class="ps-crit">Critical</span>' : '';
+    return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div></div>';
   }).join('');
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="openHub(curAsset)">‹ Back</button>'+
-    '<div class="h1">Pre-Start — '+a.code+'</div><div class="sub">'+a.make+' '+a.model+' · '+currentWorker.name+'</div>'+
+    '<div class="h1">Pre-Start — '+a.code+'</div><div class="sub">'+a.make+' '+a.model+' · '+a.type+' · '+currentWorker.name+'</div>'+
     '<div class="ps-field"><label>Machine hours</label><input id="ps-hours" type="number" value="'+(a.hours||'')+'"></div>'+
     items+
     '<div class="ps-field" id="ps-fault-wrap" style="display:none"><label>Describe the fault</label><textarea id="ps-fault" rows="2" placeholder="What\'s wrong? This raises a work order to the mechanic."></textarea></div>'+
@@ -570,11 +629,16 @@ function psSet(i,v){
 function submitPrestart(){
   var a=ASSETS[curAsset];
   var done=Object.keys(psState).length;
-  if(done<CHECKLIST.length){ alert('Please mark every item Pass or Fault ('+done+' of '+CHECKLIST.length+' done).'); return; }
+  if(done<_psList.length){ alert('Please mark every item Pass or Fault ('+done+' of '+_psList.length+' done).'); return; }
   if(!document.getElementById('ps-fit').classList.contains('on')){ alert('Please confirm you are fit for work.'); return; }
-  var faults=Object.keys(psState).filter(function(k){return psState[k]==='f';}).length;
+  var faultIdx=Object.keys(psState).filter(function(k){return psState[k]==='f';});
+  var faults=faultIdx.length;
+  var criticalFault=faultIdx.some(function(k){ return _psList[+k] && _psList[+k].crit; });
   var msg='Pre-Start submitted for '+a.code+'.\n\nSaved against '+currentWorker.name+' and the machine record.';
-  if(faults>0){ msg+='\n\n⚠ '+faults+' fault(s) flagged → a work order has been raised and sent to the mechanic.'; a.status='fault_reported'; }
+  if(faults>0){
+    if(criticalFault){ msg+='\n\n⛔ CRITICAL fault flagged — '+a.code+' is now OUT OF SERVICE and a HIGH-priority work order has been raised to the mechanic. This machine must not be operated.'; a.status='out_of_service'; }
+    else { msg+='\n\n⚠ '+faults+' fault'+(faults>1?'s':'')+' flagged → a work order has been raised and sent to the mechanic.'; a.status='fault_reported'; }
+  }
   alert(msg);
   psState={};
   renderAssets();
