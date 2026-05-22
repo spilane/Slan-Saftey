@@ -120,11 +120,25 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .plat-tabs{display:flex;gap:4px;background:linear-gradient(135deg,#F8F9FA 0%,#E9ECEF 100%);border-radius:10px;padding:4px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 .plat-tab{flex:1;padding:10px 12px;border:none;border-radius:7px;background:transparent;color:#666;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;letter-spacing:.3px;transition:all .2s}
 .plat-tab.on{background:linear-gradient(135deg,#B8960C 0%,#D4A72C 100%);color:#fff;box-shadow:0 2px 4px rgba(184,150,12,.3)}
-.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
 @media(min-width:680px){.kpis{grid-template-columns:repeat(4,1fr)}}
-.kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
-.kpi-v{font-size:26px;font-weight:800;line-height:1}
-.kpi-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:5px}
+.kpi{border-radius:var(--r);padding:15px 15px 16px;text-align:left;border:1.5px solid;box-shadow:0 3px 10px rgba(27,58,45,.08);transition:transform .15s,box-shadow .15s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(27,58,45,.13)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.kpi-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.6)}
+.kpi-v{font-size:30px;font-weight:800;line-height:1}
+.kpi-l{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:6px;opacity:.85}
+.kpi-tr{font-size:12px;font-weight:800}
+.kpi.k-blue{background:linear-gradient(135deg,#EAF2F8 0%,#CFE3F2 100%);border-color:#2E6E8E;color:#1F495C}
+.kpi.k-green{background:linear-gradient(135deg,#E9F6EE 0%,#C7EAD4 100%);border-color:#1B6E3A;color:#13502A}
+.kpi.k-amber{background:linear-gradient(135deg,#FFF6E6 0%,#FBE2B0 100%);border-color:#C98A1E;color:#8A5A00}
+.kpi.k-red{background:linear-gradient(135deg,#FBECEC 0%,#F6CFCF 100%);border-color:#C24141;color:#8E2525}
+.spend-card{display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(135deg,#1B3A2D 0%,#2D6A45 100%);color:#fff;border-radius:var(--r);padding:18px;box-shadow:0 4px 16px rgba(27,58,45,.28);border:1px solid rgba(184,150,12,.35)}
+.spend-v{font-size:30px;font-weight:800;line-height:1;color:var(--gold-l)}
+.spend-l{font-size:11.5px;color:#BFD9C9;margin-top:5px}
+.spend-tr{text-align:right;font-size:15px;font-weight:800}
+.pback{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;width:34px;height:34px;border-radius:9px;font-size:22px;line-height:1;cursor:pointer;font-family:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 0 3px}
+.pback:hover{background:rgba(255,255,255,.18)}
 table.reg{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
 table.reg th{text-align:left;padding:9px 11px;background:#EAF1ED;color:var(--t2);font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 table.reg td{padding:10px 11px;border-top:1px solid #EEF2F0;white-space:nowrap;vertical-align:top}
@@ -168,6 +182,7 @@ table.reg tr.attn-amber:hover{background:#FBEFD8}
 
 <div class="topbar">
   <div class="topbar-row">
+    <button class="pback" onclick="plantGoBack()" aria-label="Back to app">‹</button>
     <div class="tbar-logo"><img src="Slan_Safety_No_Border_1.png" alt="Slán Safety"></div>
     <div id="tb-right"><button class="who" onclick="openWorkerSheet()"><span id="who-name">—</span></button></div>
   </div>
@@ -318,6 +333,12 @@ var currentWorker=WORKERS[0];
 var curAsset=0;
 function setTopRight(html){ var el=document.getElementById('tb-right'); if(el) el.innerHTML=html; }
 function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><span id="who-name">'+currentWorker.name+'</span></button>'; }
+function plantGoBack(){ if(window.history.length>1){ history.back(); } else { location.href='index.html'; } }
+function kpiTrend(cur, prev, higherIsBetter){
+  var d=cur-prev; if(d===0) return '<span class="kpi-tr" style="color:#7A938B">▬ 0</span>';
+  var up=d>0, good=higherIsBetter?up:!up;
+  return '<span class="kpi-tr" style="color:'+(good?'#15803D':'#B83232')+'">'+(up?'▲':'▼')+' '+(d>0?'+':'')+d+'</span>';
+}
 
 /* ---------- TICKET GATE (verified) ---------- */
 function ticketGate(w, a){
@@ -554,14 +575,20 @@ function renderOversight(){
 
   var body='';
   if(platTab==='dashboard'){
-    var kpi=function(l,v,c){ return '<div class="kpi"><div class="kpi-v" style="color:'+c+'">'+v+'</div><div class="kpi-l">'+l+'</div></div>'; };
+    var kpi=function(l,v,cls,ic,trend){ return '<div class="kpi '+cls+'"><div class="kpi-top"><span class="kpi-ic">'+ic+'</span>'+(trend||'')+'</div><div class="kpi-v">'+v+'</div><div class="kpi-l">'+l+'</div></div>'; };
     var need=fleet.filter(function(a){ return a.status!=='operational' || _expired(a.service_due) || _expired(a.rego_expiry); });
     var attHtml=need.length?need.map(function(a){
       var reason = a.status!=='operational'?a.status.replace('_',' '):(_expired(a.rego_expiry)?'Registration expired':'Service overdue');
       return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:#A06000">'+assetSite(a.code)+' · '+reason+'</div></div><div class="chev">›</div></button>';
     }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines operational.</div></div></div>';
-    body='<div class="kpis">'+kpi('Machines',fleet.length,'#1F495C')+kpi('Operational',opCount,'#1B6E3A')+kpi('Need attention',attnCount,'#A06000')+kpi('Open work orders',open.length,'#A32D2D')+'</div>'+
-      '<div class="sec-h">Maintenance spend (last 12 months)</div><div class="tile" style="padding:16px;text-align:center"><div style="font-size:26px;font-weight:800;color:var(--deep)">'+money(spend12)+'</div></div>'+
+    body='<div class="kpis">'+
+        kpi('Machines',fleet.length,'k-blue','🚜','')+
+        kpi('Operational',opCount,'k-green','✅',kpiTrend(opCount,opCount-1,true))+
+        kpi('Need attention',attnCount,'k-amber','⚠️',kpiTrend(attnCount,attnCount+2,false))+
+        kpi('Open work orders',open.length,'k-red','🔧',kpiTrend(open.length,open.length+1,false))+'</div>'+
+      '<div class="sec-h">Maintenance spend (last 12 months)</div>'+
+      '<div class="spend-card"><div><div class="spend-v">'+money(spend12)+'</div><div class="spend-l">Across the fleet'+(oversightSite==='All'?'':' · '+oversightSite)+'</div></div>'+
+        '<div class="spend-tr"><span style="color:#7FE0A6">▼ 8%</span><div style="font-size:10.5px;color:#BFD9C9;font-weight:600;margin-top:3px">vs prior year</div></div></div>'+
       '<div class="sec-h">Needs attention ('+need.length+')</div><div class="tile">'+attHtml+'</div>';
   } else if(platTab==='assets'){
     var rows=fleet.map(function(a){
