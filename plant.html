@@ -128,9 +128,12 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .qr-imgwrap img{width:var(--qs,150px);height:var(--qs,150px);image-rendering:pixelated}
 .qr-grid.qr-one{grid-template-columns:1fr;max-width:300px;margin:0 auto}
 /* director/manager platform (Gearbelt-style) */
-.plat-tabs{display:flex;gap:4px;background:linear-gradient(135deg,#F8F9FA 0%,#E9ECEF 100%);border-radius:10px;padding:4px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.plat-tab{flex:1;padding:10px 12px;border:none;border-radius:7px;background:transparent;color:#666;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;letter-spacing:.3px;transition:all .2s}
+.plat-tabs{display:flex;gap:4px;background:linear-gradient(135deg,#F8F9FA 0%,#E9ECEF 100%);border-radius:10px;padding:4px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow-x:auto}
+.plat-tab{flex:1 0 auto;padding:10px 14px;border:none;border-radius:7px;background:transparent;color:#666;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;letter-spacing:.3px;transition:all .2s}
 .plat-tab.on{background:linear-gradient(135deg,#B8960C 0%,#D4A72C 100%);color:#fff;box-shadow:0 2px 4px rgba(184,150,12,.3)}
+.an-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:760px){.an-grid{grid-template-columns:1fr 1fr}}
+.chart-box{position:relative;height:240px}
 /* fcard sections — matches the WHS app (gold top-line + green/gold header bar) */
 .fcard{background:linear-gradient(135deg,#fff 0%,#f8f9fa 100%);border-radius:8px;border:1px solid #E8E8E8;border-top:3px solid #D4AF37;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.12);margin-bottom:14px}
 .fcard-hdr{background:linear-gradient(135deg,#1B3A2D 0%,#0F2419 100%);padding:11px 15px;font-size:10.5px;font-weight:600;color:#D4AF37;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 2px 4px rgba(27,58,45,.2)}
@@ -192,6 +195,8 @@ table.reg tr.attn-amber:hover{background:#FBEFD8}
 .svc-go.ok{color:var(--pass)} .svc-go.soon{color:var(--warn)} .svc-go.over{color:var(--fail)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -601,6 +606,98 @@ function _prioCol(p){ return p==='High'?'#A32D2D':(p==='Medium'?'#A06000':'#4B63
 var platTab='dashboard';
 function platSetTab(t){ platTab=t; renderOversight(); }
 function _expired(d){ return d && new Date(d) < new Date(); }
+function _siteFleet(){ return ASSETS.filter(function(a){ return oversightSite==='All' || assetSite(a.code)===oversightSite; }); }
+function _lastMonths(n){ var out=[],d=new Date(); for(var i=n-1;i>=0;i--){ var x=new Date(d.getFullYear(),d.getMonth()-i,1); out.push(x.toLocaleDateString('en-AU',{month:'short'})); } return out; }
+
+/* ---------- ANALYTICS (charts) ---------- */
+var _charts={};
+function _mkChart(id,cfg){ var el=document.getElementById(id); if(!el||!window.Chart) return; try{ if(_charts[id]){ _charts[id].destroy(); } _charts[id]=new Chart(el.getContext('2d'),cfg); }catch(e){} }
+function plantAnalyticsBody(){
+  function card(t,id){ return '<div class="fcard"><div class="fcard-hdr">'+t+'</div><div class="fcard-body"><div class="chart-box"><canvas id="'+id+'"></canvas></div></div></div>'; }
+  return '<div class="an-grid">'+card('🟢 Fleet availability','ch-avail')+card('💲 Spend by machine','ch-spend')+'</div>'+
+    card('✅ Pre-start compliance — last 7 days','ch-prestart')+
+    '<div class="an-grid">'+card('🔧 Work orders — last 6 months','ch-wo')+card('🔒 Stopped at the gate — last 6 months','ch-gate')+'</div>';
+}
+function renderPlantCharts(){
+  if(!window.Chart) return;
+  var fleet=_siteFleet();
+  var op=fleet.filter(function(a){return a.status==='operational' && !_expired(a.rego_expiry) && !_expired(a.service_due);}).length;
+  var fault=fleet.filter(function(a){return a.status!=='operational';}).length;
+  var attn=Math.max(0, fleet.length-op-fault);
+  _mkChart('ch-avail',{type:'doughnut',data:{labels:['Ready','Attention','Fault / blocked'],datasets:[{data:[op,attn,fault],backgroundColor:['#1B6E3A','#A06000','#A32D2D'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom'}}}});
+  var sB=fleet.slice().sort(function(a,b){return (b.spend12mo||0)-(a.spend12mo||0);});
+  _mkChart('ch-spend',{type:'bar',data:{labels:sB.map(function(a){return a.code;}),datasets:[{data:sB.map(function(a){return a.spend12mo||0;}),backgroundColor:'#2D6A45',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return '$'+(v/1000)+'k';}}}}}});
+  var d7=[]; for(var i=6;i>=0;i--){ d7.push(fmtShort(dOffset(-i))); }
+  _mkChart('ch-prestart',{type:'line',data:{labels:d7,datasets:[{data:[88,92,85,90,87,93,91],borderColor:'#1B6E3A',backgroundColor:'rgba(27,110,58,.12)',fill:true,tension:.35,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:function(v){return v+'%';}}}}}});
+  var m6=_lastMonths(6);
+  _mkChart('ch-wo',{type:'bar',data:{labels:m6,datasets:[{label:'Raised',data:[5,4,6,3,4,3],backgroundColor:'#A06000',borderRadius:3},{label:'Closed',data:[4,5,5,4,4,2],backgroundColor:'#1B6E3A',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+  _mkChart('ch-gate',{type:'bar',data:{labels:m6,datasets:[{data:[2,1,3,2,4,3],backgroundColor:'#A32D2D',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+}
+
+/* ---------- COMPLIANCE (tables) ---------- */
+function plantComplianceBody(fleet){
+  var today=new Date();
+  function tbl(hdrs,rows){ return '<div style="overflow-x:auto"><table class="reg"><thead><tr>'+hdrs+'</tr></thead><tbody>'+rows+'</tbody></table></div>'; }
+  var sched=fleet.slice().sort(function(a,b){return new Date(a.service_due)-new Date(b.service_due);}).map(function(a){
+    var sm=svcMeter(a),over=_expired(a.service_due);
+    var meterTxt=sm?(sm.toGo<0?('Overdue '+Math.abs(sm.toGo).toLocaleString()+' '+sm.meter):('In '+sm.toGo.toLocaleString()+' '+sm.meter)):'—';
+    return '<tr onclick="openHub('+ASSETS.indexOf(a)+')"><td><b>'+a.code+'</b> <span style="color:var(--t3)">'+a.make+' '+a.model+'</span></td><td>'+assetSite(a.code)+'</td><td style="'+(over?'color:var(--fail);font-weight:700':'')+'">'+fmtShort(a.service_due)+(over?' · OVERDUE':'')+'</td><td>'+meterTxt+'</td></tr>';
+  }).join('');
+  var docs=fleet.map(function(a){
+    var dt=plantDetails(a.code);
+    var insp=a.swl?('Green sticker · '+fmtShort(a.service_due)):'—';
+    return '<tr onclick="openHub('+ASSETS.indexOf(a)+')"><td><b>'+a.code+'</b></td><td>'+(dt.rego?dt.rego:'— (plant)')+'</td><td style="'+(_expired(a.rego_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?fmtShort(a.rego_expiry):'—')+'</td><td>'+(dt.insurer||'—')+'</td><td style="'+(_expired(a.insurance_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.insurance_expiry?fmtShort(a.insurance_expiry):'—')+'</td><td>'+insp+'</td></tr>';
+  }).join('');
+  var fc=[];
+  fleet.forEach(function(a){ [['Registration',a.rego_expiry],['Insurance',a.insurance_expiry]].forEach(function(p){ if(p[1]){ var dl=daysBetween(p[1],today); if(dl<=90){ fc.push({who:a.code+' · '+a.make+' '+a.model,what:p[0],date:p[1],d:dl}); } } }); });
+  WORKERS.forEach(function(w){ (w.tickets||[]).forEach(function(t){ if(t.expiry){ var dl=daysBetween(t.expiry,today); if(dl<=90){ fc.push({who:w.name,what:licName(t.cls),date:t.expiry,d:dl}); } } }); });
+  fc.sort(function(a,b){return a.d-b.d;});
+  var fcRows=fc.length?fc.map(function(x){ var band=x.d<0?'#A32D2D':(x.d<=30?'#A06000':'#4B6358'); var lbl=x.d<0?('Expired '+Math.abs(x.d)+'d ago'):('in '+x.d+' days'); return '<tr><td>'+x.who+'</td><td>'+x.what+'</td><td>'+fmtShort(x.date)+'</td><td style="color:'+band+';font-weight:700">'+lbl+'</td></tr>'; }).join(''):'<tr><td colspan="4" style="color:var(--t3)">Nothing expiring in the next 90 days.</td></tr>';
+  var lic=['white_card','telehandler','crane','truck_hr'];
+  var shortLic={white_card:'White Card',telehandler:'Telehandler',crane:'Crane (C2)',truck_hr:'Truck (HR)'};
+  var mhead=lic.map(function(c){return '<th style="text-align:center">'+shortLic[c]+'</th>';}).join('');
+  var mrows=WORKERS.map(function(w){
+    var cells=lic.map(function(c){ var t=(w.tickets||[]).find(function(x){return x.cls===c;}); if(!t) return '<td style="text-align:center;color:#D0D0D0">—</td>'; var exp=_expired(t.expiry); var soon=!exp && daysBetween(t.expiry,today)<=30; return '<td style="text-align:center;color:'+(exp?'#A32D2D':(soon?'#A06000':'#1B6E3A'))+';font-weight:700">'+(exp?'✕':'✓')+'</td>'; }).join('');
+    return '<tr><td><b>'+w.name+'</b> <span style="color:var(--t3)">'+w.trade+'</span></td>'+cells+'</tr>';
+  }).join('');
+  return '<div class="fcard"><div class="fcard-hdr">📅 Service schedule</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Machine</th><th>Site</th><th>Next service</th><th>Interval</th>',sched)+'</div></div>'+
+    '<div class="fcard"><div class="fcard-hdr">📄 Document register — rego, insurance, inspections</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Machine</th><th>Rego</th><th>Rego exp</th><th>Insurer</th><th>Insurance exp</th><th>Inspection</th>',docs)+'</div></div>'+
+    '<div class="fcard"><div class="fcard-hdr">⏳ Expiry forecast — next 90 days</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Item</th><th>What</th><th>Date</th><th>Status</th>',fcRows)+'</div></div>'+
+    '<div class="fcard"><div class="fcard-hdr">🎫 Operator competency matrix</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Operator</th>'+mhead,mrows)+'<div style="font-size:10.5px;color:var(--t3);padding:8px 4px 0">✓ current · <span style="color:#A06000">✓ expiring</span> · <span style="color:#A32D2D">✕ expired</span> · — not held</div></div></div>'+
+    '<button class="cta" style="background:var(--mid)" onclick="plantAuditPDF()">📄  Download audit pack (PDF)</button>';
+}
+
+/* ---------- AUDIT-PACK PDF ---------- */
+function plantAuditPDF(){
+  if(!window.jspdf){ alert('PDF library still loading — give it a second and try again.'); return; }
+  var fleet=_siteFleet(), today=new Date();
+  var doc=new window.jspdf.jsPDF('p','mm','a4');
+  var W=210, M=14, GOLD=[184,150,12], GREEN=[44,107,94]; var y=18;
+  function bar(t){ if(y>270){doc.addPage();y=18;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=11; doc.setTextColor(35,35,35); doc.setFont('helvetica','normal'); }
+  function row(cells,xs,bold){ if(y>282){doc.addPage();y=18;} doc.setFont('helvetica',bold?'bold':'normal'); doc.setFontSize(8.4); cells.forEach(function(c,i){ doc.text(String(c),xs[i],y); }); y+=5.6; }
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Plant & Equipment — Compliance Audit Pack',M,y); y+=6;
+  doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,99,94);
+  doc.text((oversightSite==='All'?'All sites':oversightSite)+'   ·   Generated '+fmt(today),M,y); y+=8;
+  var op=fleet.filter(function(a){return a.status==='operational';}).length;
+  var attn=fleet.filter(function(a){return a.status!=='operational'||_expired(a.service_due)||_expired(a.rego_expiry);}).length;
+  bar('Fleet summary');
+  row(['Machines: '+fleet.length,'Operational: '+op,'Need attention: '+attn],[M,M+60,M+115],false); y+=3;
+  bar('Machine register');
+  var xs=[M,M+42,M+72,M+108,M+146,M+174];
+  row(['Machine','Site','Rego exp','Insurance exp','Service due','Status'],xs,true);
+  fleet.forEach(function(a){ row([a.code,assetSite(a.code),a.rego_expiry?fmtShort(a.rego_expiry):'-',a.insurance_expiry?fmtShort(a.insurance_expiry):'-',fmtShort(a.service_due),a.status.replace('_',' ')],xs,false); }); y+=3;
+  bar('Expiry forecast - next 90 days');
+  var fc=[];
+  fleet.forEach(function(a){ [['Registration',a.rego_expiry],['Insurance',a.insurance_expiry]].forEach(function(p){ if(p[1]){ var dl=daysBetween(p[1],today); if(dl<=90) fc.push([a.code,p[0],fmtShort(p[1]),dl<0?'Expired':('in '+dl+'d')]); } }); });
+  WORKERS.forEach(function(w){ (w.tickets||[]).forEach(function(t){ if(t.expiry){ var dl=daysBetween(t.expiry,today); if(dl<=90) fc.push([w.name,licName(t.cls),fmtShort(t.expiry),dl<0?'Expired':('in '+dl+'d')]); } }); });
+  var xs2=[M,M+58,M+112,M+152];
+  row(['Item','What','Date','Status'],xs2,true);
+  if(fc.length){ fc.forEach(function(r){ row(r,xs2,false); }); } else { row(['Nothing expiring in 90 days','','',''],xs2,false); }
+  var pages=doc.internal.getNumberOfPages();
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-010 · Slán Safety · Confidential',M,292); doc.text('Page '+p+' of '+pages,W-M-20,292); }
+  doc.save('Slan-Plant-Audit-Pack.pdf');
+}
 function renderOversight(){
   var supLocked = (getRole()==='supervisor');
   if(supLocked){ oversightSite = getSiteParam() || 'Parramatta'; }
@@ -619,7 +716,7 @@ function renderOversight(){
       return '<button onclick="plantSetSite(\''+s+'\')" style="padding:6px 13px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+'">'+label+'</button>';
     }).join('')+'</div>';
   }
-  var tabNav='<div class="plat-tabs">'+[['dashboard','Dashboard'],['assets','Assets'],['workorders','Work Orders ('+open.length+')']].map(function(tb){
+  var tabNav='<div class="plat-tabs">'+[['dashboard','Dashboard'],['assets','Assets'],['analytics','Analytics'],['compliance','Compliance'],['workorders','Work Orders ('+open.length+')']].map(function(tb){
     return '<button class="plat-tab'+(platTab===tb[0]?' on':'')+'" onclick="platSetTab(\''+tb[0]+'\')">'+tb[1]+'</button>';
   }).join('')+'</div>';
 
@@ -674,6 +771,10 @@ function renderOversight(){
         '<div class="reg-legend"><span><span class="lg-dot" style="background:var(--fail)"></span>Action required</span><span><span class="lg-dot" style="background:var(--warn)"></span>Attention soon</span></div></div>'+
       '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Last pre-start</th><th>Open WOs</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
       '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
+  } else if(platTab==='analytics'){
+    body=plantAnalyticsBody();
+  } else if(platTab==='compliance'){
+    body=plantComplianceBody(fleet);
   } else {
     var woHtml=open.length?open.map(function(w){ var idx=WORKORDERS.indexOf(w);
       return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
@@ -691,6 +792,7 @@ function renderOversight(){
   document.getElementById('screen-list').style.display='none';
   document.getElementById('screen-detail').style.display='none';
   ov.style.display='block';
+  if(platTab==='analytics'){ setTimeout(renderPlantCharts,30); }
   window.scrollTo(0,0);
 }
 function openWO(i){
