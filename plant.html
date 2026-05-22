@@ -601,6 +601,7 @@ var CHECKLISTS={
   ]
 };
 var COMMON=[
+  {cat:'Maintenance',q:'Grease points serviced'},
   {cat:'Final checks',q:'No "Do Not Operate" / out-of-service tag attached',crit:true},
   {cat:'Final checks',q:'Safety decals & warning signs legible'},
   {cat:'Final checks',q:'Work area clear & safe to start up'}
@@ -630,6 +631,7 @@ function _itemInfo(it){
   if(/green sticker|periodic inspection/.test(q)) return {label:'Inspection sticker — next due', type:'date'};
   if(/rcd|earth-leakage/.test(q)) return {label:'RCD test tag — last tested', type:'date'};
   if(/wire rope, hook/.test(q)) return {label:'Lifting gear — last inspection date', type:'date'};
+  if(/grease/.test(q)) return {label:'Last greased', type:'date'};
   return null;
 }
 function _faultQ(it){
@@ -655,7 +657,8 @@ function openPrestart(){
     var fd='<div class="ps-fd" id="ps-fd'+idx+'" style="display:none">'+
         '<div class="ps-fd-h">Fault on: '+it.q+'</div>'+
         sevField+
-        '<div class="ps-field" style="margin-bottom:0"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="Type a short description"></textarea></div>'+
+        '<div class="ps-field"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="Type a short description"></textarea></div>'+
+        '<div class="ps-field" style="margin-bottom:0"><label>Photo (optional)</label><input id="ps-photo'+idx+'" type="file" accept="image/*"></div>'+
       '</div>';
     var info=_itemInfo(it);
     var infoField = info ? '<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"></div>' : '';
@@ -669,6 +672,8 @@ function openPrestart(){
     '<div class="h1">Pre-Start — '+a.code+'</div><div class="sub">'+a.make+' '+a.model+' · '+a.type+' · '+currentWorker.name+'</div>'+
     '<div class="ps-field"><label>'+(km?'Current odometer (km)':'Current hours')+'</label><input id="ps-hours" type="text" inputmode="numeric" placeholder="Read the meter — last was '+lastVal.toLocaleString()+'"><div style="font-size:11px;color:var(--t3);margin-top:5px">Enter the current reading off the machine.</div></div>'+
     items+
+    '<div class="ps-cat">Notes</div>'+
+    '<div class="ps-field"><label>Operator comments (optional)</label><textarea id="ps-comments" rows="2" placeholder="Anything else to flag — site conditions, near-misses, requests"></textarea></div>'+
     '<div class="ps-cat">Declaration</div>'+
     '<div class="ps-item"><div class="ps-q" style="margin-bottom:9px">By submitting this pre-start, I declare that:</div>'+
       '<ul class="ps-decl">'+
