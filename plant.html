@@ -114,6 +114,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .qr-brand{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
 .qr-imgwrap img{width:var(--qs,150px);height:var(--qs,150px);image-rendering:pixelated}
 .qr-grid.qr-one{grid-template-columns:1fr;max-width:300px;margin:0 auto}
+/* director/manager platform (Gearbelt-style) */
+.plat-tabs{display:flex;gap:4px;background:#E9ECEF;border-radius:10px;padding:4px;margin-bottom:16px}
+.plat-tab{flex:1;padding:9px 6px;border:none;border-radius:7px;background:transparent;color:#666;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.plat-tab.on{background:linear-gradient(135deg,#1B3A2D,#2D6A45);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
+@media(min-width:680px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.kpi-v{font-size:26px;font-weight:800;line-height:1}
+.kpi-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:5px}
+table.reg{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+table.reg th{text-align:left;padding:9px 11px;background:#EAF1ED;color:var(--t2);font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+table.reg td{padding:10px 11px;border-top:1px solid #EEF2F0;white-space:nowrap;vertical-align:top}
+table.reg tbody tr{cursor:pointer}
+table.reg tbody tr:hover{background:#F6FAF7}
 .qr-code{font-size:16px;font-weight:800;color:var(--t1);margin-top:6px}
 .qr-mm{font-size:11px;color:var(--t2)}
 .qr-cap{font-size:9.5px;color:var(--t3);margin-top:4px}
@@ -205,7 +219,10 @@ var ASSETS=[
     hours:1180, service_last:iso(dOffset(-200)), service_due:iso(dOffset(-12)), critical_fault:false, spend12mo:640 },
   { code:'UTE-12', type:'Ute', icon:'🛻', make:'Toyota', model:'Hilux', status:'operational',
     required:['drivers_C'], voc_required:false, rego_expiry:iso(dOffset(-9)), insurance_expiry:iso(dOffset(150)),
-    hours:0, service_last:iso(dOffset(-30)), service_due:iso(dOffset(90)), critical_fault:false, spend12mo:1890 }
+    hours:0, service_last:iso(dOffset(-30)), service_due:iso(dOffset(90)), critical_fault:false, spend12mo:1890 },
+  { code:'DOZ-004', type:'Dozer', icon:'🚜', make:'Komatsu', model:'D61', status:'fault_reported',
+    required:['bulldozer'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(150)),
+    hours:5210, service_last:iso(dOffset(-25)), service_due:iso(dOffset(70)), critical_fault:false, spend12mo:9450 }
 ];
 
 /* full machine record (the platform holds everything; tiles show the headlines) */
@@ -448,36 +465,64 @@ var WORKORDERS=[
   {wo:'WO-2026-0036', code:'FLT-002', machine:'Toyota 8FG25 Forklift', fault:'Reversing alarm intermittent', priority:'Low', status:'Awaiting parts', raised:'4 days ago · Mark Flynn'}
 ];
 function _prioCol(p){ return p==='High'?'#A32D2D':(p==='Medium'?'#A06000':'#4B6358'); }
+var platTab='dashboard';
+function platSetTab(t){ platTab=t; renderOversight(); }
+function _expired(d){ return d && new Date(d) < new Date(); }
 function renderOversight(){
   var supLocked = (getRole()==='supervisor');
   if(supLocked){ oversightSite = getSiteParam() || 'Parramatta'; }
-  document.getElementById('who-name').textContent = supLocked ? (oversightSite+' Supervisor') : 'Manager view';
+  document.getElementById('who-name').textContent = supLocked ? (oversightSite+' Supervisor') : 'Director / Manager';
   var siteMatch=function(code){ return oversightSite==='All' || assetSite(code)===oversightSite; };
+  var fleet=ASSETS.filter(function(a){ return siteMatch(a.code); });
   var open=WORKORDERS.filter(function(w){ return w.status!=='Returned to service' && siteMatch(w.code); });
-  var woHtml=open.map(function(w){
-    var idx=WORKORDERS.indexOf(w);
-    return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
-  }).join('');
-  var t=new Date();
-  var need=ASSETS.filter(function(a){ return siteMatch(a.code) && (a.status!=='operational' || new Date(a.service_due)<t || (a.rego_expiry && new Date(a.rego_expiry)<t)); });
-  var attHtml=need.map(function(a){
-    var reason = a.status!=='operational'?a.status.replace('_',' '):((a.rego_expiry&&new Date(a.rego_expiry)<t)?'Registration expired':'Service overdue');
-    return '<div class="row" style="cursor:default"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:#A06000">'+assetSite(a.code)+' · '+reason+'</div></div></div>';
-  }).join('');
+  var opCount=fleet.filter(function(a){return a.status==='operational';}).length;
+  var attnCount=fleet.filter(function(a){ return a.status!=='operational' || _expired(a.service_due) || _expired(a.rego_expiry); }).length;
+  var spend12=fleet.reduce(function(s,a){ return s+(a.spend12mo||0); },0);
+
   var chipRow='';
   if(!supLocked){
     chipRow='<div style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:14px;padding-bottom:4px">'+['All'].concat(PLANT_SITES).map(function(s){
       var on=(s===oversightSite),label=(s==='All')?'All sites':s;
-      return '<button onclick="plantSetSite(\''+s+'\')" style="padding:6px 13px;border-radius:16px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+'">'+label+'</button>';
+      return '<button onclick="plantSetSite(\''+s+'\')" style="padding:6px 13px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+'">'+label+'</button>';
     }).join('')+'</div>';
   }
+  var tabNav='<div class="plat-tabs">'+[['dashboard','Dashboard'],['assets','Assets'],['workorders','Work Orders ('+open.length+')']].map(function(tb){
+    return '<button class="plat-tab'+(platTab===tb[0]?' on':'')+'" onclick="platSetTab(\''+tb[0]+'\')">'+tb[1]+'</button>';
+  }).join('')+'</div>';
+
+  var body='';
+  if(platTab==='dashboard'){
+    var kpi=function(l,v,c){ return '<div class="kpi"><div class="kpi-v" style="color:'+c+'">'+v+'</div><div class="kpi-l">'+l+'</div></div>'; };
+    var need=fleet.filter(function(a){ return a.status!=='operational' || _expired(a.service_due) || _expired(a.rego_expiry); });
+    var attHtml=need.length?need.map(function(a){
+      var reason = a.status!=='operational'?a.status.replace('_',' '):(_expired(a.rego_expiry)?'Registration expired':'Service overdue');
+      return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:#A06000">'+assetSite(a.code)+' · '+reason+'</div></div><div class="chev">›</div></button>';
+    }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines operational.</div></div></div>';
+    body='<div class="kpis">'+kpi('Machines',fleet.length,'#1F495C')+kpi('Operational',opCount,'#1B6E3A')+kpi('Need attention',attnCount,'#A06000')+kpi('Open work orders',open.length,'#A32D2D')+'</div>'+
+      '<div class="sec-h">Maintenance spend (last 12 months)</div><div class="tile" style="padding:16px;text-align:center"><div style="font-size:26px;font-weight:800;color:var(--deep)">'+money(spend12)+'</div></div>'+
+      '<div class="sec-h">Needs attention ('+need.length+')</div><div class="tile">'+attHtml+'</div>';
+  } else if(platTab==='assets'){
+    var rows=fleet.map(function(a){
+      var dt=plantDetails(a.code);
+      var stB = a.status==='operational'?'<span class="a-badge bg-op">Operational</span>':(a.status==='fault_reported'?'<span class="a-badge bg-flt">Fault</span>':'<span class="a-badge bg-out">'+a.status.replace('_',' ')+'</span>');
+      var reading=(a.hours?a.hours.toLocaleString()+' hrs':'')+(dt.km?((a.hours?' / ':'')+dt.km.toLocaleString()+' km'):'');
+      return '<tr onclick="openHub('+ASSETS.indexOf(a)+')"><td><b>'+a.code+'</b><div style="color:var(--t3);font-size:11px">'+a.make+' '+a.model+'</div></td><td>'+assetSite(a.code)+'</td><td>'+(reading||'—')+'</td><td style="'+(_expired(a.rego_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?fmt(a.rego_expiry):'—')+'</td><td>'+(a.insurance_expiry?fmt(a.insurance_expiry):'—')+'</td><td style="'+(_expired(a.service_due)?'color:var(--fail);font-weight:700':'')+'">'+fmt(a.service_due)+'</td><td>'+stB+'</td></tr>';
+    }).join('');
+    body='<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Rego exp</th><th>Insurance exp</th><th>Service due</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row to open the full machine record.</div>'+
+      '<button class="cta qr-noprint" style="margin-top:14px;background:#fff;color:var(--deep);border:1.5px solid var(--border)" onclick="renderQR()">🖨  Print QR stickers</button>';
+  } else {
+    var woHtml=open.length?open.map(function(w){ var idx=WORKORDERS.indexOf(w);
+      return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
+    }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No open work orders.</div></div></div>';
+    body='<div class="tile">'+woHtml+'</div>';
+  }
+
   var subText = supLocked ? (oversightSite+' — your site only') : (oversightSite==='All'?'All sites':oversightSite);
-  var html='<div class="h1">Plant — Fleet</div><div class="sub">'+subText+' · work orders, attention &amp; register.</div>'+
-    chipRow+
-    '<div class="sec-h">Open work orders ('+open.length+')</div><div class="tile">'+(woHtml||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No open work orders.</div></div></div>')+'</div>'+
-    '<div class="sec-h">Machines needing attention</div><div class="tile">'+(attHtml||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines operational.</div></div></div>')+'</div>'+
-    '<button class="cta" style="margin-top:16px" onclick="showList()">View all machines →</button>'+
-    '<button class="cta qr-noprint" style="margin-top:10px;background:#fff;color:var(--deep);border:1.5px solid var(--border)" onclick="renderQR()">🖨  Print QR stickers</button>';
+  var html='<div class="wrap wide" style="padding:18px 16px;max-width:980px;margin:0 auto">'+
+    '<div class="h1">Plant &amp; Equipment</div><div class="sub">'+subText+' · fleet management</div>'+
+    chipRow + tabNav + body +
+    '</div>';
   var ov=document.getElementById('screen-oversight'); ov.innerHTML=html;
   document.getElementById('screen-list').style.display='none';
   document.getElementById('screen-detail').style.display='none';
