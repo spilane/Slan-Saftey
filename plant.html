@@ -208,6 +208,17 @@ var ASSETS=[
     hours:0, service_last:iso(dOffset(-30)), service_due:iso(dOffset(90)), critical_fault:false, spend12mo:1890 }
 ];
 
+/* full machine record (the platform holds everything; tiles show the headlines) */
+var PLANT_DETAILS={
+  'EXC-001':{ year:2021, vin:'CAT0320EXC21A0451', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884512', km:null },
+  'FLT-002':{ year:2019, vin:'TOY-8FG25-19F2210', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884513', km:null },
+  'TLH-003':{ year:2020, vin:'MAN-MT1840-20T3580', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884514', km:null },
+  'CRN-007':{ year:2018, vin:'FRA-AT40-18C6820', rego:'XK-42-PL', rego_state:'NSW', insurer:'CGU Plant & Equipment', policy:'PLE-884515', km:48200 },
+  'GEN-005':{ year:2022, vin:'DEN-DCA45-22G1180', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884516', km:null },
+  'UTE-12':{ year:2021, vin:'JTEBR3FJ20K112233', rego:'DLR-218', rego_state:'NSW', insurer:'Allianz Motor Fleet', policy:'MF-220981', km:176430 },
+  'DOZ-004':{ year:2017, vin:'KOM-D61-17D2210', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884517', km:null }
+};
+function plantDetails(code){ return PLANT_DETAILS[code]||{}; }
 /* docs per machine (type-specific extras for crane/telehandler) */
 function getDocs(a){
   var d=[ {ic:'📘',t:'Operator Manual',s:a.make+' '+a.model},
@@ -304,6 +315,7 @@ function showDetail(html){
 function openHub(i){
   curAsset=i; var a=ASSETS[i];
   var hubQr=''; try{ var _q=qrcode(0,'M'); _q.addData(location.origin+location.pathname+'?machine='+a.code); _q.make(); hubQr=_q.createImgTag(5,6); }catch(e){}
+  var dt=plantDetails(a.code), t0=new Date();
   var docs=getDocs(a).map(function(d){
     return '<button class="row" onclick="alert(\'Opens: '+d.t.replace(/'/g,'')+'\')"><div class="row-ic">'+d.ic+'</div><div class="row-main"><div class="row-t">'+d.t+'</div><div class="row-s">'+d.s+'</div></div><div class="chev">›</div></button>';
   }).join('');
@@ -319,6 +331,18 @@ function openHub(i){
     '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+(a.hours?a.hours.toLocaleString()+' hrs':'')+' · '+a.status.replace('_',' ')+'</div></div></div>'+
     '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>'+
     '<button class="cta" onclick="openGate()">▶  Start Pre-Start</button>'+
+    '<div class="sec-h">Machine details</div><div class="svc">'+
+      '<div class="svc-row"><span>Site</span><span>'+assetSite(a.code)+'</span></div>'+
+      '<div class="svc-row"><span>Year</span><span>'+(dt.year||'—')+'</span></div>'+
+      '<div class="svc-row"><span>Serial / VIN</span><span>'+(dt.vin||'—')+'</span></div>'+
+      '<div class="svc-row"><span>Registration</span><span>'+(dt.rego?(dt.rego+' · '+dt.rego_state):'— (plant)')+'</span></div>'+
+      '<div class="svc-row"><span>Rego expiry</span><span style="'+(a.rego_expiry&&new Date(a.rego_expiry)<t0?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?(fmt(a.rego_expiry)+(new Date(a.rego_expiry)<t0?' · EXPIRED':'')):'—')+'</span></div>'+
+      '<div class="svc-row"><span>Insurance</span><span>'+(dt.insurer||'—')+'</span></div>'+
+      '<div class="svc-row"><span>Policy no.</span><span>'+(dt.policy||'—')+'</span></div>'+
+      '<div class="svc-row"><span>Insurance expiry</span><span>'+(a.insurance_expiry?fmt(a.insurance_expiry):'—')+'</span></div>'+
+      '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
+      '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
+    '</div>'+
     '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift +
     '<div class="sec-h">Recent pre-starts (last 7 days)</div><div class="tile">'+(rec||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts in the last 7 days.</div></div></div>')+'</div>'+
     '<div class="sec-h">Service</div><div class="svc">'+
