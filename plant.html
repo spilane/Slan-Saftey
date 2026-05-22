@@ -114,7 +114,9 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .seg button.f.on{background:var(--fail);color:#fff;border-color:var(--fail)}
 .ps-field{margin-bottom:12px}
 .ps-field label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
-.ps-field input,.ps-field textarea{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;outline:none}
+.ps-field input,.ps-field textarea,.ps-field select{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;outline:none;background:#fff;color:var(--t1)}
+.ps-field input[type=number]{-moz-appearance:textfield}
+.ps-field input::-webkit-outer-spin-button,.ps-field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 /* sheet */
 .sheet-bk{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:flex-end;justify-content:center}
 .sheet-bk.on{display:flex}
@@ -237,6 +239,13 @@ table.reg tr.attn-amber td:first-child{box-shadow:inset 3px 0 0 #E08A1E}
   <div class="sheet">
     <h3>Profile</h3>
     <div id="profile-body"></div>
+  </div>
+</div>
+
+<div class="sheet-bk" id="msg-sheet">
+  <div class="sheet">
+    <div id="msg-body"></div>
+    <button id="msg-ok" class="btn btn-green" style="margin-top:16px">Done</button>
   </div>
 </div>
 
@@ -489,7 +498,7 @@ function openHub(i){
     '<button class="back" onclick="showList()">‹ All machines</button>'+
     '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace('_',' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
     '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>'+
-    '<button class="cta" onclick="openGate()">▶  Start Pre-Start</button>'+
+    '<button class="cta" onclick="openGate()">Start Pre-Start</button>'+
     (getRole()!=='worker' ? ('<div class="sec-h">Machine details</div><div class="svc">'+
       '<div class="svc-row"><span>Site</span><span>'+assetSite(a.code)+'</span></div>'+
       '<div class="svc-row"><span>Year</span><span>'+(dt.year||'—')+'</span></div>'+
@@ -548,11 +557,11 @@ function doOverride(){
 /* pre-start checklists by machine type — each item: {cat, q, crit}. A faulted CRITICAL item takes the machine out of service. */
 var CHECKLISTS={
   truck:[
-    {cat:'Fluids',q:'Engine oil level'},{cat:'Fluids',q:'Coolant level'},{cat:'Fluids',q:'Fuel level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
-    {cat:'Tyres & brakes',q:'Tyres & wheel nuts',crit:true},{cat:'Tyres & brakes',q:'Brakes & air pressure',crit:true},
-    {cat:'Lights & safety',q:'Lights, indicators & horn'},{cat:'Lights & safety',q:'Reversing alarm & camera'},{cat:'Lights & safety',q:'Seatbelt & mirrors'},
-    {cat:'Load',q:'Load restraint / tie-downs secure',crit:true},
-    {cat:'General',q:'Fire extinguisher present & charged'},{cat:'General',q:'General condition & cleanliness'}
+    {cat:'Fluids',q:'Engine oil level'},{cat:'Fluids',q:'Coolant level'},{cat:'Fluids',q:'Fuel level'},{cat:'Fluids',q:'AdBlue / DEF level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
+    {cat:'Tyres & brakes',q:'Tyres, tread & wheel nuts',crit:true},{cat:'Tyres & brakes',q:'Service & park brakes',crit:true},{cat:'Tyres & brakes',q:'Air pressure builds & holds',crit:true},
+    {cat:'Lights & safety',q:'Lights, indicators & horn'},{cat:'Lights & safety',q:'Reversing alarm & camera'},{cat:'Lights & safety',q:'Windscreen, wipers & washers'},{cat:'Lights & safety',q:'Seatbelt & mirrors'},
+    {cat:'Load',q:'Load restraint / tie-downs secure',crit:true},{cat:'Load',q:'Within GVM / axle limits',crit:true},{cat:'Load',q:'Towbar, coupling & safety chains (if towing)',crit:true},
+    {cat:'General',q:'Fire extinguisher & first-aid kit'},{cat:'General',q:'Dangerous-goods placards (if carrying)'},{cat:'General',q:'General condition & cleanliness'}
   ],
   telehandler:[
     {cat:'Fluids',q:'Engine oil level'},{cat:'Fluids',q:'Hydraulic oil level'},{cat:'Fluids',q:'Coolant & fuel level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
@@ -575,11 +584,11 @@ var CHECKLISTS={
   ],
   crane:[
     {cat:'Fluids',q:'Engine oil level'},{cat:'Fluids',q:'Hydraulic oil level'},{cat:'Fluids',q:'Coolant & fuel level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
-    {cat:'Lifting gear',q:'Wire rope, hook & safety latch',crit:true},{cat:'Lifting gear',q:'Load chart present & legible',crit:true},{cat:'Lifting gear',q:'Load moment indicator (LMI) works',crit:true},{cat:'Lifting gear',q:'Anti two-block working',crit:true},{cat:'Lifting gear',q:'Hydraulic hoses & rams',crit:true},
-    {cat:'Stability',q:'Outriggers / stabilisers & pads',crit:true},
-    {cat:'Inspection',q:'Current periodic inspection (green sticker)',crit:true},
-    {cat:'Safety',q:'Lights, beacon & horn'},{cat:'Safety',q:'Seatbelt & cabin controls'},{cat:'Safety',q:'Fire extinguisher present & charged'},
-    {cat:'General',q:'General condition & cleanliness'}
+    {cat:'Lifting gear',q:'Wire rope, hook & safety latch',crit:true},{cat:'Lifting gear',q:'Boom / jib sections, sheaves & welds',crit:true},{cat:'Lifting gear',q:'Load chart present & legible',crit:true},{cat:'Lifting gear',q:'Load moment indicator (LMI) works',crit:true},{cat:'Lifting gear',q:'Anti two-block working',crit:true},{cat:'Lifting gear',q:'Hydraulic hoses & rams',crit:true},
+    {cat:'Stability',q:'Outriggers / stabilisers & pads',crit:true},{cat:'Stability',q:'Counterweight fitted & secure',crit:true},{cat:'Stability',q:'Slew lock & swing brake',crit:true},{cat:'Stability',q:'Ground conditions & pad bearing'},
+    {cat:'Inspection',q:'Current periodic inspection (green sticker)',crit:true},{cat:'Inspection',q:'Logbook present & up to date'},
+    {cat:'Safety',q:'Lights, beacon & horn'},{cat:'Safety',q:'Limit switches & emergency stop',crit:true},{cat:'Safety',q:'Seatbelt & cabin controls'},{cat:'Safety',q:'Fire extinguisher present & charged'},
+    {cat:'General',q:'Tyres / tracks & wheel nuts'},{cat:'General',q:'General condition & cleanliness'}
   ],
   default:[
     {cat:'Fluids',q:'Oil, coolant & fuel levels'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
@@ -607,17 +616,31 @@ function openPrestart(){
     var badge = it.crit ? ' <span class="ps-crit">Critical</span>' : '';
     return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div></div>';
   }).join('');
+  var needsFFW = a.required && a.required.length>0;
+  var meterLabel = (svcMeter(a)&&svcMeter(a).meter==='km') ? 'Current odometer (km)' : 'Current hours';
+  var meterVal = (svcMeter(a)&&svcMeter(a).meter==='km') ? (plantDetails(a.code).km||'') : (a.hours||'');
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="openHub(curAsset)">‹ Back</button>'+
     '<div class="h1">Pre-Start — '+a.code+'</div><div class="sub">'+a.make+' '+a.model+' · '+a.type+' · '+currentWorker.name+'</div>'+
-    '<div class="ps-field"><label>Machine hours</label><input id="ps-hours" type="number" value="'+(a.hours||'')+'"></div>'+
+    '<div class="ps-field"><label>'+meterLabel+'</label><input id="ps-hours" type="text" inputmode="numeric" value="'+meterVal+'"></div>'+
     items+
-    '<div class="ps-field" id="ps-fault-wrap" style="display:none"><label>Describe the fault</label><textarea id="ps-fault" rows="2" placeholder="What\'s wrong? This raises a work order to the mechanic."></textarea></div>'+
-    '<div class="ps-item"><div class="ps-q">I confirm I am fit for work and the above is accurate.</div><div class="seg"><button type="button" class="p" id="ps-fit" onclick="this.classList.toggle(\'on\')">✓ Confirm</button></div></div>'+
+    '<div id="ps-fault-wrap" style="display:none">'+
+      '<div class="ps-cat">Fault details</div>'+
+      '<div class="ps-item">'+
+        '<div class="ps-field"><label>Fault area</label><select id="ps-fault-type"><option>Mechanical</option><option>Hydraulic</option><option>Electrical</option><option>Tyres / tracks</option><option>Brakes / steering</option><option>Structural</option><option>Lifting gear</option><option>Other</option></select></div>'+
+        '<div class="ps-field"><label>Severity</label><select id="ps-fault-sev"><option>Minor — still usable</option><option>Major — repair soon</option><option>Critical — do not operate</option></select></div>'+
+        '<div class="ps-field" style="margin-bottom:0"><label>Describe the fault</label><textarea id="ps-fault" rows="2" placeholder="What\'s wrong? This raises a work order to the mechanic."></textarea></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="ps-cat">Declaration</div>'+
+    '<div class="ps-item"><div class="ps-q">I confirm the above is accurate.</div><div class="seg"><button type="button" class="p" id="ps-acc" onclick="this.classList.toggle(\'on\')">✓ Confirm</button></div></div>'+
+    (needsFFW ? '<div class="ps-item"><div class="ps-q">I confirm I am fit to operate this machine.</div><div class="seg"><button type="button" class="p" id="ps-fit" onclick="this.classList.toggle(\'on\')">✓ Confirm</button></div></div>' : '')+
+    '<div class="ps-field"><label>Operator signature</label><div id="ps-sign" onclick="plantSign()" style="border:1.5px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;color:var(--t3);font-size:13px">✍️  Tap to sign</div></div>'+
     '<button class="btn btn-green" onclick="submitPrestart()">Submit Pre-Start</button>'+
     '</div>';
   showDetail(html);
 }
+function plantSign(){ var el=document.getElementById('ps-sign'); if(!el) return; el.innerHTML='<div style="font-family:\'Brush Script MT\',\'Segoe Script\',cursive;font-size:27px;color:var(--deep);line-height:1">'+currentWorker.name+'</div><div style="font-size:10.5px;color:var(--t3);margin-top:5px">Signed '+fmt(new Date())+'</div>'; el.style.borderStyle='solid'; el.style.color='var(--t1)'; el.setAttribute('data-signed','1'); }
 var psState={};
 function psSet(i,v){
   psState[i]=v;
@@ -629,20 +652,26 @@ function psSet(i,v){
 function submitPrestart(){
   var a=ASSETS[curAsset];
   var done=Object.keys(psState).length;
-  if(done<_psList.length){ alert('Please mark every item Pass or Fault ('+done+' of '+_psList.length+' done).'); return; }
-  if(!document.getElementById('ps-fit').classList.contains('on')){ alert('Please confirm you are fit for work.'); return; }
+  if(done<_psList.length){ slanMsg('Not finished yet','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please mark every item Pass or Fault — '+done+' of '+_psList.length+' done.</div>'); return; }
+  if(!document.getElementById('ps-acc').classList.contains('on')){ slanMsg('Confirm declaration','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please confirm the checklist above is accurate.</div>'); return; }
+  var fit=document.getElementById('ps-fit'); if(fit && !fit.classList.contains('on')){ slanMsg('Confirm fitness','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please confirm you are fit to operate this machine.</div>'); return; }
+  var sign=document.getElementById('ps-sign'); if(!sign || sign.getAttribute('data-signed')!=='1'){ slanMsg('Signature required','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please tap the signature box to sign off your pre-start.</div>'); return; }
   var faultIdx=Object.keys(psState).filter(function(k){return psState[k]==='f';});
   var faults=faultIdx.length;
-  var criticalFault=faultIdx.some(function(k){ return _psList[+k] && _psList[+k].crit; });
-  var msg='Pre-Start submitted for '+a.code+'.\n\nSaved against '+currentWorker.name+' and the machine record.';
-  if(faults>0){
-    if(criticalFault){ msg+='\n\n⛔ CRITICAL fault flagged — '+a.code+' is now OUT OF SERVICE and a HIGH-priority work order has been raised to the mechanic. This machine must not be operated.'; a.status='out_of_service'; }
-    else { msg+='\n\n⚠ '+faults+' fault'+(faults>1?'s':'')+' flagged → a work order has been raised and sent to the mechanic.'; a.status='fault_reported'; }
-  }
-  alert(msg);
-  psState={};
-  renderAssets();
-  showList();
+  var sevSel=document.getElementById('ps-fault-sev');
+  var criticalFault = faults>0 && ((sevSel && /Critical/.test(sevSel.value)) || faultIdx.some(function(k){ return _psList[+k] && _psList[+k].crit; }));
+  var body;
+  if(faults>0 && criticalFault){ a.status='out_of_service'; body='<div style="text-align:center"><div style="font-size:42px">⛔</div><div style="font-size:16px;font-weight:800;color:var(--fail);margin-top:6px">Critical fault — out of service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' has been taken <b>out of service</b> and a <b>high-priority</b> work order raised to the mechanic. This machine must not be operated.</div></div>'; }
+  else if(faults>0){ a.status='fault_reported'; body='<div style="text-align:center"><div style="font-size:42px">⚠️</div><div style="font-size:16px;font-weight:800;color:var(--warn);margin-top:6px">Fault reported</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+faults+' fault'+(faults>1?'s':'')+' flagged on '+a.code+' → a work order has been raised and sent to the mechanic.</div></div>'; }
+  else { body='<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Pre-start complete</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' is good to go. Saved against '+currentWorker.name+' and the machine record.</div></div>'; }
+  slanMsg('', body, function(){ psState={}; renderAssets(); showList(); });
+}
+function slanMsg(title, html, onClose){
+  var bk=document.getElementById('msg-sheet');
+  document.getElementById('msg-body').innerHTML=(title?'<h3 style="font-size:16px;color:var(--deep);margin-bottom:10px">'+title+'</h3>':'')+html;
+  var btn=document.getElementById('msg-ok');
+  btn.onclick=function(){ bk.classList.remove('on'); if(typeof onClose==='function'){ onClose(); } };
+  bk.classList.add('on');
 }
 
 /* ---------- worker switch ---------- */
@@ -917,7 +946,7 @@ function renderQR(oneCode){
     '<button class="back qr-noprint" onclick="'+backTo+'">‹ Back</button>'+
     '<div class="h1">QR Sticker'+(oneCode?'':'s')+'</div>'+
     '<div class="sub qr-noprint">'+(oneCode?('Print and stick on '+oneCode+'.'):'Print and stick one on each machine.')+' Scanning opens that machine\'s pre-start.</div>'+
-    '<div class="qr-noprint" style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:12px;color:var(--t2)">Size:</span>'+sb('S','Small')+sb('M','Medium')+sb('L','Large')+'</div>'+
+    '<div class="qr-noprint" style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:12px;color:var(--t2)">Size:</span>'+sb('S','Small · 5cm')+sb('M','Medium · 7.5cm')+sb('L','Large · 10cm')+'</div>'+
     '<button class="cta qr-noprint" onclick="window.print()" style="margin-bottom:14px">🖨  Print</button>'+
     '<div class="qr-grid'+(oneCode?' qr-one':'')+'">'+cards+'</div>'+
     '</div>';
