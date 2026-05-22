@@ -253,7 +253,18 @@ table.reg tr.attn-amber td:first-child{box-shadow:inset 3px 0 0 #E08A1E}
   </div>
 </div>
 
-<div class="demobar">DEMO — sample data</div>
+<div class="sheet-bk" id="demo-sheet" onclick="if(event.target===this)closeDemoSheet()">
+  <div class="sheet">
+    <h3>Demo — switch view</h3>
+    <p>Jump between the views for a walkthrough.</p>
+    <button class="wbtn" onclick="location.href='plant.html'"><b>Worker (QR)</b><span>Scan a machine → pre-start</span></button>
+    <button class="wbtn" onclick="location.href='plant.html?role=supervisor&site=Parramatta'"><b>Supervisor — Parramatta</b><span>Site fleet oversight</span></button>
+    <button class="wbtn" onclick="location.href='plant.html?role=director'"><b>Director</b><span>All sites + analytics</span></button>
+    <button class="wbtn" onclick="plantResetDemo()" style="border-color:#E2A6A6;color:#A32D2D"><b>↺ Reset demo</b><span>Clear flagged faults &amp; work orders</span></button>
+  </div>
+</div>
+
+<div class="demobar" onclick="openDemoSheet()" style="cursor:pointer">⚡ DEMO — tap to switch view</div>
 
 <script>
 /* ---------- helpers ---------- */
@@ -402,6 +413,9 @@ function openProfile(){
   document.getElementById('profile-sheet').classList.add('on');
 }
 function closeProfile(){ document.getElementById('profile-sheet').classList.remove('on'); }
+function openDemoSheet(){ document.getElementById('demo-sheet').classList.add('on'); }
+function closeDemoSheet(){ document.getElementById('demo-sheet').classList.remove('on'); }
+function plantResetDemo(){ try{ localStorage.removeItem('slan_plant_alerts'); }catch(e){} location.href='plant.html'; }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -578,6 +592,7 @@ var CHECKLISTS={
     {cat:'Boom & attachment',q:'Forks / attachment & pins secure',crit:true},{cat:'Boom & attachment',q:'Quick-hitch / coupler locked',crit:true},{cat:'Boom & attachment',q:'Boom, chains & extension'},{cat:'Boom & attachment',q:'Hydraulic hoses & rams',crit:true},{cat:'Boom & attachment',q:'Load chart present & legible',crit:true},{cat:'Boom & attachment',q:'Overload / stability indicator works',crit:true},
     {cat:'Tyres & brakes',q:'Tyres, pressure & wheel nuts'},{cat:'Tyres & brakes',q:'Service & park brake',crit:true},
     {cat:'Controls & safety',q:'Steering & all controls'},{cat:'Controls & safety',q:'Lights, beacon & horn'},{cat:'Controls & safety',q:'Reversing alarm & camera'},{cat:'Controls & safety',q:'Seatbelt & ROPS/FOPS'},{cat:'Controls & safety',q:'Windows, mirrors & visibility'},{cat:'Controls & safety',q:'Fire extinguisher present & charged'},
+    {cat:'Maintenance',q:'Grease points serviced'},
     {cat:'General',q:'No loose items in cab; general condition'}
   ],
   generator:[
@@ -598,7 +613,7 @@ var CHECKLISTS={
     {cat:'Stability',q:'Outriggers / stabilisers & pads',crit:true},{cat:'Stability',q:'Counterweight fitted & secure',crit:true},{cat:'Stability',q:'Slew lock & swing brake',crit:true},{cat:'Stability',q:'Ground conditions & pad bearing'},
     {cat:'Inspection',q:'Current periodic inspection (green sticker)',crit:true},{cat:'Inspection',q:'Logbook present & up to date'},
     {cat:'Safety',q:'Lights, beacon & horn'},{cat:'Safety',q:'Limit switches & emergency stop',crit:true},{cat:'Safety',q:'Seatbelt & cabin controls'},{cat:'Safety',q:'Fire extinguisher present & charged'},
-    {cat:'General',q:'Tyres / tracks & wheel nuts'},{cat:'General',q:'General condition & cleanliness'}
+    {cat:'Maintenance',q:'Grease points serviced'},{cat:'General',q:'Tyres / tracks & wheel nuts'},{cat:'General',q:'General condition & cleanliness'}
   ],
   default:[
     {cat:'Fluids',q:'Oil, coolant & fuel levels'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
@@ -607,8 +622,7 @@ var CHECKLISTS={
   ]
 };
 var COMMON=[
-  {cat:'Maintenance',q:'Grease points serviced'},
-  {cat:'Final checks',q:'No "Do Not Operate" / out-of-service tag attached',crit:true},
+  {cat:'Final checks',q:'Machine is clear of any out-of-service / danger tags',crit:true},
   {cat:'Final checks',q:'Safety decals & warning signs legible'},
   {cat:'Final checks',q:'Work area clear & safe to start up'}
 ];
@@ -635,9 +649,9 @@ function _itemInfo(it){
   if(/extinguish/.test(q)) return {label:'Extinguisher tag — next test due', type:'date'};
   if(/first.?aid/.test(q)) return {label:'First-aid kit — expiry / restock date', type:'date'};
   if(/green sticker|periodic inspection/.test(q)) return {label:'Inspection sticker — next due', type:'date'};
-  if(/rcd|earth-leakage/.test(q)) return {label:'RCD test tag — last tested', type:'date'};
-  if(/wire rope, hook/.test(q)) return {label:'Lifting gear — last inspection date', type:'date'};
-  if(/grease/.test(q)) return {label:'Last greased', type:'date'};
+  if(/rcd|earth-leakage/.test(q)) return {label:'RCD test tag — last tested', type:'date', past:true};
+  if(/wire rope, hook/.test(q)) return {label:'Lifting gear — last inspection date', type:'date', past:true};
+  if(/grease/.test(q)) return {label:'Last greased', type:'date', past:true};
   return null;
 }
 function _openWOsFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status!=='Returned to service'; }); }
@@ -676,7 +690,7 @@ function openPrestart(){
         '<div class="ps-field" style="margin-bottom:0"><label>Photo (optional)</label><input id="ps-photo'+idx+'" type="file" accept="image/*" onchange="psPhoto('+idx+')"><div id="ps-photo-cap'+idx+'" style="font-size:10.5px;color:var(--mid);font-weight:600;margin-top:5px"></div></div>'+
       '</div>';
     var info=_itemInfo(it);
-    var infoField = info ? '<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"></div>' : '';
+    var infoField = info ? '<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"'+(info.past?' max="'+iso(new Date())+'"':'')+'></div>' : '';
     return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div>'+infoField+fd+'</div>';
   }).join('');
   var needsFFW = a.required && a.required.length>0;
@@ -725,7 +739,7 @@ function submitPrestart(){
   var reading=parseFloat(raw);
   if(!raw || isNaN(reading)){ slanMsg('Enter the reading','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please enter the current '+(km?'odometer (km)':'hours')+' reading off the machine.</div>'); return; }
   if(reading<lastVal){ slanMsg('Check the reading','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">'+reading.toLocaleString()+' is lower than the last recorded ('+lastVal.toLocaleString()+'). A meter can\'t go backwards — please re-check.</div>'); return; }
-  for(var m=0;m<_psList.length;m++){ var inf=_itemInfo(_psList[m]); if(inf && psState[m]==='p'){ var iv=(document.getElementById('ps-info'+m).value||'').trim(); if(!iv){ slanMsg('Bit more info needed','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please enter the <b>'+inf.label.toLowerCase()+'</b> for <b>'+_psList[m].q+'</b>.</div>'); return; } } }
+  for(var m=0;m<_psList.length;m++){ var inf=_itemInfo(_psList[m]); if(inf && psState[m]==='p'){ var iv=(document.getElementById('ps-info'+m).value||'').trim(); if(!iv){ slanMsg('Bit more info needed','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please enter the <b>'+inf.label.toLowerCase()+'</b> for <b>'+_psList[m].q+'</b>.</div>'); return; } if(inf.past && iv > iso(new Date())){ slanMsg('Check the date','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The <b>'+inf.label.toLowerCase()+'</b> can\'t be in the future.</div>'); return; } } }
   if(!document.getElementById('ps-acc').classList.contains('on')){ slanMsg('Agree to declaration','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please read and tick the declaration before submitting.</div>'); return; }
   var faultIdx=Object.keys(psState).filter(function(k){return psState[k]==='f';});
   for(var n=0;n<faultIdx.length;n++){ var fk=faultIdx[n]; var d=(document.getElementById('ps-desc'+fk).value||'').trim(); if(!d){ slanMsg('More detail needed','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please describe the fault on <b>'+_psList[+fk].q+'</b> — what\'s wrong, how bad and where.</div>'); return; } }
@@ -734,8 +748,8 @@ function submitPrestart(){
   var criticalFault = faults>0 && faultIdx.some(function(k){ var sev=document.getElementById('ps-sev'+k); return (_psList[+k]&&_psList[+k].crit) || (sev&&/Critical/.test(sev.value)); });
   if(faults>0){ var _fs=faultIdx.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(faultIdx.length>2?' +'+(faultIdx.length-2)+' more':''); WORKORDERS.unshift({wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}); _setPlantAlert(a, _fs, criticalFault); }
   var body;
-  if(faults>0 && criticalFault){ a.status='out_of_service'; body='<div style="text-align:center"><div style="font-size:42px">⛔</div><div style="font-size:16px;font-weight:800;color:var(--fail);margin-top:6px">Critical fault — out of service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' has been taken <b>out of service</b> and a <b>high-priority</b> work order raised to the mechanic. This machine must not be operated.</div></div>'; }
-  else if(faults>0){ a.status='fault_reported'; body='<div style="text-align:center"><div style="font-size:42px">⚠️</div><div style="font-size:16px;font-weight:800;color:var(--warn);margin-top:6px">Fault reported</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+faults+' fault'+(faults>1?'s':'')+' flagged on '+a.code+' → a work order has been raised and sent to the mechanic.</div></div>'; }
+  if(faults>0 && criticalFault){ a.status='out_of_service'; body='<div style="text-align:center"><div style="font-size:42px">⛔</div><div style="font-size:16px;font-weight:800;color:var(--fail);margin-top:6px">Critical fault — out of service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' has been taken <b>out of service</b> and a <b>high-priority</b> work order raised to the mechanic, and the supervisor has been notified. This machine must not be operated.</div></div>'; }
+  else if(faults>0){ a.status='fault_reported'; body='<div style="text-align:center"><div style="font-size:42px">⚠️</div><div style="font-size:16px;font-weight:800;color:var(--warn);margin-top:6px">Fault reported</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+faults+' fault'+(faults>1?'s':'')+' flagged on '+a.code+' → a work order has been raised and the supervisor has been notified.</div></div>'; }
   else { body='<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Pre-start complete</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' is good to go. Saved against '+currentWorker.name+' and the machine record.</div></div>'; }
   slanMsg('', body, function(){ psState={}; renderAssets(); showList(); });
 }
