@@ -275,16 +275,16 @@ var WORKERS=[
               {cls:'telehandler',expiry:iso(dOffset(400)),verified:true},
               {cls:'crane',expiry:iso(dOffset(420)),verified:true},
               {cls:'truck_hr',expiry:iso(dOffset(500)),verified:true} ],
-    voc:[ {cls:'telehandler',make:'Magni',model:'RTH 6.46'}, {cls:'crane',make:'Franna',model:'AT-40'}, {cls:'crane',make:'Tadano',model:'GR-250'} ] },
+    voc:[ {cls:'telehandler',make:'Magni',model:'RTH 6.46'}, {cls:'crane',make:'Franna',model:'AT-40'}, {cls:'crane',make:'Tadano',model:'GR-250'} ], swms_signed:iso(dOffset(-6)), ra_signed:iso(dOffset(-6)) },
   { id:'w2', name:'Tom Walker', trade:'Plant Operator', induction_expiry:iso(dOffset(200)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
               {cls:'telehandler',expiry:iso(dOffset(14)),verified:true},
-              {cls:'truck_hr',expiry:iso(dOffset(300)),verified:true} ], voc:[] },
+              {cls:'truck_hr',expiry:iso(dOffset(300)),verified:true} ], voc:[], swms_signed:iso(dOffset(-45)), ra_signed:iso(dOffset(-8)) },
   { id:'w3', name:'Jake Murray', trade:'Labourer', induction_expiry:iso(dOffset(200)),
-    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true} ], voc:[] },
+    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true} ], voc:[], swms_signed:iso(dOffset(-10)), ra_signed:iso(dOffset(-10)) },
   { id:'w4', name:'Pete Singh', trade:'Plant Operator', induction_expiry:iso(dOffset(200)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'telehandler',expiry:iso(dOffset(-30)),verified:true} ], voc:[] }
+              {cls:'telehandler',expiry:iso(dOffset(-30)),verified:true} ], voc:[], swms_signed:iso(dOffset(-9)), ra_signed:iso(dOffset(-50)) }
 ];
 
 /* ---------- ASSETS ---------- */
@@ -410,6 +410,8 @@ function kpiTrend(cur, prev, higherIsBetter){
   return '<span class="kpi-tr" style="color:'+(good?'#15803D':'#B83232')+'">'+(up?'▲':'▼')+' '+(d>0?'+':'')+d+'</span>';
 }
 
+/* SWMS / risk-assessment sign-off lapses after ~30 days (matches the WHS app's sign-off model) */
+function _lapsed(d){ return !d || daysBetween(new Date(), d) > 30; }
 /* ---------- TICKET GATE (verified) ---------- */
 function ticketGate(w, a){
   var today=new Date(); today.setHours(0,0,0,0);
@@ -440,6 +442,10 @@ function ticketGate(w, a){
     else { add('Verification of Competency','warn','No VOC on file for '+a.make+' '+a.model+' — supervisor sign-off required.'); }
   }
   if(w.induction_expiry && new Date(w.induction_expiry)<today){ add('Site induction','warn','Your induction is overdue for renewal.'); }
+  if((a.required||[]).length){
+    if(_lapsed(w.swms_signed)){ add('SWMS sign-off','warn','You have not signed the current SWMS for this work — sign it before operating.'); }
+    if(_lapsed(w.ra_signed)){ add('Risk assessment','warn','Your risk-assessment sign-off has lapsed — review and sign the current one.'); }
+  }
   if(a.service_due && new Date(a.service_due)<today){ add('Service currency','warn','Machine service is overdue (due '+fmt(a.service_due)+').'); }
   var hasFail=checks.some(function(c){return c.status==='fail';});
   var hasWarn=checks.some(function(c){return c.status==='warn';});
