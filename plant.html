@@ -656,7 +656,31 @@ function _itemInfo(it){
 }
 function _openWOsFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status!=='Returned to service'; }); }
 var RECURRING={ 'TLH-003':{item:'Reversing alarm & camera',count:3}, 'GEN-005':{item:'Service overrun / running issues',count:2} };
-function psPhoto(i){ var inp=document.getElementById('ps-photo'+i), cap=document.getElementById('ps-photo-cap'+i); if(inp&&inp.files&&inp.files.length&&cap){ var a=ASSETS[curAsset]; cap.textContent='📍 '+assetSite(a.code)+' · '+new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' — photo attached'; } }
+var psPhotos={};
+function _psReadPhoto(file, cb){
+  try{
+    var fr=new FileReader();
+    fr.onload=function(){
+      var im=new Image();
+      im.onload=function(){ try{ var maxW=900, sc=Math.min(1, maxW/im.naturalWidth), c=document.createElement('canvas'); c.width=Math.round(im.naturalWidth*sc); c.height=Math.round(im.naturalHeight*sc); c.getContext('2d').drawImage(im,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg',0.72)); }catch(e){ cb(''); } };
+      im.onerror=function(){ cb(''); };
+      im.src=fr.result;
+    };
+    fr.onerror=function(){ cb(''); };
+    fr.readAsDataURL(file);
+  }catch(e){ cb(''); }
+}
+function psPhoto(i){
+  var inp=document.getElementById('ps-photo'+i), cap=document.getElementById('ps-photo-cap'+i);
+  if(inp&&inp.files&&inp.files.length){
+    var a=ASSETS[curAsset];
+    if(cap) cap.textContent='⏳ Adding photo…';
+    _psReadPhoto(inp.files[0], function(dataUrl){
+      psPhotos[i]=dataUrl||'';
+      if(cap) cap.textContent=(dataUrl?'📍 ':'⚠ ')+assetSite(a.code)+' · '+new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+(dataUrl?' — photo attached':' — photo could not be read');
+    });
+  }
+}
 function _prestartIntro(a, openWOs, rec){
   var s='<div style="font-size:11.5px;color:var(--t3);margin-bottom:12px">📍 Geo-stamped: '+assetSite(a.code)+' · '+new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+'</div>';
   if(rec){ s+='<div class="fcard" style="border-top-color:#A32D2D;margin-bottom:12px"><div style="padding:12px 14px;background:#FBECEC"><div style="font-size:10.5px;font-weight:800;color:#A32D2D;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">↻ Recurring issue</div><div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>'+rec.item+'</b> has been flagged <b>'+rec.count+' times</b> on '+a.code+' recently — check it closely and flag it if present.</div></div></div>'; }
@@ -676,7 +700,7 @@ function _faultQ(it){
 }
 function openPrestart(){
   var a=ASSETS[curAsset];
-  _psList=checklistFor(a); psState={};
+  _psList=checklistFor(a); psState={}; psPhotos={};
   var lastCat='';
   var items=_psList.map(function(it,idx){
     var head = it.cat!==lastCat ? '<div class="ps-cat">'+it.cat+'</div>' : '';
@@ -687,7 +711,7 @@ function openPrestart(){
         '<div class="ps-fd-h">Fault on: '+it.q+'</div>'+
         sevField+
         '<div class="ps-field"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="Type a short description"></textarea></div>'+
-        '<div class="ps-field" style="margin-bottom:0"><label>Photo (optional)</label><input id="ps-photo'+idx+'" type="file" accept="image/*" onchange="psPhoto('+idx+')"><div id="ps-photo-cap'+idx+'" style="font-size:10.5px;color:var(--mid);font-weight:600;margin-top:5px"></div></div>'+
+        '<div class="ps-field" style="margin-bottom:0"><label>Photo of the fault (optional)</label><input id="ps-photo'+idx+'" type="file" accept="image/*" capture="environment" onchange="psPhoto('+idx+')"><div id="ps-photo-cap'+idx+'" style="font-size:10.5px;color:var(--mid);font-weight:600;margin-top:5px"></div></div>'+
       '</div>';
     var info=_itemInfo(it);
     var infoField = info ? '<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"'+(info.past?' max="'+iso(new Date())+'"':'')+'></div>' : '';
@@ -746,7 +770,8 @@ function submitPrestart(){
   if(km){ if(PLANT_DETAILS[a.code]) PLANT_DETAILS[a.code].km=reading; } else { a.hours=reading; }
   var faults=faultIdx.length;
   var criticalFault = faults>0 && faultIdx.some(function(k){ var sev=document.getElementById('ps-sev'+k); return (_psList[+k]&&_psList[+k].crit) || (sev&&/Critical/.test(sev.value)); });
-  _lastPrestartRec={ code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:currentWorker.name, when:new Date(), reading:reading, meter:(km?'km':'hrs'), faults:faults, critical:criticalFault, comments:(document.getElementById('ps-comments').value||'').trim(), items:_psList.map(function(it,i){ return { q:it.q, status:psState[i], sev:(psState[i]==='f'&&document.getElementById('ps-sev'+i))?document.getElementById('ps-sev'+i).value:'', desc:(psState[i]==='f'&&document.getElementById('ps-desc'+i))?(document.getElementById('ps-desc'+i).value||'').trim():'', info:(_itemInfo(it)&&document.getElementById('ps-info'+i))?document.getElementById('ps-info'+i).value:'' }; }) };
+  _lastPrestartRec={ code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:currentWorker.name, when:new Date(), reading:reading, meter:(km?'km':'hrs'), faults:faults, critical:criticalFault, needsFFW:(a.required&&a.required.length>0), comments:(document.getElementById('ps-comments').value||'').trim(), items:_psList.map(function(it,i){ return { q:it.q, cat:it.cat||'', status:psState[i], sev:(psState[i]==='f'&&document.getElementById('ps-sev'+i))?document.getElementById('ps-sev'+i).value:'', desc:(psState[i]==='f'&&document.getElementById('ps-desc'+i))?(document.getElementById('ps-desc'+i).value||'').trim():'', info:(_itemInfo(it)&&document.getElementById('ps-info'+i))?document.getElementById('ps-info'+i).value:'', photo:(psState[i]==='f'&&psPhotos[i])?psPhotos[i]:'' }; }) };
+  _savePlantRecord(_lastPrestartRec);
   if(faults>0){ var _fs=faultIdx.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(faultIdx.length>2?' +'+(faultIdx.length-2)+' more':''); WORKORDERS.unshift({wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}); _setPlantAlert(a, _fs, criticalFault); }
   var body;
   if(faults>0 && criticalFault){ a.status='out_of_service'; body='<div style="text-align:center"><div style="font-size:42px">⛔</div><div style="font-size:16px;font-weight:800;color:var(--fail);margin-top:6px">Critical fault — out of service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' has been taken <b>out of service</b> and a <b>high-priority</b> work order raised to the mechanic, and the supervisor has been notified. This machine must not be operated.</div></div>'; }
@@ -785,6 +810,19 @@ var _woSeq=0;
 function _plantAlerts(){ try{ return JSON.parse(localStorage.getItem('slan_plant_alerts')||'[]'); }catch(e){ return []; } }
 function _setPlantAlert(a, fault, critical){ var arr=_plantAlerts().filter(function(x){return x.code!==a.code;}); arr.push({code:a.code, machine:a.make+' '+a.model, site:assetSite(a.code), fault:fault, critical:!!critical, ts:Date.now()}); try{ localStorage.setItem('slan_plant_alerts', JSON.stringify(arr)); }catch(e){} }
 function _clearPlantAlert(code){ try{ localStorage.setItem('slan_plant_alerts', JSON.stringify(_plantAlerts().filter(function(x){return x.code!==code;}))); }catch(e){} }
+/* persist the latest pre-start per machine so a supervisor/mechanic can open its full record PDF (front-end; shared via same-origin localStorage like the alerts) */
+function _savePlantRecord(rec){
+  function put(r){ var map={}; try{ map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); }catch(e){ map={}; } map[r.code]=r; localStorage.setItem('slan_plant_records', JSON.stringify(map)); }
+  try{ put(JSON.parse(JSON.stringify(rec))); }
+  catch(e){ try{ var slim=JSON.parse(JSON.stringify(rec)); (slim.items||[]).forEach(function(it){ it.photo=''; }); put(slim); }catch(_){} }
+}
+function _loadPlantRecord(code){ try{ var map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); var r=map[code]; if(!r) return null; r.when=new Date(r.when); return r; }catch(e){ return null; } }
+function plantViewSavedPDF(code){
+  if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; }
+  var r=_loadPlantRecord(code);
+  if(!r){ slanMsg('No record on this device','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">No pre-start has been submitted for <b>'+code+'</b> on this device yet. Once an operator submits one, it will appear here.</div>'); return; }
+  openPdfDoc(plantPrestartPDF(r), 'Prestart-'+code+'.pdf');
+}
 var WORKORDERS=[
   {wo:'WO-2026-0041', code:'CRN-011', machine:'Tadano GR-250 City Crane', fault:'Hydraulic leak at slew ring — flagged on a pre-start', priority:'High', status:'Raised', raised:"today · Lee O'Brien"},
   {wo:'WO-2026-0039', code:'GEN-005', machine:'Denyo DCA-45 Generator', fault:'500 hr service overdue', priority:'Medium', status:'In progress', raised:'2 days ago · scheduled'},
@@ -929,7 +967,7 @@ function plantPrestartPDF(rec){
   var doc=new window.jspdf.jsPDF('p','mm','a4');
   var W=210, M=14, GOLD=[184,150,12], GREEN=[44,107,94]; var y=16;
   doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Plant Pre-Start Record', M, y);
-  if(SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, y-9, 34, 14); }catch(e){} }
+  if(SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, 3, 34, 14); }catch(e){} }
   y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=8;
   doc.setFontSize(9); doc.setTextColor(60,60,60);
   function kv(k,v){ doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.text(k, M, y); doc.setFont('helvetica','normal'); doc.setTextColor(35,35,35); doc.text(String(v), M+32, y); y+=5.6; }
@@ -941,19 +979,47 @@ function plantPrestartPDF(rec){
   kv('Result:', rec.faults>0?(rec.critical?'CRITICAL FAULT — OUT OF SERVICE':rec.faults+' fault(s) flagged'):'All clear');
   y+=2;
   function bar(t){ if(y>270){doc.addPage();y=16;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=10.5; doc.setTextColor(40,40,40); doc.setFont('helvetica','normal'); }
-  bar('Pre-start checklist'); doc.setFontSize(8.4);
+  bar('Pre-start checklist');
+  var lastCat='';
   rec.items.forEach(function(it){
-    if(y>282){doc.addPage();y=16;}
-    doc.setFont('helvetica','bold'); if(it.status==='p'){ doc.setTextColor(27,110,58); doc.text('PASS', M, y); } else { doc.setTextColor(163,45,45); doc.text('FAULT', M, y); }
-    doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40);
-    var line=doc.splitTextToSize(it.q+(it.info?'  ('+it.info+')':''), W-2*M-22); doc.text(line, M+20, y); y+=4.8*line.length;
-    if(it.status==='f'){ doc.setTextColor(150,45,45); doc.setFontSize(7.8); var d=doc.splitTextToSize('- '+(it.sev?it.sev+' - ':'')+(it.desc||'no description'), W-2*M-22); doc.text(d, M+20, y); y+=4.4*d.length; doc.setFontSize(8.4); doc.setTextColor(40,40,40); }
-    y+=1.4;
+    if(y>280){doc.addPage();y=16;}
+    // category sub-header (matches the on-screen grouping)
+    if(it.cat && it.cat!==lastCat){
+      lastCat=it.cat; y+=2.2;
+      if(y>284){doc.addPage();y=16;}
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.4); doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]); doc.text(it.cat.toUpperCase(), M, y);
+      doc.setDrawColor(222,212,170); doc.setLineWidth(0.2); doc.line(M, y+1.5, W-M, y+1.5); y+=5.4;
+    }
+    // question first, then PASS/FAULT verdict on the right
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.4); doc.setTextColor(40,40,40);
+    var qLine=doc.splitTextToSize(it.q+(it.info?'  ('+it.info+')':''), W-2*M-20); doc.text(qLine, M, y);
+    doc.setFont('helvetica','bold');
+    if(it.status==='p'){ doc.setTextColor(27,110,58); doc.text('PASS', W-M, y, {align:'right'}); }
+    else { doc.setTextColor(163,45,45); doc.text('FAULT', W-M, y, {align:'right'}); }
+    y+=4.8*qLine.length;
+    if(it.status==='f'){
+      doc.setFont('helvetica','normal'); doc.setTextColor(150,45,45); doc.setFontSize(7.8);
+      var d=doc.splitTextToSize('— '+(it.sev?it.sev+' — ':'')+(it.desc||'no description'), W-2*M-6); doc.text(d, M+6, y); y+=4.4*d.length;
+      if(it.photo){ try{ var pr=doc.getImageProperties(it.photo), iw=46, ih=iw*(pr.height/pr.width); if(ih>50){ ih=50; iw=ih*(pr.width/pr.height); } if(y+ih>286){doc.addPage();y=16;} doc.addImage(it.photo,'JPEG', M+6, y+1, iw, ih); y+=ih+2.5; }catch(e){} }
+      doc.setFontSize(8.4); doc.setTextColor(40,40,40);
+    }
+    y+=1.6;
   });
   y+=3;
   if(rec.comments){ bar('Operator comments'); doc.setFontSize(8.6); var c=doc.splitTextToSize(rec.comments, W-2*M); doc.text(c, M, y); y+=4.8*c.length+4; }
   bar('Declaration & signature');
-  doc.setFontSize(8.6); doc.setTextColor(40,40,40); var dl=doc.splitTextToSize('Declaration accepted by the operator: information true & correct; machine inspected and all faults reported; fit for work; will not operate if unsafe.', W-2*M); doc.text(dl, M, y); y+=4.8*dl.length+5;
+  doc.setFontSize(8.6); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40);
+  doc.text('By submitting this pre-start, the operator declared that:', M, y); y+=5.4;
+  var decls=[
+    'the information recorded above is true, correct and complete;',
+    'the machine has been visually inspected and every fault identified has been reported;',
+    'the operator is fit for work and not impaired by fatigue, alcohol or other drugs;'
+  ];
+  if(rec.needsFFW){ decls.push('the operator holds the current licence, ticket and any verification of competency required to operate this machine;'); }
+  decls.push('the machine will not be operated if it is unsafe, and any further fault will be reported immediately.');
+  doc.setFontSize(8.4);
+  decls.forEach(function(t){ var dl=doc.splitTextToSize(t, W-2*M-5); if(y+4.6*dl.length>284){doc.addPage();y=16;} doc.text('•', M+1, y); doc.text(dl, M+5, y); y+=4.6*dl.length+0.8; });
+  y+=4; if(y>270){doc.addPage();y=16;}
   doc.setFont('times','italic'); doc.setFontSize(20); doc.setTextColor(27,58,45); doc.text(rec.worker, M, y); y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,120,120); doc.text('Signed (auto from profile) · '+fmt(rec.when)+' · '+rec.site, M, y);
   var pages=doc.internal.getNumberOfPages();
   for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-010 · Plant Pre-Start · Slán Safety', M, 292); doc.text('Page '+p+' of '+pages, W-M-20, 292); }
@@ -1017,7 +1083,7 @@ function renderOversight(){
       if(sm){ var over=sm.toGo<0, cls=over?'over':(soon?'soon':'ok');
         svcCell='<span class="svc-go '+cls+'">'+(over?('Overdue '+Math.abs(sm.toGo).toLocaleString()+' '+sm.meter):('In '+sm.toGo.toLocaleString()+' '+sm.meter))+'</span><div class="cell-sub">'+fmtShort(a.service_due)+'</div>';
       } else { svcCell='<span class="'+(_expired(a.service_due)?'svc-go over':'')+'">'+fmtShort(a.service_due)+'</span>'; }
-      var lp=lastPrestart(a), lpCell = lp?fmtShort(lp):'<span style="color:var(--fail);font-weight:600">None</span>';
+      var lp=lastPrestart(a), lpCell = lp?(_loadPlantRecord(a.code)?'<a href="javascript:void(0)" onclick="event.stopPropagation();plantViewSavedPDF(\''+a.code+'\')" style="color:var(--gold);font-weight:700;text-decoration:underline">'+fmtShort(lp)+' 📄</a>':fmtShort(lp)):'<span style="color:var(--fail);font-weight:600">None</span>';
       var woN=openWoCount(a.code), woCell = woN?('<span class="a-badge bg-flt">'+woN+'</span>'):'<span style="color:var(--t3)">—</span>';
       return '<tr class="'+rowCls+'" onclick="openHub('+ASSETS.indexOf(a)+')">'+
         '<td class="t-asset"><div class="reg-asset"><div class="ric">'+a.icon+'</div><div><b>'+a.code+'</b><div class="cell-sub">'+a.make+' '+a.model+'</div></div></div></td>'+
@@ -1062,10 +1128,12 @@ function renderOversight(){
 }
 function openWO(i){
   var w=WORKORDERS[i]; if(!w) return;
+  var pdfBtn = _loadPlantRecord(w.code) ? '<button class="btn-ghost" style="margin-top:12px" onclick="plantViewSavedPDF(\''+w.code+'\')">📄  View operator&rsquo;s pre-start record (PDF)</button>' : '';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="renderOversight()">‹ Work orders</button>'+
     '<div class="hub-head"><div class="hub-ic">🛠️</div><div style="flex:1"><div class="hub-code">'+w.wo+'</div><div class="hub-mm">'+w.code+' · '+w.machine+'</div><div class="hub-hours">'+w.priority+' priority · '+w.status+'</div></div></div>'+
     '<div class="sec-h">Reported fault</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-t">'+w.fault+'</div><div class="row-s">Raised '+w.raised+'</div></div></div></div>'+
+    pdfBtn+
     '<button class="cta" style="background:var(--pass);margin-top:16px" onclick="completeWO(\''+w.wo+'\')">Complete &amp; return machine to service</button>'+
     '</div>';
   showDetail(html);
