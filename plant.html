@@ -634,6 +634,15 @@ function _itemInfo(it){
   if(/grease/.test(q)) return {label:'Last greased', type:'date'};
   return null;
 }
+function _openWOsFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status!=='Returned to service'; }); }
+var RECURRING={ 'TLH-003':{item:'Reversing alarm & camera',count:3}, 'GEN-005':{item:'Service overrun / running issues',count:2} };
+function psPhoto(i){ var inp=document.getElementById('ps-photo'+i), cap=document.getElementById('ps-photo-cap'+i); if(inp&&inp.files&&inp.files.length&&cap){ var a=ASSETS[curAsset]; cap.textContent='📍 '+assetSite(a.code)+' · '+new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' — photo attached'; } }
+function _prestartIntro(a, openWOs, rec){
+  var s='<div style="font-size:11.5px;color:var(--t3);margin-bottom:12px">📍 Geo-stamped: '+assetSite(a.code)+' · '+new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+'</div>';
+  if(rec){ s+='<div class="fcard" style="border-top-color:#A32D2D;margin-bottom:12px"><div style="padding:12px 14px;background:#FBECEC"><div style="font-size:10.5px;font-weight:800;color:#A32D2D;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">↻ Recurring issue</div><div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>'+rec.item+'</b> has been flagged <b>'+rec.count+' times</b> on '+a.code+' recently — check it closely and flag it if present.</div></div></div>'; }
+  if(openWOs.length){ s+='<div class="fcard" style="border-top-color:#A06000;margin-bottom:12px"><div style="padding:12px 14px;background:#FFF6E6"><div style="font-size:10.5px;font-weight:800;color:#8A5A00;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">⚠ Known faults on this machine</div>'+openWOs.map(function(w){return '<div style="font-size:12.5px;color:#5a4a2a;margin-bottom:3px">• '+w.fault+' <span style="color:var(--t3)">('+w.wo+' · '+w.status+')</span></div>';}).join('')+'<div class="seg" style="margin-top:10px"><button type="button" class="p" id="ps-ackwo" onclick="this.classList.toggle(\'on\')">✓ I have read the known faults</button></div></div></div>'; }
+  return s;
+}
 function _faultQ(it){
   var c=(it.cat||'').toLowerCase(), q=(it.q||'').toLowerCase();
   if(/leak/.test(q)) return 'Where is the leak and how bad?';
@@ -658,7 +667,7 @@ function openPrestart(){
         '<div class="ps-fd-h">Fault on: '+it.q+'</div>'+
         sevField+
         '<div class="ps-field"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="Type a short description"></textarea></div>'+
-        '<div class="ps-field" style="margin-bottom:0"><label>Photo (optional)</label><input id="ps-photo'+idx+'" type="file" accept="image/*"></div>'+
+        '<div class="ps-field" style="margin-bottom:0"><label>Photo (optional)</label><input id="ps-photo'+idx+'" type="file" accept="image/*" onchange="psPhoto('+idx+')"><div id="ps-photo-cap'+idx+'" style="font-size:10.5px;color:var(--mid);font-weight:600;margin-top:5px"></div></div>'+
       '</div>';
     var info=_itemInfo(it);
     var infoField = info ? '<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"></div>' : '';
@@ -667,10 +676,12 @@ function openPrestart(){
   var needsFFW = a.required && a.required.length>0;
   var km = svcMeter(a)&&svcMeter(a).meter==='km';
   var lastVal = km?(plantDetails(a.code).km||0):(a.hours||0);
+  var openWOs=_openWOsFor(a.code), intro=_prestartIntro(a,openWOs,RECURRING[a.code]);
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="openHub(curAsset)">‹ Back</button>'+
     '<div class="h1">Pre-Start — '+a.code+'</div><div class="sub">'+a.make+' '+a.model+' · '+a.type+' · '+currentWorker.name+'</div>'+
     '<div class="ps-field"><label>'+(km?'Current odometer (km)':'Current hours')+'</label><input id="ps-hours" type="text" inputmode="numeric" placeholder="Read the meter — last was '+lastVal.toLocaleString()+'"><div style="font-size:11px;color:var(--t3);margin-top:5px">Enter the current reading off the machine.</div></div>'+
+    intro+
     items+
     '<div class="ps-cat">Notes</div>'+
     '<div class="ps-field"><label>Operator comments (optional)</label><textarea id="ps-comments" rows="2" placeholder="Anything else to flag — site conditions, near-misses, requests"></textarea></div>'+
@@ -679,7 +690,8 @@ function openPrestart(){
       '<ul class="ps-decl">'+
         '<li>the information recorded above is true, correct and complete;</li>'+
         '<li>I have visually inspected this machine and reported every fault identified;</li>'+
-        (needsFFW?'<li>I hold the current licence, ticket and any verification of competency required to operate this machine, and I am fit for work;</li>':'')+
+        '<li>I am fit for work and not impaired by fatigue, alcohol or other drugs;</li>'+
+        (needsFFW?'<li>I hold the current licence, ticket and any verification of competency required to operate this machine;</li>':'')+
         '<li>I will not operate this machine if it is unsafe, and I will report any further fault immediately.</li>'+
       '</ul>'+
       '<div class="seg" style="margin-top:12px"><button type="button" class="p" id="ps-acc" onclick="this.classList.toggle(\'on\')">✓ I agree to the above declaration</button></div>'+
@@ -700,6 +712,7 @@ function submitPrestart(){
   var a=ASSETS[curAsset];
   var done=Object.keys(psState).length;
   if(done<_psList.length){ slanMsg('Not finished yet','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please mark every item Pass or Fault — '+done+' of '+_psList.length+' done.</div>'); return; }
+  var ackwo=document.getElementById('ps-ackwo'); if(ackwo && !ackwo.classList.contains('on')){ slanMsg('Acknowledge known faults','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">This machine has open faults — please tick to confirm you have read them before starting.</div>'); return; }
   var km = svcMeter(a)&&svcMeter(a).meter==='km';
   var lastVal = km?(plantDetails(a.code).km||0):(a.hours||0);
   var raw=(document.getElementById('ps-hours').value||'').replace(/[^0-9.]/g,'');
