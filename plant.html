@@ -646,7 +646,10 @@ function plantComplianceBody(fleet){
   var docs=fleet.map(function(a){
     var dt=plantDetails(a.code);
     var insp=a.swl?('Green sticker · '+fmtShort(a.service_due)):'—';
-    return '<tr onclick="openHub('+ASSETS.indexOf(a)+')"><td><b>'+a.code+'</b></td><td>'+(dt.rego?dt.rego:'— (plant)')+'</td><td style="'+(_expired(a.rego_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?fmtShort(a.rego_expiry):'—')+'</td><td>'+(dt.insurer||'—')+'</td><td style="'+(_expired(a.insurance_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.insurance_expiry?fmtShort(a.insurance_expiry):'—')+'</td><td>'+insp+'</td></tr>';
+    var dd=[a.rego_expiry,a.insurance_expiry,a.swl?a.service_due:null].filter(Boolean), st='current';
+    dd.forEach(function(d){ if(_expired(d)){ st='expired'; } else if(st!=='expired' && daysBetween(d,today)<=30){ st='expiring'; } });
+    var stCell = st==='expired'?'<span style="color:#A32D2D;font-weight:700">Expired</span>':(st==='expiring'?'<span style="color:#A06000;font-weight:700">Expiring</span>':'<span style="color:#1B6E3A;font-weight:700">Current</span>');
+    return '<tr onclick="openHub('+ASSETS.indexOf(a)+')"><td><b>'+a.code+'</b></td><td>'+(dt.rego?dt.rego:'— (plant)')+'</td><td style="'+(_expired(a.rego_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?fmtShort(a.rego_expiry):'—')+'</td><td>'+(dt.insurer||'—')+'</td><td style="'+(_expired(a.insurance_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.insurance_expiry?fmtShort(a.insurance_expiry):'—')+'</td><td>'+insp+'</td><td>'+stCell+'</td></tr>';
   }).join('');
   var fc=[];
   fleet.forEach(function(a){ [['Registration',a.rego_expiry],['Insurance',a.insurance_expiry]].forEach(function(p){ if(p[1]){ var dl=daysBetween(p[1],today); if(dl<=90){ fc.push({who:a.code+' · '+a.make+' '+a.model,what:p[0],date:p[1],d:dl}); } } }); });
@@ -661,7 +664,7 @@ function plantComplianceBody(fleet){
     return '<tr><td><b>'+w.name+'</b> <span style="color:var(--t3)">'+w.trade+'</span></td>'+cells+'</tr>';
   }).join('');
   return '<div class="fcard"><div class="fcard-hdr">📅 Service schedule</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Machine</th><th>Site</th><th>Next service</th><th>Interval</th>',sched)+'</div></div>'+
-    '<div class="fcard"><div class="fcard-hdr">📄 Document register — rego, insurance, inspections</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Machine</th><th>Rego</th><th>Rego exp</th><th>Insurer</th><th>Insurance exp</th><th>Inspection</th>',docs)+'</div></div>'+
+    '<div class="fcard"><div class="fcard-hdr">📄 Certificate register — rego, insurance &amp; inspections</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Machine</th><th>Rego</th><th>Rego exp</th><th>Insurer</th><th>Insurance exp</th><th>Inspection</th><th>Status</th>',docs)+'</div></div>'+
     '<div class="fcard"><div class="fcard-hdr">⏳ Expiry forecast — next 90 days</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Item</th><th>What</th><th>Date</th><th>Status</th>',fcRows)+'</div></div>'+
     '<div class="fcard"><div class="fcard-hdr">🎫 Operator competency matrix</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Operator</th>'+mhead,mrows)+'<div style="font-size:10.5px;color:var(--t3);padding:8px 4px 0">✓ current · <span style="color:#A06000">✓ expiring</span> · <span style="color:#A32D2D">✕ expired</span> · — not held</div></div></div>'+
     '<button class="cta" style="background:var(--mid)" onclick="plantAuditPDF()">📄  Download audit pack (PDF)</button>';
@@ -723,20 +726,23 @@ function renderOversight(){
   var body='';
   if(platTab==='dashboard'){
     var kpi=function(l,v,cls,ic,trend){ return '<div class="kpi '+cls+'"><div class="kpi-l">'+l+'</div><div class="kpi-row"><span class="kpi-ic">'+ic+'</span><span class="kpi-v">'+v+'</span>'+(trend||'')+'</div></div>'; };
-    var need=fleet.filter(function(a){ return a.status!=='operational' || _expired(a.service_due) || _expired(a.rego_expiry); });
+    var _isOut=function(a){ return a.status!=='operational' || _expired(a.rego_expiry); };
+    var _isAttn=function(a){ return !_isOut(a) && (_expired(a.service_due) || svcSoon(svcMeter(a)) || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30)); };
+    var outCount=fleet.filter(_isOut).length, attnCount2=fleet.filter(_isAttn).length, readyCount=fleet.length-outCount-attnCount2;
+    var need=fleet.filter(function(a){ return _isOut(a)||_isAttn(a); });
     var attHtml=need.length?need.map(function(a){
-      var reason = a.status!=='operational'?a.status.replace('_',' '):(_expired(a.rego_expiry)?'Registration expired':'Service overdue');
-      return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:#A06000">'+assetSite(a.code)+' · '+reason+'</div></div><div class="chev">›</div></button>';
-    }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines operational.</div></div></div>';
+      var reason = a.status!=='operational' ? a.status.replace('_',' ') : _expired(a.rego_expiry) ? 'Registration expired' : _expired(a.service_due) ? 'Service overdue' : svcSoon(svcMeter(a)) ? 'Service due soon' : 'Insurance expiring';
+      return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:'+(_isOut(a)?'#A32D2D':'#A06000')+'">'+assetSite(a.code)+' · '+reason+'</div></div><div class="chev">›</div></button>';
+    }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines ready.</div></div></div>';
     var blocked=(oversightSite==='All')?3:1;
     body='<div class="fcard"><div class="fcard-hdr">📊 Fleet Overview</div><div class="fcard-body"><div class="kpis">'+
         kpi('Machines',fleet.length,'k-blue','🚜','')+
-        kpi('Operational',opCount,'k-green','✅',kpiTrend(opCount,opCount-1,true))+
-        kpi('Need Attention',attnCount,'k-amber','⚠️',kpiTrend(attnCount,attnCount+2,false))+
-        kpi('Open Work Orders',open.length,'k-red','🔧',kpiTrend(open.length,open.length+1,false))+
-      '</div></div></div>'+
+        kpi('Ready',readyCount,'k-green','✅',kpiTrend(readyCount,readyCount-1,true))+
+        kpi('Needs Attention',attnCount2,'k-amber','⚠️',kpiTrend(attnCount2,attnCount2+1,false))+
+        kpi('Out of Service',outCount,'k-red','⛔',kpiTrend(outCount,outCount+1,false))+
+      '</div><div style="font-size:10.5px;color:var(--t3);text-align:center;margin-top:9px">Ready + Needs attention + Out of service = '+fleet.length+' machines</div></div></div>'+
       '<div class="fcard" style="border-top-color:#A32D2D"><div style="padding:14px 15px;background:#FCE9E9"><div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🔒 Due-diligence — operations blocked</div><div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>'+blocked+'</b> attempt'+(blocked===1?'':'s')+' this month to operate a machine without the required licence/ticket '+(blocked===1?'was':'were')+' <b>stopped at the gate</b> before work began.</div></div></div>'+
-      '<div class="fcard"><div class="fcard-hdr">⚠ Needs Attention ('+need.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+attHtml+'</div></div>'+
+      '<div class="fcard"><div class="fcard-hdr">⚠ Needs Action ('+need.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+attHtml+'</div></div>'+
       '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend-hero"><div class="s-l">Last 12 months</div><div class="s-v">'+money(spend12)+'</div><div class="s-tr">▼ 8% vs prior year</div></div><div class="spend-mini"><div class="s-l">Last 6 months</div><div class="s-v">'+money(Math.round(spend12*0.45))+'</div></div></div></div>';
   } else if(platTab==='assets'){
     var rows=fleet.map(function(a){
