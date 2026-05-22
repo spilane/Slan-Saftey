@@ -652,13 +652,26 @@ function _faultNeedsSeverity(it){
 }
 function _itemInfo(it){
   var q=(it.q||'').toLowerCase();
-  if(/extinguish/.test(q)) return {label:'Extinguisher tag — next test due', type:'date'};
-  if(/first.?aid/.test(q)) return {label:'First-aid kit — expiry / restock date', type:'date'};
-  if(/green sticker|periodic inspection/.test(q)) return {label:'Inspection sticker — next due', type:'date'};
-  if(/rcd|earth-leakage/.test(q)) return {label:'RCD test tag — last tested', type:'date', past:true};
-  if(/wire rope, hook/.test(q)) return {label:'Lifting gear — last inspection date', type:'date', past:true};
-  if(/grease/.test(q)) return {label:'Last greased', type:'date', past:true};
+  if(/extinguish/.test(q)) return {label:'Extinguisher tag — next test due', type:'date', key:'extinguisher', remindWithin:30};
+  if(/first.?aid/.test(q)) return {label:'First-aid kit — expiry / restock date', type:'date', key:'firstaid', remindWithin:30};
+  if(/green sticker|periodic inspection/.test(q)) return {label:'Inspection sticker — next due', type:'date', key:'greensticker', remindWithin:30};
+  if(/rcd|earth-leakage/.test(q)) return {label:'RCD test tag — last tested', type:'date', past:true, key:'rcd', everyDays:90};
+  if(/wire rope, hook/.test(q)) return {label:'Lifting gear — last inspection date', type:'date', past:true, key:'liftinggear', everyDays:90};
+  if(/grease/.test(q)) return {label:'Last greased', type:'date', past:true, key:'greased', everyDays:30};
   return null;
+}
+/* remember tag/test dates per machine so the worker isn't re-typing them every pre-start; flag when close to due */
+function _itemInfoStore(){ try{ return JSON.parse(localStorage.getItem('slan_plant_iteminfo')||'{}'); }catch(e){ return {}; } }
+function _getItemInfo(code,key){ var s=_itemInfoStore(); return (s[code]&&s[code][key])||''; }
+function _setItemInfo(code,key,val){ try{ var s=_itemInfoStore(); if(!s[code]) s[code]={}; if(val){ s[code][key]=val; localStorage.setItem('slan_plant_iteminfo', JSON.stringify(s)); } }catch(e){} }
+function _itemInfoDue(info,dateStr){
+  if(!dateStr) return '';
+  var d=new Date(dateStr+'T00:00:00'), today=new Date(); today.setHours(0,0,0,0);
+  if(isNaN(d)) return '';
+  var days=Math.round((d-today)/86400000);
+  if(info.remindWithin!=null){ if(days<0) return 'Overdue — check the tag and update the date.'; if(days<=info.remindWithin) return 'Due in '+days+' day'+(days===1?'':'s')+' — check the tag.'; return ''; }
+  if(info.everyDays!=null){ var elapsed=Math.round((today-d)/86400000); if(elapsed>=info.everyDays) return 'Last done '+elapsed+' days ago — may be due, please check.'; return ''; }
+  return '';
 }
 function _openWOsFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status!=='Returned to service'; }); }
 var RECURRING={ 'TLH-003':{item:'Reversing alarm & camera',count:3}, 'GEN-005':{item:'Service overrun / running issues',count:2} };
@@ -693,7 +706,7 @@ function psPhoto(i){
     _psReadPhoto(inp.files[0], function(dataUrl){
       psPhotos[i]=dataUrl||'';
       if(cap) cap.textContent=(dataUrl?'📍 ':'⚠ ')+assetSite(a.code)+' · '+new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+(dataUrl?' — photo attached':' — photo could not be read, try again');
-      var btn=document.getElementById('ps-photo-btn'+i); if(btn) btn.textContent=dataUrl?'📷 Retake photo':'📷 Take a photo';
+      var btn=document.getElementById('ps-photo-btn'+i); if(btn) btn.textContent=dataUrl?'📷 Change photo':'📷 Add a photo';
     });
   }
 }
@@ -728,12 +741,18 @@ function openPrestart(){
         sevField+
         '<div class="ps-field"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="Type a short description"></textarea></div>'+
         '<div class="ps-field" style="margin-bottom:0"><label>Photo of the fault (optional)</label>'+
-        '<input id="ps-photo'+idx+'" type="file" accept="image/*" capture="environment" onchange="psPhoto('+idx+')" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none">'+
-        '<button type="button" id="ps-photo-btn'+idx+'" onclick="document.getElementById(\'ps-photo'+idx+'\').click()" style="width:100%;padding:13px;border:1.5px dashed var(--mid);border-radius:10px;background:#F4F8F5;color:var(--deep);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">📷 Take a photo</button>'+
+        '<input id="ps-photo'+idx+'" type="file" accept="image/*" onchange="psPhoto('+idx+')" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none">'+
+        '<button type="button" id="ps-photo-btn'+idx+'" onclick="document.getElementById(\'ps-photo'+idx+'\').click()" style="width:100%;padding:13px;border:1.5px dashed var(--mid);border-radius:10px;background:#F4F8F5;color:var(--deep);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">📷 Add a photo</button>'+
         '<div id="ps-photo-cap'+idx+'" style="font-size:10.5px;color:var(--mid);font-weight:600;margin-top:5px"></div></div>'+
       '</div>';
     var info=_itemInfo(it);
-    var infoField = info ? '<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"'+(info.past?' max="'+iso(new Date())+'"':'')+'></div>' : '';
+    var infoField='';
+    if(info){
+      var savedInfo=_getItemInfo(a.code, info.key);
+      var infoHint='';
+      if(savedInfo){ var attn=_itemInfoDue(info, savedInfo); infoHint = attn ? '<div style="font-size:10.5px;color:#A06000;font-weight:700;margin-top:5px">⚠ '+attn+'</div>' : '<div style="font-size:10.5px;color:var(--t3);margin-top:5px">Saved from last pre-start — update if it has changed.</div>'; }
+      infoField='<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"'+(info.past?' max="'+iso(new Date())+'"':'')+(savedInfo?' value="'+savedInfo+'"':'')+'>'+infoHint+'</div>';
+    }
     return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div>'+infoField+fd+'</div>';
   }).join('');
   var needsFFW = a.required && a.required.length>0;
@@ -787,6 +806,7 @@ function submitPrestart(){
   var faultIdx=Object.keys(psState).filter(function(k){return psState[k]==='f';});
   for(var n=0;n<faultIdx.length;n++){ var fk=faultIdx[n]; var d=(document.getElementById('ps-desc'+fk).value||'').trim(); if(!d){ slanMsg('More detail needed','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please describe the fault on <b>'+_psList[+fk].q+'</b> — what\'s wrong, how bad and where.</div>'); return; } }
   if(km){ if(PLANT_DETAILS[a.code]) PLANT_DETAILS[a.code].km=reading; } else { a.hours=reading; }
+  for(var s2=0;s2<_psList.length;s2++){ var si=_itemInfo(_psList[s2]); if(si && psState[s2]==='p'){ var sv=(document.getElementById('ps-info'+s2).value||'').trim(); if(sv) _setItemInfo(a.code, si.key, sv); } }
   var faults=faultIdx.length;
   var criticalFault = faults>0 && faultIdx.some(function(k){ var sev=document.getElementById('ps-sev'+k); return (_psList[+k]&&_psList[+k].crit) || (sev&&/Critical/.test(sev.value)); });
   _lastPrestartRec={ code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:currentWorker.name, when:new Date(), reading:reading, meter:(km?'km':'hrs'), faults:faults, critical:criticalFault, needsFFW:(a.required&&a.required.length>0), comments:(document.getElementById('ps-comments').value||'').trim(), items:_psList.map(function(it,i){ return { q:it.q, cat:it.cat||'', status:psState[i], sev:(psState[i]==='f'&&document.getElementById('ps-sev'+i))?document.getElementById('ps-sev'+i).value:'', desc:(psState[i]==='f'&&document.getElementById('ps-desc'+i))?(document.getElementById('ps-desc'+i).value||'').trim():'', info:(_itemInfo(it)&&document.getElementById('ps-info'+i))?document.getElementById('ps-info'+i).value:'', photo:(psState[i]==='f'&&psPhotos[i])?psPhotos[i]:'' }; }) };
@@ -836,6 +856,7 @@ function _savePlantRecord(rec){
   catch(e){ try{ var slim=JSON.parse(JSON.stringify(rec)); (slim.items||[]).forEach(function(it){ it.photo=''; }); put(slim); }catch(_){} }
 }
 function _loadPlantRecord(code){ try{ var map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); var r=map[code]; if(!r) return null; r.when=new Date(r.when); return r; }catch(e){ return null; } }
+function _allPlantRecords(){ try{ var map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); return Object.keys(map).map(function(k){ var r=map[k]; r.when=new Date(r.when); return r; }).sort(function(a,b){ return b.when-a.when; }); }catch(e){ return []; } }
 function plantViewSavedPDF(code){
   if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; }
   var r=_loadPlantRecord(code);
@@ -1026,9 +1047,7 @@ function plantPrestartPDF(rec){
   });
   y+=3;
   if(rec.comments){ bar('Operator comments'); doc.setFontSize(8.6); var c=doc.splitTextToSize(rec.comments, W-2*M); doc.text(c, M, y); y+=4.8*c.length+4; }
-  bar('Declaration & signature');
-  doc.setFontSize(8.6); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40);
-  doc.text('By submitting this pre-start, the operator declared that:', M, y); y+=5.4;
+  // build the declaration lines first, then keep the whole declaration + signature block on ONE page
   var decls=[
     'the information recorded above is true, correct and complete;',
     'the machine has been visually inspected and every fault identified has been reported;',
@@ -1037,12 +1056,19 @@ function plantPrestartPDF(rec){
   if(rec.needsFFW){ decls.push('the operator holds the current licence, ticket and any verification of competency required to operate this machine;'); }
   decls.push('the machine will not be operated if it is unsafe, and any further fault will be reported immediately.');
   doc.setFontSize(8.4);
-  decls.forEach(function(t){ var dl=doc.splitTextToSize(t, W-2*M-5); if(y+4.6*dl.length>284){doc.addPage();y=16;} doc.text('•', M+1, y); doc.text(dl, M+5, y); y+=4.6*dl.length+0.8; });
-  y+=13; if(y>266){doc.addPage();y=20;}
+  var declWrapped=decls.map(function(t){ return doc.splitTextToSize(t, W-2*M-5); });
+  var blockH=10.5/*bar*/+5.4/*intro*/+declWrapped.reduce(function(s,dl){return s+4.6*dl.length+0.8;},0)+13/*gap*/+7/*label*/+10/*signature*/;
+  if(y+blockH>286){ doc.addPage(); y=16; }
+  bar('Declaration & signature');
+  doc.setFontSize(8.6); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40);
+  doc.text('By submitting this pre-start, the operator declared that:', M, y); y+=5.4;
+  doc.setFontSize(8.4);
+  declWrapped.forEach(function(dl){ doc.text('•', M+1, y); doc.text(dl, M+5, y); y+=4.6*dl.length+0.8; });
+  y+=13;
   doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('OPERATOR SIGNATURE', M, y); y+=7;
   doc.setFont('times','italic'); doc.setFontSize(20); doc.setTextColor(27,58,45); doc.text(rec.worker, M, y); y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,120,120); doc.text('Signed (auto from profile) · '+fmt(rec.when)+' · '+rec.site, M, y);
   var pages=doc.internal.getNumberOfPages();
-  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-010 · Plant Pre-Start · Slán Safety', M, 292); doc.text('Page '+p+' of '+pages, W-M-20, 292); }
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-010 · Plant Pre-Start · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
   return doc;
 }
 function plantViewPrestartPDF(){ if(!_lastPrestartRec || !window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(plantPrestartPDF(_lastPrestartRec), 'Prestart-'+_lastPrestartRec.code+'.pdf'); }
@@ -1080,6 +1106,12 @@ function renderOversight(){
       return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:'+(_isOut(a)?'#A32D2D':'#A06000')+'">'+assetSite(a.code)+' · '+reason+'</div></div><div class="chev">›</div></button>';
     }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines ready.</div></div></div>';
     var blocked=(oversightSite==='All')?3:1;
+    var savedRecs=_allPlantRecords().filter(function(r){ return siteMatch(r.code); });
+    var recFeed=savedRecs.length?savedRecs.map(function(r){
+      var col=r.faults>0?(r.critical?'var(--fail)':'var(--warn)'):'var(--pass)';
+      var lbl=r.faults>0?(r.critical?'Critical — out of service':(r.faults+' fault'+(r.faults>1?'s':''))):'All clear';
+      return '<button class="row" onclick="plantViewSavedPDF(\''+r.code+'\')"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+r.code+' · '+r.machine+'</div><div class="row-s">'+fmtShort(iso(r.when))+' · '+r.worker+' · '+lbl+'</div></div><div class="chev" style="color:var(--gold)">📄</div></button>';
+    }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts submitted on this device yet — completed pre-starts will appear here.</div></div></div>';
     body='<div class="fcard"><div class="fcard-hdr">📊 Fleet Overview</div><div class="fcard-body"><div class="kpis">'+
         kpi('Machines',fleet.length,'k-blue','🚜','')+
         kpi('Ready',readyCount,'k-green','✅',kpiTrend(readyCount,readyCount-1,true))+
@@ -1088,6 +1120,7 @@ function renderOversight(){
       '</div><div style="font-size:10.5px;color:var(--t3);text-align:center;margin-top:9px">Ready + Needs attention + Out of service = '+fleet.length+' machines</div></div></div>'+
       '<div class="fcard" style="border-top-color:#A32D2D"><div style="padding:14px 15px;background:#FCE9E9"><div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🔒 Due-diligence — operations blocked</div><div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>'+blocked+'</b> attempt'+(blocked===1?'':'s')+' this month to operate a machine without the required licence/ticket '+(blocked===1?'was':'were')+' <b>stopped at the gate</b> before work began.</div></div></div>'+
       '<div class="fcard"><div class="fcard-hdr">⚠ Needs Action ('+need.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+attHtml+'</div></div>'+
+      '<div class="fcard"><div class="fcard-hdr">📋 Recent pre-starts ('+savedRecs.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+recFeed+'</div></div>'+
       '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend-hero"><div class="s-l">Last 12 months</div><div class="s-v">'+money(spend12)+'</div><div class="s-tr">▼ 8% vs prior year</div></div><div class="spend-mini"><div class="s-l">Last 6 months</div><div class="s-v">'+money(Math.round(spend12*0.45))+'</div></div></div></div>';
   } else if(platTab==='assets'){
     var rows=fleet.map(function(a){
