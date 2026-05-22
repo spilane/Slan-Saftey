@@ -186,10 +186,12 @@ table.reg tbody tr:hover{background:#F6FAF7}
 .reg-asset{display:flex;align-items:center;gap:10px}
 .reg-asset .ric{width:34px;height:34px;border-radius:9px;background:#EAF1ED;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 table.reg td.t-asset{min-width:168px}
-table.reg tr.attn-red{background:#FCEFEF}
-table.reg tr.attn-amber{background:#FFF8EC}
-table.reg tr.attn-red:hover{background:#F8E5E5}
-table.reg tr.attn-amber:hover{background:#FBEFD8}
+table.reg tr.attn-red{background:#FCEAEA}
+table.reg tr.attn-amber{background:#FFF1DC}
+table.reg tr.attn-red:hover{background:#F8DEDE}
+table.reg tr.attn-amber:hover{background:#FCE7C6}
+table.reg tr.attn-red td:first-child{box-shadow:inset 3px 0 0 #C0392B}
+table.reg tr.attn-amber td:first-child{box-shadow:inset 3px 0 0 #E08A1E}
 .cell-sub{color:var(--t3);font-size:11px;margin-top:2px;font-weight:400}
 .svc-go{font-weight:700}
 .svc-go.ok{color:var(--pass)} .svc-go.soon{color:var(--warn)} .svc-go.over{color:var(--fail)}
@@ -612,9 +614,16 @@ function _lastMonths(n){ var out=[],d=new Date(); for(var i=n-1;i>=0;i--){ var x
 /* ---------- ANALYTICS (charts) ---------- */
 var _charts={};
 function _mkChart(id,cfg){ var el=document.getElementById(id); if(!el||!window.Chart) return; try{ if(_charts[id]){ _charts[id].destroy(); } _charts[id]=new Chart(el.getContext('2d'),cfg); }catch(e){} }
+/* monthly engine/run hours per machine — in the real app these come from the hour-meter readings at each pre-start */
+var UTIL_MONTHLY={ 'TRK-006':160,'TLH-003':120,'GEN-005':90,'LT-013':200,'MAG-009':110,'CRN-007':75,'GEN-016':85,'CRN-011':40,'TLH-012':130,'LT-014':190 };
+var _utilPeriod='month';
+function plantSetUtil(p){ _utilPeriod=p; renderOversight(); }
+function _utilFactor(){ return _utilPeriod==='week'?0.23:(_utilPeriod==='fortnight'?0.46:1); }
 function plantAnalyticsBody(){
   function card(t,id){ return '<div class="fcard"><div class="fcard-hdr">'+t+'</div><div class="fcard-body"><div class="chart-box"><canvas id="'+id+'"></canvas></div></div></div>'; }
+  function utilToggle(){ return ['week','fortnight','month'].map(function(p){ var on=_utilPeriod===p,lbl=p==='week'?'This week':(p==='fortnight'?'Fortnight':'This month'); return '<button onclick="plantSetUtil(\''+p+'\')" style="padding:5px 12px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+'">'+lbl+'</button>'; }).join(''); }
   return '<div class="an-grid">'+card('🟢 Fleet availability','ch-avail')+card('💲 Spend by machine','ch-spend')+'</div>'+
+    '<div class="fcard"><div class="fcard-hdr">⏱ Utilisation — hours run per machine</div><div class="fcard-body"><div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">'+utilToggle()+'</div><div class="chart-box"><canvas id="ch-util"></canvas></div><div style="font-size:10.5px;color:var(--t3);margin-top:8px">Calculated from the hour-meter reading entered at each pre-start.</div></div></div>'+
     card('✅ Pre-start compliance — last 7 days','ch-prestart')+
     '<div class="an-grid">'+card('🔧 Work orders — last 6 months','ch-wo')+card('🔒 Stopped at the gate — last 6 months','ch-gate')+'</div>';
 }
@@ -627,6 +636,8 @@ function renderPlantCharts(){
   _mkChart('ch-avail',{type:'doughnut',data:{labels:['Ready','Attention','Fault / blocked'],datasets:[{data:[op,attn,fault],backgroundColor:['#1B6E3A','#A06000','#A32D2D'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom'}}}});
   var sB=fleet.slice().sort(function(a,b){return (b.spend12mo||0)-(a.spend12mo||0);});
   _mkChart('ch-spend',{type:'bar',data:{labels:sB.map(function(a){return a.code;}),datasets:[{data:sB.map(function(a){return a.spend12mo||0;}),backgroundColor:'#2D6A45',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return '$'+(v/1000)+'k';}}}}}});
+  var uf=_utilFactor(), uB=fleet.slice().sort(function(a,b){return (UTIL_MONTHLY[b.code]||0)-(UTIL_MONTHLY[a.code]||0);});
+  _mkChart('ch-util',{type:'bar',data:{labels:uB.map(function(a){return a.code;}),datasets:[{data:uB.map(function(a){return Math.round((UTIL_MONTHLY[a.code]||0)*uf);}),backgroundColor:'#B8960C',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+'h';}}}}}});
   var d7=[]; for(var i=6;i>=0;i--){ d7.push(fmtShort(dOffset(-i))); }
   _mkChart('ch-prestart',{type:'line',data:{labels:d7,datasets:[{data:[88,92,85,90,87,93,91],borderColor:'#1B6E3A',backgroundColor:'rgba(27,110,58,.12)',fill:true,tension:.35,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:function(v){return v+'%';}}}}}});
   var m6=_lastMonths(6);
@@ -748,8 +759,8 @@ function renderOversight(){
     var rows=fleet.map(function(a){
       var dt=plantDetails(a.code);
       var sm=svcMeter(a), soon=svcSoon(sm);
-      var red = a.status!=='operational' || _expired(a.rego_expiry) || _expired(a.service_due) || _expired(a.insurance_expiry);
-      var amber = !red && soon;
+      var red = a.status!=='operational' || _expired(a.rego_expiry);
+      var amber = !red && (_expired(a.service_due) || soon || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30));
       var rowCls = red?'attn-red':(amber?'attn-amber':'');
       var stB = a.status==='operational'?'<span class="a-badge bg-op">Operational</span>':(a.status==='fault_reported'?'<span class="a-badge bg-flt">Fault</span>':'<span class="a-badge bg-out">'+a.status.replace('_',' ')+'</span>');
       var rd=[]; if(a.hours) rd.push(a.hours.toLocaleString()+' hrs'); if(dt.km) rd.push(dt.km.toLocaleString()+' km');
@@ -774,7 +785,7 @@ function renderOversight(){
         '<td><button onclick="event.stopPropagation();openHub('+ASSETS.indexOf(a)+')" style="padding:6px 12px;border-radius:7px;border:1.5px solid var(--border);background:#fff;color:var(--deep);font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap">View ›</button></td></tr>';
     }).join('');
     body='<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
-        '<div class="reg-legend"><span><span class="lg-dot" style="background:var(--fail)"></span>Action required</span><span><span class="lg-dot" style="background:var(--warn)"></span>Attention soon</span></div></div>'+
+        '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
       '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Last pre-start</th><th>Open WOs</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
       '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
   } else if(platTab==='analytics'){
