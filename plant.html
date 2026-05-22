@@ -87,6 +87,9 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .gate-ic{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;margin:0 auto 9px;font-size:24px}
 .gate-title{font-size:17px;font-weight:800}
 .ps-fd{margin-top:11px;border-top:1px dashed var(--border);padding-top:11px}
+.ps-fd-h{font-size:11px;font-weight:800;color:var(--fail);text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px}
+.ps-decl{margin:0 0 0 18px;padding:0;font-size:13px;color:var(--t2);line-height:1.65}
+.ps-decl li{margin-bottom:4px}
 .gate-asset{font-size:13px;color:rgba(255,255,255,.8);margin-top:5px}
 .gate-msg{font-size:14px;font-weight:600;background:rgba(0,0,0,.12);border-radius:9px;padding:11px 14px;margin:16px 16px 0;line-height:1.45}
 .panel{background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:16px;margin-bottom:18px}
@@ -607,6 +610,17 @@ function checklistFor(a){
   return CHECKLISTS.default;
 }
 var _psList=[];
+function _faultQ(it){
+  var c=(it.cat||'').toLowerCase(), q=(it.q||'').toLowerCase();
+  if(/leak/.test(q)) return 'Where is the leak and how bad?';
+  if(c.indexOf('fluid')>-1) return 'Which fluid, and what is the level / issue?';
+  if(c.indexOf('electric')>-1) return 'What is the electrical fault?';
+  if(c.indexOf('inspection')>-1 || /logbook|sticker/.test(q)) return 'Is it missing, expired, or damaged — what is the issue?';
+  if(c.indexOf('lifting')>-1 || c.indexOf('mast')>-1 || c.indexOf('stability')>-1) return 'Which component, and what is wrong?';
+  if(c.indexOf('tyre')>-1 || c.indexOf('brake')>-1) return 'What did you find, and which wheel / side?';
+  if(c.indexOf('load')>-1) return 'What is the issue with the load / restraint?';
+  return 'What is wrong, and where on the machine?';
+}
 function openPrestart(){
   var a=ASSETS[curAsset];
   _psList=checklistFor(a); psState={};
@@ -617,9 +631,9 @@ function openPrestart(){
     var badge = it.crit ? ' <span class="ps-crit">Critical</span>' : '';
     var sev = '<option>Minor — still usable</option><option>Major — repair soon</option><option'+(it.crit?' selected':'')+'>Critical — do not operate</option>';
     var fd='<div class="ps-fd" id="ps-fd'+idx+'" style="display:none">'+
+        '<div class="ps-fd-h">Fault on: '+it.q+'</div>'+
         '<div class="ps-field"><label>How bad is it?</label><select id="ps-sev'+idx+'">'+sev+'</select></div>'+
-        '<div class="ps-field"><label>Where is it?</label><input id="ps-loc'+idx+'" type="text" placeholder="e.g. left track, boom cylinder, near cab"></div>'+
-        '<div class="ps-field" style="margin-bottom:0"><label>What\'s wrong?</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="Describe it — how bad, leaking / noise / damage, etc."></textarea></div>'+
+        '<div class="ps-field" style="margin-bottom:0"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="What you found, where on the machine, and how bad"></textarea></div>'+
       '</div>';
     return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div>'+fd+'</div>';
   }).join('');
@@ -632,8 +646,15 @@ function openPrestart(){
     '<div class="ps-field"><label>'+(km?'Current odometer (km)':'Current hours')+'</label><input id="ps-hours" type="text" inputmode="numeric" placeholder="Read the meter — last was '+lastVal.toLocaleString()+'"><div style="font-size:11px;color:var(--t3);margin-top:5px">Enter the current reading off the machine.</div></div>'+
     items+
     '<div class="ps-cat">Declaration</div>'+
-    '<div class="ps-item"><div class="ps-q">I declare this pre-start is true and correct.</div><div class="seg"><button type="button" class="p" id="ps-acc" onclick="this.classList.toggle(\'on\')">✓ Confirm</button></div></div>'+
-    (needsFFW ? '<div class="ps-item"><div class="ps-q">I am fit for work and hold the ticket required to operate this machine.</div><div class="seg"><button type="button" class="p" id="ps-fit" onclick="this.classList.toggle(\'on\')">✓ Confirm</button></div></div>' : '')+
+    '<div class="ps-item"><div class="ps-q" style="margin-bottom:9px">By submitting this pre-start, I declare that:</div>'+
+      '<ul class="ps-decl">'+
+        '<li>the information recorded above is true, correct and complete;</li>'+
+        '<li>I have visually inspected this machine and reported every fault identified;</li>'+
+        (needsFFW?'<li>I hold the current licence, ticket and any verification of competency required to operate this machine, and I am fit for work;</li>':'')+
+        '<li>I will not operate this machine if it is unsafe, and I will report any further fault immediately.</li>'+
+      '</ul>'+
+      '<div class="seg" style="margin-top:12px"><button type="button" class="p" id="ps-acc" onclick="this.classList.toggle(\'on\')">✓ I agree to the above declaration</button></div>'+
+    '</div>'+
     '<div class="ps-field"><label>Operator signature</label><div id="ps-sign" style="border:1.5px solid var(--border);border-radius:8px;padding:14px;text-align:center"><div style="font-family:\'Brush Script MT\',\'Segoe Script\',cursive;font-size:27px;color:var(--deep);line-height:1">'+currentWorker.name+'</div><div style="font-size:10.5px;color:var(--t3);margin-top:5px">Auto-filled from your Slán profile · '+fmt(new Date())+'</div></div></div>'+
     '<button class="btn btn-green" onclick="submitPrestart()">Submit Pre-Start</button>'+
     '</div>';
@@ -656,8 +677,7 @@ function submitPrestart(){
   var reading=parseFloat(raw);
   if(!raw || isNaN(reading)){ slanMsg('Enter the reading','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please enter the current '+(km?'odometer (km)':'hours')+' reading off the machine.</div>'); return; }
   if(reading<lastVal){ slanMsg('Check the reading','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">'+reading.toLocaleString()+' is lower than the last recorded ('+lastVal.toLocaleString()+'). A meter can\'t go backwards — please re-check.</div>'); return; }
-  if(!document.getElementById('ps-acc').classList.contains('on')){ slanMsg('Confirm declaration','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please tick the declaration that this pre-start is true and correct.</div>'); return; }
-  var fit=document.getElementById('ps-fit'); if(fit && !fit.classList.contains('on')){ slanMsg('Confirm fitness','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please confirm you are fit and hold the required ticket.</div>'); return; }
+  if(!document.getElementById('ps-acc').classList.contains('on')){ slanMsg('Agree to declaration','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please read and tick the declaration before submitting.</div>'); return; }
   var faultIdx=Object.keys(psState).filter(function(k){return psState[k]==='f';});
   for(var n=0;n<faultIdx.length;n++){ var fk=faultIdx[n]; var d=(document.getElementById('ps-desc'+fk).value||'').trim(); if(!d){ slanMsg('More detail needed','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please describe the fault on <b>'+_psList[+fk].q+'</b> — what\'s wrong, how bad and where.</div>'); return; } }
   if(km){ if(PLANT_DETAILS[a.code]) PLANT_DETAILS[a.code].km=reading; } else { a.hours=reading; }
