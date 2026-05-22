@@ -358,7 +358,12 @@ var currentWorker=WORKERS[0];
 var curAsset=0;
 function setTopRight(html){ var el=document.getElementById('tb-right'); if(el) el.innerHTML=html; }
 function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><span id="who-name">'+currentWorker.name+'</span></button>'; }
-function plantGoBack(){ if(window.history.length>1){ history.back(); } else { location.href='index.html'; } }
+var _homeView='list';
+function plantGoBack(){
+  var det=document.getElementById('screen-detail');
+  if(det && det.style.display!=='none'){ if(_homeView==='oversight'){ renderOversight(); } else { showList(); } return; }
+  if(window.history.length>1){ history.back(); } else { location.href='index.html'; }
+}
 var PLANT_SUP_NAME={ 'Parramatta':'Eoin Burke', 'Blacktown':"Lee O'Brien", 'Liverpool':'Brendan Kelly' };
 function openProfile(){
   var supLocked=getRole()==='supervisor';
@@ -439,6 +444,7 @@ function showList(){
   document.getElementById('screen-detail').style.display='none';
   var ov=document.getElementById('screen-oversight'); if(ov) ov.style.display='none';
   document.getElementById('screen-list').style.display='block';
+  _homeView='list';
   setHeader('Plant & Equipment', "Scan a machine's QR — or tap one below — to open its records.");
   window.scrollTo(0,0);
 }
@@ -676,6 +682,7 @@ function renderOversight(){
   }
 
   var subText = supLocked ? (oversightSite+' — your site only') : (oversightSite==='All'?'All sites':oversightSite);
+  _homeView='oversight';
   setHeader('Plant & Equipment', subText+' · fleet management');
   var html='<div class="wrap platform-wrap">'+
     chipRow + tabNav + body +
