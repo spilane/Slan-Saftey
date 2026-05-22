@@ -328,10 +328,10 @@ function openHub(i){
   var lift = a.lift_note ? '<div class="lift"><b>Lifting data</b>SWL '+(a.swl||'—')+'<br>'+a.lift_note+'</div>' : '';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="showList()">‹ All machines</button>'+
-    '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+(a.hours?a.hours.toLocaleString()+' hrs':'')+' · '+a.status.replace('_',' ')+'</div></div></div>'+
+    '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+(a.hours?a.hours.toLocaleString()+' hrs':'')+(dt.km?' · '+dt.km.toLocaleString()+' km':'')+' · '+a.status.replace('_',' ')+'</div></div></div>'+
     '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>'+
     '<button class="cta" onclick="openGate()">▶  Start Pre-Start</button>'+
-    '<div class="sec-h">Machine details</div><div class="svc">'+
+    (getRole()!=='worker' ? ('<div class="sec-h">Machine details</div><div class="svc">'+
       '<div class="svc-row"><span>Site</span><span>'+assetSite(a.code)+'</span></div>'+
       '<div class="svc-row"><span>Year</span><span>'+(dt.year||'—')+'</span></div>'+
       '<div class="svc-row"><span>Serial / VIN</span><span>'+(dt.vin||'—')+'</span></div>'+
@@ -342,7 +342,7 @@ function openHub(i){
       '<div class="svc-row"><span>Insurance expiry</span><span>'+(a.insurance_expiry?fmt(a.insurance_expiry):'—')+'</span></div>'+
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
-    '</div>'+
+    '</div>') : '')+
     '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift +
     '<div class="sec-h">Recent pre-starts (last 7 days)</div><div class="tile">'+(rec||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts in the last 7 days.</div></div></div>')+'</div>'+
     '<div class="sec-h">Service</div><div class="svc">'+
