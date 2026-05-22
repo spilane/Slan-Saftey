@@ -369,6 +369,9 @@ function recentPrestarts(a){
   var names=["Liam O'Brien",'Tom Walker','Mark Flynn','Lee O\'Brien'];
   var out=[]; var n=(a.code.charCodeAt(4)%3)+3;
   for(var i=0;i<n;i++){ out.push({ date:iso(dOffset(-(i+ (a.code.charCodeAt(5)%2)))), worker:names[(i+a.code.length)%names.length], outcome:(i===1&&a.status==='fault_reported')?'fault':'ok' }); }
+  // a real pre-start submitted on this device sits on top and is openable as a PDF
+  var saved=_loadPlantRecord(a.code);
+  if(saved){ out.unshift({ date:iso(saved.when), worker:saved.worker, outcome:saved.faults>0?'fault':'ok', real:true }); }
   return out;
 }
 /* service is interval-based on plant — by engine hours (or km for vehicles), not just a date */
@@ -512,6 +515,9 @@ function openHub(i){
   var rec=recentPrestarts(a).map(function(p){
     var col=p.outcome==='fault'?'var(--warn)':'var(--pass)';
     var lbl=p.outcome==='fault'?'Fault flagged':'Completed';
+    if(p.real){
+      return '<button class="row" onclick="plantViewSavedPDF(\''+a.code+'\')"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+fmtShort(p.date)+' · '+p.worker+'</div><div class="row-s" style="color:var(--gold);font-weight:700">'+lbl+' · 📄 View record (PDF)</div></div><div class="chev">›</div></button>';
+    }
     return '<div class="row" style="cursor:default"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+fmtShort(p.date)+' · '+p.worker+'</div><div class="row-s">'+lbl+'</div></div></div>';
   }).join('');
   var svcOverdue=new Date(a.service_due)<new Date();
@@ -658,17 +664,26 @@ function _openWOsFor(code){ return WORKORDERS.filter(function(w){ return w.code=
 var RECURRING={ 'TLH-003':{item:'Reversing alarm & camera',count:3}, 'GEN-005':{item:'Service overrun / running issues',count:2} };
 var psPhotos={};
 function _psReadPhoto(file, cb){
+  // memory-safe: decode via object URL (not a giant base64 string) + downscale before keeping anything.
+  // big phone photos (12MP+) were spiking memory and crashing the page; cap to ~1024px JPEG.
+  var done=false; function finish(v){ if(done) return; done=true; cb(v||''); }
+  function draw(src, w, h){
+    try{
+      var maxW=1024, sc=Math.min(1, maxW/(w||maxW)), cw=Math.max(1,Math.round((w||maxW)*sc)), ch=Math.max(1,Math.round((h||maxW)*sc));
+      var c=document.createElement('canvas'); c.width=cw; c.height=ch;
+      c.getContext('2d').drawImage(src,0,0,cw,ch);
+      var out=c.toDataURL('image/jpeg',0.6);
+      try{ if(src && src.close) src.close(); }catch(e){}
+      finish(out);
+    }catch(e){ finish(''); }
+  }
   try{
-    var fr=new FileReader();
-    fr.onload=function(){
-      var im=new Image();
-      im.onload=function(){ try{ var maxW=900, sc=Math.min(1, maxW/im.naturalWidth), c=document.createElement('canvas'); c.width=Math.round(im.naturalWidth*sc); c.height=Math.round(im.naturalHeight*sc); c.getContext('2d').drawImage(im,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg',0.72)); }catch(e){ cb(''); } };
-      im.onerror=function(){ cb(''); };
-      im.src=fr.result;
-    };
-    fr.onerror=function(){ cb(''); };
-    fr.readAsDataURL(file);
-  }catch(e){ cb(''); }
+    var url=URL.createObjectURL(file);
+    var viaImage=function(){ var im=new Image(); im.onload=function(){ draw(im, im.naturalWidth, im.naturalHeight); try{URL.revokeObjectURL(url);}catch(e){} }; im.onerror=function(){ try{URL.revokeObjectURL(url);}catch(e){} finish(''); }; im.src=url; };
+    if(window.createImageBitmap){
+      createImageBitmap(file).then(function(bmp){ try{URL.revokeObjectURL(url);}catch(e){} draw(bmp, bmp.width, bmp.height); }).catch(viaImage);
+    } else { viaImage(); }
+  }catch(e){ finish(''); }
 }
 function psPhoto(i){
   var inp=document.getElementById('ps-photo'+i), cap=document.getElementById('ps-photo-cap'+i);
@@ -677,7 +692,8 @@ function psPhoto(i){
     if(cap) cap.textContent='⏳ Adding photo…';
     _psReadPhoto(inp.files[0], function(dataUrl){
       psPhotos[i]=dataUrl||'';
-      if(cap) cap.textContent=(dataUrl?'📍 ':'⚠ ')+assetSite(a.code)+' · '+new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+(dataUrl?' — photo attached':' — photo could not be read');
+      if(cap) cap.textContent=(dataUrl?'📍 ':'⚠ ')+assetSite(a.code)+' · '+new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+(dataUrl?' — photo attached':' — photo could not be read, try again');
+      var btn=document.getElementById('ps-photo-btn'+i); if(btn) btn.textContent=dataUrl?'📷 Retake photo':'📷 Take a photo';
     });
   }
 }
@@ -711,7 +727,10 @@ function openPrestart(){
         '<div class="ps-fd-h">Fault on: '+it.q+'</div>'+
         sevField+
         '<div class="ps-field"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="Type a short description"></textarea></div>'+
-        '<div class="ps-field" style="margin-bottom:0"><label>Photo of the fault (optional)</label><input id="ps-photo'+idx+'" type="file" accept="image/*" capture="environment" onchange="psPhoto('+idx+')"><div id="ps-photo-cap'+idx+'" style="font-size:10.5px;color:var(--mid);font-weight:600;margin-top:5px"></div></div>'+
+        '<div class="ps-field" style="margin-bottom:0"><label>Photo of the fault (optional)</label>'+
+        '<input id="ps-photo'+idx+'" type="file" accept="image/*" capture="environment" onchange="psPhoto('+idx+')" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none">'+
+        '<button type="button" id="ps-photo-btn'+idx+'" onclick="document.getElementById(\'ps-photo'+idx+'\').click()" style="width:100%;padding:13px;border:1.5px dashed var(--mid);border-radius:10px;background:#F4F8F5;color:var(--deep);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">📷 Take a photo</button>'+
+        '<div id="ps-photo-cap'+idx+'" style="font-size:10.5px;color:var(--mid);font-weight:600;margin-top:5px"></div></div>'+
       '</div>';
     var info=_itemInfo(it);
     var infoField = info ? '<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"'+(info.past?' max="'+iso(new Date())+'"':'')+'></div>' : '';
@@ -1019,7 +1038,8 @@ function plantPrestartPDF(rec){
   decls.push('the machine will not be operated if it is unsafe, and any further fault will be reported immediately.');
   doc.setFontSize(8.4);
   decls.forEach(function(t){ var dl=doc.splitTextToSize(t, W-2*M-5); if(y+4.6*dl.length>284){doc.addPage();y=16;} doc.text('•', M+1, y); doc.text(dl, M+5, y); y+=4.6*dl.length+0.8; });
-  y+=4; if(y>270){doc.addPage();y=16;}
+  y+=13; if(y>266){doc.addPage();y=20;}
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('OPERATOR SIGNATURE', M, y); y+=7;
   doc.setFont('times','italic'); doc.setFontSize(20); doc.setTextColor(27,58,45); doc.text(rec.worker, M, y); y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,120,120); doc.text('Signed (auto from profile) · '+fmt(rec.when)+' · '+rec.site, M, y);
   var pages=doc.internal.getNumberOfPages();
   for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-010 · Plant Pre-Start · Slán Safety', M, 292); doc.text('Page '+p+' of '+pages, W-M-20, 292); }
