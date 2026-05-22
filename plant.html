@@ -812,7 +812,7 @@ function submitPrestart(){
   var criticalFault = faults>0 && faultIdx.some(function(k){ var sev=document.getElementById('ps-sev'+k); return (_psList[+k]&&_psList[+k].crit) || (sev&&/Critical/.test(sev.value)); });
   _lastPrestartRec={ code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:currentWorker.name, when:new Date(), reading:reading, meter:(km?'km':'hrs'), faults:faults, critical:criticalFault, needsFFW:(a.required&&a.required.length>0), comments:(document.getElementById('ps-comments').value||'').trim(), items:_psList.map(function(it,i){ return { q:it.q, cat:it.cat||'', status:psState[i], sev:(psState[i]==='f'&&document.getElementById('ps-sev'+i))?document.getElementById('ps-sev'+i).value:'', desc:(psState[i]==='f'&&document.getElementById('ps-desc'+i))?(document.getElementById('ps-desc'+i).value||'').trim():'', info:(_itemInfo(it)&&document.getElementById('ps-info'+i))?document.getElementById('ps-info'+i).value:'', photo:(psState[i]==='f'&&psPhotos[i])?psPhotos[i]:'' }; }) };
   _savePlantRecord(_lastPrestartRec);
-  if(faults>0){ var _fs=faultIdx.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(faultIdx.length>2?' +'+(faultIdx.length-2)+' more':''); WORKORDERS.unshift({wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}); _setPlantAlert(a, _fs, criticalFault); }
+  if(faults>0){ var _fs=faultIdx.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(faultIdx.length>2?' +'+(faultIdx.length-2)+' more':''); var _woObj={wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}; WORKORDERS.unshift(_woObj); _saveWO(_woObj); _setPlantAlert(a, _fs, criticalFault); }
   var body;
   if(faults>0 && criticalFault){ a.status='out_of_service'; body='<div style="text-align:center"><div style="font-size:42px">⛔</div><div style="font-size:16px;font-weight:800;color:var(--fail);margin-top:6px">Critical fault — out of service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' has been taken <b>out of service</b> and a <b>high-priority</b> work order raised to the mechanic, and the supervisor has been notified. This machine must not be operated.</div></div>'; }
   else if(faults>0){ a.status='fault_reported'; body='<div style="text-align:center"><div style="font-size:42px">⚠️</div><div style="font-size:16px;font-weight:800;color:var(--warn);margin-top:6px">Fault reported</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+faults+' fault'+(faults>1?'s':'')+' flagged on '+a.code+' → a work order has been raised and the supervisor has been notified.</div></div>'; }
@@ -850,6 +850,10 @@ var _woSeq=0;
 function _plantAlerts(){ try{ return JSON.parse(localStorage.getItem('slan_plant_alerts')||'[]'); }catch(e){ return []; } }
 function _setPlantAlert(a, fault, critical){ var arr=_plantAlerts().filter(function(x){return x.code!==a.code;}); arr.push({code:a.code, machine:a.make+' '+a.model, site:assetSite(a.code), fault:fault, critical:!!critical, ts:Date.now()}); try{ localStorage.setItem('slan_plant_alerts', JSON.stringify(arr)); }catch(e){} }
 function _clearPlantAlert(code){ try{ localStorage.setItem('slan_plant_alerts', JSON.stringify(_plantAlerts().filter(function(x){return x.code!==code;}))); }catch(e){} }
+/* persist raised work orders so an open issue carries forward to the next worker's pre-start (and the supervisor's WO list) until it's completed */
+function _savedWOs(){ try{ return JSON.parse(localStorage.getItem('slan_plant_wos')||'[]'); }catch(e){ return []; } }
+function _saveWO(wo){ try{ var arr=_savedWOs().filter(function(x){ return x.wo!==wo.wo && !(x.code===wo.code && x.fault===wo.fault); }); arr.unshift(wo); localStorage.setItem('slan_plant_wos', JSON.stringify(arr)); }catch(e){} }
+function _removeSavedWO(woId){ try{ localStorage.setItem('slan_plant_wos', JSON.stringify(_savedWOs().filter(function(x){return x.wo!==woId;}))); }catch(e){} }
 /* persist the latest pre-start per machine so a supervisor/mechanic can open its full record PDF (front-end; shared via same-origin localStorage like the alerts) */
 function _savePlantRecord(rec){
   function put(r){ var map={}; try{ map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); }catch(e){ map={}; } map[r.code]=r; localStorage.setItem('slan_plant_records', JSON.stringify(map)); }
@@ -1201,7 +1205,7 @@ function openWO(i){
   showDetail(html);
 }
 function completeWO(wo){
-  var w=WORKORDERS.find(function(x){return x.wo===wo;}); if(w){ w.status='Returned to service'; _clearPlantAlert(w.code); var ast=ASSETS.find(function(x){return x.code===w.code;}); if(ast) ast.status='operational'; }
+  var w=WORKORDERS.find(function(x){return x.wo===wo;}); if(w){ w.status='Returned to service'; _clearPlantAlert(w.code); _removeSavedWO(wo); var ast=ASSETS.find(function(x){return x.code===w.code;}); if(ast) ast.status='operational'; }
   slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Work order complete</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+wo+' completed — machine marked returned to service.</div></div>', function(){ renderOversight(); });
 }
 var QR_SIZE='M'; var QR_ONE=null;
@@ -1235,6 +1239,12 @@ function renderQR(oneCode){
 document.getElementById('who-name').textContent=currentWorker.name;
 // apply persisted faults so a flagged machine stays out-of-service across reloads (blocks the gate, reds the register)
 try{ _plantAlerts().forEach(function(al){ var a=ASSETS.find(function(x){return x.code===al.code;}); if(a) a.status=al.critical?'out_of_service':'fault_reported'; }); }catch(e){}
+// merge persisted work orders so an open issue carries into the next pre-start + the supervisor list, and continue WO numbering past the highest existing id
+try{
+  var _sw=_savedWOs(), _have={}; WORKORDERS.forEach(function(w){ _have[w.wo]=1; });
+  for(var _i=_sw.length-1;_i>=0;_i--){ if(!_have[_sw[_i].wo]){ WORKORDERS.unshift(_sw[_i]); } }
+  var _max=42; WORKORDERS.forEach(function(w){ var m=/(\d{4})$/.exec(w.wo||''); if(m){ var n=parseInt(m[1],10); if(n>=_max) _max=n+1; } }); _woSeq=_max-42;
+}catch(e){}
 renderAssets();
 (function(){
   var tm=/[?&]tab=([a-z]+)/.exec(location.search); if(tm){ platTab=tm[1]; }
