@@ -16989,19 +16989,19 @@ function updateSupActivityStrip() {
   supUpdatePlantChip();
 }
 
-function supChipTapPlant() { window.open('plant.html?role=supervisor&site=Parramatta','_blank'); }
+function supChipTapPlant() { window.open('plant.html?role=supervisor&site=Parramatta&tab=workorders','_blank'); }
 function supUpdatePlantChip() {
   var alerts = [];
   try { alerts = JSON.parse(localStorage.getItem('slan_plant_alerts') || '[]'); } catch(e) {}
   var crit = alerts.some(function(x){ return x.critical; });
   var pill = document.getElementById('d-pill-plant'), lbl = document.getElementById('d-pill-plant-lbl');
   if (pill) {
-    if (alerts.length) { pill.style.display = ''; if (lbl) lbl.textContent = 'Plant (' + alerts.length + ' fault' + (alerts.length > 1 ? 's' : '') + ')'; setPillState('d-pill-plant', crit ? 'fail' : 'warn'); }
+    if (alerts.length) { pill.style.display = ''; if (lbl) lbl.textContent = (alerts.length === 1 ? alerts[0].code + (alerts[0].critical ? ' — OUT OF SERVICE' : ' fault flagged') : alerts.length + ' machines flagged'); setPillState('d-pill-plant', crit ? 'fail' : 'warn'); }
     else { pill.style.display = 'none'; }
   }
   var sub = document.getElementById('d-plant-tile-sub'), tile = document.getElementById('stile-plant');
   if (sub) {
-    if (alerts.length) { sub.textContent = (alerts.length > 1 ? alerts.length + ' machines need attention' : '1 machine needs attention'); sub.style.color = '#A32D2D'; sub.style.fontWeight = '700'; if (tile) tile.style.borderColor = '#A32D2D'; }
+    if (alerts.length) { sub.textContent = (alerts.length === 1 ? alerts[0].code + (alerts[0].critical ? ' — out of service' : ' needs attention') : alerts.length + ' machines need attention'); sub.style.color = '#A32D2D'; sub.style.fontWeight = '700'; if (tile) tile.style.borderColor = '#A32D2D'; }
     else { sub.textContent = 'Machines, pre-starts & service'; sub.style.color = ''; sub.style.fontWeight = ''; if (tile) tile.style.borderColor = ''; }
   }
 }

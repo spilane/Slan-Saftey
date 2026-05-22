@@ -417,7 +417,7 @@ function ticketGate(w, a){
   var today=new Date(); today.setHours(0,0,0,0);
   var checks=[];
   function add(name,status,detail){ checks.push({name:name,status:status,detail:detail}); }
-  if(a.status==='out_of_service'||a.status==='retired'){ add('Machine availability','fail','This machine is '+a.status.replace('_',' ')+' and must not be operated.'); }
+  if(a.status==='out_of_service'||a.status==='retired'){ add('Machine availability','fail','This machine is '+a.status.replace(/_/g,' ')+' and must not be operated.'); }
   else { add('Machine availability','pass','Machine is available for use.'); }
   if(a.critical_fault){ add('Open critical fault','fail','This machine has an open critical fault. Do not operate.'); }
   else if(a.status==='fault_reported'){ add('Reported fault','warn','A fault has been reported on this machine — supervisor sign-off required.'); }
@@ -459,7 +459,7 @@ function ticketGate(w, a){
 function badge(a){
   if(a.status==='operational') return '<span class="a-badge bg-op">Operational</span>';
   if(a.status==='fault_reported') return '<span class="a-badge bg-flt">Fault reported</span>';
-  return '<span class="a-badge bg-out">'+a.status.replace('_',' ')+'</span>';
+  return '<span class="a-badge bg-out">'+a.status.replace(/_/g,' ')+'</span>';
 }
 function renderAssets(){
   document.getElementById('asset-list').innerHTML = ASSETS.map(function(a,i){
@@ -506,7 +506,7 @@ function openHub(i){
   var lift = a.lift_note ? '<div class="lift"><b>Lifting data</b>SWL '+(a.swl||'—')+'<br>'+a.lift_note+'</div>' : '';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="showList()">‹ All machines</button>'+
-    '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace('_',' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
+    '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace(/_/g,' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
     '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>'+
     '<button class="cta" onclick="openGate()">Start Pre-Start</button>'+
     (getRole()!=='worker' ? ('<div class="sec-h">Machine details</div><div class="svc">'+
@@ -877,7 +877,7 @@ function plantAuditPDF(){
   bar('Machine register');
   var xs=[M,M+42,M+72,M+108,M+146,M+174];
   row(['Machine','Site','Rego exp','Insurance exp','Service due','Status'],xs,true);
-  fleet.forEach(function(a){ row([a.code,assetSite(a.code),a.rego_expiry?fmtShort(a.rego_expiry):'-',a.insurance_expiry?fmtShort(a.insurance_expiry):'-',fmtShort(a.service_due),a.status.replace('_',' ')],xs,false); }); y+=3;
+  fleet.forEach(function(a){ row([a.code,assetSite(a.code),a.rego_expiry?fmtShort(a.rego_expiry):'-',a.insurance_expiry?fmtShort(a.insurance_expiry):'-',fmtShort(a.service_due),a.status.replace(/_/g,' ')],xs,false); }); y+=3;
   bar('Expiry forecast - next 90 days');
   var fc=[];
   fleet.forEach(function(a){ [['Registration',a.rego_expiry],['Insurance',a.insurance_expiry]].forEach(function(p){ if(p[1]){ var dl=daysBetween(p[1],today); if(dl<=90) fc.push([a.code,p[0],fmtShort(p[1]),dl<0?'Expired':('in '+dl+'d')]); } }); });
@@ -919,7 +919,7 @@ function renderOversight(){
     var outCount=fleet.filter(_isOut).length, attnCount2=fleet.filter(_isAttn).length, readyCount=fleet.length-outCount-attnCount2;
     var need=fleet.filter(function(a){ return _isOut(a)||_isAttn(a); });
     var attHtml=need.length?need.map(function(a){
-      var reason = a.status!=='operational' ? a.status.replace('_',' ') : _expired(a.rego_expiry) ? 'Registration expired' : _expired(a.service_due) ? 'Service overdue' : svcSoon(svcMeter(a)) ? 'Service due soon' : 'Insurance expiring';
+      var reason = a.status!=='operational' ? a.status.replace(/_/g,' ') : _expired(a.rego_expiry) ? 'Registration expired' : _expired(a.service_due) ? 'Service overdue' : svcSoon(svcMeter(a)) ? 'Service due soon' : 'Insurance expiring';
       return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:'+(_isOut(a)?'#A32D2D':'#A06000')+'">'+assetSite(a.code)+' · '+reason+'</div></div><div class="chev">›</div></button>';
     }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines ready.</div></div></div>';
     var blocked=(oversightSite==='All')?3:1;
@@ -939,7 +939,7 @@ function renderOversight(){
       var red = a.status!=='operational' || _expired(a.rego_expiry);
       var amber = !red && (_expired(a.service_due) || soon || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30));
       var rowCls = red?'attn-red':(amber?'attn-amber':'');
-      var stB = a.status==='operational'?'<span class="a-badge bg-op">Operational</span>':(a.status==='fault_reported'?'<span class="a-badge bg-flt">Fault</span>':'<span class="a-badge bg-out">'+a.status.replace('_',' ')+'</span>');
+      var stB = a.status==='operational'?'<span class="a-badge bg-op">Operational</span>':(a.status==='fault_reported'?'<span class="a-badge bg-flt">Fault</span>':'<span class="a-badge bg-out">'+a.status.replace(/_/g,' ')+'</span>');
       var rd=[]; if(a.hours) rd.push(a.hours.toLocaleString()+' hrs'); if(dt.km) rd.push(dt.km.toLocaleString()+' km');
       var reading = rd.length ? (rd[0] + (rd[1]?'<div class="cell-sub">'+rd[1]+'</div>':'')) : '—';
       var svcCell;
@@ -1032,8 +1032,11 @@ function renderQR(oneCode){
 
 /* ---------- init ---------- */
 document.getElementById('who-name').textContent=currentWorker.name;
+// apply persisted faults so a flagged machine stays out-of-service across reloads (blocks the gate, reds the register)
+try{ _plantAlerts().forEach(function(al){ var a=ASSETS.find(function(x){return x.code===al.code;}); if(a) a.status=al.critical?'out_of_service':'fault_reported'; }); }catch(e){}
 renderAssets();
 (function(){
+  var tm=/[?&]tab=([a-z]+)/.exec(location.search); if(tm){ platTab=tm[1]; }
   // QR deep-link: plant.html?machine=EXC-001 opens straight to that machine's hub
   var m=/[?&]machine=([^&]+)/.exec(location.search);
   var code=m?decodeURIComponent(m[1]).toUpperCase():null;
