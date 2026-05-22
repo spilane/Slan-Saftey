@@ -623,6 +623,15 @@ function _faultNeedsSeverity(it){
   if(/logbook|decal|sign|clean|extinguish|first.?aid|manual|placard|present|gauge|meter/.test(q)) return false;
   return true;
 }
+function _itemInfo(it){
+  var q=(it.q||'').toLowerCase();
+  if(/extinguish/.test(q)) return {label:'Extinguisher tag — next test due', type:'date'};
+  if(/first.?aid/.test(q)) return {label:'First-aid kit — expiry / restock date', type:'date'};
+  if(/green sticker|periodic inspection/.test(q)) return {label:'Inspection sticker — next due', type:'date'};
+  if(/rcd|earth-leakage/.test(q)) return {label:'RCD test tag — last tested', type:'date'};
+  if(/wire rope, hook/.test(q)) return {label:'Lifting gear — last inspection date', type:'date'};
+  return null;
+}
 function _faultQ(it){
   var c=(it.cat||'').toLowerCase(), q=(it.q||'').toLowerCase();
   if(/leak/.test(q)) return 'Where is the leak and how bad?';
@@ -648,7 +657,9 @@ function openPrestart(){
         sevField+
         '<div class="ps-field" style="margin-bottom:0"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="Type a short description"></textarea></div>'+
       '</div>';
-    return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div>'+fd+'</div>';
+    var info=_itemInfo(it);
+    var infoField = info ? '<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"></div>' : '';
+    return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div>'+infoField+fd+'</div>';
   }).join('');
   var needsFFW = a.required && a.required.length>0;
   var km = svcMeter(a)&&svcMeter(a).meter==='km';
@@ -690,6 +701,7 @@ function submitPrestart(){
   var reading=parseFloat(raw);
   if(!raw || isNaN(reading)){ slanMsg('Enter the reading','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please enter the current '+(km?'odometer (km)':'hours')+' reading off the machine.</div>'); return; }
   if(reading<lastVal){ slanMsg('Check the reading','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">'+reading.toLocaleString()+' is lower than the last recorded ('+lastVal.toLocaleString()+'). A meter can\'t go backwards — please re-check.</div>'); return; }
+  for(var m=0;m<_psList.length;m++){ var inf=_itemInfo(_psList[m]); if(inf && psState[m]==='p'){ var iv=(document.getElementById('ps-info'+m).value||'').trim(); if(!iv){ slanMsg('Bit more info needed','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please enter the <b>'+inf.label.toLowerCase()+'</b> for <b>'+_psList[m].q+'</b>.</div>'); return; } } }
   if(!document.getElementById('ps-acc').classList.contains('on')){ slanMsg('Agree to declaration','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please read and tick the declaration before submitting.</div>'); return; }
   var faultIdx=Object.keys(psState).filter(function(k){return psState[k]==='f';});
   for(var n=0;n<faultIdx.length;n++){ var fk=faultIdx[n]; var d=(document.getElementById('ps-desc'+fk).value||'').trim(); if(!d){ slanMsg('More detail needed','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please describe the fault on <b>'+_psList[+fk].q+'</b> — what\'s wrong, how bad and where.</div>'); return; } }
