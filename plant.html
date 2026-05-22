@@ -616,6 +616,13 @@ function checklistFor(a){
   return base.concat(COMMON);
 }
 var _psList=[];
+function _faultNeedsSeverity(it){
+  if(it.crit) return true;
+  var c=(it.cat||'').toLowerCase(), q=(it.q||'').toLowerCase();
+  if(c.indexOf('general')>-1 || c.indexOf('final')>-1) return false;
+  if(/logbook|decal|sign|clean|extinguish|first.?aid|manual|placard|present|gauge|meter/.test(q)) return false;
+  return true;
+}
 function _faultQ(it){
   var c=(it.cat||'').toLowerCase(), q=(it.q||'').toLowerCase();
   if(/leak/.test(q)) return 'Where is the leak and how bad?';
@@ -635,11 +642,11 @@ function openPrestart(){
     var head = it.cat!==lastCat ? '<div class="ps-cat">'+it.cat+'</div>' : '';
     lastCat=it.cat;
     var badge = it.crit ? ' <span class="ps-crit">Critical</span>' : '';
-    var sev = '<option>Minor — still usable</option><option>Major — repair soon</option><option'+(it.crit?' selected':'')+'>Critical — do not operate</option>';
+    var sevField = _faultNeedsSeverity(it) ? '<div class="ps-field"><label>How bad is it?</label><select id="ps-sev'+idx+'"><option>Minor — still usable</option><option>Major — repair soon</option><option'+(it.crit?' selected':'')+'>Critical — do not operate</option></select></div>' : '';
     var fd='<div class="ps-fd" id="ps-fd'+idx+'" style="display:none">'+
         '<div class="ps-fd-h">Fault on: '+it.q+'</div>'+
-        '<div class="ps-field"><label>How bad is it?</label><select id="ps-sev'+idx+'">'+sev+'</select></div>'+
-        '<div class="ps-field" style="margin-bottom:0"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="What you found, where on the machine, and how bad"></textarea></div>'+
+        sevField+
+        '<div class="ps-field" style="margin-bottom:0"><label>'+_faultQ(it)+'</label><textarea id="ps-desc'+idx+'" rows="2" placeholder="Type a short description"></textarea></div>'+
       '</div>';
     return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div>'+fd+'</div>';
   }).join('');
