@@ -25,9 +25,13 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .back-btn{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
 .back-btn:hover{background:rgba(255,255,255,.18)}
 .back-btn svg{width:20px;height:20px}
-.form-greeting{margin-top:14px}
+.tb-spacer{width:36px;flex-shrink:0}
+.hdr-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:14px}
+.form-greeting{flex:1;min-width:0}
 .form-greeting h1{font-size:21px;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.2;margin:0}
 .form-greeting p{font-size:12.5px;color:rgba(255,255,255,.7);margin:4px 0 0}
+.profile-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(184,150,12,.25);border:1.5px solid rgba(184,150,12,.55);color:#fff;font-size:11px;font-weight:700;letter-spacing:.3px;padding:7px 12px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+.profile-btn:hover{background:rgba(184,150,12,.38)}
 .badge-dir{background:rgba(184,150,12,.25);border:1.5px solid rgba(184,150,12,.5);color:#B8960C;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:5px 11px;border-radius:20px;white-space:nowrap}
 .who{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:6px 12px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
 .wrap{max-width:560px;margin:0 auto;padding:18px 16px}
@@ -133,15 +137,23 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .fcard-body{padding:12px}
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media(min-width:680px){.kpis{grid-template-columns:repeat(4,1fr)}}
-.kpi{background:linear-gradient(135deg,#fff 0%,#f8f9fa 100%);border-radius:8px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.12);border:1px solid #E8E8E8;border-top:3px solid #888}
-.kpi-l{font-size:9px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px;font-weight:700}
+.kpi{border-radius:10px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.1);border:1.5px solid}
+.kpi-l{font-size:9px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;opacity:.85}
 .kpi-row{display:flex;align-items:center;justify-content:center;gap:9px}
 .kpi-ic{font-size:23px;line-height:1}
 .kpi-v{font-size:30px;font-weight:800;line-height:1}
 .kpi-tr{font-size:11px;font-weight:800;align-self:flex-start}
-.spend2{background:#fff;border:1px solid #E8E8E8;border-radius:8px;padding:13px;text-align:center}
-.spend2 .s-l{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:5px}
-.spend2 .s-v{font-size:22px;font-weight:800;color:var(--deep);line-height:1}
+.kpi.k-blue{background:linear-gradient(135deg,#EAF2F8 0%,#CFE3F2 100%);border-color:#9EC3DA;color:#1F495C}
+.kpi.k-green{background:linear-gradient(135deg,#E9F6EE 0%,#C7EAD4 100%);border-color:#9BD3AE;color:#13502A}
+.kpi.k-amber{background:linear-gradient(135deg,#FFF6E6 0%,#FBE2B0 100%);border-color:#E6C57A;color:#8A5A00}
+.kpi.k-red{background:linear-gradient(135deg,#FBECEC 0%,#F6CFCF 100%);border-color:#E2A6A6;color:#8E2525}
+.spend-hero{background:linear-gradient(135deg,#1B3A2D 0%,#2D6A45 100%);color:#fff;border-radius:10px;padding:15px;box-shadow:0 4px 14px rgba(27,58,45,.25);border:1px solid rgba(184,150,12,.4)}
+.spend-hero .s-l{font-size:9px;color:#BFD9C9;text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:6px}
+.spend-hero .s-v{font-size:26px;font-weight:800;color:var(--gold-l);line-height:1}
+.spend-hero .s-tr{font-size:11px;font-weight:800;color:#7FE0A6;margin-top:6px}
+.spend-mini{background:linear-gradient(135deg,#EAF2F8 0%,#CFE3F2 100%);border:1.5px solid #9EC3DA;border-radius:10px;padding:15px;color:#1F495C}
+.spend-mini .s-l{font-size:9px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;opacity:.8;margin-bottom:6px}
+.spend-mini .s-v{font-size:26px;font-weight:800;line-height:1}
 table.reg{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
 table.reg th{text-align:left;padding:9px 11px;background:#EAF1ED;color:var(--t2);font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 table.reg td{padding:10px 11px;border-top:1px solid #EEF2F0;white-space:nowrap;vertical-align:top}
@@ -188,9 +200,12 @@ table.reg tr.attn-amber:hover{background:#FBEFD8}
   <div class="topbar-row">
     <button class="back-btn" onclick="plantGoBack()" aria-label="Back to app"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="tbar-logo"><img src="Slan_Safety_No_Border_1.png" alt="Slán Safety"></div>
+    <span class="tb-spacer"></span>
+  </div>
+  <div class="hdr-bottom">
+    <div class="form-greeting" id="tb-greet"><h1 id="tb-title">Plant &amp; Equipment</h1><p id="tb-sub">Scan a machine's QR — or tap one below — to open its records.</p></div>
     <div id="tb-right"><button class="who" onclick="openWorkerSheet()"><span id="who-name">—</span></button></div>
   </div>
-  <div class="form-greeting" id="tb-greet"><h1 id="tb-title">Plant &amp; Equipment</h1><p id="tb-sub">Scan a machine's QR — or tap one below — to open its records.</p></div>
 </div>
 
 <div class="wrap" id="screen-list">
@@ -205,6 +220,13 @@ table.reg tr.attn-amber:hover{background:#FBEFD8}
     <h3>View as worker</h3>
     <p>Switch operator to see how the Ticket Gate responds — green, amber or red.</p>
     <div id="worker-btns"></div>
+  </div>
+</div>
+
+<div class="sheet-bk" id="profile-sheet" onclick="if(event.target===this)closeProfile()">
+  <div class="sheet">
+    <h3>Profile</h3>
+    <div id="profile-body"></div>
   </div>
 </div>
 
@@ -337,6 +359,21 @@ var curAsset=0;
 function setTopRight(html){ var el=document.getElementById('tb-right'); if(el) el.innerHTML=html; }
 function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><span id="who-name">'+currentWorker.name+'</span></button>'; }
 function plantGoBack(){ if(window.history.length>1){ history.back(); } else { location.href='index.html'; } }
+var PLANT_SUP_NAME={ 'Parramatta':'Eoin Burke', 'Blacktown':"Lee O'Brien", 'Liverpool':'Brendan Kelly' };
+function openProfile(){
+  var supLocked=getRole()==='supervisor';
+  var role = supLocked ? (oversightSite+' Supervisor') : 'Company Director';
+  var name = supLocked ? (PLANT_SUP_NAME[oversightSite]||'Site Supervisor') : 'Director';
+  document.getElementById('profile-body').innerHTML =
+    '<div style="text-align:center;padding:4px 0 14px">'+
+      '<div style="width:66px;height:66px;border-radius:50%;background:#EAF1ED;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 10px">👤</div>'+
+      '<div style="font-size:17px;font-weight:700;color:var(--deep)">'+name+'</div>'+
+      '<div style="font-size:12.5px;color:var(--t2);margin-top:2px">'+role+'</div>'+
+    '</div>'+
+    '<div style="font-size:11.5px;color:var(--t3);text-align:center;line-height:1.5">Demo profile — once logins are added this opens the signed-in person\'s real profile, licences and settings.</div>';
+  document.getElementById('profile-sheet').classList.add('on');
+}
+function closeProfile(){ document.getElementById('profile-sheet').classList.remove('on'); }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -561,7 +598,7 @@ function _expired(d){ return d && new Date(d) < new Date(); }
 function renderOversight(){
   var supLocked = (getRole()==='supervisor');
   if(supLocked){ oversightSite = getSiteParam() || 'Parramatta'; }
-  setTopRight('<div class="badge-dir">'+(supLocked ? (oversightSite+' Supervisor') : 'Director')+'</div>');
+  setTopRight('<button class="profile-btn" onclick="openProfile()">👤 '+(supLocked ? (oversightSite+' Supervisor') : 'Director')+'</button>');
   var siteMatch=function(code){ return oversightSite==='All' || assetSite(code)===oversightSite; };
   var fleet=ASSETS.filter(function(a){ return siteMatch(a.code); });
   var open=WORKORDERS.filter(function(w){ return w.status!=='Returned to service' && siteMatch(w.code); });
@@ -582,7 +619,7 @@ function renderOversight(){
 
   var body='';
   if(platTab==='dashboard'){
-    var kpi=function(l,v,col,ic,trend){ return '<div class="kpi" style="border-top-color:'+col+'"><div class="kpi-l">'+l+'</div><div class="kpi-row"><span class="kpi-ic">'+ic+'</span><span class="kpi-v" style="color:'+col+'">'+v+'</span>'+(trend||'')+'</div></div>'; };
+    var kpi=function(l,v,cls,ic,trend){ return '<div class="kpi '+cls+'"><div class="kpi-l">'+l+'</div><div class="kpi-row"><span class="kpi-ic">'+ic+'</span><span class="kpi-v">'+v+'</span>'+(trend||'')+'</div></div>'; };
     var need=fleet.filter(function(a){ return a.status!=='operational' || _expired(a.service_due) || _expired(a.rego_expiry); });
     var attHtml=need.length?need.map(function(a){
       var reason = a.status!=='operational'?a.status.replace('_',' '):(_expired(a.rego_expiry)?'Registration expired':'Service overdue');
@@ -590,14 +627,14 @@ function renderOversight(){
     }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines operational.</div></div></div>';
     var blocked=(oversightSite==='All')?3:1;
     body='<div class="fcard"><div class="fcard-hdr">📊 Fleet Overview</div><div class="fcard-body"><div class="kpis">'+
-        kpi('Machines',fleet.length,'#1F495C','🚜','')+
-        kpi('Operational',opCount,'#1B6E3A','✅',kpiTrend(opCount,opCount-1,true))+
-        kpi('Need Attention',attnCount,'#A06000','⚠️',kpiTrend(attnCount,attnCount+2,false))+
-        kpi('Open Work Orders',open.length,'#A32D2D','🔧',kpiTrend(open.length,open.length+1,false))+
+        kpi('Machines',fleet.length,'k-blue','🚜','')+
+        kpi('Operational',opCount,'k-green','✅',kpiTrend(opCount,opCount-1,true))+
+        kpi('Need Attention',attnCount,'k-amber','⚠️',kpiTrend(attnCount,attnCount+2,false))+
+        kpi('Open Work Orders',open.length,'k-red','🔧',kpiTrend(open.length,open.length+1,false))+
       '</div></div></div>'+
       '<div class="fcard" style="border-top-color:#A32D2D"><div style="padding:14px 15px;background:#FCE9E9"><div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🔒 Due-diligence — operations blocked</div><div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>'+blocked+'</b> attempt'+(blocked===1?'':'s')+' this month to operate a machine without the required licence/ticket '+(blocked===1?'was':'were')+' <b>stopped at the gate</b> before work began.</div></div></div>'+
       '<div class="fcard"><div class="fcard-hdr">⚠ Needs Attention ('+need.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+attHtml+'</div></div>'+
-      '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend2"><div class="s-l">Last 12 months</div><div class="s-v">'+money(spend12)+'</div><div style="font-size:10px;color:#15803D;font-weight:800;margin-top:4px">▼ 8% vs prior year</div></div><div class="spend2"><div class="s-l">Last 6 months</div><div class="s-v">'+money(Math.round(spend12*0.45))+'</div></div></div></div>';
+      '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend-hero"><div class="s-l">Last 12 months</div><div class="s-v">'+money(spend12)+'</div><div class="s-tr">▼ 8% vs prior year</div></div><div class="spend-mini"><div class="s-l">Last 6 months</div><div class="s-v">'+money(Math.round(spend12*0.45))+'</div></div></div></div>';
   } else if(platTab==='assets'){
     var rows=fleet.map(function(a){
       var dt=plantDetails(a.code);
