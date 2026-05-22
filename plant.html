@@ -732,6 +732,7 @@ function submitPrestart(){
   if(km){ if(PLANT_DETAILS[a.code]) PLANT_DETAILS[a.code].km=reading; } else { a.hours=reading; }
   var faults=faultIdx.length;
   var criticalFault = faults>0 && faultIdx.some(function(k){ var sev=document.getElementById('ps-sev'+k); return (_psList[+k]&&_psList[+k].crit) || (sev&&/Critical/.test(sev.value)); });
+  if(faults>0){ var _fs=faultIdx.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(faultIdx.length>2?' +'+(faultIdx.length-2)+' more':''); WORKORDERS.unshift({wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}); _setPlantAlert(a, _fs, criticalFault); }
   var body;
   if(faults>0 && criticalFault){ a.status='out_of_service'; body='<div style="text-align:center"><div style="font-size:42px">⛔</div><div style="font-size:16px;font-weight:800;color:var(--fail);margin-top:6px">Critical fault — out of service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' has been taken <b>out of service</b> and a <b>high-priority</b> work order raised to the mechanic. This machine must not be operated.</div></div>'; }
   else if(faults>0){ a.status='fault_reported'; body='<div style="text-align:center"><div style="font-size:42px">⚠️</div><div style="font-size:16px;font-weight:800;color:var(--warn);margin-top:6px">Fault reported</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+faults+' fault'+(faults>1?'s':'')+' flagged on '+a.code+' → a work order has been raised and sent to the mechanic.</div></div>'; }
@@ -764,6 +765,10 @@ function assetSite(code){ return PLANT_SITE_BY_CODE[code]||'Parramatta'; }
 var PLANT_SITES=['Parramatta','Blacktown','Liverpool'];
 var oversightSite='All';
 function plantSetSite(s){ oversightSite=s; renderOversight(); }
+var _woSeq=0;
+function _plantAlerts(){ try{ return JSON.parse(localStorage.getItem('slan_plant_alerts')||'[]'); }catch(e){ return []; } }
+function _setPlantAlert(a, fault, critical){ var arr=_plantAlerts().filter(function(x){return x.code!==a.code;}); arr.push({code:a.code, machine:a.make+' '+a.model, site:assetSite(a.code), fault:fault, critical:!!critical, ts:Date.now()}); try{ localStorage.setItem('slan_plant_alerts', JSON.stringify(arr)); }catch(e){} }
+function _clearPlantAlert(code){ try{ localStorage.setItem('slan_plant_alerts', JSON.stringify(_plantAlerts().filter(function(x){return x.code!==code;}))); }catch(e){} }
 var WORKORDERS=[
   {wo:'WO-2026-0041', code:'CRN-011', machine:'Tadano GR-250 City Crane', fault:'Hydraulic leak at slew ring — flagged on a pre-start', priority:'High', status:'Raised', raised:"today · Lee O'Brien"},
   {wo:'WO-2026-0039', code:'GEN-005', machine:'Denyo DCA-45 Generator', fault:'500 hr service overdue', priority:'Medium', status:'In progress', raised:'2 days ago · scheduled'},
@@ -995,7 +1000,7 @@ function openWO(i){
   showDetail(html);
 }
 function completeWO(wo){
-  var w=WORKORDERS.find(function(x){return x.wo===wo;}); if(w){ w.status='Returned to service'; }
+  var w=WORKORDERS.find(function(x){return x.wo===wo;}); if(w){ w.status='Returned to service'; _clearPlantAlert(w.code); var ast=ASSETS.find(function(x){return x.code===w.code;}); if(ast) ast.status='operational'; }
   slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Work order complete</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+wo+' completed — machine marked returned to service.</div></div>', function(){ renderOversight(); });
 }
 var QR_SIZE='M'; var QR_ONE=null;
