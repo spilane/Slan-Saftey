@@ -564,6 +564,7 @@ function openHub(i){
   if(_sm){ var _over=_sm.toGo<0; svcMeterRow='<div class="svc-row"><span>Service interval</span><span style="color:'+(_over?'var(--fail)':(svcSoon(_sm)?'var(--warn)':'var(--pass)'))+'">'+(_over?('Overdue '+Math.abs(_sm.toGo).toLocaleString()+' '+_sm.meter):('In '+_sm.toGo.toLocaleString()+' '+_sm.meter))+'</span></div>'; }
   var lift = a.lift_note ? '<div class="lift"><b>Lifting data</b>SWL '+(a.swl||'—')+'<br>'+a.lift_note+'</div>' : '';
   var premobHubRow = (getRole()!=='worker' && isHired(a.code) && _premobState(a.code).cleared) ? ('<div class="sec-h">Pre-mobilisation</div><div class="tile"><button class="row" onclick="plantPremobOpen(\''+a.code+'\')"><div class="row-ic">✅</div><div class="row-main"><div class="row-t">Pre-mobilisation checklist — cleared</div><div class="row-s">Hired from '+hireInfo(a.code).supplier+' · view the completed form</div></div><div class="chev">›</div></button></div>') : '';
+  var paperPrestartRow = (isHired(a.code) && _premobState(a.code).cleared) ? ('<div class="sec-h">Daily pre-start (paper book)</div>'+(_prestartDoneToday(a.code) ? '<div class="tile" style="padding:12px 14px;font-size:12.5px;color:#1B5E3F;background:#EAF5EF;border:1px solid #BFE3D0">✓ Today’s pre-start confirmed — logged to your records.</div>' : '<div class="tile" style="padding:12px 14px"><div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:8px">This machine runs off the supplier’s paper pre-start book. Confirm today’s pre-start was completed so it shows in your records and pre-starts-done count.</div><button class="cta" style="margin:0" onclick="plantPaperPrestart(\''+a.code+'\')">✓ Confirm today’s pre-start done</button></div>') ) : '';
   var uploads=_plantDocsFor(a.code);
   var dropHtml = (getRole()!=='worker') ? (
     '<div class="sec-h">Upload &amp; smart import</div>'+
@@ -593,7 +594,7 @@ function openHub(i){
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
     '</div>') : '')+
-    '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift + premobHubRow + dropHtml +
+    '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift + premobHubRow + paperPrestartRow + dropHtml +
     '<div class="sec-h">Recent pre-starts (last 7 days)</div><div class="tile">'+(rec||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts in the last 7 days.</div></div></div>')+'</div>'+
     '<div class="sec-h">Service</div><div class="svc">'+
       '<div class="svc-row"><span>Last service</span><span>'+fmt(a.service_last)+'</span></div>'+
@@ -1109,6 +1110,14 @@ function _savePlantRecord(rec){
 }
 function _allPlantRecords(){ try{ var arr=JSON.parse(localStorage.getItem('slan_plant_records')||'[]'); if(!Array.isArray(arr)) arr=[]; arr.forEach(function(r){ r.when=new Date(r.when); }); return arr.sort(function(a,b){ return b.when-a.when; }); }catch(e){ return []; } }
 function _recordsFor(code){ return _allPlantRecords().filter(function(r){ return r.code===code; }); }
+/* §4 — hired plant runs off the supplier's PAPER pre-start book; let the operator confirm today's was done so it still shows in the records/count */
+function _prestartDoneToday(code){ var t=new Date(); t.setHours(0,0,0,0); return _recordsFor(code).some(function(r){ return r.when>=t && r.paper; }); }
+function plantPaperPrestart(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
+  _savePlantRecord({ code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:((currentWorker&&currentWorker.name)?currentWorker.name:'Operator')+' (paper book)', when:new Date(), reading:(a.hours||0), meter:'hrs', faults:0, critical:false, paper:true, items:[], comments:'Daily pre-start completed in the supplier paper book — confirmed in app.' });
+  openHub(ASSETS.indexOf(a));
+  if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:40px">✅</div><div style="font-size:15px;font-weight:800;color:var(--pass);margin-top:6px">Pre-start logged</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — today’s paper pre-start recorded. It now shows in your pre-starts-done count.</div></div>');
+}
 function _loadPlantRecord(code){ var a=_recordsFor(code); return a.length?a[0]:null; }
 function _loadRecordById(id){ var a=_allPlantRecords(); for(var i=0;i<a.length;i++){ if(a[i].id===id) return a[i]; } return null; }
 function _latestPerMachine(arr){ var seen={}, out=[]; arr.forEach(function(r){ if(!seen[r.code]){ seen[r.code]=1; out.push(r); } }); return out; }
