@@ -448,7 +448,7 @@ function openDemoSheet(){
 }
 function closeDemoSheet(){ document.getElementById('demo-sheet').classList.remove('on'); }
 function demoSwitchWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catch(e){} currentWorker=WORKERS[i]; closeDemoSheet(); if(getRole()!=='worker'){ location.href='plant.html'; } else { var el=document.getElementById('who-name'); if(el) el.textContent=currentWorker.name; showList(); } }
-function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
+function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -626,11 +626,12 @@ function requestApproval(){
   var reason=(document.getElementById('ovr-reason')&&document.getElementById('ovr-reason').value||'').trim();
   var r=ticketGate(currentWorker,a);
   var reasons=r.checks.filter(function(c){ return c.status!=='pass'; }).map(function(c){ return c.name+' — '+c.detail; });
+  // capture the actual fault so the supervisor sees what they're approving
+  var fault='', faultDesc='';
+  try{ var wo=_openWOsFor(a.code)[0]; if(wo) fault=wo.fault||''; var rec=_loadPlantRecord(a.code); if(rec){ var fi=(rec.items||[]).filter(function(x){return x.status==='f';})[0]; if(fi){ if(!fault) fault=fi.q; faultDesc=fi.desc||''; } } }catch(e){}
   var arr=_approvals().filter(function(x){ return !(x.code===a.code && x.worker===currentWorker.name && x.status==='pending'); });
-  arr.push({ id:'AP-'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e4).toString(36), code:a.code, machine:a.make+' '+a.model, site:assetSite(a.code), worker:currentWorker.name, worker_reason:reason, gate_reasons:reasons, requested_at:new Date().toISOString(), status:'pending' });
+  arr.push({ id:'AP-'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e4).toString(36), code:a.code, machine:a.make+' '+a.model, site:assetSite(a.code), worker:currentWorker.name, worker_reason:reason, gate_reasons:reasons, fault:fault, fault_desc:faultDesc, requested_at:new Date().toISOString(), status:'pending' });
   _saveApprovals(arr);
-  // notify the WHS home's Today's-activity (shared alert the supervisor/worker chip reads)
-  if(!_plantAlerts().some(function(x){return x.code===a.code;})){ _setPlantAlert(a, 'Approval requested — '+currentWorker.name, false); }
   slanMsg('Request sent','<div style="text-align:center"><div style="font-size:42px">📨</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Sent to '+_supName(a.code)+'</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">Your supervisor has been notified and will approve or reject this pre-start. You\'ll see their decision here.</div></div>', function(){ openGate(); });
 }
 function openApproval(id){
@@ -640,6 +641,7 @@ function openApproval(id){
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="renderOversight()">‹ Approvals</button>'+
     '<div class="hub-head"><div class="hub-ic">'+(a?a.icon:'🛠️')+'</div><div style="flex:1"><div class="hub-code">'+ap.code+'</div><div class="hub-mm">'+ap.machine+'</div><div class="hub-hours">Pre-start approval requested · '+ap.worker+'</div></div></div>'+
+    (ap.fault?'<div class="fcard" style="border-top-color:#A06000;margin-bottom:12px"><div style="padding:12px 14px;background:#FFF6E6"><div style="font-size:10.5px;font-weight:800;color:#8A5A00;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">⚠ Reported fault</div><div style="font-size:13px;color:#5a4a2a;font-weight:700">'+ap.fault+'</div>'+(ap.fault_desc?'<div style="font-size:12.5px;color:#5a4a2a;margin-top:4px;line-height:1.5">'+ap.fault_desc+'</div>':'')+'</div></div>':'')+
     '<div class="sec-h">Why approval is needed</div><div class="tile">'+reasons+'</div>'+
     (ap.worker_reason?'<div class="sec-h">Operator&rsquo;s note</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-s">&ldquo;'+ap.worker_reason+'&rdquo;</div></div></div></div>':'')+
     (_loadPlantRecord(ap.code)?'<button class="btn-ghost" style="margin-top:12px" onclick="plantViewSavedPDF(\''+ap.code+'\')">📄  View latest pre-start record (PDF)</button>':'')+
