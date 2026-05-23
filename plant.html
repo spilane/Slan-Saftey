@@ -378,7 +378,7 @@ function plantDetails(code){ return PLANT_DETAILS[code]||{}; }
 function getDocs(a){
   var d=[ {ic:'📘',t:'Operator Manual',s:a.make+' '+a.model},
           {ic:'🛠️',t:'Service Manual',s:'Maintenance & schedules'},
-          {ic:'⚠️',t:'Risk Assessment',s:'Plant risk assessment'},
+          {ic:'⚠️',t:'Risk Assessment',s:'Plant risk assessment',act:'ra'},
           {ic:'📄',t:'SWMS',s:'Safe Work Method Statement'} ];
   if(a.swl){
     d.push({ic:'🟢',t:'Periodic Inspection (Green Sticker)',s:'Current — next due '+fmt(a.service_due)});
@@ -540,7 +540,8 @@ function openHub(i){
   var hubQr=''; try{ var _q=qrcode(0,'M'); _q.addData(location.origin+location.pathname+'?machine='+a.code); _q.make(); hubQr=_q.createImgTag(5,6); }catch(e){}
   var dt=plantDetails(a.code), t0=new Date();
   var docs=getDocs(a).map(function(d){
-    return '<button class="row" onclick="slanMsg(\'Document\',\'Opens the '+d.t.replace(/'/g,'')+' for this machine (the stored file).\')"><div class="row-ic">'+d.ic+'</div><div class="row-main"><div class="row-t">'+d.t+'</div><div class="row-s">'+d.s+'</div></div><div class="chev">›</div></button>';
+    var oc = d.act==='ra' ? 'plantViewRA()' : "slanMsg('Document','Opens the "+d.t.replace(/'/g,'')+" for this machine (the stored file).')";
+    return '<button class="row" onclick="'+oc+'"><div class="row-ic">'+d.ic+'</div><div class="row-main"><div class="row-t">'+d.t+'</div><div class="row-s">'+d.s+'</div></div><div class="chev">›</div></button>';
   }).join('');
   var rec=recentPrestarts(a).map(function(p){
     var o=_recOutcome(p.rec);
@@ -1088,6 +1089,109 @@ function plantViewSavedRecordById(id){
   if(!r){ slanMsg('No record','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">That pre-start record could not be found.</div>'); return; }
   openPdfDoc(plantPrestartPDF(r), 'Prestart-'+r.code+'-'+iso(r.when)+'.pdf');
 }
+/* ---------- PLANT RISK ASSESSMENT (per machine type) ---------- */
+function _raCat(a){ var t=a.type;
+  if(t==='Truck') return 'truck';
+  if(t==='Telehandler') return 'telehandler';
+  if(t==='Generator') return 'generator';
+  if(t==='Lighting Tower') return 'lighting';
+  if(t==='Slewing Crane'||t==='City Crane'||/Magni/.test(t)) return 'crane';
+  if(t==='EWP') return 'ewp';
+  if(t==='Bus'||t==='Ute') return 'vehicle';
+  return 'default';
+}
+var RA_SPECIFIC={
+  crane:[
+    {h:'Crane overturning / loss of stability', r:'Crush injury or fatality, major property damage', c:'Set up level on firm assessed ground; outriggers fully deployed on rated pads; operate strictly within the load chart; ground-bearing assessment for heavy lifts', res:'Medium'},
+    {h:'Dropped or swinging load', r:'Person struck — serious injury or fatality', c:'Certified, inspected & tagged lifting gear; licensed dogger/rigger directs the lift; exclusion zone under and around the load; never stand under a suspended load', res:'Low'},
+    {h:'Contact with overhead powerlines', r:'Electrocution', c:'Maintain exclusion distances; spotter; tiger tails / line marking; permit & SWMS for work near live lines', res:'Low'},
+    {h:'Two-blocking / over-hoist', r:'Rope or boom failure, dropped load', c:'Anti two-block device function-tested at pre-start; LMI operational; competent operator', res:'Low'}
+  ],
+  telehandler:[
+    {h:'Tip-over / loss of stability', r:'Crush injury or fatality', c:'Operate within the load chart for radius & height; level firm ground; smooth movements; correct counterweight; load retracted & low when travelling', res:'Low'},
+    {h:'Falling load / attachment detachment', r:'Person struck', c:'Attachment correctly fitted with locking pins; quick-hitch confirmed locked; load secured; travel with forks low', res:'Low'},
+    {h:'Crush at pinch points / pedestrian contact', r:'Serious injury', c:'Exclusion zone; spotter for blind moves; reversing camera & alarm; no riders', res:'Low'}
+  ],
+  ewp:[
+    {h:'Fall from the platform', r:'Fatality', c:'Full-body harness & lanyard to anchor point (boom lift); gates closed & latched; never climb or sit on the rails; operate only from inside the basket', res:'Low'},
+    {h:'Entrapment / crush against overhead structure', r:'Crush injury or fatality', c:'Plan the route; ground spotter; secondary guarding / no-go zones; lower if anyone enters the danger zone', res:'Low'},
+    {h:'Machine tip-over', r:'Crush injury', c:'Firm level ground; outriggers / pothole protection deployed; operate within wind & load rating; no overreaching', res:'Low'},
+    {h:'Contact with overhead powerlines', r:'Electrocution', c:'Maintain exclusion distances; spotter; isolate / de-energise where possible', res:'Low'}
+  ],
+  truck:[
+    {h:'Traffic interaction / reversing', r:'Pedestrian struck — serious injury', c:'Traffic management plan; separate plant & pedestrians; reversing camera & alarm; spotter for blind reversing; site speed limits', res:'Low'},
+    {h:'Unrestrained or shifting load', r:'Load falls / vehicle instability', c:'Load restraint to standard; within GVM & axle limits; check restraints before and during travel', res:'Low'},
+    {h:'Driver fatigue', r:'Collision', c:'Fatigue management; scheduled breaks; do not drive when impaired', res:'Low'}
+  ],
+  vehicle:[
+    {h:'Vehicle collision / passenger transport', r:'Injury to driver, passengers or others', c:'Licensed driver for the class; seatbelts worn by all; do not exceed seating capacity; journey management; obey site & road rules', res:'Low'},
+    {h:'Fatigue / distraction', r:'Collision', c:'Rest breaks; no mobile phone use while driving; pre-trip vehicle check', res:'Low'}
+  ],
+  generator:[
+    {h:'Electric shock from leads / output', r:'Electrocution', c:'RCD tested & tagged; earth stake / bonding connected; inspect leads & plugs; no daisy-chaining; test-and-tag current', res:'Low'},
+    {h:'Exhaust fumes (carbon monoxide)', r:'Asphyxiation / CO poisoning', c:'Operate outdoors or well-ventilated; locate away from air intakes & occupied spaces; CO awareness', res:'Low'},
+    {h:'Fuel handling / fire', r:'Burns, fire', c:'Spill bunding / drip tray; never refuel while running or hot; fire extinguisher nearby; no ignition sources', res:'Low'},
+    {h:'Noise', r:'Hearing damage', c:'Hearing protection in the zone; maintain exhaust/muffler; position away from workers', res:'Low'}
+  ],
+  lighting:[
+    {h:'Mast contact with overhead lines on raising', r:'Electrocution', c:'Check overhead clearances before raising; maintain exclusion distances; never raise the mast under lines', res:'Low'},
+    {h:'Overturning in wind', r:'Person struck / property damage', c:'Outriggers / stabilisers deployed on firm level ground; operate within wind rating; lower the mast in high wind', res:'Low'},
+    {h:'Electrical (RCD / leads)', r:'Electric shock', c:'RCD tested; inspect leads; earth as required', res:'Low'},
+    {h:'Glare to traffic / work area', r:'Trips or vehicle incident', c:'Aim lamps to avoid glare to roads & operators; light the task, not the eyes', res:'Low'}
+  ],
+  default:[]
+};
+var RA_GENERIC=[
+  {h:'Mobile plant / pedestrian interaction', r:'Person struck or run over — serious injury or fatality', c:'Separate plant & people; exclusion zones; spotter for blind moves; reversing alarm & camera; hi-vis; enforce site speed limits', res:'Low'},
+  {h:'Unauthorised or unlicensed operation', r:'Loss of control, injury, damage', c:'QR Ticket Gate checks licence/VOC; keys controlled; daily pre-start before use; only authorised, competent operators', res:'Low'},
+  {h:'Plant defect / poor maintenance', r:'Mechanical failure, loss of control', c:'Daily pre-start; servicing by interval; defects tagged & taken out of service; work orders tracked to completion', res:'Low'},
+  {h:'Manual handling (access/egress, attachments)', r:'Musculoskeletal strain', c:'Maintain 3 points of contact; mechanical aids for heavy attachments; team lift; training', res:'Low'}
+];
+function _raFor(a){ return (RA_SPECIFIC[_raCat(a)]||[]).concat(RA_GENERIC); }
+function plantRiskPDF(a){
+  var doc=new window.jspdf.jsPDF('p','mm','a4');
+  var W=210,M=14,GOLD=[184,150,12],GREEN=[44,107,94]; var y=16;
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Plant Risk Assessment', M, y);
+  if(SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, 3, 34, 14); }catch(e){} }
+  y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=8;
+  doc.setFontSize(9);
+  function kv(k,v){ doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.text(k,M,y); doc.setFont('helvetica','normal'); doc.setTextColor(35,35,35); doc.text(String(v),M+38,y); y+=5.6; }
+  var assessed=new Date(Date.now()-120*86400000), review=new Date(Date.now()+245*86400000);
+  kv('Machine:', a.code+' · '+a.make+' '+a.model);
+  kv('Type / site:', a.type+' · '+assetSite(a.code));
+  kv('Assessed by:', "Mary O'Brien — WHS Advisor");
+  kv('Date assessed:', fmt(assessed));
+  kv('Next review:', fmt(review));
+  kv('Overall residual:', 'Low — acceptable with the controls below applied');
+  y+=2;
+  function bar(t){ if(y>266){doc.addPage();y=16;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=10.5; doc.setTextColor(40,40,40); doc.setFont('helvetica','normal'); }
+  bar('Hazards & controls');
+  _raFor(a).forEach(function(hz,i){
+    doc.setFontSize(9);
+    var hLine=doc.splitTextToSize((i+1)+'.  '+hz.h, W-2*M);
+    var rLine=doc.splitTextToSize('Could cause: '+hz.r, W-2*M-4);
+    var cLine=doc.splitTextToSize('Controls: '+hz.c, W-2*M-4);
+    var blockH=4.8*hLine.length+4.4*rLine.length+4.4*cLine.length+5+4;
+    if(y+blockH>284){ doc.addPage(); y=16; }
+    doc.setFont('helvetica','bold'); doc.setTextColor(27,58,45); doc.text(hLine, M, y); y+=4.8*hLine.length;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.4); doc.setTextColor(120,60,60); doc.text(rLine, M+4, y); y+=4.4*rLine.length;
+    doc.setTextColor(45,45,45); doc.text(cLine, M+4, y); y+=4.4*cLine.length;
+    var rc = /High/.test(hz.res)?[163,45,45]:(/Med/.test(hz.res)?[160,96,0]:[27,110,58]);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(rc[0],rc[1],rc[2]); doc.text('Residual risk: '+hz.res, M+4, y); y+=6.5;
+  });
+  if(y>250){doc.addPage();y=16;}
+  bar('Assessment & sign-off');
+  doc.setFontSize(8.6); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40);
+  var so=doc.splitTextToSize('This plant risk assessment must be read and understood before operating the machine. Operators confirm the listed controls are in place at pre-start. Review on the date above, after any incident, or whenever the plant, task or site conditions change.', W-2*M);
+  doc.text(so, M, y); y+=4.8*so.length+7;
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('ASSESSED BY', M, y); doc.text('APPROVED BY', M+98, y); y+=7;
+  doc.setFont('times','italic'); doc.setFontSize(17); doc.setTextColor(27,58,45); doc.text("Mary O'Brien", M, y); doc.text('Eoin Burke', M+98, y); y+=5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,120,120); doc.text('WHS Advisor · '+fmt(assessed), M, y); doc.text('Site Supervisor · '+fmt(assessed), M+98, y);
+  var pages=doc.internal.getNumberOfPages();
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-011 · Plant Risk Assessment · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
+  return doc;
+}
+function plantViewRA(){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } var a=ASSETS[curAsset]; openPdfDoc(plantRiskPDF(a), 'RiskAssessment-'+a.code+'.pdf'); }
 var WORKORDERS=[
   {wo:'WO-2026-0041', code:'CRN-011', machine:'Tadano GR-250 City Crane', fault:'Hydraulic leak at slew ring — flagged on a pre-start', priority:'High', status:'Raised', raised:"today · Lee O'Brien"},
   {wo:'WO-2026-0039', code:'GEN-005', machine:'Denyo DCA-45 Generator', fault:'500 hr service overdue', priority:'Medium', status:'In progress', raised:'2 days ago · scheduled'},
