@@ -1950,6 +1950,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="sp-inc" onclick="chipTapIncidents()" style="display:none">
         <div class="sp-dot sp-pending"></div><span id="sp-inc-lbl">Incidents</span>
       </div>
+      <div class="status-pill" id="sp-plant" onclick="workerChipTapPlant()" style="display:none">
+        <div class="sp-dot sp-pending"></div><span id="sp-plant-lbl">Plant</span>
+      </div>
     </div>
   </div>
 
@@ -16525,6 +16528,7 @@ async function updateStatusStrip() {
   try { ptwUpdateTileSubtitle(); } catch(e) {}
   try { workerUpdatePermitsTileSub(); } catch(e) {}
   try { updateWorkerSdsTileSub(); } catch(e) {}
+  try { workerUpdatePlantChip(); } catch(e) {}
 }
 
 function workerUpdatePermitsTileSub() {
@@ -17004,6 +17008,16 @@ function supUpdatePlantChip() {
     if (alerts.length) { sub.textContent = (alerts.length === 1 ? alerts[0].code + (alerts[0].critical ? ' — out of service' : ' needs attention') : alerts.length + ' machines need attention'); sub.style.color = '#A32D2D'; sub.style.fontWeight = '700'; if (tile) tile.style.borderColor = '#A32D2D'; }
     else { sub.textContent = 'Machines, pre-starts & service'; sub.style.color = ''; sub.style.fontWeight = ''; if (tile) tile.style.borderColor = ''; }
   }
+}
+function workerChipTapPlant() { location.href = 'plant.html'; }
+function workerUpdatePlantChip() {
+  var alerts = [];
+  try { alerts = JSON.parse(localStorage.getItem('slan_plant_alerts') || '[]'); } catch(e) {}
+  var crit = alerts.some(function(x){ return x.critical; });
+  var pill = document.getElementById('sp-plant'), lbl = document.getElementById('sp-plant-lbl');
+  if (!pill) return;
+  if (alerts.length) { pill.style.display = ''; if (lbl) lbl.textContent = (alerts.length === 1 ? alerts[0].code + (alerts[0].critical ? ' — OUT OF SERVICE' : ' fault flagged') : alerts.length + ' plant flagged'); setPillState('sp-plant', crit ? 'fail' : 'warn'); }
+  else { pill.style.display = 'none'; }
 }
 
 function supUpdatePermitsChip() {

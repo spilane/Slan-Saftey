@@ -256,6 +256,7 @@ table.reg tr.attn-amber td:first-child{box-shadow:inset 3px 0 0 #E08A1E}
 <div class="sheet-bk" id="demo-sheet" onclick="if(event.target===this)closeDemoSheet()">
   <div class="sheet">
     <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:2px auto 16px"></div>
+    <button class="wbtn" onclick="location.href='index.html'" style="border-color:var(--mid);background:#F4F8F5;margin-bottom:14px"><b>‹ Back to the WHS app</b><span>Leave Plant &amp; Equipment, return to the main app</span></button>
     <h3>View demo as&hellip;</h3>
     <p>Choose a role to walk through the plant platform.</p>
     <button class="wbtn" onclick="location.href='plant.html'"><b>Worker (QR)</b><span>Daniel Byrne — Plant Operator — Byrne Plant Hire</span></button>
@@ -422,7 +423,8 @@ var _homeView='list';
 function plantGoBack(){
   var det=document.getElementById('screen-detail');
   if(det && det.style.display!=='none'){ if(_homeView==='oversight'){ renderOversight(); } else { showList(); } return; }
-  if(window.history.length>1){ history.back(); } else { location.href='index.html'; }
+  // top level of the plant page → return to the WHS app (plant is a section of it)
+  location.href='index.html';
 }
 var PLANT_SUP_NAME={ 'Bondi Junction Mixed Use':'Eoin Burke', 'Parramatta Metro Stage 2':'Eoin Murphy', 'Sydney Olympic Park':"Sean O'Connor" };
 function openProfile(){
@@ -626,6 +628,8 @@ function requestApproval(){
   var arr=_approvals().filter(function(x){ return !(x.code===a.code && x.worker===currentWorker.name && x.status==='pending'); });
   arr.push({ id:'AP-'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e4).toString(36), code:a.code, machine:a.make+' '+a.model, site:assetSite(a.code), worker:currentWorker.name, worker_reason:reason, gate_reasons:reasons, requested_at:new Date().toISOString(), status:'pending' });
   _saveApprovals(arr);
+  // notify the WHS home's Today's-activity (shared alert the supervisor/worker chip reads)
+  if(!_plantAlerts().some(function(x){return x.code===a.code;})){ _setPlantAlert(a, 'Approval requested — '+currentWorker.name, false); }
   slanMsg('Request sent','<div style="text-align:center"><div style="font-size:42px">📨</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Sent to '+_supName(a.code)+'</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">Your supervisor has been notified and will approve or reject this pre-start. You\'ll see their decision here.</div></div>', function(){ openGate(); });
 }
 function openApproval(id){
@@ -652,6 +656,29 @@ function approvalDecide(id, approve){
   ap.status=approve?'approved':'rejected'; ap.decided_by=(PLANT_SUP_NAME[oversightSite]||'Supervisor'); ap.decided_at=new Date().toISOString(); ap.decision_reason=reason;
   _saveApprovals(arr);
   slanMsg('', '<div style="text-align:center"><div style="font-size:42px">'+(approve?'✅':'⛔')+'</div><div style="font-size:16px;font-weight:800;color:'+(approve?'var(--pass)':'var(--fail)')+';margin-top:6px">'+(approve?'Pre-start approved':'Pre-start rejected')+'</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+ap.worker+' has been notified — '+ap.code+'.</div></div>', function(){ renderOversight(); });
+}
+/* ---------- Fleet Overview drill-down (tap a KPI → breakdown) ---------- */
+function _drillFleet(){ return ASSETS.filter(function(a){ return oversightSite==='All' || assetSite(a.code)===oversightSite; }); }
+function _drillRow(a){ return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+assetSite(a.code)+' · '+a.status.replace(/_/g,' ')+'</div></div><div class="chev">›</div></button>'; }
+function plantKpiDrill(key){
+  var fleet=_drillFleet();
+  var _isOut=function(a){ return a.status==='out_of_service'||a.status==='retired'||_expired(a.rego_expiry); };
+  var _isAttn=function(a){ return !_isOut(a) && (a.status==='fault_reported'||_expired(a.service_due)||svcSoon(svcMeter(a))||(a.insurance_expiry&&daysBetween(a.insurance_expiry,new Date())<=30)); };
+  var title, rows;
+  if(key==='machines'){
+    title='Fleet by type';
+    var byType={}; fleet.forEach(function(a){ (byType[a.type]=byType[a.type]||[]).push(a); });
+    rows=Object.keys(byType).sort().map(function(t){ var arr=byType[t]; return '<button class="row" onclick="plantKpiType(\''+t.replace(/'/g,"\\'")+'\')"><div class="row-ic">'+(arr[0].icon||'🛠️')+'</div><div class="row-main"><div class="row-t">'+arr.length+' × '+t+'</div><div class="row-s">'+arr.map(function(a){return a.code;}).join(', ')+'</div></div><div class="chev">›</div></button>'; }).join('');
+  } else {
+    var list = key==='ready'?fleet.filter(function(a){return !_isOut(a)&&!_isAttn(a);}) : (key==='attention'?fleet.filter(_isAttn) : fleet.filter(_isOut));
+    title = key==='ready'?'Ready machines':(key==='attention'?'Needs attention':'Out of service');
+    rows = list.length ? list.map(_drillRow).join('') : '<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">None.</div></div></div>';
+  }
+  showDetail('<div class="wrap" style="padding:0;max-width:none"><button class="back" onclick="renderOversight()">‹ Fleet overview</button><div class="h1">'+title+'</div><div class="sub">'+(oversightSite==='All'?'All sites':oversightSite)+'</div><div class="tile">'+rows+'</div></div>');
+}
+function plantKpiType(t){
+  var list=_drillFleet().filter(function(a){ return a.type===t; });
+  showDetail('<div class="wrap" style="padding:0;max-width:none"><button class="back" onclick="plantKpiDrill(\'machines\')">‹ Fleet by type</button><div class="h1">'+t+'</div><div class="sub">'+list.length+' machine'+(list.length>1?'s':'')+' · '+(oversightSite==='All'?'all sites':oversightSite)+'</div><div class="tile">'+list.map(_drillRow).join('')+'</div></div>');
 }
 
 /* ---------- pre-start checklist ---------- */
@@ -1294,7 +1321,7 @@ function renderOversight(){
 
   var body='';
   if(platTab==='dashboard'){
-    var kpi=function(l,v,cls,ic,trend){ return '<div class="kpi '+cls+'"><div class="kpi-l">'+l+'</div><div class="kpi-row"><span class="kpi-ic">'+ic+'</span><span class="kpi-v">'+v+'</span>'+(trend||'')+'</div></div>'; };
+    var kpi=function(l,v,cls,ic,trend,key){ return '<div class="kpi '+cls+'"'+(key?' onclick="plantKpiDrill(\''+key+'\')" style="cursor:pointer"':'')+'><div class="kpi-l">'+l+'</div><div class="kpi-row"><span class="kpi-ic">'+ic+'</span><span class="kpi-v">'+v+'</span>'+(trend||'')+'</div></div>'; };
     var _isOut=function(a){ return a.status==='out_of_service' || a.status==='retired' || _expired(a.rego_expiry); };
     var _isAttn=function(a){ return !_isOut(a) && (a.status==='fault_reported' || _expired(a.service_due) || svcSoon(svcMeter(a)) || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30)); };
     var outCount=fleet.filter(_isOut).length, attnCount2=fleet.filter(_isAttn).length, readyCount=fleet.length-outCount-attnCount2;
@@ -1313,10 +1340,10 @@ function renderOversight(){
     var pendAppr=_pendingApprovals().filter(function(x){ return siteMatch(x.code); });
     var apprCard = pendAppr.length ? '<div class="fcard" style="border-top-color:#A06000"><div class="fcard-hdr" style="background:linear-gradient(135deg,#8A5A00,#A06000)">🔔 Pre-start approvals ('+pendAppr.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+pendAppr.map(function(x){ return '<button class="row" onclick="openApproval(\''+x.id+'\')"><div class="row-ic"><span class="dot" style="background:var(--warn)"></span></div><div class="row-main"><div class="row-t">'+x.code+' · '+x.worker+'</div><div class="row-s">Requesting approval — '+(x.gate_reasons&&x.gate_reasons[0]?x.gate_reasons[0]:'wants to operate this machine')+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div></div>' : '';
     body='<div class="fcard"><div class="fcard-hdr">📊 Fleet Overview</div><div class="fcard-body"><div class="kpis">'+
-        kpi('Machines',fleet.length,'k-blue','🚜','')+
-        kpi('Ready',readyCount,'k-green','✅',kpiTrend(readyCount,readyCount-1,true))+
-        kpi('Needs Attention',attnCount2,'k-amber','⚠️',kpiTrend(attnCount2,attnCount2+1,false))+
-        kpi('Out of Service',outCount,'k-red','⛔',kpiTrend(outCount,outCount+1,false))+
+        kpi('Machines',fleet.length,'k-blue','🚜','','machines')+
+        kpi('Ready',readyCount,'k-green','✅',kpiTrend(readyCount,readyCount-1,true),'ready')+
+        kpi('Needs Attention',attnCount2,'k-amber','⚠️',kpiTrend(attnCount2,attnCount2+1,false),'attention')+
+        kpi('Out of Service',outCount,'k-red','⛔',kpiTrend(outCount,outCount+1,false),'out')+
       '</div><div style="font-size:10.5px;color:var(--t3);text-align:center;margin-top:9px">Ready + Needs attention + Out of service = '+fleet.length+' machines</div></div></div>'+
       apprCard+
       '<div class="fcard" style="border-top-color:#A32D2D"><div style="padding:14px 15px;background:#FCE9E9"><div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🔒 Due-diligence — operations blocked</div><div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>'+blocked+'</b> attempt'+(blocked===1?'':'s')+' this month to operate a machine without the required licence/ticket '+(blocked===1?'was':'were')+' <b>stopped at the gate</b> before work began.</div></div></div>'+
