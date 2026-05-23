@@ -593,17 +593,64 @@ function openGate(){
       r.checks.map(function(c){ var cls=c.status==='pass'?'ck-pass':(c.status==='warn'?'ck-warn':'ck-fail'); var sym=c.status==='pass'?'✓':(c.status==='warn'?'!':'✕');
         return '<div class="check"><div class="ck-dot '+cls+'">'+sym+'</div><div><div class="ck-name">'+c.name+'</div><div class="ck-detail">'+c.detail+'</div></div></div>'; }).join('');
   if(r.outcome==='green'){ html+='<button class="btn btn-green" onclick="openPrestart()">Begin Pre-Start →</button>'; }
-  else if(r.outcome==='amber'){ html+='<div class="ovr"><label>Supervisor PIN to override</label><input id="ovr-pin" type="tel" inputmode="numeric" placeholder="Enter 4-digit PIN" maxlength="4"><div style="font-size:11px;color:var(--gold);font-weight:700;margin:4px 0 2px">Demo PIN: 4827</div><label>Reason for override</label><textarea id="ovr-reason" rows="2" placeholder="e.g. Renewal booked, supervisor approved for today"></textarea><button class="btn btn-amber" onclick="doOverride()">Override &amp; Begin Pre-Start</button></div><button class="btn-ghost" onclick="openHub(curAsset)">Cancel</button>'; }
+  else if(r.outcome==='amber'){ html+=_gateAmberHtml(a)+'<button class="btn-ghost" onclick="openHub(curAsset)">Cancel</button>'; }
   else { html+='<div class="notify">✉ Your supervisor has been notified.</div><button class="btn-ghost" onclick="openHub(curAsset)">Back to machine</button>'; }
   html+='</div></div>';
   showDetail(html);
 }
-function doOverride(){
-  var pin=(document.getElementById('ovr-pin').value||'').trim();
-  var reason=(document.getElementById('ovr-reason').value||'').trim();
-  if(pin!=='4827'){ slanMsg('Incorrect PIN','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">That supervisor PIN wasn\'t recognised — please try again.</div>'); return; }
-  if(!reason){ slanMsg('Reason required','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please enter a reason for the override.</div>'); return; }
-  openPrestart();
+/* ---------- pre-start approval (permits-style: worker requests → supervisor approves/rejects) ---------- */
+function _approvals(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_approvals')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function _saveApprovals(arr){ try{ localStorage.setItem('slan_plant_approvals', JSON.stringify(arr)); }catch(e){} }
+function _latestApproval(code, worker){ return _approvals().filter(function(x){ return x.code===code && x.worker===worker; }).sort(function(p,q){ return new Date(q.requested_at)-new Date(p.requested_at); })[0]; }
+function _pendingApprovals(){ return _approvals().filter(function(x){ return x.status==='pending'; }); }
+function _supName(code){ return PLANT_SUP_NAME[assetSite(code)]||'your supervisor'; }
+function _gateAmberHtml(a){
+  var ap=_latestApproval(a.code, currentWorker.name);
+  if(ap && ap.status==='pending'){
+    return '<div class="ovr"><div style="font-size:13.5px;color:#8A5A00;font-weight:800;margin-bottom:6px">⏳ Awaiting supervisor approval</div><div style="font-size:12.5px;color:var(--t2);line-height:1.5">Your request to operate <b>'+a.code+'</b> has been sent to <b>'+_supName(a.code)+'</b>. They will approve or reject this pre-start.</div><button class="btn-ghost" style="margin-top:10px" onclick="openGate()">↻ Check for a decision</button></div>';
+  }
+  if(ap && ap.status==='approved'){
+    return '<div class="ovr"><div style="font-size:13.5px;color:#1B6E3A;font-weight:800;margin-bottom:6px">✓ Approved by '+ap.decided_by+'</div>'+(ap.decision_reason?'<div style="font-size:12.5px;color:var(--t2);line-height:1.5;margin-bottom:10px">“'+ap.decision_reason+'”</div>':'')+'<button class="btn btn-green" onclick="openPrestart()">Begin Pre-Start →</button></div>';
+  }
+  if(ap && ap.status==='rejected'){
+    return '<div class="ovr"><div style="font-size:13.5px;color:#A32D2D;font-weight:800;margin-bottom:6px">✕ Rejected by '+ap.decided_by+'</div><div style="font-size:12.5px;color:var(--t2);line-height:1.5">'+(ap.decision_reason||'The supervisor has not approved this pre-start. Do not operate this machine.')+'</div></div>';
+  }
+  return '<div class="ovr"><label>Reason you need to operate this machine</label><textarea id="ovr-reason" rows="2" placeholder="e.g. Need the scissor lift for the ceiling fix — aware of the beacon issue"></textarea><button class="btn btn-amber" onclick="requestApproval()">Request supervisor approval</button><div style="font-size:11px;color:var(--t3);margin-top:6px">Your supervisor is notified and approves or rejects — just like a permit.</div></div>';
+}
+function requestApproval(){
+  var a=ASSETS[curAsset];
+  var reason=(document.getElementById('ovr-reason')&&document.getElementById('ovr-reason').value||'').trim();
+  var r=ticketGate(currentWorker,a);
+  var reasons=r.checks.filter(function(c){ return c.status!=='pass'; }).map(function(c){ return c.name+' — '+c.detail; });
+  var arr=_approvals().filter(function(x){ return !(x.code===a.code && x.worker===currentWorker.name && x.status==='pending'); });
+  arr.push({ id:'AP-'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e4).toString(36), code:a.code, machine:a.make+' '+a.model, site:assetSite(a.code), worker:currentWorker.name, worker_reason:reason, gate_reasons:reasons, requested_at:new Date().toISOString(), status:'pending' });
+  _saveApprovals(arr);
+  slanMsg('Request sent','<div style="text-align:center"><div style="font-size:42px">📨</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Sent to '+_supName(a.code)+'</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">Your supervisor has been notified and will approve or reject this pre-start. You\'ll see their decision here.</div></div>', function(){ openGate(); });
+}
+function openApproval(id){
+  var ap=_approvals().filter(function(x){return x.id===id;})[0]; if(!ap) return;
+  var a=ASSETS.find(function(x){return x.code===ap.code;});
+  var reasons=(ap.gate_reasons||[]).map(function(t){ return '<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">• '+t+'</div></div></div>'; }).join('') || '<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">Operator requested approval to operate this machine.</div></div></div>';
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="renderOversight()">‹ Approvals</button>'+
+    '<div class="hub-head"><div class="hub-ic">'+(a?a.icon:'🛠️')+'</div><div style="flex:1"><div class="hub-code">'+ap.code+'</div><div class="hub-mm">'+ap.machine+'</div><div class="hub-hours">Pre-start approval requested · '+ap.worker+'</div></div></div>'+
+    '<div class="sec-h">Why approval is needed</div><div class="tile">'+reasons+'</div>'+
+    (ap.worker_reason?'<div class="sec-h">Operator&rsquo;s note</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-s">&ldquo;'+ap.worker_reason+'&rdquo;</div></div></div></div>':'')+
+    (_loadPlantRecord(ap.code)?'<button class="btn-ghost" style="margin-top:12px" onclick="plantViewSavedPDF(\''+ap.code+'\')">📄  View latest pre-start record (PDF)</button>':'')+
+    '<div class="sec-h" style="margin-top:16px">Decision</div>'+
+    '<div class="ovr"><label>Note / conditions (optional to approve, required to reject)</label><textarea id="appr-reason" rows="2" placeholder="e.g. Approved — beacon on order, daytime use only / Rejected — wait for the repair"></textarea></div>'+
+    '<button class="btn btn-green" onclick="approvalDecide(\''+ap.id+'\',true)">✓ Approve pre-start</button>'+
+    '<button class="btn" style="background:var(--fail);color:#fff;margin-top:10px" onclick="approvalDecide(\''+ap.id+'\',false)">✕ Reject pre-start</button>'+
+    '</div>';
+  showDetail(html);
+}
+function approvalDecide(id, approve){
+  var reason=(document.getElementById('appr-reason')&&document.getElementById('appr-reason').value||'').trim();
+  if(!approve && !reason){ slanMsg('Reason required','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Please add a short reason for rejecting so the operator knows why.</div>'); return; }
+  var arr=_approvals(), ap=arr.filter(function(x){return x.id===id;})[0]; if(!ap) return;
+  ap.status=approve?'approved':'rejected'; ap.decided_by=(PLANT_SUP_NAME[oversightSite]||'Supervisor'); ap.decided_at=new Date().toISOString(); ap.decision_reason=reason;
+  _saveApprovals(arr);
+  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">'+(approve?'✅':'⛔')+'</div><div style="font-size:16px;font-weight:800;color:'+(approve?'var(--pass)':'var(--fail)')+';margin-top:6px">'+(approve?'Pre-start approved':'Pre-start rejected')+'</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+ap.worker+' has been notified — '+ap.code+'.</div></div>', function(){ renderOversight(); });
 }
 
 /* ---------- pre-start checklist ---------- */
@@ -1262,12 +1309,15 @@ function renderOversight(){
       var ai=ASSETS.map(function(x){return x.code;}).indexOf(r.code);
       return '<button class="row" onclick="openHub('+ai+')"><div class="row-ic"><span class="dot" style="background:'+o.col+'"></span></div><div class="row-main"><div class="row-t">'+r.code+' · '+r.machine+'</div><div class="row-s">'+fmtShort(iso(r.when))+' · '+r.worker+' · '+o.label+'</div></div><div class="chev">›</div></button>';
     }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts submitted on this device yet — completed pre-starts will appear here.</div></div></div>';
+    var pendAppr=_pendingApprovals().filter(function(x){ return siteMatch(x.code); });
+    var apprCard = pendAppr.length ? '<div class="fcard" style="border-top-color:#A06000"><div class="fcard-hdr" style="background:linear-gradient(135deg,#8A5A00,#A06000)">🔔 Pre-start approvals ('+pendAppr.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+pendAppr.map(function(x){ return '<button class="row" onclick="openApproval(\''+x.id+'\')"><div class="row-ic"><span class="dot" style="background:var(--warn)"></span></div><div class="row-main"><div class="row-t">'+x.code+' · '+x.worker+'</div><div class="row-s">Requesting approval — '+(x.gate_reasons&&x.gate_reasons[0]?x.gate_reasons[0]:'wants to operate this machine')+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div></div>' : '';
     body='<div class="fcard"><div class="fcard-hdr">📊 Fleet Overview</div><div class="fcard-body"><div class="kpis">'+
         kpi('Machines',fleet.length,'k-blue','🚜','')+
         kpi('Ready',readyCount,'k-green','✅',kpiTrend(readyCount,readyCount-1,true))+
         kpi('Needs Attention',attnCount2,'k-amber','⚠️',kpiTrend(attnCount2,attnCount2+1,false))+
         kpi('Out of Service',outCount,'k-red','⛔',kpiTrend(outCount,outCount+1,false))+
       '</div><div style="font-size:10.5px;color:var(--t3);text-align:center;margin-top:9px">Ready + Needs attention + Out of service = '+fleet.length+' machines</div></div></div>'+
+      apprCard+
       '<div class="fcard" style="border-top-color:#A32D2D"><div style="padding:14px 15px;background:#FCE9E9"><div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🔒 Due-diligence — operations blocked</div><div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>'+blocked+'</b> attempt'+(blocked===1?'':'s')+' this month to operate a machine without the required licence/ticket '+(blocked===1?'was':'were')+' <b>stopped at the gate</b> before work began.</div></div></div>'+
       '<div class="fcard"><div class="fcard-hdr">⚠ Needs Action ('+need.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+attHtml+'</div></div>'+
       '<div class="fcard"><div class="fcard-hdr">📋 Recent pre-starts ('+savedRecs.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+recFeed+'</div></div>'+
