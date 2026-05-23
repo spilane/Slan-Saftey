@@ -452,7 +452,7 @@ function openDemoSheet(){
 }
 function closeDemoSheet(){ document.getElementById('demo-sheet').classList.remove('on'); }
 function demoSwitchWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catch(e){} currentWorker=WORKERS[i]; closeDemoSheet(); if(getRole()!=='worker'){ location.href='plant.html'; } else { var el=document.getElementById('who-name'); if(el) el.textContent=currentWorker.name; showList(); } }
-function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
+function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides','slan_plant_premob'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -1397,12 +1397,22 @@ function renderPlantCharts(){
 /* ---------- COMPLIANCE (tables) ---------- */
 /* ===== Pre-mobilisation — modelled on Calroc 063 (EWP) / 064 (Forklift-Telehandler) checklists.
    Supplier/owner completes before delivery; site verifies & accepts on arrival. First-pass mockup. ===== */
-var PLANT_PREMOB={ 'EWP-019':'awaiting', 'TLH-003':'pending' }; // others default to 'accepted'
+var PLANT_PREMOB={ 'EWP-019':'awaiting', 'TLH-003':'pending' }; // initial seed; others default to 'accepted'
+function _premobAll(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_premob')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function _premobState(code){
+  var o=_premobAll(); if(o[code]) return o[code];
+  var seed=PLANT_PREMOB[code]||'accepted'; // initialise from the demo seed the first time
+  if(seed==='accepted') return { supplier_done:true, site_done:true, cleared:true, supplier_doc:'Supplier pre-mob checklist.pdf', site_assignee:(PLANT_SUP_NAME['Bondi Junction Mixed Use']||'Site') };
+  if(seed==='awaiting')  return { supplier_done:true, site_done:false, cleared:false, supplier_doc:'Supplier pre-mob checklist.pdf' };
+  return { supplier_done:false, site_done:false, cleared:false };
+}
+function _premobSaveState(code, patch){ var o=_premobAll(); var cur=o[code]||_premobState(code); o[code]=Object.assign({}, cur, patch); try{ localStorage.setItem('slan_plant_premob', JSON.stringify(o)); }catch(e){} return o[code]; }
 function _premobStatus(code){
-  var k=PLANT_PREMOB[code]||'accepted';
-  return ({ accepted:{key:'accepted',label:'Accepted — cleared to operate',col:'#1B6E3A'},
-            awaiting:{key:'awaiting',label:'Awaiting site acceptance',col:'#A06000'},
-            pending: {key:'pending', label:'Pre-mob not started',col:'#7A8580'} })[k];
+  var s=_premobState(code);
+  if(s.cleared) return {key:'cleared',label:'Cleared — accepted for use',col:'#1B6E3A'};
+  if(s.site_assignee && !s.site_done) return {key:'assigned',label:'Site check with '+s.site_assignee,col:'#1C5AAD'};
+  if(s.supplier_done) return {key:'awaiting',label:'Supplier submitted — awaiting site',col:'#A06000'};
+  return {key:'pending',label:'Not started — awaiting supplier',col:'#7A8580'};
 }
 var PREMOB_PARTB=['General cleanliness inside & out acceptable','Free from damage (list in comments)','Machine starts & runs correctly','Braking & steering system functional','Controls functional (upper & lower where fitted)','Exhaust system in good condition','Free from visible leaks (oil/water/coolant)','Hydraulic & fuel hoses/fittings free from wear or damage','Function test — steering, braking, controls','Tyres in good condition & within wear limits','ID decals in good condition','Reflective tape in good condition','Battery & terminals clean & secure','Fluid levels checked','Fan & belt drives checked','Lights & horn in working order','No loose items (nuts, bolts, connections)','Inspected prior to arrival — free from weeds & seeds'];
 var PREMOB_PARTC=['Logbook','Operators manual specific to make & model','Plant risk assessment specific to make & model','Daily pre-start books specific to asset type','Quarterly inspection record','Annual inspection record','Maintenance history (min 12 months)','Weed & seed certificate / declaration','Service/maintenance history (min 3 months)','Road registration papers, stickers & plates (where applicable)','Change-management documents for any modification'];
@@ -1417,21 +1427,29 @@ function _premobSection(title, items, ownerOn, siteOn){
   var rows=items.map(function(it){ return '<tr><td style="font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--border);line-height:1.4">'+it+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+_premobTick(ownerOn)+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+_premobTick(siteOn)+'</td></tr>'; }).join('');
   return '<div class="sec-h">'+title+'</div><div style="overflow-x:auto"><table class="reg"><thead><tr><th style="text-align:left">Item</th><th>Supplier</th><th>Site</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
+var premobSub='onhire';
+function premobSetSub(s){ premobSub=s; renderOversight(); }
 function plantPremobBody(fleet){
   var hired=fleet.filter(function(a){ return isHired(a.code); }); // pre-mob view is for hired-in plant
-  var counts={accepted:0,awaiting:0,pending:0};
-  hired.forEach(function(a){ counts[_premobStatus(a.code).key]++; });
-  var chip=function(v,l,col){ return '<div style="flex:1;text-align:center;padding:10px 4px"><div style="font-size:22px;font-weight:800;color:'+col+';line-height:1">'+v+'</div><div style="font-size:10.5px;color:var(--t2);margin-top:3px">'+l+'</div></div>'; };
-  var summary='<div class="tile" style="display:flex;margin-bottom:14px;padding:4px 0">'+chip(counts.accepted,'Cleared','#1B6E3A')+'<div style="width:1px;background:var(--border);margin:8px 0"></div>'+chip(counts.awaiting,'Awaiting site','#A06000')+'<div style="width:1px;background:var(--border);margin:8px 0"></div>'+chip(counts.pending,'Not started','#7A8580')+'</div>';
-  var rows=hired.length?hired.map(function(a){ var st=_premobStatus(a.code); var hi=hireInfo(a.code);
+  var cleared=hired.filter(function(a){ return _premobState(a.code).cleared; });
+  var onhire =hired.filter(function(a){ return !_premobState(a.code).cleared; });
+  var list = (premobSub==='cleared') ? cleared : onhire;
+  var sub='<div style="display:flex;gap:6px;margin-bottom:12px">'+[['onhire','On hire ('+onhire.length+')'],['cleared','Cleared ('+cleared.length+')']].map(function(t){ var on=premobSub===t[0];
+      return '<button onclick="premobSetSub(\''+t[0]+'\')" style="flex:1;padding:9px;border-radius:9px;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+';font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit">'+t[1]+'</button>';
+    }).join('')+'</div>';
+  var rows=list.length?list.map(function(a){ var st=_premobStatus(a.code); var hi=hireInfo(a.code);
     return '<button class="row" onclick="plantPremobOpen(\''+a.code+'\')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+(hi?hi.supplier+' · ':'')+'<span style="color:'+st.col+';font-weight:700">'+st.label+'</span></div></div><div class="chev">›</div></button>';
-  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No hired-in equipment on this site.</div></div></div>';
-  return '<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site. The <b>supplier</b> completes the checklist before delivery; the <b>site</b> verifies, photographs and accepts it on arrival.</div></div>'+summary+'<div class="tile">'+rows+'</div>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">'+(premobSub==='cleared'?'No hired machines cleared yet.':'No hired-in equipment awaiting pre-mob.')+'</div></div></div>';
+  return '<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site. The <b>supplier</b> completes the checklist before delivery; a <b>ticketed operator on site</b> verifies, photographs and accepts it on arrival.</div></div>'+sub+'<div class="tile">'+rows+'</div>';
 }
 function plantPremobOpen(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
   var dt=plantDetails(code), st=_premobStatus(code), sm=svcMeter(a);
-  var ownerOn=(st.key!=='pending'), siteOn=(st.key==='accepted');
+  var s=_premobState(code);
+  var ownerOn=s.supplier_done, siteOn=s.site_done;
+  var supplierBox = s.supplier_done
+    ? '<div class="sec-h">Supplier checklist</div><div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:11px 13px;font-size:12.5px;color:#1B5E3F">✓ Supplier checklist received'+(s.supplier_doc?(' · '+s.supplier_doc):'')+'. Their answers fill the <b>Supplier</b> column below.</div>'
+    : '<div class="sec-h">Supplier checklist</div><div id="premob-sup-dz" onclick="premobSupplierPick(\''+code+'\')" ondragover="premobSupDragOver(event)" ondragleave="premobSupDragLeave(event)" ondrop="premobSupDrop(event,\''+code+'\')" style="border:2px dashed #C7CFC9;border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:#FAFBFA"><div style="font-size:24px">📄</div><div style="font-size:13px;font-weight:700;color:var(--text);margin-top:3px">Import supplier’s completed checklist</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5">Drop the hire company’s completed PDF — their answers fill the Supplier column automatically.</div></div><input id="premob-sup-input" type="file" accept="application/pdf,image/*" style="display:none" onchange="premobSupplierOnFile(this)">';
   var supplier = isHired(code)? hireInfo(code).supplier : 'Murphy Civil Construction (owned plant)';
   var nextSvc = sm ? (sm.due.toLocaleString()+' '+sm.meter) : fmt(a.service_due);
   function hrow(l,v){ return '<div class="svc-row"><span>'+l+'</span><span>'+(v||'—')+'</span></div>'; }
@@ -1448,16 +1466,16 @@ function plantPremobOpen(code){
   '</div>';
   var sig=function(role,name,pos){ return '<div style="flex:1;min-width:140px"><div style="font-size:10.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'+role+'</div><div style="border:1px solid var(--border);border-radius:8px;padding:10px;background:#fff">'+(name?('<div style="font-family:\'Brush Script MT\',\'Segoe Script\',cursive;font-size:22px;color:var(--deep);line-height:1">'+name+'</div><div style="font-size:11px;color:var(--t2);margin-top:3px">'+pos+'</div>'):'<div style="font-size:12px;color:var(--t3);font-style:italic">Awaiting signature</div>')+'</div></div>'; }
   var supplierSig = ownerOn ? sig('Equipment owner / supplier', isHired(code)?'M. Reilly':'P. Doherty', isHired(code)?(hireInfo(code).supplier):'Plant Manager · Murphy Civil') : sig('Equipment owner / supplier', null);
-  var siteSig = siteOn ? sig('Accepted by project / site', PLANT_SUP_NAME[assetSite(code)]||'Site Supervisor','Site Supervisor') : sig('Accepted by project / site', null);
+  var siteSig = siteOn ? sig('Accepted on site (ticketed operator)', s.site_assignee||PLANT_SUP_NAME[assetSite(code)]||'Site','Ticketed operator') : sig('Accepted on site (ticketed operator)', null);
   var decl='<div class="sec-h">Declaration</div>'+
     '<div style="font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:10px">“I declare that this machine is in a safe condition, free from defect and fit for purpose. Ignition, toolbox and panel keys present with the machine.”</div>'+
     '<div style="display:flex;gap:12px;flex-wrap:wrap">'+supplierSig+siteSig+'</div>';
-  var note='<div class="ovr" style="background:#FFF6E6;border:1px solid #E8C97A;border-radius:10px;padding:11px 13px;margin:6px 0 14px;font-size:11.5px;color:#8A5A00;line-height:1.5">First-pass mockup. In the live version each item is tappable, the supplier completes &amp; signs it before the machine leaves their yard, and the site signs it off on arrival — and you’ll be able to drop the supplier’s completed PDF to auto-fill it.</div>';
+  var note='<div class="ovr" style="background:#FFF6E6;border:1px solid #E8C97A;border-radius:10px;padding:11px 13px;margin:6px 0 14px;font-size:11.5px;color:#8A5A00;line-height:1.5">Build in progress (section 1): dropping the supplier’s PDF fills their column. Assigning a ticketed operator + arrival photos + site sign-off come next.</div>';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="renderOversight()">‹ Back to fleet</button>'+
     '<div class="h1">Pre-Mobilisation Checklist</div>'+
     '<div class="sub">'+a.code+' · '+a.make+' '+a.model+' · <span style="color:'+st.col+';font-weight:700">'+st.label+'</span></div>'+
-    note + hdr +
+    note + hdr + supplierBox +
     _premobSection('Part A — Minimum requirements ('+a.type+')', _premobPartA(a), ownerOn, siteOn)+
     _premobSection('Part B — Condition of plant & equipment', PREMOB_PARTB, ownerOn, siteOn)+
     _premobSection('Part C — Compliance documentation', PREMOB_PARTC, ownerOn, siteOn)+
@@ -1465,6 +1483,21 @@ function plantPremobOpen(code){
     '<div style="height:24px"></div>'+
   '</div>';
   showDetail(html);
+}
+/* §1 — import the supplier's completed pre-mob PDF → fills the Supplier column */
+var _premobSupRef=null;
+function premobSupplierPick(code){ _premobSupRef=code; var i=document.getElementById('premob-sup-input'); if(i) i.click(); }
+function premobSupplierOnFile(input){ var f=input&&input.files&&input.files[0]; if(input) input.value=''; if(f) _premobSupplierImport(_premobSupRef, f.name); }
+function premobSupDragOver(ev){ ev.preventDefault(); var d=document.getElementById('premob-sup-dz'); if(d) d.style.borderColor='#1B6E3A'; }
+function premobSupDragLeave(ev){ var d=document.getElementById('premob-sup-dz'); if(d) d.style.borderColor='#C7CFC9'; }
+function premobSupDrop(ev,code){ ev.preventDefault(); var d=document.getElementById('premob-sup-dz'); if(d) d.style.borderColor='#C7CFC9'; var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) _premobSupplierImport(code,f.name); }
+function _premobSupplierImport(code,name){
+  showDetail('<div class="wrap" style="padding:0;max-width:none"><div style="text-align:center;padding:60px 20px"><div style="font-size:38px">🔍</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:10px">Reading supplier checklist…</div><div style="font-size:12.5px;color:var(--t2);margin-top:6px;word-break:break-all">'+name+'</div><div style="font-size:11.5px;color:var(--t3);margin-top:14px">Filling the Supplier column from their answers</div></div></div>');
+  setTimeout(function(){
+    _premobSaveState(code,{ supplier_done:true, supplier_doc:name });
+    plantPremobOpen(code);
+    slanMsg('', '<div style="text-align:center"><div style="font-size:40px">✅</div><div style="font-size:15px;font-weight:800;color:var(--pass);margin-top:6px">Supplier checklist imported</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — the Supplier column is filled. Next: assign the on-site check to a ticketed operator.</div></div>');
+  }, 1000);
 }
 function plantComplianceBody(fleet){
   var today=new Date();
