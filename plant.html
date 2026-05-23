@@ -281,27 +281,28 @@ function licName(c){ return LIC[c]||c; }
 
 /* ---------- WORKERS ---------- */
 var WORKERS=[
-  { id:'w1', name:"Liam O'Brien", trade:'Senior Plant Operator', induction_expiry:iso(dOffset(300)),
+  { id:'w1', name:'Daniel Byrne', trade:'Plant Operator · Byrne Plant Hire', induction_expiry:iso(dOffset(280)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'telehandler',expiry:iso(dOffset(400)),verified:true},
+              {cls:'telehandler',expiry:iso(dOffset(360)),verified:true},
+              {cls:'ewp',expiry:iso(dOffset(300)),verified:true} ],
+    voc:[ {cls:'telehandler',make:'Manitou',model:'MT1840'}, {cls:'telehandler',make:'JCB',model:'540-170'} ], swms_signed:iso(dOffset(-5)), ra_signed:iso(dOffset(-5)) },
+  { id:'w2', name:'Jake Sullivan', trade:'Crane Operator · Sullivan Crane Services', induction_expiry:iso(dOffset(240)),
+    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
               {cls:'crane',expiry:iso(dOffset(420)),verified:true},
-              {cls:'truck_hr',expiry:iso(dOffset(500)),verified:true} ],
-    voc:[ {cls:'telehandler',make:'Magni',model:'RTH 6.46'}, {cls:'crane',make:'Franna',model:'AT-40'}, {cls:'crane',make:'Tadano',model:'GR-250'} ], swms_signed:iso(dOffset(-6)), ra_signed:iso(dOffset(-6)) },
-  { id:'w2', name:'Tom Walker', trade:'Plant Operator', induction_expiry:iso(dOffset(200)),
+              {cls:'telehandler',expiry:iso(dOffset(380)),verified:true} ],
+    voc:[ {cls:'crane',make:'Franna',model:'AT-40'}, {cls:'crane',make:'Tadano',model:'GR-250'}, {cls:'telehandler',make:'Magni',model:'RTH 6.46'} ], swms_signed:iso(dOffset(-44)), ra_signed:iso(dOffset(-8)) },
+  { id:'w3', name:'Anthony Walsh', trade:'Driver · Walsh Logistics', induction_expiry:iso(dOffset(200)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'telehandler',expiry:iso(dOffset(14)),verified:true},
-              {cls:'truck_hr',expiry:iso(dOffset(300)),verified:true} ], voc:[], swms_signed:iso(dOffset(-45)), ra_signed:iso(dOffset(-8)) },
-  { id:'w3', name:'Jake Murray', trade:'Labourer', induction_expiry:iso(dOffset(200)),
-    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true} ], voc:[], swms_signed:iso(dOffset(-10)), ra_signed:iso(dOffset(-10)) },
-  { id:'w4', name:'Pete Singh', trade:'Plant Operator', induction_expiry:iso(dOffset(200)),
+              {cls:'truck_hr',expiry:iso(dOffset(330)),verified:true} ], voc:[], swms_signed:iso(dOffset(-6)), ra_signed:iso(dOffset(-6)) },
+  { id:'w4', name:'Conor Foley', trade:'Plant Operator · Foley Excavation', induction_expiry:iso(dOffset(150)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'telehandler',expiry:iso(dOffset(-30)),verified:true} ], voc:[], swms_signed:iso(dOffset(-9)), ra_signed:iso(dOffset(-50)) }
+              {cls:'telehandler',expiry:iso(dOffset(-25)),verified:true} ], voc:[], swms_signed:iso(dOffset(-9)), ra_signed:iso(dOffset(-55)) }
 ];
 
 /* ---------- ASSETS ---------- */
 var ASSETS=[
   { code:'TRK-006', type:'Truck', icon:'🚛', make:'Hino', model:'500 Series FG', status:'operational',
-    required:['truck_hr'], voc_required:false, rego_expiry:iso(dOffset(-9)), insurance_expiry:iso(dOffset(160)),
+    required:['truck_hr'], voc_required:false, rego_expiry:iso(dOffset(130)), insurance_expiry:iso(dOffset(160)),
     hours:0, service_last:iso(dOffset(-60)), service_due:iso(dOffset(70)), critical_fault:false, spend12mo:7200 },
   { code:'TLH-003', type:'Telehandler', icon:'🔧', make:'Manitou', model:'MT1840', status:'operational',
     required:['telehandler'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(150)),
@@ -324,7 +325,7 @@ var ASSETS=[
   { code:'GEN-016', type:'Generator', icon:'⚡', make:'Atlas Copco', model:'QAS 60', status:'operational',
     required:[], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(190)),
     hours:540, service_last:iso(dOffset(-40)), service_due:iso(dOffset(110)), critical_fault:false, spend12mo:980 },
-  { code:'CRN-011', type:'City Crane', icon:'🏗️', make:'Tadano', model:'GR-250', status:'fault_reported',
+  { code:'CRN-011', type:'City Crane', icon:'🏗️', make:'Tadano', model:'GR-250', status:'operational',
     required:['crane'], voc_required:true, rego_expiry:iso(dOffset(90)), insurance_expiry:iso(dOffset(200)),
     hours:4310, service_last:iso(dOffset(-20)), service_due:iso(dOffset(60)), critical_fault:false, spend12mo:16400,
     swl:'25 t', lift_note:'City crane · SWL 25 t @ min radius · De-rates with radius — refer load chart' },
@@ -334,7 +335,21 @@ var ASSETS=[
     swl:'4,000 kg', lift_note:'Max lift height 17 m · See load chart for SWL at radius' },
   { code:'LT-014', type:'Lighting Tower', icon:'💡', make:'Atlas Copco', model:'HiLight V5', status:'operational',
     required:[], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(160)),
-    hours:410, service_last:iso(dOffset(-28)), service_due:iso(dOffset(130)), critical_fault:false, spend12mo:1250 }
+    hours:410, service_last:iso(dOffset(-28)), service_due:iso(dOffset(130)), critical_fault:false, spend12mo:1250 },
+  { code:'EWP-018', type:'EWP', icon:'🛗', make:'Genie', model:'GS-1932 Scissor Lift', status:'operational',
+    required:['ewp'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(175)),
+    hours:735, service_last:iso(dOffset(-22)), service_due:iso(dOffset(85)), critical_fault:false, spend12mo:1850,
+    swl:'227 kg', lift_note:'Working height 7.8 m · platform capacity 227 kg · firm, level ground only' },
+  { code:'EWP-019', type:'EWP', icon:'🛗', make:'Genie', model:'Z-45 Boom Lift', status:'operational',
+    required:['ewp'], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(165)),
+    hours:1315, service_last:iso(dOffset(-40)), service_due:iso(dOffset(60)), critical_fault:false, spend12mo:3100,
+    swl:'227 kg', lift_note:'Articulating boom · working height 15.9 m · harness & fall-arrest required' },
+  { code:'BUS-021', type:'Bus', icon:'🚌', make:'Toyota', model:'Coaster (12-seat)', status:'operational',
+    required:[], voc_required:false, rego_expiry:iso(dOffset(140)), insurance_expiry:iso(dOffset(150)),
+    hours:0, service_last:iso(dOffset(-45)), service_due:iso(dOffset(75)), critical_fault:false, spend12mo:2600 },
+  { code:'UTE-022', type:'Ute', icon:'🛻', make:'Toyota', model:'Hilux SR 4x4', status:'operational',
+    required:[], voc_required:false, rego_expiry:iso(dOffset(95)), insurance_expiry:iso(dOffset(155)),
+    hours:0, service_last:iso(dOffset(-30)), service_due:iso(dOffset(110)), critical_fault:false, spend12mo:1750 }
 ];
 
 /* full machine record (the platform holds everything; tiles show the headlines) */
@@ -348,7 +363,11 @@ var PLANT_DETAILS={
   'GEN-016':{ year:2023, vin:'ATL-QAS60-23G0540', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884521', km:null },
   'CRN-011':{ year:2019, vin:'TAD-GR250-19C4310', rego:'CN-88-RT', rego_state:'NSW', insurer:'CGU Plant & Equipment', policy:'PLE-884511', km:61500 },
   'TLH-012':{ year:2021, vin:'JCB-540170-21T2240', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884522', km:null },
-  'LT-014':{ year:2022, vin:'ATL-HILIGHT-22L0410', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884523', km:null }
+  'LT-014':{ year:2022, vin:'ATL-HILIGHT-22L0410', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884523', km:null },
+  'EWP-018':{ year:2021, vin:'GEN-GS1932-21E0735', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884530', km:null },
+  'EWP-019':{ year:2020, vin:'GEN-Z45-20E1315', rego:null, rego_state:null, insurer:'CGU Plant & Equipment', policy:'PLE-884531', km:null },
+  'BUS-021':{ year:2019, vin:'JTGFB518X0K041122', rego:'EBC-44Q', rego_state:'NSW', insurer:'Allianz Motor Fleet', policy:'MF-220990', km:88400 },
+  'UTE-022':{ year:2022, vin:'MR0FB29G201234567', rego:'EYK-71P', rego_state:'NSW', insurer:'Allianz Motor Fleet', policy:'MF-220991', km:41200 }
 };
 function plantDetails(code){ return PLANT_DETAILS[code]||{}; }
 /* docs per machine (type-specific extras for crane/telehandler) */
@@ -380,7 +399,9 @@ var SERVICE_METER={
   'GEN-005':{meter:'hrs',due:1150}, 'LT-013':{meter:'hrs',due:800},
   'MAG-009':{meter:'hrs',due:3200}, 'CRN-007':{meter:'hrs',due:7000},
   'GEN-016':{meter:'hrs',due:750}, 'CRN-011':{meter:'hrs',due:4500},
-  'TLH-012':{meter:'hrs',due:2500}, 'LT-014':{meter:'hrs',due:600}
+  'TLH-012':{meter:'hrs',due:2500}, 'LT-014':{meter:'hrs',due:600},
+  'EWP-018':{meter:'hrs',due:900}, 'EWP-019':{meter:'hrs',due:1500},
+  'BUS-021':{meter:'km',due:95000}, 'UTE-022':{meter:'km',due:50000}
 };
 function svcMeter(a){
   var sm=SERVICE_METER[a.code]; if(!sm) return null;
@@ -401,7 +422,7 @@ function plantGoBack(){
   if(det && det.style.display!=='none'){ if(_homeView==='oversight'){ renderOversight(); } else { showList(); } return; }
   if(window.history.length>1){ history.back(); } else { location.href='index.html'; }
 }
-var PLANT_SUP_NAME={ 'Parramatta':'Eoin Burke', 'Blacktown':"Lee O'Brien", 'Liverpool':'Brendan Kelly' };
+var PLANT_SUP_NAME={ 'Bondi Junction Mixed Use':'Eoin Burke', 'Parramatta Metro Stage 2':'Eoin Murphy', 'Sydney Olympic Park':"Sean O'Connor" };
 function openProfile(){
   var supLocked=getRole()==='supervisor';
   var role = supLocked ? (oversightSite+' Supervisor') : 'Company Director';
@@ -622,6 +643,20 @@ var CHECKLISTS={
     {cat:'Safety',q:'Lights, beacon & horn'},{cat:'Safety',q:'Limit switches & emergency stop',crit:true},{cat:'Safety',q:'Seatbelt & cabin controls'},{cat:'Safety',q:'Fire extinguisher present & charged'},
     {cat:'Maintenance',q:'Grease points serviced'},{cat:'General',q:'Tyres / tracks & wheel nuts'},{cat:'General',q:'General condition & cleanliness'}
   ],
+  ewp:[
+    {cat:'Fluids',q:'Hydraulic oil level'},{cat:'Fluids',q:'Engine oil / battery charge'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
+    {cat:'Platform & controls',q:'Platform & ground controls both operate',crit:true},{cat:'Platform & controls',q:'Emergency stop & emergency lowering work',crit:true},{cat:'Platform & controls',q:'Guardrails, gate & toe boards secure',crit:true},{cat:'Platform & controls',q:'Harness anchor points & fall-arrest'},
+    {cat:'Stability',q:'Tyres / tracks & wheels'},{cat:'Stability',q:'Outriggers / pothole protection deploy',crit:true},{cat:'Stability',q:'Tilt & overload alarms work',crit:true},{cat:'Stability',q:'Ground firm, level & clear of holes'},
+    {cat:'Inspection',q:'Current periodic inspection (green sticker)',crit:true},{cat:'Inspection',q:'Logbook present & up to date'},
+    {cat:'Safety',q:'Beacon, horn & alarms'},{cat:'Safety',q:'Load chart / SWL & rating plate legible'},
+    {cat:'General',q:'No loose items on platform; general condition'}
+  ],
+  vehicle:[
+    {cat:'Fluids',q:'Engine oil & coolant level'},{cat:'Fluids',q:'Fuel level'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
+    {cat:'Tyres & brakes',q:'Tyres, tread & wheel nuts',crit:true},{cat:'Tyres & brakes',q:'Service & park brakes',crit:true},
+    {cat:'Lights & safety',q:'Lights, indicators & horn'},{cat:'Lights & safety',q:'Reversing camera / sensors'},{cat:'Lights & safety',q:'Windscreen, wipers & washers'},{cat:'Lights & safety',q:'Seatbelts & mirrors',crit:true},
+    {cat:'General',q:'Fire extinguisher & first-aid kit'},{cat:'General',q:'Registration current'},{cat:'General',q:'General condition & cleanliness'}
+  ],
   default:[
     {cat:'Fluids',q:'Oil, coolant & fuel levels'},{cat:'Fluids',q:'No visible fluid leaks',crit:true},
     {cat:'Safety',q:'Lights, beacon & horn'},{cat:'Safety',q:'Reversing alarm & camera'},{cat:'Safety',q:'Guards & emergency stop',crit:true},{cat:'Safety',q:'Fire extinguisher present & charged'},
@@ -640,6 +675,8 @@ function checklistFor(a){
   else if(t==='Generator') base=CHECKLISTS.generator;
   else if(t==='Lighting Tower') base=CHECKLISTS.lighting;
   else if(t==='Slewing Crane'||t==='City Crane'||/Magni/.test(t)) base=CHECKLISTS.crane;
+  else if(t==='EWP') base=CHECKLISTS.ewp;
+  else if(t==='Bus'||t==='Ute') base=CHECKLISTS.vehicle;
   else base=CHECKLISTS.default;
   return base.concat(COMMON);
 }
@@ -841,9 +878,9 @@ function pickWorker(i){ currentWorker=WORKERS[i]; document.getElementById('who-n
 /* ---------- manager / supervisor oversight ---------- */
 function getRole(){ var m=/[?&]role=([a-z]+)/.exec(location.search); return m?m[1]:'worker'; }
 function getSiteParam(){ var m=/[?&]site=([^&]+)/.exec(location.search); return m?decodeURIComponent(m[1]):null; }
-var PLANT_SITE_BY_CODE={ 'TRK-006':'Parramatta','TLH-003':'Parramatta','GEN-005':'Parramatta','LT-013':'Parramatta','MAG-009':'Blacktown','CRN-007':'Blacktown','GEN-016':'Blacktown','CRN-011':'Liverpool','TLH-012':'Liverpool','LT-014':'Liverpool' };
-function assetSite(code){ return PLANT_SITE_BY_CODE[code]||'Parramatta'; }
-var PLANT_SITES=['Parramatta','Blacktown','Liverpool'];
+var PLANT_SITE_BY_CODE={ 'TRK-006':'Bondi Junction Mixed Use','TLH-003':'Bondi Junction Mixed Use','GEN-005':'Bondi Junction Mixed Use','LT-013':'Bondi Junction Mixed Use','MAG-009':'Bondi Junction Mixed Use','CRN-007':'Bondi Junction Mixed Use','BUS-021':'Bondi Junction Mixed Use','UTE-022':'Bondi Junction Mixed Use','EWP-018':'Bondi Junction Mixed Use','EWP-019':'Bondi Junction Mixed Use','CRN-011':'Parramatta Metro Stage 2','TLH-012':'Parramatta Metro Stage 2','GEN-016':'Parramatta Metro Stage 2','LT-014':'Sydney Olympic Park' };
+function assetSite(code){ return PLANT_SITE_BY_CODE[code]||'Bondi Junction Mixed Use'; }
+var PLANT_SITES=['Bondi Junction Mixed Use','Parramatta Metro Stage 2','Sydney Olympic Park'];
 var oversightSite='All';
 function plantSetSite(s){ oversightSite=s; renderOversight(); }
 var _woSeq=0;
@@ -869,6 +906,66 @@ function _recOutcome(rec){
   var hasMajor=(rec.items||[]).some(function(it){ return it.status==='f' && /Major/.test(it.sev||''); });
   if(hasMajor) return {label:rec.faults+' fault'+(rec.faults>1?'s':'')+' — repair soon', col:'var(--warn)'};
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
+}
+/* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
+var DEMO_SEED_VERSION='eoin-v1';
+var DEMO_PRESTARTS=[
+  { code:'CRN-007', worker:'Jake Sullivan', daysAgo:0, comments:'All good — lifted precast panels to Level 3.' },
+  { code:'MAG-009', worker:'Jake Sullivan', daysAgo:1, comments:'LMI fault found on pre-start — machine tagged out, do not operate.',
+    faults:[{match:'Load moment indicator', sev:'Critical — do not operate', desc:'LMI reads zero under a known test load — not safe to lift. Out-of-service tag fitted and supervisor notified.'}] },
+  { code:'TLH-003', worker:'Daniel Byrne', daysAgo:0 },
+  { code:'TRK-006', worker:'Anthony Walsh', daysAgo:0, comments:'Reversing camera playing up — flagged it, still drivable.',
+    faults:[{match:'Reversing alarm', sev:'Minor — still usable', desc:'Reversing camera cuts out intermittently; reversing alarm works fine. Using a spotter when reversing until it is repaired.'}] },
+  { code:'GEN-005', worker:'Daniel Byrne', daysAgo:1 },
+  { code:'LT-013', worker:'Daniel Byrne', daysAgo:2 },
+  { code:'EWP-018', worker:'Daniel Byrne', daysAgo:0, comments:'Beacon globe blown — noted, still usable.',
+    faults:[{match:'Beacon, horn', sev:'Minor — still usable', desc:'Amber flashing beacon globe blown. Horn and movement alarms all work. Fine for daytime indoor use until the globe is replaced.'}] },
+  { code:'EWP-019', worker:'Daniel Byrne', daysAgo:1 },
+  { code:'BUS-021', worker:'Anthony Walsh', daysAgo:0, comments:'Crew transport run — all good.' },
+  { code:'UTE-022', worker:'Anthony Walsh', daysAgo:0 },
+  { code:'CRN-011', worker:'Jake Sullivan', daysAgo:1 },
+  { code:'TLH-012', worker:'Kevin Ryan', daysAgo:0 },
+  { code:'GEN-016', worker:'Kevin Ryan', daysAgo:2 },
+  { code:'LT-014', worker:'Aaron Quinn', daysAgo:1 }
+];
+function _seedBuildRecord(s){
+  var a=ASSETS.find(function(x){return x.code===s.code;}); if(!a) return null;
+  var list=checklistFor(a);
+  var km = svcMeter(a)&&svcMeter(a).meter==='km';
+  var fm=s.faults||[], faultsCount=0, critical=false;
+  var items=list.map(function(it){
+    var f=null;
+    for(var i=0;i<fm.length;i++){ if(it.q.toLowerCase().indexOf(fm[i].match.toLowerCase())>-1){ f=fm[i]; break; } }
+    var status=f?'f':'p', sev='', desc='';
+    if(f){ faultsCount++; sev=f.sev||'Minor — still usable'; desc=f.desc||''; if(it.crit || /Critical/.test(sev)) critical=true; }
+    var info='', inf=_itemInfo(it);
+    if(inf && status==='p'){ info = inf.past ? iso(dOffset(-30)) : iso(dOffset(150)); }
+    return { q:it.q, cat:it.cat||'', status:status, sev:sev, desc:desc, info:info, photo:'' };
+  });
+  var reading = km ? ((plantDetails(a.code).km||0)+(s.add||6)) : ((a.hours||0)+(s.add||4));
+  return { code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:s.worker,
+    when:new Date(Date.now()-((s.daysAgo||0)*86400000)-(2*3600000)), reading:reading, meter:(km?'km':'hrs'),
+    faults:faultsCount, critical:critical, needsFFW:(a.required&&a.required.length>0), comments:s.comments||'', items:items };
+}
+function seedDemoPlant(){
+  try{
+    if(localStorage.getItem('slan_plant_seed')===DEMO_SEED_VERSION) return;
+    ['slan_plant_records','slan_plant_wos','slan_plant_alerts','slan_plant_iteminfo'].forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
+    var woNum=43;
+    DEMO_PRESTARTS.forEach(function(s){
+      var rec=_seedBuildRecord(s); if(!rec) return;
+      _savePlantRecord(rec);
+      if(rec.faults>0){
+        var a=ASSETS.find(function(x){return x.code===s.code;});
+        var fnames=rec.items.filter(function(it){return it.status==='f';}).map(function(it){return it.q;});
+        var fs=fnames.slice(0,2).join(', ')+(fnames.length>2?' +'+(fnames.length-2)+' more':'');
+        var rel=(!s.daysAgo||s.daysAgo<=0)?'today':(s.daysAgo+' day'+(s.daysAgo>1?'s':'')+' ago');
+        _saveWO({wo:'WO-2026-'+('000'+(woNum++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:fs, priority:rec.critical?'High':'Medium', status:'Raised', raised:rel+' · '+s.worker});
+        _setPlantAlert(a, fs, rec.critical);
+      }
+    });
+    localStorage.setItem('slan_plant_seed', DEMO_SEED_VERSION);
+  }catch(e){}
 }
 function plantViewSavedPDF(code){
   if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; }
@@ -1087,7 +1184,7 @@ function plantPrestartPDF(rec){
 function plantViewPrestartPDF(){ if(!_lastPrestartRec || !window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(plantPrestartPDF(_lastPrestartRec), 'Prestart-'+_lastPrestartRec.code+'.pdf'); }
 function renderOversight(){
   var supLocked = (getRole()==='supervisor');
-  if(supLocked){ oversightSite = getSiteParam() || 'Parramatta'; }
+  if(supLocked){ oversightSite = getSiteParam() || 'Bondi Junction Mixed Use'; }
   setTopRight('<button class="profile-btn" onclick="openProfile()">👤 '+(supLocked ? (oversightSite+' Supervisor') : 'Director')+'</button>');
   var siteMatch=function(code){ return oversightSite==='All' || assetSite(code)===oversightSite; };
   var fleet=ASSETS.filter(function(a){ return siteMatch(a.code); });
@@ -1237,6 +1334,8 @@ function renderQR(oneCode){
 
 /* ---------- init ---------- */
 document.getElementById('who-name').textContent=currentWorker.name;
+// seed the demo fleet's pre-starts / work orders on first load (idempotent, version-gated)
+seedDemoPlant();
 // apply persisted faults so a flagged machine stays out-of-service across reloads (blocks the gate, reds the register)
 try{ _plantAlerts().forEach(function(al){ var a=ASSETS.find(function(x){return x.code===al.code;}); if(a) a.status=al.critical?'out_of_service':'fault_reported'; }); }catch(e){}
 // merge persisted work orders so an open issue carries into the next pre-start + the supervisor list, and continue WO numbering past the highest existing id
