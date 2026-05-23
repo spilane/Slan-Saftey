@@ -38,7 +38,7 @@
     <b>How to use:</b> tap a button to download that document to this device, then in the Slán app open a machine, scroll to <b>Upload &amp; smart import</b>, and drop the file in. The app recognises each one automatically.
   </div>
 
-  <button class="allbtn" onclick="downloadAll()">⬇  Download all 5 documents</button>
+  <button class="allbtn" onclick="downloadAll()">⬇  Download all 9 documents</button>
 
   <div class="card">
     <div class="ic">🛠️</div>
@@ -64,6 +64,29 @@
     <div class="ic">🟢</div>
     <div class="meta"><div class="t">Periodic Inspection</div><div class="d">CRN-007 · Green sticker</div></div>
     <button class="dl" onclick="buildInspection()">Download</button>
+  </div>
+
+  <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:18px 2px 8px">For people, chemicals &amp; incidents</div>
+
+  <div class="card">
+    <div class="ic">🪪</div>
+    <div class="meta"><div class="t">First Aid Certificate</div><div class="d">Drop on a profile to renew a ticket</div></div>
+    <button class="dl" onclick="buildFirstAid()">Download</button>
+  </div>
+  <div class="card">
+    <div class="ic">🧪</div>
+    <div class="meta"><div class="t">Safety Data Sheet (MEK)</div><div class="d">Drop on the SDS register to renew it</div></div>
+    <button class="dl" onclick="buildSDS()">Download</button>
+  </div>
+  <div class="card">
+    <div class="ic">📄</div>
+    <div class="meta"><div class="t">Medical Certificate</div><div class="d">Attach to an incident report</div></div>
+    <button class="dl" onclick="buildMedical()">Download</button>
+  </div>
+  <div class="card">
+    <div class="ic">📝</div>
+    <div class="meta"><div class="t">Witness Statement</div><div class="d">Attach to an incident report</div></div>
+    <button class="dl" onclick="buildWitness()">Download</button>
   </div>
 
   <div class="foot">
@@ -281,8 +304,75 @@ function buildInspection(){
   doc.save('Periodic Inspection - CRN-007.pdf');
 }
 
+function buildFirstAid(){
+  var J=jget(); if(!J) return alert('Still loading — try again in a moment.');
+  var doc=new J({unit:'pt',format:'a4'});
+  var exp=addMonths(36);
+  header(doc,'Allens Training Institute','Nationally recognised first aid training · RTO 90909');
+  var y=docTitle(doc,'Statement of Attainment',['Certificate no. FA-2026-7781','Issued: '+fmtDate(new Date())]);
+  y=sectionLabel(doc,'Student',y);
+  y=kvRows(doc,[['Name','Daniel Byrne'],['Student ID','ATI-44821'],['Date of birth','14 Mar 1990']],y);
+  y=sectionLabel(doc,'Units of competency',y);
+  y=bullets(doc,['HLTAID011 — Provide First Aid','HLTAID010 — Provide basic emergency life support','HLTAID009 — Provide cardiopulmonary resuscitation (CPR)'],y);
+  y=sectionLabel(doc,'Outcome',y);
+  y=kvRows(doc,[['Result','Competent'],['Completed',fmtDate(new Date())],['Valid to',fmtDate(exp)+'  (CPR refresher 12-monthly)']],y);
+  signoff(doc,'K. Adams','Trainer & Assessor · Allens Training Institute',y);
+  footer(doc,'Allens Training Institute · RTO 90909 · allenstraining.com.au');
+  doc.save('First Aid Certificate - HLTAID011.pdf');
+}
+function buildSDS(){
+  var J=jget(); if(!J) return alert('Still loading — try again in a moment.');
+  var doc=new J({unit:'pt',format:'a4'});
+  header(doc,'Recochem','Safety Data Sheet · Prepared to WHS Regulations');
+  var y=docTitle(doc,'Safety Data Sheet',['Methyl Ethyl Ketone (MEK) · Solvent Cleaner','Issued: '+fmtDate(new Date())+'  ·  Version 4.0']);
+  y=sectionLabel(doc,'1. Identification',y);
+  y=kvRows(doc,[['Product','Methyl Ethyl Ketone (MEK)'],['Other names','Solvent Cleaner, MEK, Butanone'],['Manufacturer','Recochem Pty Ltd'],['Recommended use','Degreasing & surface cleaning']],y);
+  y=sectionLabel(doc,'2. Hazard identification',y);
+  y=kvRows(doc,[['Dangerous goods','Class 3 Flammable Liquid'],['Hazchem','3[Y]E'],['Signal word','DANGER']],y);
+  y=bullets(doc,['Highly flammable liquid and vapour','Causes serious eye irritation','May cause drowsiness or dizziness','Toxic to aquatic life'],y);
+  y=sectionLabel(doc,'Validity',y);
+  y=kvRows(doc,[['Issue date',fmtDate(new Date())],['Review by',fmtDate(addMonths(60))+'  (5 years)']],y);
+  footer(doc,'Recochem Pty Ltd · recochem.com.au · Emergency 1800 033 111');
+  doc.save('SDS - Solvent Cleaner MEK.pdf');
+}
+function buildMedical(){
+  var J=jget(); if(!J) return alert('Still loading — try again in a moment.');
+  var doc=new J({unit:'pt',format:'a4'});
+  header(doc,'Bondi Junction Medical Centre','Dr A. Singh · MBBS FRACGP · Provider 2451889');
+  var y=docTitle(doc,'Medical Certificate',['Issued: '+fmtDate(new Date())]);
+  y=sectionLabel(doc,'Patient',y);
+  y=kvRows(doc,[['Name','Daniel Byrne'],['Date of birth','14 Mar 1990']],y);
+  y=sectionLabel(doc,'Certification',y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(INK[0],INK[1],INK[2]);
+  doc.text('This is to certify that I examined the above patient today and that, in',40,y);
+  doc.text('my opinion, they are unfit for normal work duties due to a work-related',40,y+17);
+  doc.text('injury for the period shown below.',40,y+34); y+=52;
+  y=kvRows(doc,[['Unfit from',fmtDate(new Date())],['Unfit to',fmtDate(new Date(Date.now()+5*864e5))],['Return','Suitable for light duties thereafter']],y);
+  signoff(doc,'A. Singh','Dr A. Singh · Bondi Junction Medical Centre',y);
+  footer(doc,'Bondi Junction Medical Centre · (02) 9387 0000');
+  doc.save('Medical Certificate.pdf');
+}
+function buildWitness(){
+  var J=jget(); if(!J) return alert('Still loading — try again in a moment.');
+  var doc=new J({unit:'pt',format:'a4'});
+  header(doc,'Slán Safety','Incident witness statement');
+  var y=docTitle(doc,'Witness Statement',['Date: '+fmtDate(new Date())]);
+  y=sectionLabel(doc,'Witness',y);
+  y=kvRows(doc,[['Name','Jake Sullivan'],['Company','Murphy Civil Construction'],['Role','Crane Operator']],y);
+  y=sectionLabel(doc,'Account',y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(INK[0],INK[1],INK[2]);
+  var lines=['I was working approximately 10 metres away when I saw the worker step',
+    'back from the formwork and lose footing on loose material. He fell to the',
+    'lower level. I immediately alerted the supervisor and called for first aid.',
+    'The area had not been barricaded at the time. To the best of my knowledge',
+    'this account is true and correct.'];
+  lines.forEach(function(l,i){ doc.text(l,40,y+i*17); }); y+=lines.length*17+10;
+  signoff(doc,'J. Sullivan','Witness signature',y);
+  footer(doc,'Witness statement recorded via Slán Safety');
+  doc.save('Witness Statement.pdf');
+}
 function downloadAll(){
-  var fns=[buildService,buildRego,buildInsurance,buildInvoice,buildInspection];
+  var fns=[buildService,buildRego,buildInsurance,buildInvoice,buildInspection,buildFirstAid,buildSDS,buildMedical,buildWitness];
   fns.forEach(function(fn,i){ setTimeout(fn, i*450); }); // small stagger so the browser allows multiple downloads
 }
 </script>
