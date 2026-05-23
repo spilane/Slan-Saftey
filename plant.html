@@ -563,6 +563,7 @@ function openHub(i){
   var _sm=svcMeter(a), svcMeterRow='';
   if(_sm){ var _over=_sm.toGo<0; svcMeterRow='<div class="svc-row"><span>Service interval</span><span style="color:'+(_over?'var(--fail)':(svcSoon(_sm)?'var(--warn)':'var(--pass)'))+'">'+(_over?('Overdue '+Math.abs(_sm.toGo).toLocaleString()+' '+_sm.meter):('In '+_sm.toGo.toLocaleString()+' '+_sm.meter))+'</span></div>'; }
   var lift = a.lift_note ? '<div class="lift"><b>Lifting data</b>SWL '+(a.swl||'—')+'<br>'+a.lift_note+'</div>' : '';
+  var hired=isHired(a.code), premCleared=_premobState(a.code).cleared;
   var premobHubRow = (getRole()!=='worker' && isHired(a.code) && _premobState(a.code).cleared) ? ('<div class="sec-h">Pre-mobilisation</div><div class="tile"><button class="row" onclick="plantPremobOpen(\''+a.code+'\')"><div class="row-ic">✅</div><div class="row-main"><div class="row-t">Pre-mobilisation checklist — cleared</div><div class="row-s">Hired from '+hireInfo(a.code).supplier+' · view the completed form</div></div><div class="chev">›</div></button></div>') : '';
   var paperPrestartRow = (isHired(a.code) && _premobState(a.code).cleared) ? ('<div class="sec-h">Daily pre-start (paper book)</div>'+(_prestartDoneToday(a.code) ? '<div class="tile" style="padding:12px 14px;font-size:12.5px;color:#1B5E3F;background:#EAF5EF;border:1px solid #BFE3D0">✓ Today’s pre-start confirmed — logged to your records.</div>' : '<div class="tile" style="padding:12px 14px"><div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:8px">This machine runs off the supplier’s paper pre-start book. Confirm today’s pre-start was completed so it shows in your records and pre-starts-done count.</div><button class="cta" style="margin:0" onclick="plantPaperPrestart(\''+a.code+'\')">✓ Confirm today’s pre-start done</button></div>') ) : '';
   var uploads=_plantDocsFor(a.code);
@@ -579,8 +580,10 @@ function openHub(i){
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="showList()">‹ All machines</button>'+
     '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+hiredChip(a.code)+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace(/_/g,' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
-    '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>'+
-    '<button class="cta" onclick="openGate()">Start Pre-Start</button>'+
+    (hired ? '' : '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>')+
+    (hired
+      ? (premCleared ? '' : '<button class="cta" style="background:var(--warn)" onclick="plantPremobOpen(\''+a.code+'\')">⚠ Not cleared for site — complete pre-mobilisation first</button>')
+      : '<button class="cta" onclick="openGate()">Start Pre-Start</button>')+
     (getRole()!=='worker' ? ('<div class="sec-h">Machine details</div><div class="svc">'+
       '<div class="svc-row"><span>Site</span><span>'+assetSite(a.code)+'</span></div>'+
       (isHired(a.code)?'<div class="svc-row"><span>Hired from</span><span>'+hireInfo(a.code).supplier+'</span></div>':'')+
@@ -595,7 +598,7 @@ function openHub(i){
       '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
     '</div>') : '')+
     '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift + premobHubRow + paperPrestartRow + dropHtml +
-    '<div class="sec-h">Recent pre-starts (last 7 days)</div><div class="tile">'+(rec||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts in the last 7 days.</div></div></div>')+'</div>'+
+    ((hired && !premCleared) ? '' : '<div class="sec-h">Recent pre-starts (last 7 days)</div><div class="tile">'+(rec||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts in the last 7 days.</div></div></div>')+'</div>')+
     '<div class="sec-h">Service</div><div class="svc">'+
       '<div class="svc-row"><span>Last service</span><span>'+fmt(a.service_last)+'</span></div>'+
       '<div class="svc-row"><span>Next due</span><span style="color:'+(svcOverdue?'var(--fail)':'var(--pass)')+'">'+fmt(a.service_due)+(svcOverdue?' · OVERDUE':'')+'</span></div>'+
@@ -692,6 +695,11 @@ function plantDocView(code, idx){ var docs=_plantDocsFor(code), dc=docs[idx]; if
 /* ---------- gate ---------- */
 function openGate(){
   var a=ASSETS[curAsset];
+  // Hired plant doesn't use the app's digital pre-start — it runs off the supplier's paper book.
+  if(isHired(a.code)){
+    if(!_premobState(a.code).cleared){ slanMsg('Not cleared for site','<div style="font-size:13.5px;color:var(--t2);line-height:1.55">'+a.code+' is hired in and hasn’t been pre-mobilised yet. Complete the pre-mobilisation checklist before it can be used.</div>', function(){ plantPremobOpen(a.code); }); return; }
+    slanMsg('Paper pre-start','<div style="font-size:13.5px;color:var(--t2);line-height:1.55">'+a.code+' is hired in and uses the supplier’s paper pre-start book. Confirm today’s pre-start on the machine page.</div>', function(){ openHub(curAsset); }); return;
+  }
   var r=ticketGate(currentWorker,a);
   var titles={green:'Authorised',amber:'Supervisor Approval Required',red:'Not Authorised'};
   var icons={green:'✓',amber:'⚠',red:'✕'};
@@ -1130,21 +1138,19 @@ function _recOutcome(rec){
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
 }
 /* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
-var DEMO_SEED_VERSION='eoin-v2';
+var DEMO_SEED_VERSION='eoin-v3';
 var DEMO_DAYS=5; // seed a pre-start for each of the last 5 days, per machine
 /* per-machine demo script: ops rotate across days; faultDays = which daysAgo the issue shows (re-flagged each day so it 'carries on'); the WO is raised on the earliest fault day */
 var DEMO_FLEET=[
   { code:'CRN-007', ops:['Jake Sullivan'], comment:'Lifting precast panels to the upper levels.' },
   { code:'MAG-009', ops:['Jake Sullivan'], faultDays:[0],
     fault:{match:'Load moment indicator', sev:'Critical — do not operate', desc:'LMI reads zero under a known test load — not safe to lift. Out-of-service tag fitted and supervisor notified.'} },
-  { code:'TLH-003', ops:['Daniel Byrne','Conor Foley'] },
+  /* TLH-003, GEN-005, EWP-019 are HIRED — they run off the supplier's paper pre-start book, so no seeded digital pre-starts */
   { code:'TRK-006', ops:['Anthony Walsh'], faultDays:[2,1,0],
     fault:{match:'Reversing alarm', sev:'Minor — still usable', desc:'Reversing camera cuts out intermittently; reversing alarm works fine. Using a spotter when reversing until it is repaired (work order raised).'} },
-  { code:'GEN-005', ops:['Daniel Byrne'] },
   { code:'LT-013', ops:['Daniel Byrne'] },
   { code:'EWP-018', ops:['Daniel Byrne'], faultDays:[3,2,1,0],
     fault:{match:'Beacon, horn', sev:'Minor — still usable', desc:'Amber flashing beacon globe blown. Horn and movement alarms all work — fine for daytime use. Known issue, work order raised, awaiting a replacement globe.'} },
-  { code:'EWP-019', ops:['Daniel Byrne'] },
   { code:'BUS-021', ops:['Anthony Walsh'], comment:'Crew transport run — all good.' },
   { code:'UTE-022', ops:['Anthony Walsh'] },
   { code:'CRN-011', ops:['Jake Sullivan'] },
