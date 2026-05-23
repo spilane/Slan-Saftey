@@ -713,6 +713,15 @@ function _itemInfoDue(info,dateStr){
   return '';
 }
 function _openWOsFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status!=='Returned to service'; }); }
+/* open known issue (from a prior pre-start) that matches a checklist item, so it carries into today's pre-start */
+function _knownIssueForItem(code, q){
+  var ql=(q||'').toLowerCase();
+  var wo=_openWOsFor(code).filter(function(w){ var fl=(w.fault||'').toLowerCase(); return fl.indexOf(ql)>-1 || ql.indexOf(fl)>-1; })[0];
+  if(!wo) return null;
+  var desc='', sev='';
+  try{ var rec=_loadPlantRecord(code); if(rec){ var it=(rec.items||[]).filter(function(x){ return x.status==='f' && x.q===q; })[0]; if(it){ desc=it.desc||''; sev=it.sev||''; } } }catch(e){}
+  return { wo:wo.wo, raised:wo.raised||'', desc:desc, sev:sev };
+}
 var RECURRING={ 'TLH-003':{item:'Reversing alarm & camera',count:3}, 'GEN-005':{item:'Service overrun / running issues',count:2} };
 var psPhotos={};
 function _psReadPhoto(file, cb){
@@ -792,7 +801,11 @@ function openPrestart(){
       if(savedInfo){ var attn=_itemInfoDue(info, savedInfo); infoHint = attn ? '<div style="font-size:10.5px;color:#A06000;font-weight:700;margin-top:5px">⚠ '+attn+'</div>' : '<div style="font-size:10.5px;color:var(--t3);margin-top:5px">Saved from last pre-start — update if it has changed.</div>'; }
       infoField='<div class="ps-field" style="margin:11px 0 0"><label>'+info.label+'</label><input id="ps-info'+idx+'" type="'+info.type+'"'+(info.past?' max="'+iso(new Date())+'"':'')+(savedInfo?' value="'+savedInfo+'"':'')+'>'+infoHint+'</div>';
     }
-    return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div><div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">✓ Pass</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">✕ Fault</button></div>'+infoField+fd+'</div>';
+    var ki=_knownIssueForItem(a.code, it.q);
+    var kiBox = ki ? '<div style="background:#FFF6E6;border:1px solid #E8C97A;border-radius:9px;padding:9px 11px;margin:8px 0;font-size:11.5px;color:#8A5A00;line-height:1.45">↻ <b>Known issue carried over</b>'+(ki.wo?' ('+ki.wo+(ki.raised?' · raised '+ki.raised.split('·')[0].trim():'')+')':'')+'<div style="margin-top:3px;font-weight:600;color:#6a4a00">'+(ki.desc||'Previously flagged on a pre-start.')+'</div><div style="margin-top:5px">Check it now — tap <b>Still there</b> if it is still present, or <b>Resolved</b> if it has been fixed.</div></div>' : '';
+    var passLbl = ki ? '✓ Resolved' : '✓ Pass';
+    var faultLbl = ki ? '✕ Still there' : '✕ Fault';
+    return head+'<div class="ps-item'+(it.crit?' crit':'')+'"><div class="ps-q">'+it.q+badge+'</div>'+kiBox+'<div class="seg"><button type="button" class="p" id="ps'+idx+'p" onclick="psSet('+idx+',\'p\')">'+passLbl+'</button><button type="button" class="f" id="ps'+idx+'f" onclick="psSet('+idx+',\'f\')">'+faultLbl+'</button></div>'+infoField+fd+'</div>';
   }).join('');
   var needsFFW = a.required && a.required.length>0;
   var km = svcMeter(a)&&svcMeter(a).meter==='km';
@@ -850,11 +863,19 @@ function submitPrestart(){
   var criticalFault = faults>0 && faultIdx.some(function(k){ var sev=document.getElementById('ps-sev'+k); return (_psList[+k]&&_psList[+k].crit) || (sev&&/Critical/.test(sev.value)); });
   _lastPrestartRec={ code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:currentWorker.name, when:new Date(), reading:reading, meter:(km?'km':'hrs'), faults:faults, critical:criticalFault, needsFFW:(a.required&&a.required.length>0), comments:(document.getElementById('ps-comments').value||'').trim(), items:_psList.map(function(it,i){ return { q:it.q, cat:it.cat||'', status:psState[i], sev:(psState[i]==='f'&&document.getElementById('ps-sev'+i))?document.getElementById('ps-sev'+i).value:'', desc:(psState[i]==='f'&&document.getElementById('ps-desc'+i))?(document.getElementById('ps-desc'+i).value||'').trim():'', info:(_itemInfo(it)&&document.getElementById('ps-info'+i))?document.getElementById('ps-info'+i).value:'', photo:(psState[i]==='f'&&psPhotos[i])?psPhotos[i]:'' }; }) };
   _savePlantRecord(_lastPrestartRec);
-  if(faults>0){ var _fs=faultIdx.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(faultIdx.length>2?' +'+(faultIdx.length-2)+' more':''); var _woObj={wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}; WORKORDERS.unshift(_woObj); _saveWO(_woObj); _setPlantAlert(a, _fs, criticalFault); }
+  // known issues marked Pass = worker says fixed → close their work order
+  var _resolved=[];
+  for(var ri=0;ri<_psList.length;ri++){ if(psState[ri]==='p'){ var _ki=_knownIssueForItem(a.code,_psList[ri].q); if(_ki){ _removeSavedWO(_ki.wo); WORKORDERS=WORKORDERS.filter(function(w){return w.wo!==_ki.wo;}); _resolved.push(_psList[ri].q); } } }
+  // raise a work order only for NEW faults — a carried issue marked 'still there' keeps its existing WO + original date
+  var _newFaults=faultIdx.filter(function(k){ return !_knownIssueForItem(a.code,_psList[+k].q); });
+  if(_newFaults.length){ var _fs=_newFaults.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(_newFaults.length>2?' +'+(_newFaults.length-2)+' more':''); var _woObj={wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}; WORKORDERS.unshift(_woObj); _saveWO(_woObj); }
+  if(faults>0){ var _allf=faultIdx.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(faultIdx.length>2?' +'+(faultIdx.length-2)+' more':''); _setPlantAlert(a, _allf, criticalFault); }
+  else if(_resolved.length && !_openWOsFor(a.code).length){ _clearPlantAlert(a.code); a.status='operational'; }
   var body;
   if(faults>0 && criticalFault){ a.status='out_of_service'; body='<div style="text-align:center"><div style="font-size:42px">⛔</div><div style="font-size:16px;font-weight:800;color:var(--fail);margin-top:6px">Critical fault — out of service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' has been taken <b>out of service</b> and a <b>high-priority</b> work order raised to the mechanic, and the supervisor has been notified. This machine must not be operated.</div></div>'; }
   else if(faults>0){ a.status='fault_reported'; body='<div style="text-align:center"><div style="font-size:42px">⚠️</div><div style="font-size:16px;font-weight:800;color:var(--warn);margin-top:6px">Fault reported</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+faults+' fault'+(faults>1?'s':'')+' flagged on '+a.code+' → a work order has been raised and the supervisor has been notified.</div></div>'; }
   else { body='<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Pre-start complete</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' is good to go. Saved against '+currentWorker.name+' and the machine record.</div></div>'; }
+  if(_resolved.length){ body+='<div style="font-size:12.5px;color:var(--mid);margin-top:10px;font-weight:700">✓ '+_resolved.length+' known issue'+(_resolved.length>1?'s':'')+' marked resolved — work order'+(_resolved.length>1?'s':'')+' closed.</div>'; }
   body+='<button class="btn-ghost" style="margin-top:14px" onclick="plantViewPrestartPDF()">📄  View pre-start record (PDF)</button>';
   slanMsg('', body, function(){ psState={}; renderAssets(); showList(); });
 }
