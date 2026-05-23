@@ -372,7 +372,8 @@ function plantDetails(code){ return PLANT_DETAILS[code]||{}; }
    Owned machines show no hire note; only hired ones are flagged. rate = weekly hire $ (for a future off-hire view). */
 var PLANT_HIRE={
   'EWP-019':{ supplier:'Access Hire Australia', rate:760 },
-  'TLH-003':{ supplier:'Onsite Rental Group', rate:1180 }
+  'TLH-003':{ supplier:'Onsite Rental Group', rate:1180 },
+  'GEN-005':{ supplier:'Coates Hire', rate:340 }
 };
 function isHired(code){ return !!PLANT_HIRE[code]; }
 function hireInfo(code){ return PLANT_HIRE[code]||null; }
@@ -1417,14 +1418,15 @@ function _premobSection(title, items, ownerOn, siteOn){
   return '<div class="sec-h">'+title+'</div><div style="overflow-x:auto"><table class="reg"><thead><tr><th style="text-align:left">Item</th><th>Supplier</th><th>Site</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 function plantPremobBody(fleet){
+  var hired=fleet.filter(function(a){ return isHired(a.code); }); // pre-mob view is for hired-in plant
   var counts={accepted:0,awaiting:0,pending:0};
-  fleet.forEach(function(a){ counts[_premobStatus(a.code).key]++; });
+  hired.forEach(function(a){ counts[_premobStatus(a.code).key]++; });
   var chip=function(v,l,col){ return '<div style="flex:1;text-align:center;padding:10px 4px"><div style="font-size:22px;font-weight:800;color:'+col+';line-height:1">'+v+'</div><div style="font-size:10.5px;color:var(--t2);margin-top:3px">'+l+'</div></div>'; };
-  var summary='<div class="tile" style="display:flex;margin-bottom:14px;padding:4px 0">'+chip(counts.accepted,'Accepted','#1B6E3A')+'<div style="width:1px;background:var(--border);margin:8px 0"></div>'+chip(counts.awaiting,'Awaiting site','#A06000')+'<div style="width:1px;background:var(--border);margin:8px 0"></div>'+chip(counts.pending,'Not started','#7A8580')+'</div>';
-  var rows=fleet.map(function(a){ var st=_premobStatus(a.code);
-    return '<button class="row" onclick="plantPremobOpen(\''+a.code+'\')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+hiredChip(a.code,true)+'</div><div class="row-s" style="color:'+st.col+';font-weight:700">'+st.label+'</div></div><div class="chev">›</div></button>';
-  }).join('');
-  return '<div class="fcard"><div class="fcard-hdr">🚚 Pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Every machine is checked and accepted before it operates on site. The <b>supplier/owner</b> completes the checklist before delivery; the <b>site</b> verifies and accepts it on arrival.</div></div>'+summary+'<div class="tile">'+rows+'</div>';
+  var summary='<div class="tile" style="display:flex;margin-bottom:14px;padding:4px 0">'+chip(counts.accepted,'Cleared','#1B6E3A')+'<div style="width:1px;background:var(--border);margin:8px 0"></div>'+chip(counts.awaiting,'Awaiting site','#A06000')+'<div style="width:1px;background:var(--border);margin:8px 0"></div>'+chip(counts.pending,'Not started','#7A8580')+'</div>';
+  var rows=hired.length?hired.map(function(a){ var st=_premobStatus(a.code); var hi=hireInfo(a.code);
+    return '<button class="row" onclick="plantPremobOpen(\''+a.code+'\')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+(hi?hi.supplier+' · ':'')+'<span style="color:'+st.col+';font-weight:700">'+st.label+'</span></div></div><div class="chev">›</div></button>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No hired-in equipment on this site.</div></div></div>';
+  return '<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site. The <b>supplier</b> completes the checklist before delivery; the <b>site</b> verifies, photographs and accepts it on arrival.</div></div>'+summary+'<div class="tile">'+rows+'</div>';
 }
 function plantPremobOpen(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
@@ -1637,7 +1639,7 @@ function renderOversight(){
       return '<button onclick="plantSetSite(\''+s+'\')" style="padding:6px 13px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+'">'+label+'</button>';
     }).join('')+'</div>';
   }
-  var tabNav='<div class="plat-tabs">'+[['dashboard','Dashboard'],['assets','Assets'],['premob','Pre-Mob'],['analytics','Analytics'],['compliance','Compliance'],['workorders','Work Orders ('+open.length+')']].map(function(tb){
+  var tabNav='<div class="plat-tabs">'+[['dashboard','Dashboard'],['assets','Assets'],['premob','Hired Equipment'],['analytics','Analytics'],['compliance','Compliance'],['workorders','Work Orders ('+open.length+')']].map(function(tb){
     return '<button class="plat-tab'+(platTab===tb[0]?' on':'')+'" onclick="platSetTab(\''+tb[0]+'\')">'+tb[1]+'</button>';
   }).join('')+'</div>';
 
@@ -1703,7 +1705,7 @@ function renderOversight(){
     }).join('');
     body='<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
         '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
-      '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Last pre-start</th><th>Open WOs</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
       '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
   } else if(platTab==='premob'){
     body=plantPremobBody(fleet);
