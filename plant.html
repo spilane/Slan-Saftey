@@ -1479,7 +1479,15 @@ function plantPremobOpen(code){
     if(!s.supplier_done){
       siteBox='<div class="sec-h">On-site check</div><div style="font-size:12px;color:var(--t3);padding:2px 0">Import the supplier checklist first, then assign the on-site check to a ticketed operator.</div>';
     } else if(s.site_assignee){
-      siteBox='<div class="sec-h">On-site check</div><div style="background:#EAF2FB;border:1px solid #B9D2F2;border-radius:10px;padding:11px 13px;font-size:12.5px;color:#1C5AAD;line-height:1.5">📋 Assigned to <b>'+s.site_assignee+'</b> — awaiting their on-site checks &amp; arrival photos. <button onclick="premobAssign(\''+code+'\',null)" style="background:none;border:none;color:#1C5AAD;font-weight:700;text-decoration:underline;cursor:pointer;font-family:inherit;font-size:12.5px;padding:0;margin-left:4px">Change</button></div>';
+      var phs=(s.photos||[]);
+      var photosList = phs.length ? ('<div class="tile" style="margin-bottom:10px">'+phs.map(function(n){ return '<div class="row" style="cursor:default"><div class="row-ic">📷</div><div class="row-main"><div class="row-s" style="word-break:break-all">'+n+'</div></div></div>'; }).join('')+'</div>') : '<div style="font-size:12px;color:var(--t3);margin:2px 0 10px">No arrival photos yet.</div>';
+      siteBox='<div class="sec-h">On-site check — '+s.site_assignee+'</div>'+
+        '<div style="font-size:12px;color:var(--t2);margin-bottom:10px;line-height:1.5"><b>'+s.site_assignee+'</b> (ticketed operator) verifies the machine on arrival, adds photos and signs to clear it.</div>'+
+        '<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Arrival photos'+(phs.length?(' ('+phs.length+')'):'')+'</div>'+photosList+
+        '<button class="btn-ghost" onclick="premobPhotoPick(\''+code+'\')" style="margin-bottom:12px">📷 Add arrival photos</button>'+
+        '<input id="premob-photo-input" type="file" accept="image/*" multiple style="display:none" onchange="premobPhotoOnFile(this)">'+
+        '<button class="cta" onclick="premobComplete(\''+code+'\')">✓ Complete on-site check &amp; clear machine</button>'+
+        '<button class="btn-ghost" onclick="premobAssign(\''+code+'\',null)">Change operator</button>';
     } else {
       var ops=_ticketedFor(a);
       siteBox='<div class="sec-h">On-site check</div>'+(ops.length?'<div style="font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.5">Assign the on-site check to an operator who holds the ticket for this machine:</div><div class="tile">'+ops.map(function(w){ return '<button class="row" onclick="premobAssign(\''+code+'\',\''+w.name.replace(/'/g,"\\'")+'\')"><div class="row-ic">👷</div><div class="row-main"><div class="row-t">'+w.name+'</div><div class="row-s">'+w.trade+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div>':'<div style="font-size:12px;color:var(--fail);line-height:1.5">No operator on the roster holds the ticket for this machine — add a ticketed operator before it can be cleared.</div>');
@@ -1525,6 +1533,14 @@ function premobAssign(code, name){
   _premobSaveState(code, { site_assignee:name||'' });
   plantPremobOpen(code);
   if(name && typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:38px">📋</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">On-site check assigned</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — <b>'+name+'</b> will complete the on-site checks &amp; arrival photos when the machine lands.</div></div>');
+}
+/* §3 — assigned operator completes the site column + arrival photos + clears the machine */
+var _premobPhotoRef=null;
+function premobPhotoPick(code){ _premobPhotoRef=code; var i=document.getElementById('premob-photo-input'); if(i) i.click(); }
+function premobPhotoOnFile(input){ var code=_premobPhotoRef; if(!code) return; var s=_premobState(code); var ph=(s.photos||[]).slice(); if(input&&input.files){ for(var i=0;i<input.files.length;i++) ph.push(input.files[i].name); } if(input) input.value=''; _premobSaveState(code,{ photos:ph }); plantPremobOpen(code); }
+function premobComplete(code){
+  _premobSaveState(code, { site_done:true, cleared:true, site_at:new Date().toISOString() });
+  if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">'+code+' cleared for use</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">On-site check complete and signed off. It now sits with your in-service plant under the <b>Cleared</b> tab and its machine page.</div></div>', function(){ premobSub='cleared'; renderOversight(); });
 }
 function plantComplianceBody(fleet){
   var today=new Date();
