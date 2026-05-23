@@ -16116,6 +16116,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     showDemoBanner();
   }
 
+  // Switching user from the Plant page lands here → become that WHS role on their normal home
+  try {
+    var _pSwitch = /[?&]plantSwitch=([a-z]+)/.exec(location.search);
+    if (_pSwitch && typeof plantDemoSwitch === 'function') { plantDemoSwitch(_pSwitch[1]); }
+  } catch(e) {}
+
   // iOS PWA reload guard: when iOS Safari evicts the WebView while the
   // camera takes over (during a permit photo, SDS photo, incident photo)
   // and reloads us on return, checkOnboarding() routes the user back to
@@ -37420,6 +37426,27 @@ function startDemoAs(role) {
 
 function startDemo() {
   showDemoRoleSheet();
+}
+// Arriving from the Plant page's "switch user" — become that WHS role and land on their NORMAL home (with the pills), not the plant portal.
+function plantDemoSwitch(role){
+  try{
+    DEMO_MODE=true;
+    localStorage.setItem('slan_demo','true');
+    var today=new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
+    var profiles={
+      worker:     { name:'Jake Ryan',      dob:'1992-06-14', company:'Murphy Civil Construction', role:'Worker',           safetyPoints:912, phone:'0412 345 678', state:'NSW', experience:'6-10', licences:{ whitecard:{expiry:'2027-03-10'}, driver:{expiry:'2027-08-22'}, hrwl:{expiry:'2026-07-15'} } },
+      supervisor: { name:'Eoin Burke',     dob:'1985-11-22', company:'Murphy Civil Construction', role:'Site Supervisor',  safetyPoints:0, phone:'0432 778 901', state:'NSW', experience:'10+', licences:{ whitecard:{expiry:'2027-06-15'}, hrwl:{expiry:'2026-09-20'}, firstaid:{expiry:'2026-11-30'} } },
+      director:   { name:'Patrick Murphy', dob:'1972-03-08', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0, phone:'0419 222 333', state:'NSW', experience:'10+', licences:{} }
+    };
+    var p=profiles[role]||profiles.supervisor; p.demo=true; p.created=new Date().toISOString();
+    localStorage.setItem('slan_profile', JSON.stringify(p));
+    localStorage.setItem('slan_onboarded','true');
+    localStorage.setItem('slan_site_ps_done_'+today,'true');
+    try{ var eb=document.getElementById('demo-banner'); if(eb) eb.remove(); if(typeof showDemoBanner==='function') showDemoBanner(); }catch(e){}
+    if(role==='director'){ if(typeof goToAnalytics==='function') goToAnalytics('director'); else goTo('screen-dash'); }
+    else if(role==='supervisor'){ goTo('screen-dash'); if(typeof loadSuperDash==='function') loadSuperDash(); }
+    else { goTo('screen-home'); if(typeof initHome==='function') initHome(p); }
+  }catch(e){}
 }
 
 function showDemoBanner() {
