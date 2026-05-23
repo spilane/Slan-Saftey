@@ -19,14 +19,14 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;font-size:15px;line-height:1.5;padding-bottom:44px}
 .sb{height:calc(env(safe-area-inset-top,0px) + 10px);background:var(--deep)}
-.topbar{background:var(--deep);padding:10px 16px 16px;position:sticky;top:0;z-index:50}
+.topbar{background:var(--deep);padding:8px 16px 12px;position:sticky;top:0;z-index:50}
 .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.tbar-logo img{height:90px;object-fit:contain;display:block}
+.tbar-logo img{height:56px;object-fit:contain;display:block}
 .back-btn{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
 .back-btn:hover{background:rgba(255,255,255,.18)}
 .back-btn svg{width:20px;height:20px}
 .tb-spacer{width:36px;flex-shrink:0}
-.hdr-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:14px}
+.hdr-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:8px}
 .form-greeting{flex:1;min-width:0}
 .form-greeting h1{font-size:21px;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.2;margin:0}
 .form-greeting p{font-size:12.5px;color:rgba(255,255,255,.7);margin:4px 0 0}
@@ -258,9 +258,11 @@ table.reg tr.attn-amber td:first-child{box-shadow:inset 3px 0 0 #E08A1E}
     <h3>Demo — switch view</h3>
     <p>Jump between the views for a walkthrough.</p>
     <button class="wbtn" onclick="location.href='plant.html'"><b>Worker (QR)</b><span>Scan a machine → pre-start</span></button>
-    <button class="wbtn" onclick="location.href='plant.html?role=supervisor&site=Parramatta'"><b>Supervisor — Parramatta</b><span>Site fleet oversight</span></button>
+    <button class="wbtn" onclick="location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use'"><b>Supervisor — Bondi Junction (Eoin Burke)</b><span>Site fleet oversight</span></button>
     <button class="wbtn" onclick="location.href='plant.html?role=director'"><b>Director</b><span>All sites + analytics</span></button>
-    <button class="wbtn" onclick="plantResetDemo()" style="border-color:#E2A6A6;color:#A32D2D"><b>↺ Reset demo</b><span>Clear flagged faults &amp; work orders</span></button>
+    <div style="font-size:12px;font-weight:700;color:var(--t2);margin:14px 0 6px">Switch operator (test the Ticket Gate)</div>
+    <div id="demo-workers"></div>
+    <button class="wbtn" onclick="plantResetDemo()" style="border-color:#E2A6A6;color:#A32D2D;margin-top:6px"><b>↺ Reset demo</b><span>Clear flagged faults &amp; work orders</span></button>
   </div>
 </div>
 
@@ -411,6 +413,7 @@ function lastPrestart(a){ var ps=recentPrestarts(a); if(!ps.length) return null;
 function openWoCount(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status!=='Returned to service'; }).length; }
 
 var currentWorker=WORKERS[0];
+try{ var _wi=parseInt(localStorage.getItem('slan_plant_worker'),10); if(!isNaN(_wi)&&WORKERS[_wi]) currentWorker=WORKERS[_wi]; }catch(e){}
 var curAsset=0;
 function setTopRight(html){ var el=document.getElementById('tb-right'); if(el) el.innerHTML=html; }
 function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><span id="who-name">'+currentWorker.name+'</span></button>'; }
@@ -435,9 +438,14 @@ function openProfile(){
   document.getElementById('profile-sheet').classList.add('on');
 }
 function closeProfile(){ document.getElementById('profile-sheet').classList.remove('on'); }
-function openDemoSheet(){ document.getElementById('demo-sheet').classList.add('on'); }
+function openDemoSheet(){
+  var dw=document.getElementById('demo-workers');
+  if(dw){ dw.innerHTML = WORKERS.map(function(w,i){ return '<button class="wbtn" onclick="demoSwitchWorker('+i+')"'+(w.id===currentWorker.id?' style="border-color:#B8960C"':'')+'><b>'+w.name+(w.id===currentWorker.id?' ✓':'')+'</b><span>'+w.trade+'</span></button>'; }).join(''); }
+  document.getElementById('demo-sheet').classList.add('on');
+}
 function closeDemoSheet(){ document.getElementById('demo-sheet').classList.remove('on'); }
-function plantResetDemo(){ try{ localStorage.removeItem('slan_plant_alerts'); }catch(e){} location.href='plant.html'; }
+function demoSwitchWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catch(e){} currentWorker=WORKERS[i]; closeDemoSheet(); if(getRole()!=='worker'){ location.href='plant.html'; } else { var el=document.getElementById('who-name'); if(el) el.textContent=currentWorker.name; showList(); } }
+function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -585,7 +593,7 @@ function openGate(){
       r.checks.map(function(c){ var cls=c.status==='pass'?'ck-pass':(c.status==='warn'?'ck-warn':'ck-fail'); var sym=c.status==='pass'?'✓':(c.status==='warn'?'!':'✕');
         return '<div class="check"><div class="ck-dot '+cls+'">'+sym+'</div><div><div class="ck-name">'+c.name+'</div><div class="ck-detail">'+c.detail+'</div></div></div>'; }).join('');
   if(r.outcome==='green'){ html+='<button class="btn btn-green" onclick="openPrestart()">Begin Pre-Start →</button>'; }
-  else if(r.outcome==='amber'){ html+='<div class="ovr"><label>Supervisor PIN to override</label><input id="ovr-pin" type="tel" inputmode="numeric" placeholder="Enter 4-digit PIN" maxlength="4"><label>Reason for override</label><textarea id="ovr-reason" rows="2" placeholder="e.g. Renewal booked, supervisor approved for today"></textarea><button class="btn btn-amber" onclick="doOverride()">Override &amp; Begin Pre-Start</button></div><button class="btn-ghost" onclick="openHub(curAsset)">Cancel</button>'; }
+  else if(r.outcome==='amber'){ html+='<div class="ovr"><label>Supervisor PIN to override</label><input id="ovr-pin" type="tel" inputmode="numeric" placeholder="Enter 4-digit PIN" maxlength="4"><div style="font-size:11px;color:var(--gold);font-weight:700;margin:4px 0 2px">Demo PIN: 4827</div><label>Reason for override</label><textarea id="ovr-reason" rows="2" placeholder="e.g. Renewal booked, supervisor approved for today"></textarea><button class="btn btn-amber" onclick="doOverride()">Override &amp; Begin Pre-Start</button></div><button class="btn-ghost" onclick="openHub(curAsset)">Cancel</button>'; }
   else { html+='<div class="notify">✉ Your supervisor has been notified.</div><button class="btn-ghost" onclick="openHub(curAsset)">Back to machine</button>'; }
   html+='</div></div>';
   showDetail(html);
@@ -866,7 +874,7 @@ function openWorkerSheet(){
   document.getElementById('worker-sheet').classList.add('on');
 }
 function closeWorkerSheet(){ document.getElementById('worker-sheet').classList.remove('on'); }
-function pickWorker(i){ currentWorker=WORKERS[i]; document.getElementById('who-name').textContent=currentWorker.name; closeWorkerSheet(); showList(); }
+function pickWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catch(e){} currentWorker=WORKERS[i]; document.getElementById('who-name').textContent=currentWorker.name; closeWorkerSheet(); showList(); }
 
 /* ---------- manager / supervisor oversight ---------- */
 function getRole(){ var m=/[?&]role=([a-z]+)/.exec(location.search); return m?m[1]:'worker'; }
@@ -1196,7 +1204,7 @@ function plantViewPrestartPDF(){ if(!_lastPrestartRec || !window.jspdf){ slanMsg
 function renderOversight(){
   var supLocked = (getRole()==='supervisor');
   if(supLocked){ oversightSite = getSiteParam() || 'Bondi Junction Mixed Use'; }
-  setTopRight('<button class="profile-btn" onclick="openProfile()">👤 '+(supLocked ? (oversightSite+' Supervisor') : 'Director')+'</button>');
+  setTopRight('<button class="profile-btn" onclick="openProfile()">👤 '+(supLocked ? (PLANT_SUP_NAME[oversightSite]||'Supervisor') : 'Director')+'</button>');
   var siteMatch=function(code){ return oversightSite==='All' || assetSite(code)===oversightSite; };
   var fleet=ASSETS.filter(function(a){ return siteMatch(a.code); });
   var open=WORKORDERS.filter(function(w){ return w.status!=='Returned to service' && siteMatch(w.code); });
@@ -1218,8 +1226,8 @@ function renderOversight(){
   var body='';
   if(platTab==='dashboard'){
     var kpi=function(l,v,cls,ic,trend){ return '<div class="kpi '+cls+'"><div class="kpi-l">'+l+'</div><div class="kpi-row"><span class="kpi-ic">'+ic+'</span><span class="kpi-v">'+v+'</span>'+(trend||'')+'</div></div>'; };
-    var _isOut=function(a){ return a.status!=='operational' || _expired(a.rego_expiry); };
-    var _isAttn=function(a){ return !_isOut(a) && (_expired(a.service_due) || svcSoon(svcMeter(a)) || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30)); };
+    var _isOut=function(a){ return a.status==='out_of_service' || a.status==='retired' || _expired(a.rego_expiry); };
+    var _isAttn=function(a){ return !_isOut(a) && (a.status==='fault_reported' || _expired(a.service_due) || svcSoon(svcMeter(a)) || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30)); };
     var outCount=fleet.filter(_isOut).length, attnCount2=fleet.filter(_isAttn).length, readyCount=fleet.length-outCount-attnCount2;
     var need=fleet.filter(function(a){ return _isOut(a)||_isAttn(a); });
     var attHtml=need.length?need.map(function(a){
@@ -1247,8 +1255,8 @@ function renderOversight(){
     var rows=fleet.map(function(a){
       var dt=plantDetails(a.code);
       var sm=svcMeter(a), soon=svcSoon(sm);
-      var red = a.status!=='operational' || _expired(a.rego_expiry);
-      var amber = !red && (_expired(a.service_due) || soon || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30));
+      var red = a.status==='out_of_service' || a.status==='retired' || _expired(a.rego_expiry);
+      var amber = !red && (a.status==='fault_reported' || _expired(a.service_due) || soon || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30));
       var rowCls = red?'attn-red':(amber?'attn-amber':'');
       var stB = a.status==='operational'?'<span class="a-badge bg-op">Operational</span>':(a.status==='fault_reported'?'<span class="a-badge bg-flt">Fault</span>':'<span class="a-badge bg-out">'+a.status.replace(/_/g,' ')+'</span>');
       var rd=[]; if(a.hours) rd.push(a.hours.toLocaleString()+' hrs'); if(dt.km) rd.push(dt.km.toLocaleString()+' km');
