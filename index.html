@@ -4604,6 +4604,44 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ═══════════════════ PLANT — PRE-START APPROVALS (queue) ═══ -->
+<div id="screen-plant-approvals" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-home')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:15px">🚜</div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Plant &amp; Equipment</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div id="plant-approvals-body" style="padding:18px;padding-bottom:24px"></div>
+</div>
+
+<!-- ═══════════════════ PLANT — PRE-START APPROVAL REVIEW ═══ -->
+<div id="screen-plant-approval-review" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="openPlantApprovals()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:15px">🚜</div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Review Pre-Start</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div id="plant-approval-review-body" style="padding:18px;padding-bottom:20px"></div>
+  <div id="plant-approval-actions" style="padding:0 18px 24px;display:none">
+    <button class="submit-btn" onclick="plantApprovalApprove()" style="width:100%;background:#1B6E3A;margin-bottom:9px">✓ Approve pre-start</button>
+    <button onclick="plantApprovalShowReject()" style="width:100%;padding:13px;border-radius:var(--r);background:#FCEBEB;border:1px solid rgba(184,50,50,.3);color:#A32D2D;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✕ Reject pre-start</button>
+  </div>
+  <div id="plant-approval-reject-wrap" style="display:none;padding:0 18px 24px">
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Reason for rejection <span style="color:#A32D2D">*</span></div>
+    <textarea id="plant-approval-reject-text" rows="4" placeholder="Explain why this pre-start is rejected. The operator will be told and must not operate the machine." style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="plantApprovalCancelReject()" style="flex:1;padding:13px;border-radius:var(--r);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="plantApprovalReject()" style="flex:1;padding:13px;border-radius:var(--r);background:#A32D2D;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════ WORKING AT HEIGHTS — SUPERVISOR REVIEW ═══ -->
 <div id="screen-wah-sup-review" class="screen">
   <div class="tbar" style="background:var(--deep)">
@@ -16993,7 +17031,7 @@ function updateSupActivityStrip() {
   supUpdatePlantChip();
 }
 
-function supChipTapPlant() { window.open('plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=workorders','_blank'); }
+function supChipTapPlant() { openPlantApprovals(); }
 function supUpdatePlantChip() {
   var alerts = [];
   try { alerts = JSON.parse(localStorage.getItem('slan_plant_alerts') || '[]'); } catch(e) {}
@@ -17010,6 +17048,59 @@ function supUpdatePlantChip() {
   }
 }
 function workerChipTapPlant() { location.href = 'plant.html'; }
+/* ── Plant pre-start approvals — reviewed inside the WHS app, mirrors the permit flow ── */
+function _plantApprovalsLoad(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_approvals')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function _plantApprovalsSave(arr){ try{ localStorage.setItem('slan_plant_approvals', JSON.stringify(arr)); }catch(e){} }
+function _plantAlertsRead(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_alerts')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+var _plantCurrentApproval=null;
+function supChipOpenPlantPage(){ window.open('plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use','_blank'); }
+function openPlantApprovals(){
+  goTo('screen-plant-approvals');
+  var pending=_plantApprovalsLoad().filter(function(x){return x.status==='pending';});
+  var alerts=_plantAlertsRead();
+  var body='<div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Awaiting your approval</div>';
+  if(pending.length){
+    body += pending.map(function(x){ return '<div onclick="openPlantApprovalReview(\''+x.id+'\')" style="background:var(--card);border:1px solid var(--border);border-left:4px solid #BA7517;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="font-weight:700;color:var(--text);font-size:14px">'+x.code+' · '+x.machine+'</div><div class="status-pill warn"><div class="sp-dot sp-warn"></div><span>Pending</span></div></div><div style="font-size:12.5px;color:var(--muted);margin-top:5px">'+x.worker+' — '+((x.gate_reasons&&x.gate_reasons[0])?x.gate_reasons[0]:'requesting approval to operate')+'</div></div>'; }).join('');
+  } else {
+    body += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;color:var(--muted);font-size:13px">No pre-start approvals waiting.</div>';
+  }
+  if(alerts.length){
+    body += '<div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:20px 0 8px">Flagged machines</div>';
+    body += alerts.map(function(al){ return '<div onclick="supChipOpenPlantPage()" style="background:var(--card);border:1px solid var(--border);border-left:4px solid '+(al.critical?'#A32D2D':'#BA7517')+';border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer"><div style="font-weight:700;color:var(--text);font-size:14px">'+al.code+(al.critical?' — OUT OF SERVICE':'')+'</div><div style="font-size:12.5px;color:var(--muted);margin-top:4px">'+(al.fault||'Fault flagged')+'</div></div>'; }).join('');
+    body += '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">Tap a machine to open it in Plant &amp; Equipment.</div>';
+  }
+  document.getElementById('plant-approvals-body').innerHTML=body;
+}
+function openPlantApprovalReview(id){
+  var ap=_plantApprovalsLoad().filter(function(x){return x.id===id;})[0]; if(!ap) return;
+  _plantCurrentApproval=ap;
+  document.getElementById('plant-approval-actions').style.display=(ap.status==='pending')?'block':'none';
+  document.getElementById('plant-approval-reject-wrap').style.display='none';
+  function row(l,v){ if(!v) return ''; return '<div class="hw-view-row"><div class="hw-view-label">'+l+'</div><div class="hw-view-val">'+v+'</div></div>'; }
+  var body='<div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:2px">'+ap.code+' · '+ap.machine+'</div><div style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Pre-start approval request</div>';
+  body += row('Operator', ap.worker);
+  body += row('Site', ap.site);
+  body += row('Requested', ap.requested_at?new Date(ap.requested_at).toLocaleString('en-AU'):'');
+  if(ap.gate_reasons&&ap.gate_reasons.length){ body += '<div class="hw-view-row"><div class="hw-view-label">Why approval is needed</div><div class="hw-view-val">'+ap.gate_reasons.map(function(t){return '• '+t;}).join('<br>')+'</div></div>'; }
+  if(ap.worker_reason){ body += row('Operator&rsquo;s note', '&ldquo;'+ap.worker_reason+'&rdquo;'); }
+  if(ap.status!=='pending'){ body += row('Decision', (ap.status==='approved'?'Approved':'Rejected')+' by '+(ap.decided_by||'')); if(ap.decision_reason) body += row('Note', ap.decision_reason); }
+  document.getElementById('plant-approval-review-body').innerHTML=body;
+  goTo('screen-plant-approval-review');
+}
+function plantApprovalApprove(){ _plantApprovalDecide(true,''); }
+function plantApprovalShowReject(){ document.getElementById('plant-approval-actions').style.display='none'; document.getElementById('plant-approval-reject-wrap').style.display='block'; }
+function plantApprovalCancelReject(){ document.getElementById('plant-approval-reject-wrap').style.display='none'; document.getElementById('plant-approval-actions').style.display='block'; }
+function plantApprovalReject(){ var r=(document.getElementById('plant-approval-reject-text').value||'').trim(); if(!r){ var t=document.getElementById('plant-approval-reject-text'); if(t){ t.style.borderColor='#A32D2D'; t.focus(); } return; } _plantApprovalDecide(false,r); }
+function _plantApprovalDecide(approve, reason){
+  if(!_plantCurrentApproval) return;
+  var arr=_plantApprovalsLoad(), ap=arr.filter(function(x){return x.id===_plantCurrentApproval.id;})[0]; if(!ap) return;
+  var supName=(typeof SITE_CONTACTS!=='undefined'&&SITE_CONTACTS.supervisor&&SITE_CONTACTS.supervisor.name)||'Eoin Burke';
+  ap.status=approve?'approved':'rejected'; ap.decided_by=supName; ap.decided_at=new Date().toISOString(); ap.decision_reason=reason||'';
+  _plantApprovalsSave(arr);
+  try{ if(typeof supUpdatePlantChip==='function') supUpdatePlantChip(); }catch(e){}
+  try{ if(typeof updateStatusStrip==='function') updateStatusStrip(); }catch(e){}
+  openPlantApprovals();
+}
 function workerUpdatePlantChip() {
   var alerts = [];
   try { alerts = JSON.parse(localStorage.getItem('slan_plant_alerts') || '[]'); } catch(e) {}
