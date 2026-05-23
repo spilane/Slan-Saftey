@@ -17171,7 +17171,13 @@ function supUpdatePremobChip(){
   else if(cleared){ pill.style.display=''; if(lbl) lbl.textContent=cleared+' — pre-mob cleared'; setPillState('d-pill-premob','done'); }
   else { pill.style.display='none'; }
 }
-function supChipTapPremob(){ window.open('plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob','_blank'); }
+function supChipTapPremob(){
+  var o=_premobIdx(), target=null;
+  Object.keys(o).forEach(function(code){ var s=o[code]; if(s&&s.flagged&&!target) target=code; }); // flagged first
+  if(!target){ var aw=Object.keys(o).filter(function(code){ var s=o[code]; return s&&s.site_assignee&&!s.site_done&&!s.cleared; }); if(aw.length===1) target=aw[0]; }
+  var base='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use';
+  window.open(target ? (base+'&premob='+encodeURIComponent(target)) : (base+'&tab=premob'), '_blank');
+}
 function supUpdatePlantChip() {
   var alerts = [];
   try { alerts = JSON.parse(localStorage.getItem('slan_plant_alerts') || '[]'); } catch(e) {}

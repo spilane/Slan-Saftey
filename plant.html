@@ -1452,15 +1452,22 @@ var PREMOB_PARTA={
 };
 function _premobPartA(a){ var t=(a.type||'').toLowerCase(); if(t.indexOf('ewp')>-1) return PREMOB_PARTA.ewp; if(t.indexOf('telehandler')>-1||t.indexOf('magni')>-1) return PREMOB_PARTA.telehandler; return PREMOB_PARTA.generic; }
 function _premobTick(on){ return '<span style="display:inline-block;width:22px;text-align:center;color:'+(on?'#1B6E3A':'#C7CFC9')+';font-weight:800">'+(on?'✓':'–')+'</span>'; }
+var PREMOB_REASONS=['','Missing / not supplied','Not fitted','Damaged','No tag / not tested','Expired / out of date','Not working','Other (note to supplier)'];
 function _premobSection(title, partKey, items, supplierOn, code, editable){
-  var st=_premobState(code), si=st.site_items||{};
+  var st=_premobState(code), si=st.site_items||{}, rs=st.site_item_reasons||{};
   var rows=items.map(function(it,i){
     var key=partKey+i, v=si[key]||(st.site_done?'ok':'');
     var col=v==='ok'?'#1B6E3A':(v==='no'?'#A32D2D':'#C7CFC9'), sym=v==='ok'?'✓':(v==='no'?'✗':'–'), bg=v==='ok'?'#EAF5EF':(v==='no'?'#FCEBEB':'#fff');
     var siteCell = editable
       ? '<button id="pmc-'+key+'" onclick="premobToggleItem(\''+code+'\',\''+key+'\')" style="width:32px;height:28px;border:1.5px solid '+col+';border-radius:6px;background:'+bg+';color:'+col+';font-weight:800;cursor:pointer;font-family:inherit;font-size:14px;line-height:1">'+sym+'</button>'
       : '<span style="color:'+col+';font-weight:800">'+sym+'</span>';
-    return '<tr><td style="font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--border);line-height:1.4">'+it+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+_premobTick(supplierOn)+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+siteCell+'</td></tr>';
+    // When marked "not OK", show a reason dropdown (his form: items ticked No need a reason)
+    var reasonSel = (v==='no')
+      ? (editable
+          ? '<select onchange="premobSetReason(\''+code+'\',\''+key+'\',this.value)" style="margin-top:5px;width:100%;padding:6px 8px;border:1.5px solid #E2B4B4;border-radius:6px;font-size:11.5px;font-family:inherit;color:#A32D2D;background:#fff">'+PREMOB_REASONS.map(function(r){ return '<option value="'+r+'"'+(rs[key]===r?' selected':'')+'>'+(r||'Reason for “not OK”…')+'</option>'; }).join('')+'</select>'
+          : (rs[key]?'<div style="margin-top:4px;font-size:11px;color:#A32D2D;font-weight:600">⚠ '+rs[key]+'</div>':''))
+      : '';
+    return '<tr><td style="font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--border);line-height:1.4">'+it+reasonSel+'</td><td style="text-align:center;border-bottom:1px solid var(--border);vertical-align:top;padding-top:8px">'+_premobTick(supplierOn)+'</td><td style="text-align:center;border-bottom:1px solid var(--border);vertical-align:top;padding-top:6px">'+siteCell+'</td></tr>';
   }).join('');
   return '<div class="sec-h">'+title+'</div><div style="overflow-x:auto"><table class="reg"><thead><tr><th style="text-align:left">Item</th><th>Supplier</th><th>Site</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
@@ -1468,10 +1475,12 @@ function premobToggleItem(code,key){
   var st=_premobState(code), si=Object.assign({}, st.site_items||{});
   var cur=si[key]||'', nxt=(cur===''?'ok':(cur==='ok'?'no':''));
   if(nxt==='') delete si[key]; else si[key]=nxt;
-  _premobSaveState(code,{ site_items:si });
-  var btn=document.getElementById('pmc-'+key);
-  if(btn){ var col=nxt==='ok'?'#1B6E3A':(nxt==='no'?'#A32D2D':'#C7CFC9'), sym=nxt==='ok'?'✓':(nxt==='no'?'✗':'–'), bg=nxt==='ok'?'#EAF5EF':(nxt==='no'?'#FCEBEB':'#fff'); btn.textContent=sym; btn.style.color=col; btn.style.borderColor=col; btn.style.background=bg; }
+  var patch={ site_items:si };
+  if(nxt!=='no'){ var rs=Object.assign({}, st.site_item_reasons||{}); delete rs[key]; patch.site_item_reasons=rs; }
+  _premobSaveState(code,patch);
+  var y=window.scrollY; plantPremobOpen(code); window.scrollTo(0,y); // re-render so the reason dropdown shows/hides, keep scroll position
 }
+function premobSetReason(code,key,val){ var st=_premobState(code), rs=Object.assign({}, st.site_item_reasons||{}); rs[key]=val; _premobSaveState(code,{ site_item_reasons:rs }); }
 function _premobKeys(a){ var keys=[]; _premobPartA(a).forEach(function(_,i){keys.push('A'+i);}); PREMOB_PARTB.forEach(function(_,i){keys.push('B'+i);}); PREMOB_PARTC.forEach(function(_,i){keys.push('C'+i);}); return keys; }
 function premobMarkAllOk(code){ var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var si={}; _premobKeys(a).forEach(function(k){ si[k]='ok'; }); _premobSaveState(code,{ site_items:si }); plantPremobOpen(code); }
 function premobCompleteCheck(code){
@@ -1480,7 +1489,7 @@ function premobCompleteCheck(code){
   var marked=keys.filter(function(k){return si[k]==='ok'||si[k]==='no';}).length;
   var noKeys=keys.filter(function(k){return si[k]==='no';});
   if(marked<keys.length){ slanMsg('Finish the checks','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Tick every item OK (✓) or not OK (✗) before clearing — '+marked+' of '+keys.length+' done. Tip: “Mark all items OK”, then change any that aren’t.</div>'); return; }
-  if(noKeys.length){ var pa=_premobPartA(a); var bad=noKeys.map(function(k){ var idx=parseInt(k.slice(1),10); var arr=(k.charAt(0)==='A'?pa:(k.charAt(0)==='B'?PREMOB_PARTB:PREMOB_PARTC)); return arr[idx]; }); premobFlagFromItems(code, bad); return; }
+  if(noKeys.length){ var pa=_premobPartA(a); var rs=_premobState(code).site_item_reasons||{}; var bad=noKeys.map(function(k){ var idx=parseInt(k.slice(1),10); var arr=(k.charAt(0)==='A'?pa:(k.charAt(0)==='B'?PREMOB_PARTB:PREMOB_PARTC)); return arr[idx]+(rs[k]?(' — '+rs[k]):''); }); premobFlagFromItems(code, bad); return; }
   premobComplete(code);
 }
 function premobFlagFromItems(code, badItems){
@@ -1529,7 +1538,9 @@ function plantPremobOpen(code){
   '</div>';
   var sig=function(role,name,pos){ return '<div style="flex:1;min-width:140px"><div style="font-size:10.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'+role+'</div><div style="border:1px solid var(--border);border-radius:8px;padding:10px;background:#fff">'+(name?('<div style="font-family:\'Brush Script MT\',\'Segoe Script\',cursive;font-size:22px;color:var(--deep);line-height:1">'+name+'</div><div style="font-size:11px;color:var(--t2);margin-top:3px">'+pos+'</div>'):'<div style="font-size:12px;color:var(--t3);font-style:italic">Awaiting signature</div>')+'</div></div>'; }
   var supplierSig = ownerOn ? sig('Equipment owner / supplier', isHired(code)?'M. Reilly':'P. Doherty', isHired(code)?(hireInfo(code).supplier):'Plant Manager · Murphy Civil') : sig('Equipment owner / supplier', null);
-  var siteSig = siteOn ? sig('Accepted on site (ticketed operator)', s.site_assignee||PLANT_SUP_NAME[assetSite(code)]||'Site','Ticketed operator') : sig('Accepted on site (ticketed operator)', null);
+  // The operator signs once they've inspected it — whether they accept it or send it back with defects.
+  var siteSigned = s.site_done || s.flagged;
+  var siteSig = siteSigned ? sig(s.flagged?'Inspected on site — defects noted':'Accepted on site (ticketed operator)', s.site_assignee||PLANT_SUP_NAME[assetSite(code)]||'Site','Ticketed operator') : sig('Accepted on site (ticketed operator)', null);
   var decl='<div class="sec-h">Declaration</div>'+
     '<div style="font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:10px">“I declare that this machine is in a safe condition, free from defect and fit for purpose. Ignition, toolbox and panel keys present with the machine.”</div>'+
     '<div style="display:flex;gap:12px;flex-wrap:wrap">'+supplierSig+siteSig+'</div>';
