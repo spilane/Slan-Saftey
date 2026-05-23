@@ -489,10 +489,9 @@ function ticketGate(w, a){
     else { add('Verification of Competency','warn','No VOC on file for '+a.make+' '+a.model+' — supervisor sign-off required.'); }
   }
   if(w.induction_expiry && new Date(w.induction_expiry)<today){ add('Site induction','warn','Your induction is overdue for renewal.'); }
-  if((a.required||[]).length){
-    if(_lapsed(w.swms_signed)){ add('SWMS sign-off','warn','You have not signed the current SWMS for this work — sign it before operating.'); }
-    if(_lapsed(w.ra_signed)){ add('Risk assessment','warn','Your risk-assessment sign-off has lapsed — review and sign the current one.'); }
-  }
+  if((a.required||[]).length && _lapsed(w.swms_signed)){ add('SWMS sign-off','warn','You have not signed the current SWMS for this work — sign it before operating.'); }
+  // Risk assessment must be signed for ANY plant — do not operate until signed off
+  if(_lapsed(w.ra_signed)){ add('Risk assessment','warn','You have not signed the plant risk assessment for this machine — do not operate until it is signed off (supervisor approval required).'); }
   if(a.service_due && new Date(a.service_due)<today){ add('Service currency','warn','Machine service is overdue (due '+fmt(a.service_due)+').'); }
   var hasFail=checks.some(function(c){return c.status==='fail';});
   var hasWarn=checks.some(function(c){return c.status==='warn';});
@@ -946,7 +945,10 @@ function submitPrestart(){
   for(var ri=0;ri<_psList.length;ri++){ if(psState[ri]==='p'){ var _ki=_knownIssueForItem(a.code,_psList[ri].q); if(_ki){ _removeSavedWO(_ki.wo); WORKORDERS=WORKORDERS.filter(function(w){return w.wo!==_ki.wo;}); _resolved.push(_psList[ri].q); } } }
   // raise a work order only for NEW faults — a carried issue marked 'still there' keeps its existing WO + original date
   var _newFaults=faultIdx.filter(function(k){ return !_knownIssueForItem(a.code,_psList[+k].q); });
-  if(_newFaults.length){ var _fs=_newFaults.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(_newFaults.length>2?' +'+(_newFaults.length-2)+' more':''); var _woObj={wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}; WORKORDERS.unshift(_woObj); _saveWO(_woObj); }
+  if(_newFaults.length){ var _fs=_newFaults.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(_newFaults.length>2?' +'+(_newFaults.length-2)+' more':''); var _woObj={wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}; WORKORDERS.unshift(_woObj); _saveWO(_woObj);
+    // a flagged fault (even minor) goes to the supervisor for approval straight away — they decide if it stays in service
+    if(!criticalFault){ var _fdesc=''; for(var _fn=0;_fn<_newFaults.length;_fn++){ var _fk=_newFaults[_fn]; var _de=document.getElementById('ps-desc'+_fk); if(_de&&_de.value){ _fdesc=_de.value.trim(); break; } } var _ar=_approvals().filter(function(x){ return !(x.code===a.code && x.status==='pending'); }); _ar.push({ id:'AP-'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e4).toString(36), code:a.code, machine:a.make+' '+a.model, site:assetSite(a.code), worker:currentWorker.name, worker_reason:'Flagged on pre-start — supervisor to decide if it stays in service.', gate_reasons:['Fault flagged on pre-start'], fault:_fs, fault_desc:_fdesc, requested_at:new Date().toISOString(), status:'pending' }); _saveApprovals(_ar); }
+  }
   if(faults>0){ var _allf=faultIdx.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(faultIdx.length>2?' +'+(faultIdx.length-2)+' more':''); _setPlantAlert(a, _allf, criticalFault); }
   else if(_resolved.length && !_openWOsFor(a.code).length){ _clearPlantAlert(a.code); a.status='operational'; }
   var body;

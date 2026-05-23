@@ -2269,6 +2269,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="d-pill-inc" onclick="supChipTapIncidents()"><div class="sp-dot sp-pending"></div><span id="d-pill-inc-lbl">Incidents</span></div>
       <div class="status-pill" id="d-pill-plant" onclick="supChipTapPlant()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-lbl">Plant</span></div>
       <div class="status-pill" id="d-pill-plant-appr" onclick="openPlantApprovals()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-appr-lbl">Plant approvals</span></div>
+      <div class="status-pill" id="d-pill-plant-ps" onclick="supChipOpenPlantPage()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-ps-lbl">Pre-starts</span></div>
     </div>
   </div>
 
@@ -17041,6 +17042,7 @@ function updateSupActivityStrip() {
   // Plant & Equipment — faults flagged from the Plant page (shared via localStorage)
   supUpdatePlantChip();
   try { supUpdatePlantApprovalsChip(); } catch(e) {}
+  try { supUpdatePlantPrestartChip(); } catch(e) {}
 }
 
 function supChipTapPlant() { openPlantApprovals(); }
@@ -17122,12 +17124,26 @@ function supUpdatePlantApprovalsChip(){
   if(pend.length){ pill.style.display=''; if(lbl) lbl.textContent=(pend.length===1?(pend[0].code+' — approve pre-start'):pend.length+' pre-start approvals'); setPillState('d-pill-plant-appr','warn'); }
   else { pill.style.display='none'; }
 }
+// "Pre-starts done" pill on the SUPERVISOR home — how many machines completed a pre-start today
+function supUpdatePlantPrestartChip(){
+  var recs=[]; try{ recs=JSON.parse(localStorage.getItem('slan_plant_records')||'[]'); if(!Array.isArray(recs)) recs=[]; }catch(e){}
+  var t=new Date(); t.setHours(0,0,0,0);
+  var codes={}; recs.forEach(function(r){ var d=new Date(r.when); if(!isNaN(d)&&d>=t) codes[r.code]=1; });
+  var n=Object.keys(codes).length;
+  var pill=document.getElementById('d-pill-plant-ps'), lbl=document.getElementById('d-pill-plant-ps-lbl');
+  if(!pill) return;
+  if(n){ pill.style.display=''; if(lbl) lbl.textContent=n+' pre-start'+(n>1?'s':'')+' done'; setPillState('d-pill-plant-ps','done'); }
+  else { pill.style.display='none'; }
+}
 // "Pre-start approval" pill on the WORKER home — shows the supervisor's decision
 function workerUpdatePlantApprovalsChip(){
-  var decided=_plantApprovalsLoad().filter(function(x){return x.status==='approved'||x.status==='rejected';}).sort(function(a,b){return new Date(b.decided_at||0)-new Date(a.decided_at||0);});
+  var all=_plantApprovalsLoad();
+  var pending=all.filter(function(x){return x.status==='pending';});
+  var decided=all.filter(function(x){return x.status==='approved'||x.status==='rejected';}).sort(function(a,b){return new Date(b.decided_at||0)-new Date(a.decided_at||0);});
   var pill=document.getElementById('sp-plant-appr'), lbl=document.getElementById('sp-plant-appr-lbl');
   if(!pill) return;
-  if(decided.length){ var d=decided[0]; pill.style.display=''; if(lbl) lbl.textContent=d.code+(d.status==='approved'?' — approved':' — rejected'); setPillState('sp-plant-appr', d.status==='approved'?'done':'fail'); }
+  if(pending.length){ pill.style.display=''; if(lbl) lbl.textContent=(pending.length===1?pending[0].code+' — awaiting approval':pending.length+' awaiting approval'); setPillState('sp-plant-appr','warn'); }
+  else if(decided.length){ var d=decided[0]; pill.style.display=''; if(lbl) lbl.textContent=d.code+(d.status==='approved'?' — approved':' — rejected'); setPillState('sp-plant-appr', d.status==='approved'?'done':'fail'); }
   else { pill.style.display='none'; }
 }
 function workerUpdatePlantChip() {
