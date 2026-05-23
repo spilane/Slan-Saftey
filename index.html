@@ -1961,6 +1961,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="sp-plant-appr" onclick="workerChipTapApproval()" style="display:none">
         <div class="sp-dot sp-pending"></div><span id="sp-plant-appr-lbl">Pre-start approval</span>
       </div>
+      <div class="status-pill" id="sp-premob" onclick="workerChipTapPremob()" style="display:none">
+        <div class="sp-dot sp-pending"></div><span id="sp-premob-lbl">Pre-mob</span>
+      </div>
     </div>
   </div>
 
@@ -2275,6 +2278,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="d-pill-plant" onclick="supChipTapPlant()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-lbl">Plant</span></div>
       <div class="status-pill" id="d-pill-plant-appr" onclick="openPlantApprovals()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-appr-lbl">Plant approvals</span></div>
       <div class="status-pill" id="d-pill-plant-ps" onclick="supOpenPlantToday()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-ps-lbl">Pre-starts</span></div>
+      <div class="status-pill" id="d-pill-premob" onclick="supChipTapPremob()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-premob-lbl">Pre-mob</span></div>
     </div>
   </div>
 
@@ -16676,6 +16680,7 @@ async function updateStatusStrip() {
   try { workerUpdatePermitsTileSub(); } catch(e) {}
   try { updateWorkerSdsTileSub(); } catch(e) {}
   try { workerUpdatePlantChip(); } catch(e) {}
+  try { workerUpdatePremobChip(); } catch(e) {}
   try { workerUpdatePlantApprovalsChip(); } catch(e) {}
 }
 
@@ -17141,9 +17146,32 @@ function updateSupActivityStrip() {
   supUpdatePlantChip();
   try { supUpdatePlantApprovalsChip(); } catch(e) {}
   try { supUpdatePlantPrestartChip(); } catch(e) {}
+  try { supUpdatePremobChip(); } catch(e) {}
 }
 
 function supChipTapPlant() { openPlantApprovals(); }
+/* ── Pre-mobilisation notifications (read slan_plant_premob written by plant.html) ── */
+function _premobIdx(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_premob')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function workerUpdatePremobChip(){
+  var o=_premobIdx(), pend=null;
+  Object.keys(o).forEach(function(code){ var s=o[code]; if(s && s.site_assignee && !s.site_done && !s.cleared && !s.flagged && !pend) pend={code:code}; });
+  var pill=document.getElementById('sp-premob'), lbl=document.getElementById('sp-premob-lbl');
+  if(!pill) return;
+  if(pend){ pill.style.display=''; if(lbl) lbl.textContent=pend.code+' — pre-mob to complete'; setPillState('sp-premob','warn'); window._premobWorkerCode=pend.code; }
+  else { pill.style.display='none'; window._premobWorkerCode=null; }
+}
+function workerChipTapPremob(){ location.href = window._premobWorkerCode ? ('plant.html?premob='+encodeURIComponent(window._premobWorkerCode)) : 'plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob'; }
+function supUpdatePremobChip(){
+  var o=_premobIdx(), flagged=null, cleared=null, awaiting=0;
+  Object.keys(o).forEach(function(code){ var s=o[code]; if(!s) return; if(s.flagged) flagged=flagged||code; else if(s.cleared) cleared=cleared||code; else if(s.site_assignee && !s.site_done) awaiting++; });
+  var pill=document.getElementById('d-pill-premob'), lbl=document.getElementById('d-pill-premob-lbl');
+  if(!pill) return;
+  if(flagged){ pill.style.display=''; if(lbl) lbl.textContent=flagged+' — pre-mob issue flagged'; setPillState('d-pill-premob','fail'); }
+  else if(awaiting){ pill.style.display=''; if(lbl) lbl.textContent=awaiting+' pre-mob awaiting site check'; setPillState('d-pill-premob','warn'); }
+  else if(cleared){ pill.style.display=''; if(lbl) lbl.textContent=cleared+' — pre-mob cleared'; setPillState('d-pill-premob','done'); }
+  else { pill.style.display='none'; }
+}
+function supChipTapPremob(){ window.open('plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob','_blank'); }
 function supUpdatePlantChip() {
   var alerts = [];
   try { alerts = JSON.parse(localStorage.getItem('slan_plant_alerts') || '[]'); } catch(e) {}

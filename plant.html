@@ -1487,6 +1487,8 @@ function plantPremobOpen(code){
   if(!s.cleared){
     if(!s.supplier_done){
       siteBox='<div class="sec-h">On-site check</div><div style="font-size:12px;color:var(--t3);padding:2px 0">Import the supplier checklist first, then assign the on-site check to a ticketed operator.</div>';
+    } else if(s.site_assignee && s.flagged){
+      siteBox='<div class="sec-h">On-site check — '+s.site_assignee+'</div><div style="background:#FCEBEB;border:1px solid #E2B4B4;border-radius:10px;padding:12px 14px"><div style="font-size:12.5px;font-weight:800;color:#A32D2D">⚠ Issue flagged — supervisor notified</div>'+(s.flag_note?'<div style="font-size:12.5px;color:#7a2a2a;margin-top:5px;line-height:1.5">“'+s.flag_note+'”</div>':'')+'<div style="font-size:11.5px;color:#7a2a2a;margin-top:8px;line-height:1.5">Send the pre-mob form &amp; arrival photos back to the hire company. Once it’s sorted, mark it resolved and finish the checks.</div><button class="btn-ghost" onclick="premobUnflag(\''+code+'\')" style="margin-top:8px">Issue resolved — back to checks</button></div>';
     } else if(s.site_assignee){
       var phs=(s.photos||[]);
       var photosList = phs.length ? ('<div class="tile" style="margin-bottom:10px">'+phs.map(function(n){ return '<div class="row" style="cursor:default"><div class="row-ic">📷</div><div class="row-main"><div class="row-s" style="word-break:break-all">'+n+'</div></div></div>'; }).join('')+'</div>') : '<div style="font-size:12px;color:var(--t3);margin:2px 0 10px">No arrival photos yet.</div>';
@@ -1496,6 +1498,8 @@ function plantPremobOpen(code){
         '<button class="btn-ghost" onclick="premobPhotoPick(\''+code+'\')" style="margin-bottom:12px">📷 Add arrival photos</button>'+
         '<input id="premob-photo-input" type="file" accept="image/*" multiple style="display:none" onchange="premobPhotoOnFile(this)">'+
         '<button class="cta" onclick="premobComplete(\''+code+'\')">✓ Complete on-site check &amp; clear machine</button>'+
+        '<button class="btn-ghost" onclick="premobShowFlag()" style="color:#A32D2D">⚠ Flag an issue &amp; notify supervisor</button>'+
+        '<div id="premob-flag-wrap" style="display:none;margin-top:4px"><textarea id="premob-flag-note" rows="2" placeholder="What’s the issue? (notifies the supervisor; send the form + photos back to the hire company)" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;box-sizing:border-box"></textarea><button onclick="premobFlag(\''+code+'\')" style="background:#A32D2D;color:#fff;margin-top:6px;width:100%;padding:11px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit">Flag &amp; notify supervisor</button></div>'+
         '<button class="btn-ghost" onclick="premobAssign(\''+code+'\',null)">Change operator</button>';
     } else {
       var ops=_ticketedFor(a);
@@ -1549,8 +1553,16 @@ function premobAssign(code, name){
 var _premobPhotoRef=null;
 function premobPhotoPick(code){ _premobPhotoRef=code; var i=document.getElementById('premob-photo-input'); if(i) i.click(); }
 function premobPhotoOnFile(input){ var code=_premobPhotoRef; if(!code) return; var s=_premobState(code); var ph=(s.photos||[]).slice(); if(input&&input.files){ for(var i=0;i<input.files.length;i++) ph.push(input.files[i].name); } if(input) input.value=''; _premobSaveState(code,{ photos:ph }); plantPremobOpen(code); }
+function premobShowFlag(){ var w=document.getElementById('premob-flag-wrap'); if(w) w.style.display=(w.style.display==='none'?'block':'none'); }
+function premobFlag(code){
+  var el=document.getElementById('premob-flag-note'); var note=el?(el.value||'').trim():'';
+  _premobSaveState(code, { flagged:true, flag_note:note, flagged_at:new Date().toISOString() });
+  plantPremobOpen(code);
+  if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:40px">⚠️</div><div style="font-size:15px;font-weight:800;color:#A32D2D;margin-top:6px">Issue flagged</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — the supervisor has been notified. Send the form &amp; arrival photos back to the hire company.</div></div>');
+}
+function premobUnflag(code){ _premobSaveState(code, { flagged:false, flag_note:'' }); plantPremobOpen(code); }
 function premobComplete(code){
-  _premobSaveState(code, { site_done:true, cleared:true, site_at:new Date().toISOString() });
+  _premobSaveState(code, { site_done:true, cleared:true, flagged:false, site_at:new Date().toISOString() });
   if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">'+code+' cleared for use</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">On-site check complete and signed off. It now sits with your in-service plant under the <b>Cleared</b> tab and its machine page.</div></div>', function(){ premobSub='cleared'; renderOversight(); });
 }
 function plantComplianceBody(fleet){
@@ -1922,6 +1934,9 @@ renderAssets();
   if(code){ var idx=-1; ASSETS.forEach(function(a,i){ if(a.code===code) idx=i; }); if(idx>-1){ openHub(idx);
     if(/[?&]start=1/.test(location.search) && getRole()==='worker'){ try{ openGate(); }catch(e){} }
     return; } }
+  // Pre-mob deep-link: plant.html?premob=EWP-019 opens that machine's pre-mobilisation form (from the assigned operator's task pill)
+  var pmm=/[?&]premob=([^&]+)/.exec(location.search);
+  if(pmm){ var pmc=decodeURIComponent(pmm[1]).toUpperCase(); try{ plantPremobOpen(pmc); return; }catch(e){} }
   // Supervisor shortcut: plant.html?view=today opens the "Today's pre-starts" list (from the "N pre-starts done" pill)
   if(/[?&]view=today/.test(location.search) && ['manager','supervisor','director'].indexOf(getRole())>-1){ try{ renderTodayPrestarts(); return; }catch(e){} }
   if(['manager','supervisor','director'].indexOf(getRole())>-1) renderOversight();
