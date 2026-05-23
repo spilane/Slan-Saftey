@@ -1761,10 +1761,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <!-- Licences & Tickets -->
     <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 6px">Licences &amp; Tickets</div>
-    <div style="background:#F1EFE8;border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px">
+    <div style="background:#F1EFE8;border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:10px">
       <div id="myp-licences" style="font-size:12.5px;color:var(--text);line-height:1.65"></div>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic">Synced from training matrix</div>
     </div>
+    <div id="myticket-dropzone" onclick="myTicketPick()" ondragover="myTicketDragOver(event)" ondragleave="myTicketDragLeave(event)" ondrop="myTicketDrop(event)" style="border:2px dashed #C7CFC9;border-radius:var(--rs);padding:15px;text-align:center;cursor:pointer;background:#FAFBFA;margin-bottom:14px">
+      <div style="font-size:22px">🪪</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:3px">Add or renew a ticket</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5">Drop a photo or PDF of your ticket/licence — the type &amp; expiry are read automatically and your record updates.</div>
+    </div>
+    <input id="myticket-input" type="file" accept="image/*,application/pdf" style="display:none" onchange="myTicketOnFile(this)">
 
     <!-- Signature -->
     <div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:0 2px 6px;display:flex;justify-content:space-between;align-items:center">
@@ -13797,12 +13802,8 @@ function populateMyProfile() {
   if (starsEl) starsEl.textContent = '★★★★☆ 4 stars';
   if (starsCountEl) starsCountEl.textContent = '12 awarded';
 
-  // Licences (synced from training matrix when backend wired)
-  const licEl = document.getElementById('myp-licences');
-  if (licEl) {
-    // Placeholder until backend brings real data
-    licEl.innerHTML = '• White Card · valid<br>• EWP licence · expires 2027<br>• Working at Heights · valid';
-  }
+  // Licences & tickets — real list, renewable by dropping a ticket photo/PDF (smart import)
+  try { renderMyTickets(); } catch(e) {}
 
   // Signature
   const sigEl = document.getElementById('myp-sig');
@@ -13819,6 +13820,76 @@ function populateMyProfile() {
   // Permissions status (from saved onboarding state)
   // We don't actually re-check live permissions here for performance, just show all green if onboarded
   // (real status is OS-level and not always queryable from JS)
+}
+
+/* ===== My tickets & licences — drop a ticket photo/PDF; type & expiry are read and the record updates (front-end demo; real OCR/extraction = backend + Claude API) ===== */
+function _isoIn(years,months,days){ var d=new Date(); d.setFullYear(d.getFullYear()+(years||0)); d.setMonth(d.getMonth()+(months||0)); d.setDate(d.getDate()+(days||0)); return d.toISOString().slice(0,10); }
+function _ticketFmtD(iso){ try{ return new Date(iso).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return iso; } }
+function _saveMyTickets(a){ try{ localStorage.setItem('slan_my_tickets', JSON.stringify(a)); }catch(e){} }
+function _myTickets(){
+  try{ var a=JSON.parse(localStorage.getItem('slan_my_tickets')||'null'); if(Array.isArray(a)) return a; }catch(e){}
+  // Seed a realistic set — First Aid is EXPIRED so it can be renewed live in the demo.
+  var seed=[
+    {key:'whitecard',label:'White Card',sub:'Construction induction',expiry:_isoIn(5,0,0)},
+    {key:'ewp',label:'EWP Licence',sub:'Boom & scissor',expiry:_isoIn(0,14,0)},
+    {key:'wah',label:'Working at Heights',sub:'Refresher',expiry:_isoIn(0,8,0)},
+    {key:'firstaid',label:'First Aid',sub:'HLTAID011',expiry:_isoIn(0,-2,0)}
+  ];
+  _saveMyTickets(seed); return seed;
+}
+function _ticketStatus(expiry){
+  if(!expiry) return {txt:'Current',col:'#1B6E3A'};
+  var d=new Date(expiry), now=new Date(); now.setHours(0,0,0,0);
+  var days=Math.round((d-now)/86400000);
+  if(days<0)  return {txt:'Expired '+_ticketFmtD(expiry),col:'#A32D2D'};
+  if(days<=30) return {txt:'Expires '+_ticketFmtD(expiry),col:'#BA7517'};
+  return {txt:'Valid to '+_ticketFmtD(expiry),col:'#1B6E3A'};
+}
+function renderMyTickets(){
+  var el=document.getElementById('myp-licences'); if(!el) return;
+  var ts=_myTickets();
+  el.innerHTML = ts.map(function(t){ var s=_ticketStatus(t.expiry);
+    return '<div style="display:flex;align-items:center;gap:9px;padding:5px 0">'+
+      '<span style="width:9px;height:9px;border-radius:50%;background:'+s.col+';flex-shrink:0"></span>'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:600;color:var(--text)">'+t.label+(t.sub?' <span style="color:var(--muted);font-weight:400">· '+t.sub+'</span>':'')+'</div>'+
+      '<div style="font-size:11.5px;color:'+s.col+';font-weight:600">'+s.txt+(t.doc?' · 📄 certificate on file':'')+'</div></div>'+
+    '</div>';
+  }).join('') || '<div style="color:var(--muted)">No tickets on file yet — add one below.</div>';
+}
+function _inferTicket(name){
+  var n=(name||'').toLowerCase();
+  if(/first.?aid|cpr|hltaid/.test(n)) return {key:'firstaid',label:'First Aid',sub:'HLTAID011'};
+  if(/white.?card|construction.?induction/.test(n)) return {key:'whitecard',label:'White Card',sub:'Construction induction'};
+  if(/ewp|scissor|boom|elevated/.test(n)) return {key:'ewp',label:'EWP Licence',sub:'Boom & scissor'};
+  if(/height|wah/.test(n)) return {key:'wah',label:'Working at Heights',sub:'Refresher'};
+  if(/crane|dogging|rigging|forklift|telehandler|hrwl|high.?risk/.test(n)) return {key:'hrwl',label:'High Risk Work Licence',sub:'HRWL'};
+  if(/confined/.test(n)) return {key:'confined',label:'Confined Space',sub:''};
+  if(/asbestos/.test(n)) return {key:'asbestos',label:'Asbestos Awareness',sub:''};
+  if(/traffic/.test(n)) return {key:'traffic',label:'Traffic Control',sub:''};
+  if(/driver|licen[cs]e|\brms\b|\brta\b/.test(n)) return {key:'driver',label:'Driver Licence',sub:''};
+  return {key:'other',label:'Ticket / Licence',sub:''};
+}
+function myTicketPick(){ var i=document.getElementById('myticket-input'); if(i) i.click(); }
+function myTicketOnFile(input){ if(input&&input.files&&input.files[0]) _myTicketStart(input.files[0].name); if(input) input.value=''; }
+function myTicketDragOver(ev){ ev.preventDefault(); var d=document.getElementById('myticket-dropzone'); if(d) d.style.borderColor='#1B6E3A'; }
+function myTicketDragLeave(ev){ var d=document.getElementById('myticket-dropzone'); if(d) d.style.borderColor='#C7CFC9'; }
+function myTicketDrop(ev){ ev.preventDefault(); var d=document.getElementById('myticket-dropzone'); if(d) d.style.borderColor='#C7CFC9'; var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) _myTicketStart(f.name); }
+function _myTicketStart(name){
+  if(typeof slanToast==='function') slanToast('🔍 Reading ' + name + '…');
+  var t=_inferTicket(name), newExpiry=_isoIn(3,0,0); // tickets read as valid 3 years from today
+  setTimeout(function(){
+    slanConfirm({ title:t.label, subtitle:'Read from '+name, variant:'info', okText:'Add to my tickets', cancelText:'Cancel',
+      body:'We read the following from the document:\n\nTicket:   '+t.label+(t.sub?' ('+t.sub+')':'')+'\nExpiry:   '+_ticketFmtD(newExpiry)+'\nStatus:   Current\n\nAdd this to your tickets?'
+    }).then(function(ok){ if(!ok) return; _applyMyTicket(t,newExpiry,name); });
+  }, 850);
+}
+function _applyMyTicket(t, expiry, name){
+  var ts=_myTickets(), found=false;
+  ts.forEach(function(x){ if(x.key===t.key){ x.expiry=expiry; x.doc=name; if(t.sub&&!x.sub) x.sub=t.sub; found=true; } });
+  if(!found) ts.unshift({key:t.key,label:t.label,sub:t.sub,expiry:expiry,doc:name});
+  _saveMyTickets(ts);
+  renderMyTickets();
+  if(typeof slanToast==='function') slanToast('✓ '+t.label+' added — valid to '+_ticketFmtD(expiry));
 }
 
 function myProfBackToHome() {
