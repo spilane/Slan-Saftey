@@ -442,7 +442,7 @@ function openDemoSheet(){
 }
 function closeDemoSheet(){ document.getElementById('demo-sheet').classList.remove('on'); }
 function demoSwitchWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catch(e){} currentWorker=WORKERS[i]; closeDemoSheet(); if(getRole()!=='worker'){ location.href='plant.html'; } else { var el=document.getElementById('who-name'); if(el) el.textContent=currentWorker.name; showList(); } }
-function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
+function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -544,6 +544,17 @@ function openHub(i){
   var _sm=svcMeter(a), svcMeterRow='';
   if(_sm){ var _over=_sm.toGo<0; svcMeterRow='<div class="svc-row"><span>Service interval</span><span style="color:'+(_over?'var(--fail)':(svcSoon(_sm)?'var(--warn)':'var(--pass)'))+'">'+(_over?('Overdue '+Math.abs(_sm.toGo).toLocaleString()+' '+_sm.meter):('In '+_sm.toGo.toLocaleString()+' '+_sm.meter))+'</span></div>'; }
   var lift = a.lift_note ? '<div class="lift"><b>Lifting data</b>SWL '+(a.swl||'—')+'<br>'+a.lift_note+'</div>' : '';
+  var uploads=_plantDocsFor(a.code);
+  var dropHtml = (getRole()!=='worker') ? (
+    '<div class="sec-h">Upload &amp; smart import</div>'+
+    '<div id="plant-dropzone" ondragover="plantDocDragOver(event)" ondragleave="plantDocDragLeave(event)" ondrop="plantDocDrop(event)" onclick="plantDocPick()" style="border:2px dashed #BBB;border-radius:12px;padding:22px 16px;text-align:center;cursor:pointer;background:#FAFAF7">'+
+      '<div style="font-size:30px">📎</div>'+
+      '<div style="font-size:13.5px;font-weight:700;color:var(--deep);margin-top:6px">Drop a document here, or tap to choose</div>'+
+      '<div style="font-size:11.5px;color:var(--t2);margin-top:4px;line-height:1.5">Rego &amp; insurance certificates, service reports, invoices and inspections are read automatically and filed to this machine.</div>'+
+    '</div>'+
+    '<input id="plant-doc-input" type="file" style="display:none" onchange="plantDocOnFile(this)">'+
+    (uploads.length ? ('<div class="tile" style="margin-top:10px">'+uploads.map(function(dc,di){ var m=DOC_TYPES[dc.type]||DOC_TYPES.other; return '<button class="row" onclick="plantDocView(\''+a.code+'\','+di+')"><div class="row-ic">'+m.ic+'</div><div class="row-main"><div class="row-t">'+m.label+'</div><div class="row-s" style="word-break:break-all">'+dc.name+' · '+fmtShort(dc.when)+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div>') : '')
+  ) : '';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="showList()">‹ All machines</button>'+
     '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace(/_/g,' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
@@ -561,7 +572,7 @@ function openHub(i){
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
     '</div>') : '')+
-    '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift +
+    '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift + dropHtml +
     '<div class="sec-h">Recent pre-starts (last 7 days)</div><div class="tile">'+(rec||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts in the last 7 days.</div></div></div>')+'</div>'+
     '<div class="sec-h">Service</div><div class="svc">'+
       '<div class="svc-row"><span>Last service</span><span>'+fmt(a.service_last)+'</span></div>'+
@@ -574,6 +585,87 @@ function openHub(i){
     '</div>';
   showDetail(html);
 }
+
+/* ===== Smart document import — drop a file on the machine page; it's recognised, filed, and the machine's record auto-fills (front-end demo; real extraction = backend + Claude API) ===== */
+var DOC_TYPES={
+  rego:{label:'Registration certificate', ic:'🚗'},
+  insurance:{label:'Insurance certificate', ic:'🛡️'},
+  service:{label:'Service report', ic:'🛠️'},
+  invoice:{label:'Tax invoice', ic:'🧾'},
+  inspection:{label:'Inspection report', ic:'🟢'},
+  swms:{label:'SWMS', ic:'📄'},
+  manual:{label:'Operator manual', ic:'📘'},
+  other:{label:'Document', ic:'📎'}
+};
+function _inferDocType(name){
+  var n=(name||'').toLowerCase();
+  if(/rego|registration|\brms\b|\brta\b|transport/.test(n)) return 'rego';
+  if(/insur|policy|currency|\bcoc\b/.test(n)) return 'insurance';
+  if(/service|maintenance|logbook|repair/.test(n)) return 'service';
+  if(/invoice|receipt|\btax\b|quote/.test(n)) return 'invoice';
+  if(/inspect|green.?sticker|periodic|annual|\btest\b/.test(n)) return 'inspection';
+  if(/swms|safe.?work|\bjsa\b/.test(n)) return 'swms';
+  if(/manual|operator|handbook/.test(n)) return 'manual';
+  return 'other';
+}
+function _docExtract(type, a){
+  var d=plantDetails(a.code), sm=svcMeter(a), now=new Date();
+  function plus(mo){ var x=new Date(); x.setMonth(x.getMonth()+mo); return iso(x); }
+  if(type==='rego'){ return { _display:[['Registration', d.rego||'—'],['State', d.rego_state||'NSW'],['Expiry date', fmt(plus(12))]], apply:{ rego_expiry:plus(12) } }; }
+  if(type==='insurance'){ return { _display:[['Insurer', d.insurer||'CGU Plant & Equipment'],['Policy no.', d.policy||'PLE-884500'],['Expiry date', fmt(plus(12))]], apply:{ insurance_expiry:plus(12) } }; }
+  if(type==='service'){ var reading=sm?(sm.meter==='km'?(d.km||0):(a.hours||0)):(a.hours||0); var nd=plus(3); return { _display:[['Service date', fmt(iso(now))],['Next service due', fmt(nd)],[(sm&&sm.meter==='km'?'Odometer':'Engine hours'), reading.toLocaleString()+' '+(sm&&sm.meter==='km'?'km':'hrs')],['Workshop','FleetServ Mechanical']], apply:{ service_last:iso(now), service_due:nd } }; }
+  if(type==='invoice'){ return { _display:[['Supplier','FleetServ Mechanical'],['Invoice no.','INV-'+(10000+Math.floor(Math.random()*89999))],['Amount','$'+((a.swl?1850:640)).toLocaleString()],['Date', fmt(iso(now))]], apply:{} }; }
+  if(type==='inspection'){ return { _display:[['Inspection','Periodic (green sticker)'],['Result','Pass'],['Inspected', fmt(iso(now))],['Next due', fmt(plus(6))]], apply:{} }; }
+  if(type==='swms'){ return { _display:[['Document','Safe Work Method Statement'],['Filed', fmt(iso(now))]], apply:{} }; }
+  if(type==='manual'){ return { _display:[['Document', a.make+' '+a.model+' manual'],['Filed', fmt(iso(now))]], apply:{} }; }
+  return { _display:[['Filed', fmt(iso(now))]], apply:{} };
+}
+function _plantDocsAll(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_docs')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function _plantDocsFor(code){ var o=_plantDocsAll(); return Array.isArray(o[code])?o[code]:[]; }
+function _savePlantDoc(code, doc){ var o=_plantDocsAll(); if(!Array.isArray(o[code])) o[code]=[]; o[code].unshift(doc); try{ localStorage.setItem('slan_plant_docs', JSON.stringify(o)); }catch(e){} }
+function _plantOverridesAll(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_fieldoverrides')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function _savePlantOverride(code, fields){ var o=_plantOverridesAll(); o[code]=Object.assign(o[code]||{}, fields); try{ localStorage.setItem('slan_plant_fieldoverrides', JSON.stringify(o)); }catch(e){} }
+function _applyPlantOverrides(){ var o=_plantOverridesAll(); ASSETS.forEach(function(a){ var ov=o[a.code]; if(!ov) return; ['rego_expiry','insurance_expiry','service_last','service_due','hours'].forEach(function(k){ if(ov[k]!=null) a[k]=ov[k]; }); var d=PLANT_DETAILS[a.code]; if(d){ ['rego','rego_state','insurer','policy','km'].forEach(function(k){ if(ov[k]!=null) d[k]=ov[k]; }); } }); }
+function plantDocPick(){ var inp=document.getElementById('plant-doc-input'); if(inp) inp.click(); }
+function plantDocOnFile(input){ if(input&&input.files&&input.files[0]){ _plantDocStart(input.files[0].name); } if(input) input.value=''; }
+function plantDocDragOver(ev){ ev.preventDefault(); var dz=document.getElementById('plant-dropzone'); if(dz) dz.style.borderColor='#1B6E3A'; }
+function plantDocDragLeave(ev){ var dz=document.getElementById('plant-dropzone'); if(dz) dz.style.borderColor='#BBB'; }
+function plantDocDrop(ev){ ev.preventDefault(); var dz=document.getElementById('plant-dropzone'); if(dz) dz.style.borderColor='#BBB'; var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) _plantDocStart(f.name); }
+var _pendingDoc=null;
+function _plantDocStart(name){
+  var a=ASSETS[curAsset]; if(!a) return;
+  var type=_inferDocType(name);
+  showDetail('<div class="wrap" style="padding:0;max-width:none"><div style="text-align:center;padding:64px 20px"><div style="font-size:40px">🔍</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:12px">Reading document…</div><div style="font-size:12.5px;color:var(--t2);margin-top:6px;word-break:break-all">'+name+'</div><div style="font-size:11.5px;color:var(--t3);margin-top:16px">Detecting type and extracting the details</div></div></div>');
+  setTimeout(function(){ _plantDocConfirm(name, type); }, 1000);
+}
+function _plantDocConfirm(name, type){
+  var a=ASSETS[curAsset]; if(!a) return;
+  var meta=DOC_TYPES[type]||DOC_TYPES.other, ex=_docExtract(type, a);
+  _pendingDoc={ name:name, type:type, fields:ex.apply||{}, display:ex._display||[] };
+  var rows=(ex._display||[]).map(function(p){ return '<div class="svc-row"><span>'+p[0]+'</span><span style="font-weight:700">'+p[1]+'</span></div>'; }).join('');
+  var willUpdate=(ex.apply && Object.keys(ex.apply).length);
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="openHub(curAsset)">‹ Cancel</button>'+
+    '<div class="h1">'+meta.ic+' '+meta.label+'</div>'+
+    '<div class="sub" style="word-break:break-all">From '+name+' · '+a.code+'</div>'+
+    '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:10px 13px;margin:8px 0 14px;font-size:12.5px;color:#1B5E3F">✓ Recognised automatically — check the details, then file it to this machine.</div>'+
+    '<div class="sec-h">Details read from the document</div><div class="svc">'+rows+'</div>'+
+    (willUpdate?'<div style="font-size:12px;color:var(--t2);margin:10px 2px 0;line-height:1.5">Filing this will update '+a.code+'’s record with the details above.</div>':'')+
+    '<button class="cta" style="margin-top:16px" onclick="plantDocApply()">File'+(willUpdate?' &amp; update machine':' to machine')+'</button>'+
+    '<button class="btn-ghost" onclick="openHub(curAsset)">Cancel</button>'+
+  '</div>';
+  showDetail(html);
+}
+function plantDocApply(){
+  var a=ASSETS[curAsset]; if(!a||!_pendingDoc) return;
+  var willUpdate=(_pendingDoc.fields && Object.keys(_pendingDoc.fields).length);
+  _savePlantDoc(a.code, { name:_pendingDoc.name, type:_pendingDoc.type, when:new Date().toISOString(), display:_pendingDoc.display });
+  if(willUpdate){ _savePlantOverride(a.code, _pendingDoc.fields); Object.keys(_pendingDoc.fields).forEach(function(k){ a[k]=_pendingDoc.fields[k]; }); }
+  var meta=DOC_TYPES[_pendingDoc.type]||DOC_TYPES.other;
+  _pendingDoc=null;
+  slanMsg('', '<div style="text-align:center"><div style="font-size:40px">✅</div><div style="font-size:15px;font-weight:800;color:var(--pass);margin-top:6px">Filed to '+a.code+'</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+meta.label+' saved to this machine’s documents'+(willUpdate?' and its record has been updated.':'.')+'</div></div>', function(){ renderAssets(); openHub(curAsset); });
+}
+function plantDocView(code, idx){ var docs=_plantDocsFor(code), dc=docs[idx]; if(!dc) return; var meta=DOC_TYPES[dc.type]||DOC_TYPES.other; var rows=(dc.display||[]).map(function(p){ return '<div class="svc-row"><span>'+p[0]+'</span><span style="font-weight:700">'+p[1]+'</span></div>'; }).join(''); slanMsg(meta.ic+' '+meta.label, '<div style="font-size:12px;color:var(--t2);margin-bottom:10px;word-break:break-all">'+dc.name+'</div><div class="svc">'+rows+'</div>'); }
 
 /* ---------- gate ---------- */
 function openGate(){
@@ -1647,6 +1739,8 @@ try{
   for(var _i=_sw.length-1;_i>=0;_i--){ if(!_have[_sw[_i].wo]){ WORKORDERS.unshift(_sw[_i]); } }
   var _max=42; WORKORDERS.forEach(function(w){ var m=/(\d{4})$/.exec(w.wo||''); if(m){ var n=parseInt(m[1],10); if(n>=_max) _max=n+1; } }); _woSeq=_max-42;
 }catch(e){}
+// apply any field changes from smart-imported documents (rego/insurance expiry, service dates) so they persist across reloads
+try{ _applyPlantOverrides(); }catch(e){}
 renderAssets();
 (function(){
   var tm=/[?&]tab=([a-z]+)/.exec(location.search); if(tm){ platTab=tm[1]; }
