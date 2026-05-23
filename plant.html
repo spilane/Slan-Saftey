@@ -554,6 +554,7 @@ function openHub(i){
   var _sm=svcMeter(a), svcMeterRow='';
   if(_sm){ var _over=_sm.toGo<0; svcMeterRow='<div class="svc-row"><span>Service interval</span><span style="color:'+(_over?'var(--fail)':(svcSoon(_sm)?'var(--warn)':'var(--pass)'))+'">'+(_over?('Overdue '+Math.abs(_sm.toGo).toLocaleString()+' '+_sm.meter):('In '+_sm.toGo.toLocaleString()+' '+_sm.meter))+'</span></div>'; }
   var lift = a.lift_note ? '<div class="lift"><b>Lifting data</b>SWL '+(a.swl||'—')+'<br>'+a.lift_note+'</div>' : '';
+  var premobHubRow = (getRole()!=='worker' && isHired(a.code) && _premobState(a.code).cleared) ? ('<div class="sec-h">Pre-mobilisation</div><div class="tile"><button class="row" onclick="plantPremobOpen(\''+a.code+'\')"><div class="row-ic">✅</div><div class="row-main"><div class="row-t">Pre-mobilisation checklist — cleared</div><div class="row-s">Hired from '+hireInfo(a.code).supplier+' · view the completed form</div></div><div class="chev">›</div></button></div>') : '';
   var uploads=_plantDocsFor(a.code);
   var dropHtml = (getRole()!=='worker') ? (
     '<div class="sec-h">Upload &amp; smart import</div>'+
@@ -583,7 +584,7 @@ function openHub(i){
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
     '</div>') : '')+
-    '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift + dropHtml +
+    '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift + premobHubRow + dropHtml +
     '<div class="sec-h">Recent pre-starts (last 7 days)</div><div class="tile">'+(rec||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts in the last 7 days.</div></div></div>')+'</div>'+
     '<div class="sec-h">Service</div><div class="svc">'+
       '<div class="svc-row"><span>Last service</span><span>'+fmt(a.service_last)+'</span></div>'+
@@ -1427,20 +1428,18 @@ function _premobSection(title, items, ownerOn, siteOn){
   var rows=items.map(function(it){ return '<tr><td style="font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--border);line-height:1.4">'+it+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+_premobTick(ownerOn)+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+_premobTick(siteOn)+'</td></tr>'; }).join('');
   return '<div class="sec-h">'+title+'</div><div style="overflow-x:auto"><table class="reg"><thead><tr><th style="text-align:left">Item</th><th>Supplier</th><th>Site</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
-var premobSub='onhire';
-function premobSetSub(s){ premobSub=s; renderOversight(); }
 function plantPremobBody(fleet){
   var hired=fleet.filter(function(a){ return isHired(a.code); }); // pre-mob view is for hired-in plant
-  var cleared=hired.filter(function(a){ return _premobState(a.code).cleared; });
-  var onhire =hired.filter(function(a){ return !_premobState(a.code).cleared; });
-  var list = (premobSub==='cleared') ? cleared : onhire;
-  var sub='<div style="display:flex;gap:6px;margin-bottom:12px">'+[['onhire','On hire ('+onhire.length+')'],['cleared','Cleared ('+cleared.length+')']].map(function(t){ var on=premobSub===t[0];
-      return '<button onclick="premobSetSub(\''+t[0]+'\')" style="flex:1;padding:9px;border-radius:9px;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+';font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit">'+t[1]+'</button>';
-    }).join('')+'</div>';
-  var rows=list.length?list.map(function(a){ var st=_premobStatus(a.code); var hi=hireInfo(a.code);
-    return '<button class="row" onclick="plantPremobOpen(\''+a.code+'\')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+(hi?hi.supplier+' · ':'')+'<span style="color:'+st.col+';font-weight:700">'+st.label+'</span></div></div><div class="chev">›</div></button>';
-  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">'+(premobSub==='cleared'?'No hired machines cleared yet.':'No hired-in equipment awaiting pre-mob.')+'</div></div></div>';
-  return '<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site. The <b>supplier</b> completes the checklist before delivery; a <b>ticketed operator on site</b> verifies, photographs and accepts it on arrival.</div></div>'+sub+'<div class="tile">'+rows+'</div>';
+  var outstanding=hired.filter(function(a){ return !_premobState(a.code).cleared; });
+  var cleared    =hired.filter(function(a){ return _premobState(a.code).cleared; });
+  function row(a){ var st=_premobStatus(a.code), hi=hireInfo(a.code), cl=_premobState(a.code).cleared;
+    var oc = cl ? ('openHub('+ASSETS.indexOf(a)+')') : ('plantPremobOpen(\''+a.code+'\')'); // cleared -> normal machine page; outstanding -> the pre-mob form
+    return '<button class="row" onclick="'+oc+'"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+(hi?hi.supplier+' · ':'')+'<span style="color:'+st.col+';font-weight:700">'+st.label+'</span></div></div><div class="chev">›</div></button>';
+  }
+  function section(title, arr, empty){ return '<div class="sec-h">'+title+'</div><div class="tile" style="margin-bottom:14px">'+(arr.length?arr.map(row).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">'+empty+'</div></div></div>')+'</div>'; }
+  var intro='<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site. The <b>supplier</b> completes the checklist before delivery; a <b>ticketed operator on site</b> verifies, photographs and accepts it on arrival.</div></div>';
+  // Ones still needing action first, cleared ones below.
+  return intro + section('Awaiting clearance ('+outstanding.length+')', outstanding, 'Nothing awaiting clearance.') + section('Cleared &amp; in service ('+cleared.length+')', cleared, 'No hired machines cleared yet.');
 }
 function plantPremobOpen(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
@@ -1471,8 +1470,9 @@ function plantPremobOpen(code){
     '<div style="font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:10px">“I declare that this machine is in a safe condition, free from defect and fit for purpose. Ignition, toolbox and panel keys present with the machine.”</div>'+
     '<div style="display:flex;gap:12px;flex-wrap:wrap">'+supplierSig+siteSig+'</div>';
   var note='<div class="ovr" style="background:#FFF6E6;border:1px solid #E8C97A;border-radius:10px;padding:11px 13px;margin:6px 0 14px;font-size:11.5px;color:#8A5A00;line-height:1.5">Build in progress (section 1): dropping the supplier’s PDF fills their column. Assigning a ticketed operator + arrival photos + site sign-off come next.</div>';
+  var backTo = s.cleared ? ('openHub('+ASSETS.indexOf(a)+')') : 'renderOversight()'; // cleared opens from the machine page; outstanding from the fleet list
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="renderOversight()">‹ Back to fleet</button>'+
+    '<button class="back" onclick="'+backTo+'">‹ Back</button>'+
     '<div class="h1">Pre-Mobilisation Checklist</div>'+
     '<div class="sub">'+a.code+' · '+a.make+' '+a.model+' · <span style="color:'+st.col+';font-weight:700">'+st.label+'</span></div>'+
     note + hdr + supplierBox +
