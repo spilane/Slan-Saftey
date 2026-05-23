@@ -23341,6 +23341,7 @@ function goToIncidentDetail(ref) {
               : 'No photos uploaded with this report.') +
             '</div>') +
       '</div></div>' +
+      _incDocsCardHtml(r) + _incRtwCardHtml(r) +
       '<div class="fcard"><div class="fcard-hdr">Notifiable assessment</div><div class="fcard-body">' +
         fmtRow('Reporter said', notifLabel(notifReporter)) +
         (notifSup ? fmtRow('Supervisor confirmed', notifLabel(notifSup)) : '') +
@@ -23354,6 +23355,65 @@ function goToIncidentDetail(ref) {
       '<div style="margin-top:16px"><button onclick="downloadIncidentPdf()" style="width:100%;padding:12px;background:transparent;color:#2C6B5E;border:1.5px solid #2C6B5E;border-radius:var(--r);font-weight:600;font-size:13.5px;cursor:pointer;font-family:DM Sans,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</button></div>';
   }
   goTo('screen-incident-detail');
+}
+
+/* ===== Incident record: Supporting documents + Injury / Return-to-Work ===== */
+function _rtwFmt(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return d; } }
+function _incKvRow(l,v){ return '<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:12.5px;color:var(--muted)">'+l+'</span><span style="font-size:12.5px;font-weight:600;color:var(--text);text-align:right">'+v+'</span></div>'; }
+function _incDocsCardHtml(r){
+  var docs=Array.isArray(r.documents)?r.documents:[];
+  if(!docs.length) return '';
+  var rows=docs.map(function(d){ return '<div style="display:flex;align-items:center;gap:9px;padding:5px 0"><span style="font-size:17px">📄</span><div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600;color:var(--text)">'+(d.type||'Document')+'</div><div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(d.name||'')+'</div></div></div>'; }).join('');
+  return '<div class="fcard"><div class="fcard-hdr">Supporting documents</div><div class="fcard-body">'+rows+'</div></div>';
+}
+function _incRtwCardHtml(r){
+  var isInjury = /injur/i.test(r.incident_type||'') || r.medical_attention==='yes' || r.first_aid==='yes' || r.rtw;
+  if(!isInjury) return '';
+  var rtw=r.rtw, inner;
+  if(rtw){
+    inner = _incKvRow('Status', rtw.status||'—') +
+            _incKvRow('Unfit from', _rtwFmt(rtw.unfit_from)) +
+            _incKvRow('Unfit to', _rtwFmt(rtw.unfit_to)) +
+            _incKvRow('Days lost', '<b style="color:#B83232">'+(rtw.days_lost!=null?rtw.days_lost:'—')+'</b>') +
+            _incKvRow('Return to work', _rtwFmt(rtw.return_date)) +
+            (rtw.cert_name?'<div style="font-size:11.5px;color:#1B6E3A;font-weight:600;margin-top:9px">📄 Medical certificate on file · '+rtw.cert_name+'</div>':'');
+  } else {
+    inner = '<div style="font-size:12.5px;color:var(--muted);line-height:1.55">No medical certificate on file yet. When the injured worker provides one, drop it below — the unfit dates, days lost and return-to-work status are read automatically.</div>';
+  }
+  var ref=(r.ref||'').replace(/'/g,"\\'");
+  var dz = '<div id="inc-rtw-dz" onclick="incRtwPick(\''+ref+'\')" ondragover="incRtwDragOver(event)" ondragleave="incRtwDragLeave(event)" ondrop="incRtwDrop(event,\''+ref+'\')" style="border:2px dashed #C7CFC9;border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;background:#FAFBFA;margin-top:10px">'+
+    '<div style="font-size:20px">🩺</div>'+
+    '<div style="font-size:12.5px;font-weight:700;color:var(--text);margin-top:2px">'+(rtw?'Update medical certificate':'Add medical certificate')+'</div>'+
+    '<div style="font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5">Drop or tap — unfit dates, days lost &amp; return-to-work are read automatically.</div>'+
+  '</div>'+
+  '<input id="inc-rtw-input" type="file" accept="image/*,application/pdf" style="display:none" onchange="incRtwOnFile(this)">';
+  return '<div class="fcard"><div class="fcard-hdr">Injury &amp; Return to Work</div><div class="fcard-body">'+inner+dz+'</div></div>';
+}
+var _incRtwRef=null;
+function incRtwPick(ref){ _incRtwRef=ref; var i=document.getElementById('inc-rtw-input'); if(i) i.click(); }
+function incRtwOnFile(input){ if(input&&input.files&&input.files[0]) _incRtwStart(input.files[0].name); if(input) input.value=''; }
+function incRtwDragOver(ev){ ev.preventDefault(); var d=document.getElementById('inc-rtw-dz'); if(d) d.style.borderColor='#1B6E3A'; }
+function incRtwDragLeave(ev){ var d=document.getElementById('inc-rtw-dz'); if(d) d.style.borderColor='#C7CFC9'; }
+function incRtwDrop(ev,ref){ ev.preventDefault(); var d=document.getElementById('inc-rtw-dz'); if(d) d.style.borderColor='#C7CFC9'; _incRtwRef=ref; var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) _incRtwStart(f.name); }
+function _incRtwStart(name){
+  if(typeof slanToast==='function') slanToast('🔍 Reading '+name+'…');
+  setTimeout(function(){
+    var from=new Date(), to=new Date(Date.now()+5*864e5);
+    var days=Math.round((to-from)/864e5);
+    slanConfirm({ title:'Medical certificate', subtitle:'Read from '+name, variant:'info', okText:'Save to incident', cancelText:'Cancel',
+      body:'We read the following from the certificate:\n\nUnfit for work from:  '+_rtwFmt(from)+'\nUnfit to:             '+_rtwFmt(to)+'\nDays lost:            '+days+'\nFitness on return:    Light / modified duties\nReturn-to-work date:  '+_rtwFmt(to)+'\n\nSave this to the incident record?'
+    }).then(function(ok){ if(!ok) return; _incApplyRtw(name, from, to, days); });
+  }, 850);
+}
+function _incApplyRtw(name, from, to, days){
+  var ref=_incRtwRef; if(!ref) return;
+  var rtw={ status:'Light / modified duties on return', unfit_from:from.toISOString().slice(0,10), unfit_to:to.toISOString().slice(0,10), days_lost:days, return_date:to.toISOString().slice(0,10), cert_name:name };
+  _incUpdateRecord(ref, { rtw:rtw });
+  if(typeof slanToast==='function') slanToast('✓ Return-to-work saved — '+days+' days lost');
+  goToIncidentDetail(ref);
+}
+function _incUpdateRecord(ref, patch){
+  try{ var rec=incLoadByRef(ref); if(!rec) return false; Object.assign(rec, patch); return incSaveRecord(rec); }catch(e){ return false; }
 }
 
 // ─── SUPERVISOR REVIEW ACTIONS ───────────────────────────────
@@ -24235,6 +24295,7 @@ async function submitIncident() {
     reporter_signature: (p && p.sig) ? p.sig : null,   // captured from profile so PDF shows it for any downloader
     status: 'open',
     photos: incPhotos.filter(p => p),
+    documents: (Array.isArray(_incAttachments) ? _incAttachments : []).map(function(a){ return { name:a.name, type:a.type }; }),
     photos_skipped: !!window._incPhotosSkipped,
     register_target: 'SLS-REG-006'
   };
