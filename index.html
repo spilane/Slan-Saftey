@@ -3919,6 +3919,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
+    <!-- Add / update an SDS by dropping the document (smart import) -->
+    <div class="fcard" style="border-color:rgba(19,109,101,.25);background:#F0F7F6">
+      <div class="fcard-hdr" style="color:#0E5249">Add or update an SDS</div>
+      <div class="fcard-body" style="gap:10px">
+        <div id="sds-dropzone" onclick="sdsDocPick()" ondragover="sdsDocDragOver(event)" ondragleave="sdsDocDragLeave(event)" ondrop="sdsDocDrop(event)" style="border:2px dashed #9FC4BF;border-radius:var(--rs);padding:16px;text-align:center;cursor:pointer;background:#fff">
+          <div style="font-size:24px">🧪</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:3px">Drop a Safety Data Sheet</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5">Drop an SDS PDF — the product, supplier and issue date are read and it's filed to the register. An out-of-date SDS is renewed automatically.</div>
+        </div>
+        <input id="sds-doc-input" type="file" accept="application/pdf,image/*" style="display:none" onchange="sdsDocOnFile(this)">
+      </div>
+    </div>
+
     <!-- Supervisor: Pending missing chemical reports -->
     <div class="fcard" id="sds-pending-reports-card" style="display:none;background:#FFF0F0;border-color:rgba(184,50,50,.25)">
       <div class="fcard-hdr" style="color:#B83232;display:flex;align-items:center;justify-content:space-between">
@@ -44246,6 +44259,7 @@ var _sdsFromRole = 'worker';
 function goToSdsLookup() {
   var p = getProfile();
   _sdsFromRole = p ? (p.role === 'Site Supervisor' ? 'supervisor' : 'worker') : 'worker';
+  try { _applySdsExtras(); } catch(e) {}
   goTo("screen-sds");
   document.getElementById("sds-search-input").value = "";
   document.getElementById("sds-results").innerHTML = "";
@@ -44286,6 +44300,68 @@ function goToSdsLookup() {
     }
   }
 }
+
+/* ===== SDS smart import — drop an SDS PDF; product/supplier/date read, filed to the register, renews an out-of-date one (front-end demo) ===== */
+function _sdsUpdates(){ try{ var o=JSON.parse(localStorage.getItem('slan_sds_updates')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function _sdsSaveUpdate(name, patch){ var o=_sdsUpdates(); o[name]=Object.assign(o[name]||{}, patch); try{ localStorage.setItem('slan_sds_updates', JSON.stringify(o)); }catch(e){} }
+function _sdsAddedList(){ try{ var a=JSON.parse(localStorage.getItem('slan_sds_added')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function _sdsSaveAdded(a){ try{ localStorage.setItem('slan_sds_added', JSON.stringify(a)); }catch(e){} }
+function _applySdsExtras(){
+  if(typeof SDS_CHEMICALS==='undefined') return;
+  var ups=_sdsUpdates();
+  SDS_CHEMICALS.forEach(function(c){ var u=ups[c.name]; if(u){ Object.keys(u).forEach(function(k){ c[k]=u[k]; }); } });
+  _sdsAddedList().forEach(function(c){ if(!SDS_CHEMICALS.some(function(x){ return x.name===c.name; })) SDS_CHEMICALS.push(c); });
+}
+function _sdsFmtD(d){ return d.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}); }
+function _sdsMatch(filename){
+  var n=(filename||'').toLowerCase(); if(typeof SDS_CHEMICALS==='undefined') return -1;
+  var best=-1, bestScore=0;
+  SDS_CHEMICALS.forEach(function(c,i){
+    var toks=[]; if(c.trade) toks.push(c.trade.toLowerCase());
+    c.name.toLowerCase().replace(/\(([^)]*)\)/g,' $1 ').split(/[^a-z0-9]+/).forEach(function(w){ if(w.length>=3) toks.push(w); });
+    var score=0, seen={}; toks.forEach(function(t){ if(t.length>=3 && !seen[t] && n.indexOf(t)>-1){ seen[t]=1; score++; } });
+    if(score>bestScore){ bestScore=score; best=i; }
+  });
+  return bestScore>0?best:-1;
+}
+function sdsDocPick(){ var i=document.getElementById('sds-doc-input'); if(i) i.click(); }
+function sdsDocOnFile(input){ if(input&&input.files&&input.files[0]) _sdsDocStart(input.files[0].name); if(input) input.value=''; }
+function sdsDocDragOver(ev){ ev.preventDefault(); var d=document.getElementById('sds-dropzone'); if(d) d.style.borderColor='#136D65'; }
+function sdsDocDragLeave(ev){ var d=document.getElementById('sds-dropzone'); if(d) d.style.borderColor='#9FC4BF'; }
+function sdsDocDrop(ev){ ev.preventDefault(); var d=document.getElementById('sds-dropzone'); if(d) d.style.borderColor='#9FC4BF'; var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) _sdsDocStart(f.name); }
+function _sdsDocStart(name){
+  if(typeof slanToast==='function') slanToast('🔍 Reading '+name+'…');
+  setTimeout(function(){
+    var idx=_sdsMatch(name), today=new Date(), exp=new Date(); exp.setFullYear(exp.getFullYear()+5);
+    if(idx>-1){
+      var c=SDS_CHEMICALS[idx];
+      slanConfirm({ title:c.name, subtitle:'Read from '+name, variant:'info', okText:'Update register', cancelText:'Cancel',
+        body:'Recognised a chemical already on the register.\n\nProduct:       '+c.name+'\nManufacturer:  '+c.manufacturer+'\nIssued:        '+_sdsFmtD(today)+'\nValid to:      '+_sdsFmtD(exp)+' (5 years)\nStatus:        Current\n\nUpdate the SDS on the register?'
+      }).then(function(ok){ if(!ok) return; _sdsRenew(idx, today, exp); });
+    } else {
+      var prod=name.replace(/\.[a-z0-9]+$/i,'').replace(/^sds[\s\-_]*/i,'').replace(/[_\-]+/g,' ').trim() || 'New chemical';
+      slanConfirm({ title:'New SDS', subtitle:'Read from '+name, variant:'info', okText:'Add to register', cancelText:'Cancel',
+        body:'This product is not on the register yet.\n\nProduct:    '+prod+'\nIssued:     '+_sdsFmtD(today)+'\nValid to:   '+_sdsFmtD(exp)+' (5 years)\nStatus:     Current\n\nAdd it to the chemical register?'
+      }).then(function(ok){ if(!ok) return; _sdsAddNew(prod, today, exp); });
+    }
+  }, 850);
+}
+function _sdsRenew(idx, today, exp){
+  var c=SDS_CHEMICALS[idx];
+  var patch={ sds:c.manufacturer+' - Issued '+_sdsFmtD(today), expiry:_sdsFmtD(exp), status:'current', statusLabel:'Current - just updated', colour:'#E6F5ED', dot:'#1B6E3A', hazard:(c.hazard||'').replace(/SDS EXPIRED[^.]*\.\s*/i,'') };
+  Object.keys(patch).forEach(function(k){ c[k]=patch[k]; });
+  _sdsSaveUpdate(c.name, patch);
+  _sdsRerender();
+  if(typeof slanToast==='function') slanToast('✓ '+c.name+' — SDS updated, valid to '+_sdsFmtD(exp));
+}
+function _sdsAddNew(prod, today, exp){
+  var c={ name:prod, trade:prod, manufacturer:'Per SDS document', dg:'Refer SDS', risk:'Refer SDS', form:'—', sites:'—', storage:'Refer SDS', usage:'—', hazard:'Refer SDS for full hazard information.', ppe:'Refer SDS', emergency:'Refer SDS', sds:'Issued '+_sdsFmtD(today), expiry:_sdsFmtD(exp), status:'current', statusLabel:'Current - just added', colour:'#E6F5ED', dot:'#1B6E3A' };
+  SDS_CHEMICALS.push(c);
+  var added=_sdsAddedList(); added.push(c); _sdsSaveAdded(added);
+  _sdsRerender();
+  if(typeof slanToast==='function') slanToast('✓ '+prod+' added to the register');
+}
+function _sdsRerender(){ var q=((document.getElementById('sds-search-input')||{}).value||'').trim(); if(q) sdsSearch(q); else sdsBrowseAll(); }
 
 function sdsBrowseAll() {
   var inp = document.getElementById('sds-search-input');
