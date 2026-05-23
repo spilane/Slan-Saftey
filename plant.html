@@ -418,6 +418,15 @@ function svcSoon(sm){ return sm && sm.toGo>=0 && (sm.meter==='hrs'?sm.toGo<=50:s
 function lastPrestart(a){ var ps=recentPrestarts(a); if(!ps.length) return null; return ps.map(function(p){return p.date;}).sort().slice(-1)[0]; }
 function openWoCount(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status!=='Returned to service'; }).length; }
 
+/* Site licensed operators — the pool the supervisor can assign a pre-mob site-check to.
+   (Broader than the 2-person demo gate switcher; the supervisor can also add someone not listed.) */
+var SITE_OPERATORS=[
+  { name:'Daniel Byrne',  trade:'Plant Operator',       tickets:[{cls:'telehandler'},{cls:'ewp'}] },
+  { name:'Jake Sullivan', trade:'Crane Operator',        tickets:[{cls:'crane'},{cls:'telehandler'}] },
+  { name:'Liam Walsh',    trade:'Plant Operator',        tickets:[{cls:'ewp'},{cls:'telehandler'}] },
+  { name:'Sarah Nolan',   trade:'EWP Operator',          tickets:[{cls:'ewp'}] },
+  { name:'Tom Kelly',     trade:'Telehandler Operator',  tickets:[{cls:'telehandler'}] }
+];
 var currentWorker=WORKERS[0];
 try{ var _wi=parseInt(localStorage.getItem('slan_plant_worker'),10); if(!isNaN(_wi)&&WORKERS[_wi]) currentWorker=WORKERS[_wi]; }catch(e){}
 var curAsset=0;
@@ -1490,7 +1499,8 @@ function plantPremobOpen(code){
         '<button class="btn-ghost" onclick="premobAssign(\''+code+'\',null)">Change operator</button>';
     } else {
       var ops=_ticketedFor(a);
-      siteBox='<div class="sec-h">On-site check</div>'+(ops.length?'<div style="font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.5">Assign the on-site check to an operator who holds the ticket for this machine:</div><div class="tile">'+ops.map(function(w){ return '<button class="row" onclick="premobAssign(\''+code+'\',\''+w.name.replace(/'/g,"\\'")+'\')"><div class="row-ic">👷</div><div class="row-main"><div class="row-t">'+w.name+'</div><div class="row-s">'+w.trade+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div>':'<div style="font-size:12px;color:var(--fail);line-height:1.5">No operator on the roster holds the ticket for this machine — add a ticketed operator before it can be cleared.</div>');
+      var addRow='<div style="font-size:11px;color:var(--t3);margin:12px 0 4px">Someone else? (must hold the ticket to operate it)</div><div style="display:flex;gap:6px"><input id="premob-other-op" placeholder="Operator’s name" style="flex:1;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;outline:none"><button class="btn-amber" onclick="premobAssignOther(\''+code+'\')" style="white-space:nowrap;padding:9px 14px">Assign</button></div>';
+      siteBox='<div class="sec-h">On-site check</div>'+(ops.length?('<div style="font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.5">Assign the on-site check to an operator who holds the ticket for this machine:</div><div class="tile">'+ops.map(function(w){ return '<button class="row" onclick="premobAssign(\''+code+'\',\''+w.name.replace(/'/g,"\\'")+'\')"><div class="row-ic">👷</div><div class="row-main"><div class="row-t">'+w.name+'</div><div class="row-s">'+w.trade+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div>'):'<div style="font-size:12px;color:var(--t2);line-height:1.5">No operator on the roster holds the ticket for this machine.</div>')+addRow;
     }
   }
   var note='<div class="ovr" style="background:#FFF6E6;border:1px solid #E8C97A;border-radius:10px;padding:11px 13px;margin:6px 0 14px;font-size:11.5px;color:#8A5A00;line-height:1.5">Build in progress: supplier PDF fills their column; the supervisor assigns the on-site check to a ticketed operator. Site column completion + arrival photos + sign-off come next (§3).</div>';
@@ -1525,10 +1535,11 @@ function _premobSupplierImport(code,name){
 }
 /* §2 — assign the on-site check to an operator who holds the ticket for that machine */
 function _ticketedFor(a){
-  var req=(a.required||[]), today=new Date();
-  if(!req.length) return WORKERS.slice(); // no licence required -> any operator
-  return WORKERS.filter(function(w){ return req.every(function(cls){ return (w.tickets||[]).some(function(t){ return t.cls===cls && (!t.expiry || new Date(t.expiry)>=today); }); }); });
+  var req=(a.required||[]), today=new Date(), pool=(typeof SITE_OPERATORS!=='undefined'?SITE_OPERATORS:WORKERS);
+  if(!req.length) return pool.slice(); // no licence required -> any operator
+  return pool.filter(function(w){ return req.every(function(cls){ return (w.tickets||[]).some(function(t){ return t.cls===cls && (!t.expiry || new Date(t.expiry)>=today); }); }); });
 }
+function premobAssignOther(code){ var el=document.getElementById('premob-other-op'); var v=el?(el.value||'').trim():''; if(!v){ if(el){ el.style.borderColor='#A32D2D'; el.focus(); } return; } premobAssign(code, v); }
 function premobAssign(code, name){
   _premobSaveState(code, { site_assignee:name||'' });
   plantPremobOpen(code);
