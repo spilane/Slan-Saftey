@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Demo documents — Slán Plant</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{ --deep:#2C6B5E; --ink:#1d2b27; --muted:#6a7b75; --line:#e2e8e5; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"DM Sans",sans-serif; background:#f3f6f4; color:var(--ink); line-height:1.5; }
+  .wrap{ max-width:560px; margin:0 auto; padding:22px 18px 60px; }
+  .brand{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .brand .dot{ width:34px; height:34px; border-radius:9px; background:var(--deep); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  h1{ font-size:20px; margin:0; }
+  .sub{ color:var(--muted); font-size:13.5px; margin:4px 0 18px; }
+  .tip{ background:#eaf5ef; border:1px solid #bfe3d0; color:#1b5e3f; border-radius:12px; padding:13px 15px; font-size:13px; margin-bottom:20px; }
+  .tip b{ font-weight:700; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:15px 16px; margin-bottom:12px; display:flex; align-items:center; gap:13px; }
+  .ic{ font-size:26px; width:30px; text-align:center; flex-shrink:0; }
+  .meta{ flex:1; min-width:0; }
+  .meta .t{ font-weight:700; font-size:14.5px; }
+  .meta .d{ color:var(--muted); font-size:12.5px; }
+  button.dl{ flex-shrink:0; background:var(--deep); color:#fff; border:none; border-radius:10px; padding:11px 15px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit; }
+  button.dl:active{ transform:scale(.97); }
+  .allbtn{ width:100%; background:var(--ink); color:#fff; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; margin-bottom:18px; }
+  .foot{ color:var(--muted); font-size:12px; text-align:center; margin-top:18px; line-height:1.6; }
+  .ok{ color:var(--deep); font-weight:700; font-size:12.5px; margin-left:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><div class="dot">📎</div><h1>Demo documents</h1></div>
+  <div class="sub">Sample plant paperwork for the Slán smart-import demo.</div>
+
+  <div class="tip">
+    <b>How to use:</b> tap a button to download that document to this device, then in the Slán app open a machine, scroll to <b>Upload &amp; smart import</b>, and drop the file in. The app recognises each one automatically.
+  </div>
+
+  <button class="allbtn" onclick="downloadAll()">⬇  Download all 5 documents</button>
+
+  <div class="card">
+    <div class="ic">🛠️</div>
+    <div class="meta"><div class="t">Service Report</div><div class="d">CRN-007 · Franna AT-40 crane</div></div>
+    <button class="dl" onclick="buildService()">Download</button>
+  </div>
+  <div class="card">
+    <div class="ic">🚗</div>
+    <div class="meta"><div class="t">Registration Renewal</div><div class="d">UTE-022 · Toyota Hilux</div></div>
+    <button class="dl" onclick="buildRego()">Download</button>
+  </div>
+  <div class="card">
+    <div class="ic">🛡️</div>
+    <div class="meta"><div class="t">Insurance — Certificate of Currency</div><div class="d">CGU Plant &amp; Equipment</div></div>
+    <button class="dl" onclick="buildInsurance()">Download</button>
+  </div>
+  <div class="card">
+    <div class="ic">🧾</div>
+    <div class="meta"><div class="t">Tax Invoice</div><div class="d">FleetServ Mechanical</div></div>
+    <button class="dl" onclick="buildInvoice()">Download</button>
+  </div>
+  <div class="card">
+    <div class="ic">🟢</div>
+    <div class="meta"><div class="t">Periodic Inspection</div><div class="d">CRN-007 · Green sticker</div></div>
+    <button class="dl" onclick="buildInspection()">Download</button>
+  </div>
+
+  <div class="foot">
+    These are sample documents for demonstration only.<br>The app reads the document <b>type</b> from the file name.
+  </div>
+</div>
+
+<script>
+var TEAL=[44,107,94], INK=[29,43,39], MUT=[110,123,117], LINE=[210,222,217];
+function jget(){ return (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : null; }
+function fmtDate(d){ return d.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}); }
+function addMonths(n){ var d=new Date(); d.setMonth(d.getMonth()+n); return d; }
+function money(n){ return '$'+n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function header(doc, company, tagline){
+  doc.setFillColor(TEAL[0],TEAL[1],TEAL[2]); doc.rect(0,0,595.28,76,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(19);
+  doc.text(company, 40, 40);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text(tagline, 40, 59);
+}
+function docTitle(doc, t, refLines){
+  doc.setTextColor(INK[0],INK[1],INK[2]); doc.setFont('helvetica','bold'); doc.setFontSize(17);
+  doc.text(t, 40, 112);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(MUT[0],MUT[1],MUT[2]);
+  var y=128; (refLines||[]).forEach(function(l){ doc.text(l, 40, y); y+=14; });
+  return y+6;
+}
+function sectionLabel(doc, label, y){
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(TEAL[0],TEAL[1],TEAL[2]);
+  doc.text(label.toUpperCase(), 40, y);
+  doc.setDrawColor(LINE[0],LINE[1],LINE[2]); doc.line(40,y+5,555,y+5);
+  return y+22;
+}
+function kvRows(doc, rows, y){
+  doc.setFontSize(10.5);
+  rows.forEach(function(r){
+    doc.setFont('helvetica','normal'); doc.setTextColor(MUT[0],MUT[1],MUT[2]); doc.text(r[0], 40, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(INK[0],INK[1],INK[2]); doc.text(String(r[1]), 250, y);
+    y+=20;
+  });
+  return y+6;
+}
+function bullets(doc, items, y){
+  doc.setFontSize(10.5); doc.setFont('helvetica','normal'); doc.setTextColor(INK[0],INK[1],INK[2]);
+  items.forEach(function(it){
+    doc.setTextColor(TEAL[0],TEAL[1],TEAL[2]); doc.text('•', 42, y);
+    doc.setTextColor(INK[0],INK[1],INK[2]); doc.text(it, 56, y);
+    y+=18;
+  });
+  return y+6;
+}
+function footer(doc, note){
+  doc.setDrawColor(LINE[0],LINE[1],LINE[2]); doc.line(40,800,555,800);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(MUT[0],MUT[1],MUT[2]);
+  doc.text(note, 40, 814);
+  doc.text('Sample document — Slán demo', 555, 814, {align:'right'});
+}
+function signoff(doc, name, role, y){
+  doc.setDrawColor(INK[0],INK[1],INK[2]); doc.line(40,y+24,230,y+24);
+  doc.setFont('helvetica','italic'); doc.setFontSize(15); doc.setTextColor(INK[0],INK[1],INK[2]);
+  doc.text(name, 48, y+19);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(MUT[0],MUT[1],MUT[2]);
+  doc.text(role, 40, y+38);
+  return y+50;
+}
+
+function buildService(){
+  var J=jget(); if(!J) return alert('Still loading — try again in a moment.');
+  var doc=new J({unit:'pt',format:'a4'});
+  var today=new Date();
+  header(doc,'FleetServ Mechanical','Authorised plant & equipment service centre · NSW · ABN 54 221 880 145');
+  var y=docTitle(doc,'Service Report',['Report no. SR-2026-0481','Date of service: '+fmtDate(today)]);
+  y=sectionLabel(doc,'Machine',y);
+  y=kvRows(doc,[
+    ['Asset ID','CRN-007'],
+    ['Make / model','Franna AT-40'],
+    ['Type','Slewing mobile crane'],
+    ['Serial / VIN','FRA-AT40-18C6820'],
+    ['Engine hours','6,820 hrs'],
+    ['Operator','Murphy Civil Construction']
+  ],y);
+  y=sectionLabel(doc,'Work performed',y);
+  y=bullets(doc,[
+    'Engine oil and filters replaced; coolant level checked.',
+    'Hydraulic system inspected — no leaks; fluid topped up.',
+    'Service and park brakes tested — within tolerance.',
+    'Slew ring and boom pivots greased.',
+    'Load moment indicator (LMI) tested under known load — PASS.',
+    'Wire rope and hook inspected — no defects found.'
+  ],y);
+  y=sectionLabel(doc,'Outcome',y);
+  y=kvRows(doc,[
+    ['Result','Serviceable — returned to service'],
+    ['Next service due','at 7,000 hrs or '+fmtDate(addMonths(3))]
+  ],y);
+  signoff(doc,'A. Mitchell','Licensed plant mechanic · FleetServ Mechanical',y);
+  footer(doc,'FleetServ Mechanical · 12 Hartley Rd, Smeaton Grange NSW 2567 · (02) 4648 1100');
+  doc.save('Service Report - CRN-007 Franna AT-40.pdf');
+}
+
+function buildRego(){
+  var J=jget(); if(!J) return alert('Still loading — try again in a moment.');
+  var doc=new J({unit:'pt',format:'a4'});
+  header(doc,'Transport for NSW','Certificate of Registration · Roads & Maritime');
+  var y=docTitle(doc,'Registration Renewal',['Issued: '+fmtDate(new Date())]);
+  y=sectionLabel(doc,'Vehicle',y);
+  y=kvRows(doc,[
+    ['Plate number','EYK-71P'],
+    ['Make / model','Toyota Hilux SR 4x4'],
+    ['Body type','Utility'],
+    ['VIN','MR0FB29G201234567'],
+    ['Year','2022'],
+    ['Asset ID','UTE-022']
+  ],y);
+  y=sectionLabel(doc,'Registration',y);
+  y=kvRows(doc,[
+    ['Registered operator','Murphy Civil Construction'],
+    ['Registration class','Light goods vehicle'],
+    ['CTP (green slip) insurer','Allianz Australia'],
+    ['Renewal period','12 months'],
+    ['Registration expires',fmtDate(addMonths(12))]
+  ],y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(MUT[0],MUT[1],MUT[2]);
+  doc.text('This certificate confirms the above vehicle is registered for use on NSW roads', 40, y);
+  doc.text('until the expiry date shown. Carry evidence of registration when required.', 40, y+15);
+  footer(doc,'Transport for NSW · Service NSW · 13 77 88');
+  doc.save('Registration Renewal - UTE-022 Hilux.pdf');
+}
+
+function buildInsurance(){
+  var J=jget(); if(!J) return alert('Still loading — try again in a moment.');
+  var doc=new J({unit:'pt',format:'a4'});
+  header(doc,'CGU Insurance','Plant & Equipment · A member of the IAG group');
+  var y=docTitle(doc,'Certificate of Currency',['Issued: '+fmtDate(new Date())]);
+  y=sectionLabel(doc,'Policy',y);
+  y=kvRows(doc,[
+    ['Policy number','PLE-884515'],
+    ['Insured','Murphy Civil Construction'],
+    ['Class of insurance','Mobile plant & equipment'],
+    ['Covered asset','CRN-007 · Franna AT-40 mobile crane'],
+    ['Sum insured','$420,000']
+  ],y);
+  y=sectionLabel(doc,'Period of insurance',y);
+  y=kvRows(doc,[
+    ['From',fmtDate(new Date())],
+    ['To (expiry)',fmtDate(addMonths(12))],
+    ['Status','Current — premium paid']
+  ],y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(MUT[0],MUT[1],MUT[2]);
+  doc.text('This certificate confirms that a policy of insurance is current for the period shown.', 40, y);
+  doc.text('It is provided as evidence of cover and does not vary the terms of the policy.', 40, y+15);
+  footer(doc,'CGU Insurance Limited · ABN 27 004 478 371 · cgu.com.au');
+  doc.save('Insurance - Certificate of Currency.pdf');
+}
+
+function buildInvoice(){
+  var J=jget(); if(!J) return alert('Still loading — try again in a moment.');
+  var doc=new J({unit:'pt',format:'a4'});
+  header(doc,'FleetServ Mechanical','Tax Invoice · ABN 54 221 880 145');
+  var y=docTitle(doc,'Tax Invoice',['Invoice no. INV-20451','Date: '+fmtDate(new Date())]);
+  y=sectionLabel(doc,'Bill to',y);
+  y=kvRows(doc,[
+    ['Customer','Murphy Civil Construction'],
+    ['Site','Bondi Junction Mixed Use'],
+    ['Re: asset','CRN-007 · Franna AT-40']
+  ],y);
+  y=sectionLabel(doc,'Items',y);
+  // table header
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(MUT[0],MUT[1],MUT[2]);
+  doc.text('Description',40,y); doc.text('Amount',555,y,{align:'right'});
+  doc.setDrawColor(LINE[0],LINE[1],LINE[2]); doc.line(40,y+5,555,y+5); y+=22;
+  var items=[['Service labour — 3.5 hrs',525.00],['Engine oil & filters',186.40],['Hydraulic fluid (20L)',142.00],['LMI test & calibration check',180.00]];
+  doc.setFontSize(10.5);
+  var sub=0;
+  items.forEach(function(it){ doc.setFont('helvetica','normal'); doc.setTextColor(INK[0],INK[1],INK[2]); doc.text(it[0],40,y); doc.text(money(it[1]),555,y,{align:'right'}); sub+=it[1]; y+=19; });
+  doc.line(40,y,555,y); y+=20;
+  var gst=Math.round(sub*0.10*100)/100, tot=sub+gst;
+  function totRow(l,v,bold){ doc.setFont('helvetica',bold?'bold':'normal'); doc.setTextColor(INK[0],INK[1],INK[2]); doc.text(l,400,y); doc.text(money(v),555,y,{align:'right'}); y+=19; }
+  totRow('Subtotal',sub,false); totRow('GST (10%)',gst,false); totRow('Total due',tot,true);
+  y+=10;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(MUT[0],MUT[1],MUT[2]);
+  doc.text('Payment terms: 14 days · BSB 062-000 Acct 1234 5678 · Ref INV-20451', 40, y);
+  footer(doc,'FleetServ Mechanical · 12 Hartley Rd, Smeaton Grange NSW 2567 · (02) 4648 1100');
+  doc.save('Tax Invoice - FleetServ Mechanical.pdf');
+}
+
+function buildInspection(){
+  var J=jget(); if(!J) return alert('Still loading — try again in a moment.');
+  var doc=new J({unit:'pt',format:'a4'});
+  header(doc,'CraneSafe Inspections','Major inspection & periodic testing · NATA-endorsed');
+  var y=docTitle(doc,'Periodic Inspection Report',['Green sticker · Report no. PI-2026-3390','Inspected: '+fmtDate(new Date())]);
+  y=sectionLabel(doc,'Machine',y);
+  y=kvRows(doc,[
+    ['Asset ID','CRN-007'],
+    ['Make / model','Franna AT-40'],
+    ['Type','Slewing mobile crane'],
+    ['Standard','AS 2550.1 / AS 1418.5']
+  ],y);
+  y=sectionLabel(doc,'Inspection items',y);
+  y=bullets(doc,[
+    'Structural members & welds — PASS',
+    'Hook, block & safety latch — PASS',
+    'Wire ropes & terminations — PASS',
+    'Load moment indicator (LMI) & limits — PASS',
+    'Controls, brakes & outriggers — PASS'
+  ],y);
+  y=sectionLabel(doc,'Result',y);
+  y=kvRows(doc,[
+    ['Outcome','PASS — Green sticker issued'],
+    ['Next inspection due',fmtDate(addMonths(6))]
+  ],y);
+  signoff(doc,'D. Fennell','Accredited plant inspector · Lic. PI-4471',y);
+  footer(doc,'CraneSafe Inspections Pty Ltd · cranesafe.com.au · (02) 9000 4471');
+  doc.save('Periodic Inspection - CRN-007.pdf');
+}
+
+function downloadAll(){
+  var fns=[buildService,buildRego,buildInsurance,buildInvoice,buildInspection];
+  fns.forEach(function(fn,i){ setTimeout(fn, i*450); }); // small stagger so the browser allows multiple downloads
+}
+</script>
+</body>
+</html>
