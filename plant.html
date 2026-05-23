@@ -565,7 +565,7 @@ function openHub(i){
   var lift = a.lift_note ? '<div class="lift"><b>Lifting data</b>SWL '+(a.swl||'—')+'<br>'+a.lift_note+'</div>' : '';
   var hired=isHired(a.code), premCleared=_premobState(a.code).cleared;
   var premobHubRow = (getRole()!=='worker' && isHired(a.code) && _premobState(a.code).cleared) ? ('<div class="sec-h">Pre-mobilisation</div><div class="tile"><button class="row" onclick="plantPremobOpen(\''+a.code+'\')"><div class="row-ic">✅</div><div class="row-main"><div class="row-t">Pre-mobilisation checklist — cleared</div><div class="row-s">Hired from '+hireInfo(a.code).supplier+' · view the completed form</div></div><div class="chev">›</div></button></div>') : '';
-  var paperPrestartRow = (isHired(a.code) && _premobState(a.code).cleared) ? ('<div class="sec-h">Daily pre-start (paper book)</div>'+(_prestartDoneToday(a.code) ? '<div class="tile" style="padding:12px 14px;font-size:12.5px;color:#1B5E3F;background:#EAF5EF;border:1px solid #BFE3D0">✓ Today’s pre-start confirmed — logged to your records.</div>' : '<div class="tile" style="padding:12px 14px"><div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:8px">This machine runs off the supplier’s paper pre-start book. Confirm today’s pre-start was completed so it shows in your records and pre-starts-done count.</div><button class="cta" style="margin:0" onclick="plantPaperPrestart(\''+a.code+'\')">✓ Confirm today’s pre-start done</button></div>') ) : '';
+  var paperPrestartRow = (isHired(a.code) && _premobState(a.code).cleared) ? ('<div class="sec-h">Daily pre-start (paper book)</div>'+(_prestartDoneToday(a.code) ? '<div class="tile" style="padding:12px 14px;font-size:12.5px;color:#1B5E3F;background:#EAF5EF;border:1px solid #BFE3D0">✓ Today’s pre-start confirmed — logged to your records.</div>' : '<div class="tile" style="padding:12px 14px"><div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:8px">This machine runs off the supplier’s paper pre-start book. Take a photo of the signed page to confirm today’s pre-start — it’s logged to your records and pre-starts-done count.</div><button class="cta" style="margin:0" onclick="plantPaperPrestartPick(\''+a.code+'\')">📷 Photo the pre-start book to confirm today’s</button><input id="paper-ps-input" type="file" accept="image/*" capture="environment" style="display:none" onchange="plantPaperPrestartOnFile(this)"></div>') ) : '';
   var uploads=_plantDocsFor(a.code);
   var dropHtml = (getRole()!=='worker') ? (
     '<div class="sec-h">Upload &amp; smart import</div>'+
@@ -1120,11 +1120,15 @@ function _allPlantRecords(){ try{ var arr=JSON.parse(localStorage.getItem('slan_
 function _recordsFor(code){ return _allPlantRecords().filter(function(r){ return r.code===code; }); }
 /* §4 — hired plant runs off the supplier's PAPER pre-start book; let the operator confirm today's was done so it still shows in the records/count */
 function _prestartDoneToday(code){ var t=new Date(); t.setHours(0,0,0,0); return _recordsFor(code).some(function(r){ return r.when>=t && r.paper; }); }
-function plantPaperPrestart(code){
+var _paperRef=null;
+function plantPaperPrestartPick(code){ _paperRef=code; var i=document.getElementById('paper-ps-input'); if(i) i.click(); }
+function plantPaperPrestartOnFile(input){ var code=_paperRef; var f=input&&input.files&&input.files[0]; if(input) input.value=''; if(!code||!f) return; plantPaperPrestart(code, f.name); }
+function plantPaperPrestart(code, photoName){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
-  _savePlantRecord({ code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:((currentWorker&&currentWorker.name)?currentWorker.name:'Operator')+' (paper book)', when:new Date(), reading:(a.hours||0), meter:'hrs', faults:0, critical:false, paper:true, items:[], comments:'Daily pre-start completed in the supplier paper book — confirmed in app.' });
+  if(!photoName){ if(typeof slanMsg==='function') slanMsg('Photo required','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Take a photo of the signed pre-start book page to confirm today’s pre-start.</div>'); return; }
+  _savePlantRecord({ code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:((currentWorker&&currentWorker.name)?currentWorker.name:'Operator')+' (paper book)', when:new Date(), reading:(a.hours||0), meter:'hrs', faults:0, critical:false, paper:true, photo_name:photoName, items:[], comments:'Daily pre-start completed in the supplier paper book — photo of the signed page attached.' });
   openHub(ASSETS.indexOf(a));
-  if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:40px">✅</div><div style="font-size:15px;font-weight:800;color:var(--pass);margin-top:6px">Pre-start logged</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — today’s paper pre-start recorded. It now shows in your pre-starts-done count.</div></div>');
+  if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:40px">✅</div><div style="font-size:15px;font-weight:800;color:var(--pass);margin-top:6px">Pre-start logged</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — today’s paper pre-start recorded with a photo of the signed page. It now shows in your pre-starts-done count.</div></div>');
 }
 function _loadPlantRecord(code){ var a=_recordsFor(code); return a.length?a[0]:null; }
 function _loadRecordById(id){ var a=_allPlantRecords(); for(var i=0;i<a.length;i++){ if(a[i].id===id) return a[i]; } return null; }
@@ -1448,9 +1452,41 @@ var PREMOB_PARTA={
 };
 function _premobPartA(a){ var t=(a.type||'').toLowerCase(); if(t.indexOf('ewp')>-1) return PREMOB_PARTA.ewp; if(t.indexOf('telehandler')>-1||t.indexOf('magni')>-1) return PREMOB_PARTA.telehandler; return PREMOB_PARTA.generic; }
 function _premobTick(on){ return '<span style="display:inline-block;width:22px;text-align:center;color:'+(on?'#1B6E3A':'#C7CFC9')+';font-weight:800">'+(on?'✓':'–')+'</span>'; }
-function _premobSection(title, items, ownerOn, siteOn){
-  var rows=items.map(function(it){ return '<tr><td style="font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--border);line-height:1.4">'+it+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+_premobTick(ownerOn)+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+_premobTick(siteOn)+'</td></tr>'; }).join('');
+function _premobSection(title, partKey, items, supplierOn, code, editable){
+  var st=_premobState(code), si=st.site_items||{};
+  var rows=items.map(function(it,i){
+    var key=partKey+i, v=si[key]||(st.site_done?'ok':'');
+    var col=v==='ok'?'#1B6E3A':(v==='no'?'#A32D2D':'#C7CFC9'), sym=v==='ok'?'✓':(v==='no'?'✗':'–'), bg=v==='ok'?'#EAF5EF':(v==='no'?'#FCEBEB':'#fff');
+    var siteCell = editable
+      ? '<button id="pmc-'+key+'" onclick="premobToggleItem(\''+code+'\',\''+key+'\')" style="width:32px;height:28px;border:1.5px solid '+col+';border-radius:6px;background:'+bg+';color:'+col+';font-weight:800;cursor:pointer;font-family:inherit;font-size:14px;line-height:1">'+sym+'</button>'
+      : '<span style="color:'+col+';font-weight:800">'+sym+'</span>';
+    return '<tr><td style="font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--border);line-height:1.4">'+it+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+_premobTick(supplierOn)+'</td><td style="text-align:center;border-bottom:1px solid var(--border)">'+siteCell+'</td></tr>';
+  }).join('');
   return '<div class="sec-h">'+title+'</div><div style="overflow-x:auto"><table class="reg"><thead><tr><th style="text-align:left">Item</th><th>Supplier</th><th>Site</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+function premobToggleItem(code,key){
+  var st=_premobState(code), si=Object.assign({}, st.site_items||{});
+  var cur=si[key]||'', nxt=(cur===''?'ok':(cur==='ok'?'no':''));
+  if(nxt==='') delete si[key]; else si[key]=nxt;
+  _premobSaveState(code,{ site_items:si });
+  var btn=document.getElementById('pmc-'+key);
+  if(btn){ var col=nxt==='ok'?'#1B6E3A':(nxt==='no'?'#A32D2D':'#C7CFC9'), sym=nxt==='ok'?'✓':(nxt==='no'?'✗':'–'), bg=nxt==='ok'?'#EAF5EF':(nxt==='no'?'#FCEBEB':'#fff'); btn.textContent=sym; btn.style.color=col; btn.style.borderColor=col; btn.style.background=bg; }
+}
+function _premobKeys(a){ var keys=[]; _premobPartA(a).forEach(function(_,i){keys.push('A'+i);}); PREMOB_PARTB.forEach(function(_,i){keys.push('B'+i);}); PREMOB_PARTC.forEach(function(_,i){keys.push('C'+i);}); return keys; }
+function premobMarkAllOk(code){ var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var si={}; _premobKeys(a).forEach(function(k){ si[k]='ok'; }); _premobSaveState(code,{ site_items:si }); plantPremobOpen(code); }
+function premobCompleteCheck(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
+  var keys=_premobKeys(a), si=_premobState(code).site_items||{};
+  var marked=keys.filter(function(k){return si[k]==='ok'||si[k]==='no';}).length;
+  var noKeys=keys.filter(function(k){return si[k]==='no';});
+  if(marked<keys.length){ slanMsg('Finish the checks','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Tick every item OK (✓) or not OK (✗) before clearing — '+marked+' of '+keys.length+' done. Tip: “Mark all items OK”, then change any that aren’t.</div>'); return; }
+  if(noKeys.length){ var pa=_premobPartA(a); var bad=noKeys.map(function(k){ var idx=parseInt(k.slice(1),10); var arr=(k.charAt(0)==='A'?pa:(k.charAt(0)==='B'?PREMOB_PARTB:PREMOB_PARTC)); return arr[idx]; }); premobFlagFromItems(code, bad); return; }
+  premobComplete(code);
+}
+function premobFlagFromItems(code, badItems){
+  _premobSaveState(code,{ flagged:true, flag_note:'Not OK on arrival: '+badItems.join('; '), flagged_at:new Date().toISOString() });
+  plantPremobOpen(code);
+  if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:40px">⚠️</div><div style="font-size:15px;font-weight:800;color:#A32D2D;margin-top:6px">Issue flagged</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — '+badItems.length+' item'+(badItems.length>1?'s':'')+' not OK. Supervisor notified; send the form &amp; photos back to the hire company.</div></div>');
 }
 var premobSub='cleared'; // Cleared tab first (Niall's preference)
 function premobSetSub(s){ premobSub=s; renderOversight(); }
@@ -1497,24 +1533,22 @@ function plantPremobOpen(code){
   var decl='<div class="sec-h">Declaration</div>'+
     '<div style="font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:10px">“I declare that this machine is in a safe condition, free from defect and fit for purpose. Ignition, toolbox and panel keys present with the machine.”</div>'+
     '<div style="display:flex;gap:12px;flex-wrap:wrap">'+supplierSig+siteSig+'</div>';
-  // §2 — assign the on-site check to a ticketed operator
-  var siteBox='';
+  // On-site check — assign to a ticketed operator (§2), then they tick each item (A), photos + sign-off (§3)
+  var editable = !!(s.site_assignee && !s.site_done && !s.cleared && !s.flagged);
+  var siteBox='', siteActions='';
   if(!s.cleared){
     if(!s.supplier_done){
       siteBox='<div class="sec-h">On-site check</div><div style="font-size:12px;color:var(--t3);padding:2px 0">Import the supplier checklist first, then assign the on-site check to a ticketed operator.</div>';
-    } else if(s.site_assignee && s.flagged){
-      siteBox='<div class="sec-h">On-site check — '+s.site_assignee+'</div><div style="background:#FCEBEB;border:1px solid #E2B4B4;border-radius:10px;padding:12px 14px"><div style="font-size:12.5px;font-weight:800;color:#A32D2D">⚠ Issue flagged — supervisor notified</div>'+(s.flag_note?'<div style="font-size:12.5px;color:#7a2a2a;margin-top:5px;line-height:1.5">“'+s.flag_note+'”</div>':'')+'<div style="font-size:11.5px;color:#7a2a2a;margin-top:8px;line-height:1.5">Send the pre-mob form &amp; arrival photos back to the hire company. Once it’s sorted, mark it resolved and finish the checks.</div><button class="btn-ghost" onclick="premobUnflag(\''+code+'\')" style="margin-top:8px">Issue resolved — back to checks</button></div>';
-    } else if(s.site_assignee){
+    } else if(s.flagged){
+      siteBox='<div class="sec-h">On-site check — '+(s.site_assignee||'')+'</div><div style="background:#FCEBEB;border:1px solid #E2B4B4;border-radius:10px;padding:12px 14px"><div style="font-size:12.5px;font-weight:800;color:#A32D2D">⚠ Issue flagged — supervisor notified</div>'+(s.flag_note?'<div style="font-size:12.5px;color:#7a2a2a;margin-top:5px;line-height:1.5">“'+s.flag_note+'”</div>':'')+'<div style="font-size:11.5px;color:#7a2a2a;margin-top:8px;line-height:1.5">Send the pre-mob form &amp; arrival photos back to the hire company. Once it’s sorted, mark it resolved and finish the checks.</div><button class="btn-ghost" onclick="premobUnflag(\''+code+'\')" style="margin-top:8px">Issue resolved — back to checks</button></div>';
+    } else if(editable){
+      siteBox='<div class="sec-h">On-site check — '+s.site_assignee+'</div><div style="font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.5"><b>'+s.site_assignee+'</b> (ticketed operator) ticks each item below as OK (✓) or not OK (✗) on arrival, adds photos, then clears it. Any “not OK” flags it back to the supplier.</div><button class="btn-ghost" onclick="premobMarkAllOk(\''+code+'\')">Mark all items OK</button>';
       var phs=(s.photos||[]);
       var photosList = phs.length ? ('<div class="tile" style="margin-bottom:10px">'+phs.map(function(n){ return '<div class="row" style="cursor:default"><div class="row-ic">📷</div><div class="row-main"><div class="row-s" style="word-break:break-all">'+n+'</div></div></div>'; }).join('')+'</div>') : '<div style="font-size:12px;color:var(--t3);margin:2px 0 10px">No arrival photos yet.</div>';
-      siteBox='<div class="sec-h">On-site check — '+s.site_assignee+'</div>'+
-        '<div style="font-size:12px;color:var(--t2);margin-bottom:10px;line-height:1.5"><b>'+s.site_assignee+'</b> (ticketed operator) verifies the machine on arrival, adds photos and signs to clear it.</div>'+
-        '<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Arrival photos'+(phs.length?(' ('+phs.length+')'):'')+'</div>'+photosList+
+      siteActions='<div class="sec-h">Arrival photos &amp; sign-off</div>'+photosList+
         '<button class="btn-ghost" onclick="premobPhotoPick(\''+code+'\')" style="margin-bottom:12px">📷 Add arrival photos</button>'+
         '<input id="premob-photo-input" type="file" accept="image/*" multiple style="display:none" onchange="premobPhotoOnFile(this)">'+
-        '<button class="cta" onclick="premobComplete(\''+code+'\')">✓ Complete on-site check &amp; clear machine</button>'+
-        '<button class="btn-ghost" onclick="premobShowFlag()" style="color:#A32D2D">⚠ Flag an issue &amp; notify supervisor</button>'+
-        '<div id="premob-flag-wrap" style="display:none;margin-top:4px"><textarea id="premob-flag-note" rows="2" placeholder="What’s the issue? (notifies the supervisor; send the form + photos back to the hire company)" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;box-sizing:border-box"></textarea><button onclick="premobFlag(\''+code+'\')" style="background:#A32D2D;color:#fff;margin-top:6px;width:100%;padding:11px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit">Flag &amp; notify supervisor</button></div>'+
+        '<button class="cta" onclick="premobCompleteCheck(\''+code+'\')">✓ Complete on-site check &amp; clear machine</button>'+
         '<button class="btn-ghost" onclick="premobAssign(\''+code+'\',null)">Change operator</button>';
     } else {
       var ops=_ticketedFor(a);
@@ -1522,17 +1556,16 @@ function plantPremobOpen(code){
       siteBox='<div class="sec-h">On-site check</div>'+(ops.length?('<div style="font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.5">Assign the on-site check to an operator who holds the ticket for this machine:</div><div class="tile">'+ops.map(function(w){ return '<button class="row" onclick="premobAssign(\''+code+'\',\''+w.name.replace(/'/g,"\\'")+'\')"><div class="row-ic">👷</div><div class="row-main"><div class="row-t">'+w.name+'</div><div class="row-s">'+w.trade+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div>'):'<div style="font-size:12px;color:var(--t2);line-height:1.5">No operator on the roster holds the ticket for this machine.</div>')+addRow;
     }
   }
-  var note='<div class="ovr" style="background:#FFF6E6;border:1px solid #E8C97A;border-radius:10px;padding:11px 13px;margin:6px 0 14px;font-size:11.5px;color:#8A5A00;line-height:1.5">Build in progress: supplier PDF fills their column; the supervisor assigns the on-site check to a ticketed operator. Site column completion + arrival photos + sign-off come next (§3).</div>';
   var backTo = s.cleared ? ('openHub('+ASSETS.indexOf(a)+')') : 'renderOversight()'; // cleared opens from the machine page; outstanding from the fleet list
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="'+backTo+'">‹ Back</button>'+
     '<div class="h1">Pre-Mobilisation Checklist</div>'+
     '<div class="sub">'+a.code+' · '+a.make+' '+a.model+' · <span style="color:'+st.col+';font-weight:700">'+st.label+'</span></div>'+
-    note + hdr + supplierBox + siteBox +
-    _premobSection('Part A — Minimum requirements ('+a.type+')', _premobPartA(a), ownerOn, siteOn)+
-    _premobSection('Part B — Condition of plant & equipment', PREMOB_PARTB, ownerOn, siteOn)+
-    _premobSection('Part C — Compliance documentation', PREMOB_PARTC, ownerOn, siteOn)+
-    decl+
+    hdr + supplierBox + siteBox +
+    _premobSection('Part A — Minimum requirements ('+a.type+')', 'A', _premobPartA(a), ownerOn, code, editable)+
+    _premobSection('Part B — Condition of plant & equipment', 'B', PREMOB_PARTB, ownerOn, code, editable)+
+    _premobSection('Part C — Compliance documentation', 'C', PREMOB_PARTC, ownerOn, code, editable)+
+    siteActions + decl+
     '<div style="height:24px"></div>'+
   '</div>';
   showDetail(html);
