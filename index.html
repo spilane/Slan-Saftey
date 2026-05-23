@@ -2269,7 +2269,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="d-pill-inc" onclick="supChipTapIncidents()"><div class="sp-dot sp-pending"></div><span id="d-pill-inc-lbl">Incidents</span></div>
       <div class="status-pill" id="d-pill-plant" onclick="supChipTapPlant()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-lbl">Plant</span></div>
       <div class="status-pill" id="d-pill-plant-appr" onclick="openPlantApprovals()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-appr-lbl">Plant approvals</span></div>
-      <div class="status-pill" id="d-pill-plant-ps" onclick="supChipOpenPlantPage()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-ps-lbl">Pre-starts</span></div>
+      <div class="status-pill" id="d-pill-plant-ps" onclick="supOpenPlantToday()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-ps-lbl">Pre-starts</span></div>
     </div>
   </div>
 
@@ -17085,6 +17085,8 @@ var _plantCurrentApproval=null;
 function supChipOpenPlantPage(){ window.open('plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use','_blank'); }
 // Open a specific flagged machine in Plant & Equipment (supervisor view) instead of just the dashboard
 function supOpenPlantMachine(code){ window.open('plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&machine='+encodeURIComponent(code),'_blank'); }
+// Open today's completed pre-starts (from the "N pre-starts done" pill)
+function supOpenPlantToday(){ window.open('plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&view=today','_blank'); }
 function openPlantApprovals(){
   goTo('screen-plant-approvals');
   var pending=_plantApprovalsLoad().filter(function(x){return x.status==='pending';});

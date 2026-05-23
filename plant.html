@@ -1557,6 +1557,40 @@ function renderOversight(){
   if(platTab==='analytics'){ setTimeout(renderPlantCharts,30); }
   window.scrollTo(0,0);
 }
+/* ---------- Today's pre-starts (supervisor) — every pre-start completed today, opened from the "N pre-starts done" pill. Date-filtered to today, so it naturally resets each day. ---------- */
+function renderTodayPrestarts(){
+  var supLocked=(getRole()==='supervisor');
+  if(supLocked){ oversightSite = getSiteParam() || 'Bondi Junction Mixed Use'; }
+  // Match the supervisor "N pre-starts done" pill, which counts the whole fleet (all sites) — show every pre-start completed today.
+  var t=new Date(); t.setHours(0,0,0,0);
+  var recs=_allPlantRecords().filter(function(r){ return r.when>=t; }); // today only, newest first
+  var fleet=ASSETS;
+  var okN=recs.filter(function(r){ return !r.faults; }).length;
+  var issueN=recs.length-okN;
+  var dateStr=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var chip=function(v,l,col){ return '<div style="flex:1;text-align:center;padding:10px 4px"><div style="font-size:22px;font-weight:800;color:'+col+';line-height:1">'+v+'</div><div style="font-size:10.5px;color:var(--t2);margin-top:3px">'+l+'</div></div>'; };
+  var summary='<div class="tile" style="display:flex;margin-bottom:14px;padding:4px 0">'+
+    chip(recs.length+' / '+fleet.length,'Completed','var(--deep)')+
+    '<div style="width:1px;background:var(--border);margin:8px 0"></div>'+
+    chip(okN,'All clear','var(--pass)')+
+    '<div style="width:1px;background:var(--border);margin:8px 0"></div>'+
+    chip(issueN,'With issues',issueN?'var(--gold)':'var(--t3)')+
+  '</div>';
+  var rows=recs.length?recs.map(function(r){
+    var o=_recOutcome(r);
+    var tm=new Date(r.when).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'});
+    return '<button class="row" onclick="plantViewSavedRecordById(\''+r.id+'\')"><div class="row-ic"><span class="dot" style="background:'+o.col+'"></span></div><div class="row-main"><div class="row-t">'+r.code+' · '+r.machine+'</div><div class="row-s">'+tm+' · '+r.worker+' · <span style="color:'+o.col+';font-weight:700">'+o.label+'</span></div></div><div class="row-s" style="color:var(--gold);font-weight:700;flex-shrink:0;margin-right:4px">📄 PDF</div><div class="chev">›</div></button>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts completed today yet — they will appear here as operators submit them.</div></div></div>';
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="renderOversight()">‹ Back to dashboard</button>'+
+    '<div class="h1">Today&rsquo;s pre-starts</div>'+
+    '<div class="sub">'+dateStr+'</div>'+
+    summary+
+    '<div class="tile">'+rows+'</div>'+
+    '<div style="font-size:11px;color:var(--t3);text-align:center;margin-top:12px">Shows only today&rsquo;s completed pre-starts · tap any to open its PDF record</div>'+
+  '</div>';
+  showDetail(html);
+}
 function openWO(i){
   var w=WORKORDERS[i]; if(!w) return;
   var pdfBtn = _loadPlantRecord(w.code) ? '<button class="btn-ghost" style="margin-top:12px" onclick="plantViewSavedPDF(\''+w.code+'\')">📄  View operator&rsquo;s pre-start record (PDF)</button>' : '';
@@ -1622,6 +1656,8 @@ renderAssets();
   if(code){ var idx=-1; ASSETS.forEach(function(a,i){ if(a.code===code) idx=i; }); if(idx>-1){ openHub(idx);
     if(/[?&]start=1/.test(location.search) && getRole()==='worker'){ try{ openGate(); }catch(e){} }
     return; } }
+  // Supervisor shortcut: plant.html?view=today opens the "Today's pre-starts" list (from the "N pre-starts done" pill)
+  if(/[?&]view=today/.test(location.search) && ['manager','supervisor','director'].indexOf(getRole())>-1){ try{ renderTodayPrestarts(); return; }catch(e){} }
   if(['manager','supervisor','director'].indexOf(getRole())>-1) renderOversight();
 })();
 </script>
