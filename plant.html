@@ -129,7 +129,7 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .sheet p{font-size:12.5px;color:var(--t2);margin-bottom:14px}
 .wbtn{width:100%;text-align:left;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:13px;margin-bottom:9px;cursor:pointer;font-family:inherit}
 .wbtn b{font-size:14px;color:var(--t1)} .wbtn span{display:block;font-size:11.5px;color:var(--t2);margin-top:2px}
-.demobar{position:fixed;bottom:0;left:0;right:0;background:var(--deep);color:var(--gold-l);font-size:11px;font-weight:600;text-align:center;padding:7px;z-index:40;letter-spacing:.05em}
+.demobar{position:fixed;bottom:0;left:0;right:0;background:#2C6B5E;color:var(--gold-l);font-size:11px;font-weight:600;text-align:center;padding:7px;z-index:40;letter-spacing:.05em}
 /* QR stickers */
 .qr-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .qr-card{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:14px 12px;text-align:center}
@@ -255,18 +255,19 @@ table.reg tr.attn-amber td:first-child{box-shadow:inset 3px 0 0 #E08A1E}
 
 <div class="sheet-bk" id="demo-sheet" onclick="if(event.target===this)closeDemoSheet()">
   <div class="sheet">
-    <h3>Demo — switch view</h3>
-    <p>Jump between the views for a walkthrough.</p>
-    <button class="wbtn" onclick="location.href='plant.html'"><b>Worker (QR)</b><span>Scan a machine → pre-start</span></button>
-    <button class="wbtn" onclick="location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use'"><b>Supervisor — Bondi Junction (Eoin Burke)</b><span>Site fleet oversight</span></button>
-    <button class="wbtn" onclick="location.href='plant.html?role=director'"><b>Director</b><span>All sites + analytics</span></button>
+    <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:2px auto 16px"></div>
+    <h3>View demo as&hellip;</h3>
+    <p>Choose a role to walk through the plant platform.</p>
+    <button class="wbtn" onclick="location.href='plant.html'"><b>Worker (QR)</b><span>Daniel Byrne — Plant Operator — Byrne Plant Hire</span></button>
+    <button class="wbtn" onclick="location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use'"><b>Site Supervisor</b><span>Eoin Burke — Site Supervisor — Bondi Junction Mixed Use</span></button>
+    <button class="wbtn" onclick="location.href='plant.html?role=director'"><b>Company Director</b><span>Patrick Murphy — Director — all sites &amp; analytics</span></button>
     <div style="font-size:12px;font-weight:700;color:var(--t2);margin:14px 0 6px">Switch operator (test the Ticket Gate)</div>
     <div id="demo-workers"></div>
-    <button class="wbtn" onclick="plantResetDemo()" style="border-color:#E2A6A6;color:#A32D2D;margin-top:6px"><b>↺ Reset demo</b><span>Clear flagged faults &amp; work orders</span></button>
+    <button class="wbtn" onclick="plantResetDemo()" style="border-color:#E2A6A6;color:#A32D2D;margin-top:6px"><b>↺ Reset demo</b><span>Restore the seeded demo data</span></button>
   </div>
 </div>
 
-<div class="demobar" onclick="openDemoSheet()" style="cursor:pointer">⚡ DEMO — tap to switch view</div>
+<div class="demobar" onclick="openDemoSheet()" style="cursor:pointer">⚡ DEMO MODE — tap to switch view or operator</div>
 
 <script>
 /* ---------- helpers ---------- */
