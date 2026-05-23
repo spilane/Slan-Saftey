@@ -385,13 +385,11 @@ function getDocs(a){
 }
 /* recent prestarts (last 7 days) */
 function recentPrestarts(a){
-  var names=["Liam O'Brien",'Tom Walker','Mark Flynn','Lee O\'Brien'];
-  var out=[]; var n=(a.code.charCodeAt(4)%3)+3;
-  for(var i=0;i<n;i++){ out.push({ date:iso(dOffset(-(i+ (a.code.charCodeAt(5)%2)))), worker:names[(i+a.code.length)%names.length], outcome:(i===1&&a.status==='fault_reported')?'fault':'ok' }); }
-  // a real pre-start submitted on this device sits on top and is openable as a PDF
-  var saved=_loadPlantRecord(a.code);
-  if(saved){ out.unshift({ date:iso(saved.when), worker:saved.worker, outcome:saved.faults>0?'fault':'ok', real:true, rec:saved }); }
-  return out;
+  // real submitted pre-starts for this machine in the last 7 days, newest first (each openable as its own PDF)
+  var sevenAgo=Date.now()-7*86400000;
+  return _recordsFor(a.code).filter(function(r){ return r.when.getTime()>=sevenAgo; }).map(function(r){
+    return { id:r.id, date:iso(r.when), worker:r.worker, outcome:(r.faults>0?(r.critical?'critical':'fault'):'ok'), real:true, rec:r };
+  });
 }
 /* service is interval-based on plant — by engine hours (or km for vehicles), not just a date */
 var SERVICE_METER={
@@ -534,13 +532,8 @@ function openHub(i){
     return '<button class="row" onclick="slanMsg(\'Document\',\'Opens the '+d.t.replace(/'/g,'')+' for this machine (the stored file).\')"><div class="row-ic">'+d.ic+'</div><div class="row-main"><div class="row-t">'+d.t+'</div><div class="row-s">'+d.s+'</div></div><div class="chev">›</div></button>';
   }).join('');
   var rec=recentPrestarts(a).map(function(p){
-    var col=p.outcome==='fault'?'var(--warn)':'var(--pass)';
-    var lbl=p.outcome==='fault'?'Fault flagged':'Completed';
-    if(p.real){
-      var o=_recOutcome(p.rec);
-      return '<button class="row" onclick="plantViewSavedPDF(\''+a.code+'\')"><div class="row-ic"><span class="dot" style="background:'+o.col+'"></span></div><div class="row-main"><div class="row-t">'+fmtShort(p.date)+' · '+p.worker+'</div><div class="row-s" style="color:var(--gold);font-weight:700">'+o.label+' · 📄 View record (PDF)</div></div><div class="chev">›</div></button>';
-    }
-    return '<div class="row" style="cursor:default"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+fmtShort(p.date)+' · '+p.worker+'</div><div class="row-s">'+lbl+'</div></div></div>';
+    var o=_recOutcome(p.rec);
+    return '<button class="row" onclick="plantViewSavedRecordById(\''+p.id+'\')"><div class="row-ic"><span class="dot" style="background:'+o.col+'"></span></div><div class="row-main"><div class="row-t">'+fmtShort(p.date)+' · '+p.worker+'</div><div class="row-s" style="color:var(--gold);font-weight:700">'+o.label+' · 📄 View record (PDF)</div></div><div class="chev">›</div></button>';
   }).join('');
   var svcOverdue=new Date(a.service_due)<new Date();
   var _sm=svcMeter(a), svcMeterRow='';
@@ -891,14 +884,18 @@ function _clearPlantAlert(code){ try{ localStorage.setItem('slan_plant_alerts', 
 function _savedWOs(){ try{ return JSON.parse(localStorage.getItem('slan_plant_wos')||'[]'); }catch(e){ return []; } }
 function _saveWO(wo){ try{ var arr=_savedWOs().filter(function(x){ return x.wo!==wo.wo && !(x.code===wo.code && x.fault===wo.fault); }); arr.unshift(wo); localStorage.setItem('slan_plant_wos', JSON.stringify(arr)); }catch(e){} }
 function _removeSavedWO(woId){ try{ localStorage.setItem('slan_plant_wos', JSON.stringify(_savedWOs().filter(function(x){return x.wo!==woId;}))); }catch(e){} }
-/* persist the latest pre-start per machine so a supervisor/mechanic can open its full record PDF (front-end; shared via same-origin localStorage like the alerts) */
+/* persist pre-start records as a HISTORY (one entry per submitted pre-start) so 'last 7 days' is real and each day's PDF is openable; front-end, same-origin localStorage like the alerts */
+var _psSeq=0;
 function _savePlantRecord(rec){
-  function put(r){ var map={}; try{ map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); }catch(e){ map={}; } map[r.code]=r; localStorage.setItem('slan_plant_records', JSON.stringify(map)); }
+  function put(r){ var arr=[]; try{ arr=JSON.parse(localStorage.getItem('slan_plant_records')||'[]'); if(!Array.isArray(arr)) arr=[]; }catch(e){ arr=[]; } if(!r.id) r.id='PS-'+Date.now().toString(36)+'-'+(_psSeq++).toString(36); arr.push(r); localStorage.setItem('slan_plant_records', JSON.stringify(arr)); }
   try{ put(JSON.parse(JSON.stringify(rec))); }
   catch(e){ try{ var slim=JSON.parse(JSON.stringify(rec)); (slim.items||[]).forEach(function(it){ it.photo=''; }); put(slim); }catch(_){} }
 }
-function _loadPlantRecord(code){ try{ var map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); var r=map[code]; if(!r) return null; r.when=new Date(r.when); return r; }catch(e){ return null; } }
-function _allPlantRecords(){ try{ var map=JSON.parse(localStorage.getItem('slan_plant_records')||'{}'); return Object.keys(map).map(function(k){ var r=map[k]; r.when=new Date(r.when); return r; }).sort(function(a,b){ return b.when-a.when; }); }catch(e){ return []; } }
+function _allPlantRecords(){ try{ var arr=JSON.parse(localStorage.getItem('slan_plant_records')||'[]'); if(!Array.isArray(arr)) arr=[]; arr.forEach(function(r){ r.when=new Date(r.when); }); return arr.sort(function(a,b){ return b.when-a.when; }); }catch(e){ return []; } }
+function _recordsFor(code){ return _allPlantRecords().filter(function(r){ return r.code===code; }); }
+function _loadPlantRecord(code){ var a=_recordsFor(code); return a.length?a[0]:null; }
+function _loadRecordById(id){ var a=_allPlantRecords(); for(var i=0;i<a.length;i++){ if(a[i].id===id) return a[i]; } return null; }
+function _latestPerMachine(arr){ var seen={}, out=[]; arr.forEach(function(r){ if(!seen[r.code]){ seen[r.code]=1; out.push(r); } }); return out; }
 /* outcome label/colour for a pre-start: all clear / minor (still usable) / major (repair soon) / critical (out of service) */
 function _recOutcome(rec){
   if(!rec || !rec.faults) return {label:'All clear', col:'var(--pass)'};
@@ -908,60 +905,68 @@ function _recOutcome(rec){
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
 }
 /* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
-var DEMO_SEED_VERSION='eoin-v1';
-var DEMO_PRESTARTS=[
-  { code:'CRN-007', worker:'Jake Sullivan', daysAgo:0, comments:'All good — lifted precast panels to Level 3.' },
-  { code:'MAG-009', worker:'Jake Sullivan', daysAgo:1, comments:'LMI fault found on pre-start — machine tagged out, do not operate.',
-    faults:[{match:'Load moment indicator', sev:'Critical — do not operate', desc:'LMI reads zero under a known test load — not safe to lift. Out-of-service tag fitted and supervisor notified.'}] },
-  { code:'TLH-003', worker:'Daniel Byrne', daysAgo:0 },
-  { code:'TRK-006', worker:'Anthony Walsh', daysAgo:0, comments:'Reversing camera playing up — flagged it, still drivable.',
-    faults:[{match:'Reversing alarm', sev:'Minor — still usable', desc:'Reversing camera cuts out intermittently; reversing alarm works fine. Using a spotter when reversing until it is repaired.'}] },
-  { code:'GEN-005', worker:'Daniel Byrne', daysAgo:1 },
-  { code:'LT-013', worker:'Daniel Byrne', daysAgo:2 },
-  { code:'EWP-018', worker:'Daniel Byrne', daysAgo:0, comments:'Beacon globe blown — noted, still usable.',
-    faults:[{match:'Beacon, horn', sev:'Minor — still usable', desc:'Amber flashing beacon globe blown. Horn and movement alarms all work. Fine for daytime indoor use until the globe is replaced.'}] },
-  { code:'EWP-019', worker:'Daniel Byrne', daysAgo:1 },
-  { code:'BUS-021', worker:'Anthony Walsh', daysAgo:0, comments:'Crew transport run — all good.' },
-  { code:'UTE-022', worker:'Anthony Walsh', daysAgo:0 },
-  { code:'CRN-011', worker:'Jake Sullivan', daysAgo:1 },
-  { code:'TLH-012', worker:'Kevin Ryan', daysAgo:0 },
-  { code:'GEN-016', worker:'Kevin Ryan', daysAgo:2 },
-  { code:'LT-014', worker:'Aaron Quinn', daysAgo:1 }
+var DEMO_SEED_VERSION='eoin-v2';
+var DEMO_DAYS=5; // seed a pre-start for each of the last 5 days, per machine
+/* per-machine demo script: ops rotate across days; faultDays = which daysAgo the issue shows (re-flagged each day so it 'carries on'); the WO is raised on the earliest fault day */
+var DEMO_FLEET=[
+  { code:'CRN-007', ops:['Jake Sullivan'], comment:'Lifting precast panels to the upper levels.' },
+  { code:'MAG-009', ops:['Jake Sullivan'], faultDays:[0],
+    fault:{match:'Load moment indicator', sev:'Critical — do not operate', desc:'LMI reads zero under a known test load — not safe to lift. Out-of-service tag fitted and supervisor notified.'} },
+  { code:'TLH-003', ops:['Daniel Byrne','Conor Foley'] },
+  { code:'TRK-006', ops:['Anthony Walsh'], faultDays:[2,1,0],
+    fault:{match:'Reversing alarm', sev:'Minor — still usable', desc:'Reversing camera cuts out intermittently; reversing alarm works fine. Using a spotter when reversing until it is repaired (work order raised).'} },
+  { code:'GEN-005', ops:['Daniel Byrne'] },
+  { code:'LT-013', ops:['Daniel Byrne'] },
+  { code:'EWP-018', ops:['Daniel Byrne'], faultDays:[3,2,1,0],
+    fault:{match:'Beacon, horn', sev:'Minor — still usable', desc:'Amber flashing beacon globe blown. Horn and movement alarms all work — fine for daytime use. Known issue, work order raised, awaiting a replacement globe.'} },
+  { code:'EWP-019', ops:['Daniel Byrne'] },
+  { code:'BUS-021', ops:['Anthony Walsh'], comment:'Crew transport run — all good.' },
+  { code:'UTE-022', ops:['Anthony Walsh'] },
+  { code:'CRN-011', ops:['Jake Sullivan'] },
+  { code:'TLH-012', ops:['Kevin Ryan'] },
+  { code:'GEN-016', ops:['Kevin Ryan'] },
+  { code:'LT-014', ops:['Aaron Quinn'] }
 ];
-function _seedBuildRecord(s){
-  var a=ASSETS.find(function(x){return x.code===s.code;}); if(!a) return null;
+function _seedBuildRecord(code, worker, daysAgo, faultObj, comment){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return null;
   var list=checklistFor(a);
   var km = svcMeter(a)&&svcMeter(a).meter==='km';
-  var fm=s.faults||[], faultsCount=0, critical=false;
+  var faultsCount=0, critical=false;
   var items=list.map(function(it){
-    var f=null;
-    for(var i=0;i<fm.length;i++){ if(it.q.toLowerCase().indexOf(fm[i].match.toLowerCase())>-1){ f=fm[i]; break; } }
+    var f = (faultObj && it.q.toLowerCase().indexOf(faultObj.match.toLowerCase())>-1) ? faultObj : null;
     var status=f?'f':'p', sev='', desc='';
     if(f){ faultsCount++; sev=f.sev||'Minor — still usable'; desc=f.desc||''; if(it.crit || /Critical/.test(sev)) critical=true; }
     var info='', inf=_itemInfo(it);
     if(inf && status==='p'){ info = inf.past ? iso(dOffset(-30)) : iso(dOffset(150)); }
     return { q:it.q, cat:it.cat||'', status:status, sev:sev, desc:desc, info:info, photo:'' };
   });
-  var reading = km ? ((plantDetails(a.code).km||0)+(s.add||6)) : ((a.hours||0)+(s.add||4));
-  return { code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:s.worker,
-    when:new Date(Date.now()-((s.daysAgo||0)*86400000)-(2*3600000)), reading:reading, meter:(km?'km':'hrs'),
-    faults:faultsCount, critical:critical, needsFFW:(a.required&&a.required.length>0), comments:s.comments||'', items:items };
+  var base = km ? (plantDetails(a.code).km||0) : (a.hours||0);
+  var reading = Math.max(0, base - daysAgo*(km?38:5)); // older pre-starts read a little lower
+  return { code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:worker,
+    when:new Date(Date.now()-(daysAgo*86400000)-(2*3600000)-(daysAgo*1500000)), reading:reading, meter:(km?'km':'hrs'),
+    faults:faultsCount, critical:critical, needsFFW:(a.required&&a.required.length>0), comments:(daysAgo===0?(comment||''):''), items:items };
 }
 function seedDemoPlant(){
   try{
     if(localStorage.getItem('slan_plant_seed')===DEMO_SEED_VERSION) return;
     ['slan_plant_records','slan_plant_wos','slan_plant_alerts','slan_plant_iteminfo'].forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
     var woNum=43;
-    DEMO_PRESTARTS.forEach(function(s){
-      var rec=_seedBuildRecord(s); if(!rec) return;
-      _savePlantRecord(rec);
-      if(rec.faults>0){
-        var a=ASSETS.find(function(x){return x.code===s.code;});
-        var fnames=rec.items.filter(function(it){return it.status==='f';}).map(function(it){return it.q;});
-        var fs=fnames.slice(0,2).join(', ')+(fnames.length>2?' +'+(fnames.length-2)+' more':'');
-        var rel=(!s.daysAgo||s.daysAgo<=0)?'today':(s.daysAgo+' day'+(s.daysAgo>1?'s':'')+' ago');
-        _saveWO({wo:'WO-2026-'+('000'+(woNum++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:fs, priority:rec.critical?'High':'Medium', status:'Raised', raised:rel+' · '+s.worker});
-        _setPlantAlert(a, fs, rec.critical);
+    DEMO_FLEET.forEach(function(m){
+      var a=ASSETS.find(function(x){return x.code===m.code;}); if(!a) return;
+      var faultDays=m.faultDays||[], critical=false;
+      for(var d=DEMO_DAYS-1; d>=0; d--){ // oldest first so today ends up newest
+        var hasFault=faultDays.indexOf(d)>-1;
+        var op=m.ops[(DEMO_DAYS-1-d) % m.ops.length];
+        var rec=_seedBuildRecord(m.code, op, d, hasFault?m.fault:null, m.comment);
+        if(rec){ _savePlantRecord(rec); if(rec.critical) critical=true; }
+      }
+      if(faultDays.length){
+        var earliest=Math.max.apply(null,faultDays);
+        var ftext=''; var list=checklistFor(a);
+        for(var i=0;i<list.length;i++){ if(list[i].q.toLowerCase().indexOf(m.fault.match.toLowerCase())>-1){ ftext=list[i].q; break; } }
+        var rel=(earliest<=0)?'today':(earliest+' day'+(earliest>1?'s':'')+' ago');
+        _saveWO({wo:'WO-2026-'+('000'+(woNum++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:ftext, priority:critical?'High':'Medium', status:'Raised', raised:rel+' · '+m.ops[0]});
+        _setPlantAlert(a, ftext, critical);
       }
     });
     localStorage.setItem('slan_plant_seed', DEMO_SEED_VERSION);
@@ -972,6 +977,12 @@ function plantViewSavedPDF(code){
   var r=_loadPlantRecord(code);
   if(!r){ slanMsg('No record on this device','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">No pre-start has been submitted for <b>'+code+'</b> on this device yet. Once an operator submits one, it will appear here.</div>'); return; }
   openPdfDoc(plantPrestartPDF(r), 'Prestart-'+code+'.pdf');
+}
+function plantViewSavedRecordById(id){
+  if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; }
+  var r=_loadRecordById(id);
+  if(!r){ slanMsg('No record','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">That pre-start record could not be found.</div>'); return; }
+  openPdfDoc(plantPrestartPDF(r), 'Prestart-'+r.code+'-'+iso(r.when)+'.pdf');
 }
 var WORKORDERS=[
   {wo:'WO-2026-0041', code:'CRN-011', machine:'Tadano GR-250 City Crane', fault:'Hydraulic leak at slew ring — flagged on a pre-start', priority:'High', status:'Raised', raised:"today · Lee O'Brien"},
@@ -1216,7 +1227,7 @@ function renderOversight(){
       return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:'+(_isOut(a)?'#A32D2D':'#A06000')+'">'+assetSite(a.code)+' · '+reason+'</div></div><div class="chev">›</div></button>';
     }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All machines ready.</div></div></div>';
     var blocked=(oversightSite==='All')?3:1;
-    var savedRecs=_allPlantRecords().filter(function(r){ return siteMatch(r.code); });
+    var savedRecs=_latestPerMachine(_allPlantRecords().filter(function(r){ return siteMatch(r.code); }));
     var recFeed=savedRecs.length?savedRecs.map(function(r){
       var o=_recOutcome(r);
       var ai=ASSETS.map(function(x){return x.code;}).indexOf(r.code);
