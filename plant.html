@@ -1448,9 +1448,21 @@ var PREMOB_PARTC=['Logbook','Operators manual specific to make & model','Plant r
 var PREMOB_PARTA={
   ewp:['Design compliance plate fitted (AS1418.10)','Fire extinguisher min 4.5kg (ABE) tagged & tested within 6 months','Flashing amber beacon visible 360°','Reverse alarm (beep or squawk)','Lockable battery isolation switch with decal','Emergency stop (with decal) on upper & lower levels','Guarding (lockable door / limit switch / guards over parts)','Safety signage in place for pinch points','Safe access onto equipment','Basket/platform with handrails on all sides','Kick plates around all edges of platform','Designated harness anchor points (undamaged & labelled)','Gate/drop bar self-closes & held by latch or spring','SWL marked clearly on platform & compliance plate','Max allowable side force marked on platform','Max allowable chassis inclination marked','Wind rating marked on platform','All controls/instruments (platform & ground) labelled','Dead-man functions integral to controls','Electrical hazard no-go zone decal fitted'],
   telehandler:['FOPS fitted & certified (placard with serial)','ROPS fitted & certified (placard with serial)','Design compliance plate fitted (AS1418.19)','Fire extinguisher min 4.5kg (ABE) tagged & tested within 6 months','In-cabin extinguisher min 1kg (ABE) tagged & tested within 6 months','Flashing amber beacon visible 360°','Reverse alarm (beep or squawk)','Load chart displayed within cabin','Lockable battery isolation switch with decal','Emergency stop (with decal) accessible from outside','Seatbelt fitted & operational','UHF radio fitted & operational','Wheel chocks with carrying mounts','Load management system (LMS) — calibrated','External boom angle indicator','Lateral slope indicator','Longitudinal stability indicator & limiter','Overload override mechanism (60-sec reset)','Attachments supplied with individual load charts & compliance plate','Attachments positively secured (chain & self-locking hook)'],
+  crane:['Design compliance plate fitted (AS1418.5)','Fire extinguisher min 4.5kg (ABE) tagged & tested within 6 months','Flashing amber beacon visible 360°','Reverse alarm (beep or squawk)','Lockable battery isolation switch with decal','Emergency stop accessible & labelled','Rated capacity / load moment indicator (LMI) tested','Anti two-block device fitted & working','Load chart displayed in cab','Hook fitted with operating safety latch','Wire rope & terminations free from defects','Outriggers, pads & float plates present','Swing-radius / crush-zone signage in place','FOPS/ROPS & seatbelt fitted','Boom angle & length indicators working'],
+  generator:['Compliance / data plate fitted','Fire extinguisher tagged & tested within 6 months','Earth-leakage (RCD) protection on all outlets','Output sockets & leads tested & tagged (within date)','Emergency stop accessible & labelled','Lockable isolation / battery isolator','Guarding over moving & hot parts (fan, belts, exhaust)','Exhaust in good order / spark arrestor where required','Fuel tank bunded — no leaks, spill kit available','Earth stake / bonding point provided','Certified lifting points / forklift pockets','Doors & panels secure; sound-attenuated canopy intact'],
+  lighting:['Compliance / data plate fitted','RCD protection on outlets','Leads & outlets tested & tagged','Lockable isolation switch','Guarding over moving / hot parts','Mast raises, lowers & locks correctly','Outriggers / stabilisers present & functional','Fuel tank bunded — no leaks','Lamps & lenses intact','Tow coupling & road lights working'],
+  vehicle:['Registration current & plates fitted','Seatbelts fitted & operational (all seats)','Reverse alarm and/or reversing camera working','Flashing amber beacon (site requirement)','Fire extinguisher tagged & tested','First aid kit on board','Tyres in good condition & within wear limits','All lights, indicators & horn working','Mirrors & windscreen undamaged','Load restraint equipment provided (where applicable)'],
   generic:['Compliance/design plate fitted','Fire extinguisher tagged & tested within 6 months','Flashing amber beacon visible 360°','Reverse alarm (beep or squawk)','Lockable battery isolation switch with decal','Emergency stop accessible & labelled','Guarding in place over moving parts','Safety signage for pinch points & SWL','Safe access onto equipment','All controls/instruments clearly labelled']
 };
-function _premobPartA(a){ var t=(a.type||'').toLowerCase(); if(t.indexOf('ewp')>-1) return PREMOB_PARTA.ewp; if(t.indexOf('telehandler')>-1||t.indexOf('magni')>-1) return PREMOB_PARTA.telehandler; return PREMOB_PARTA.generic; }
+function _premobPartA(a){ var t=(a.type||'').toLowerCase();
+  if(t.indexOf('ewp')>-1) return PREMOB_PARTA.ewp;
+  if(t.indexOf('telehandler')>-1||t.indexOf('magni')>-1) return PREMOB_PARTA.telehandler;
+  if(t.indexOf('crane')>-1) return PREMOB_PARTA.crane;
+  if(t.indexOf('generator')>-1) return PREMOB_PARTA.generator;
+  if(t.indexOf('lighting')>-1) return PREMOB_PARTA.lighting;
+  if(t.indexOf('truck')>-1||t.indexOf('bus')>-1||t.indexOf('ute')>-1) return PREMOB_PARTA.vehicle;
+  return PREMOB_PARTA.generic;
+}
 function _premobTick(on){ return '<span style="display:inline-block;width:22px;text-align:center;color:'+(on?'#1B6E3A':'#C7CFC9')+';font-weight:800">'+(on?'✓':'–')+'</span>'; }
 var PREMOB_REASONS=['','Missing / not supplied','Not fitted','Damaged','No tag / not tested','Expired / out of date','Not working','Other (note to supplier)'];
 function _premobSection(title, partKey, items, supplierOn, code, editable){
@@ -1581,6 +1593,7 @@ function plantPremobOpen(code){
     _premobSection('Part B — Condition of plant & equipment', 'B', PREMOB_PARTB, ownerOn, code, editable)+
     _premobSection('Part C — Compliance documentation', 'C', PREMOB_PARTC, ownerOn, code, editable)+
     siteActions + decl+
+    ((s.flagged||s.cleared) ? '<button class="btn-ghost" onclick="plantPremobViewPDF(\''+code+'\')" style="margin-top:10px;width:100%">⬇ Download / send to supplier (PDF)</button>' : '')+
     '<div style="height:24px"></div>'+
   '</div>';
   showDetail(html);
@@ -1624,6 +1637,64 @@ function premobFlag(code){
   if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:40px">⚠️</div><div style="font-size:15px;font-weight:800;color:#A32D2D;margin-top:6px">Issue flagged</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — the supervisor has been notified. Send the form &amp; arrival photos back to the hire company.</div></div>');
 }
 function premobUnflag(code){ _premobSaveState(code, { flagged:false, flag_note:'' }); plantPremobOpen(code); }
+/* §6 — completed pre-mob as a PDF (to download / send back to the hire company) */
+function plantPremobViewPDF(code){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(plantPremobPDF(code), 'PreMob-'+code+'.pdf'); }
+function plantPremobPDF(code){
+  var a=ASSETS.find(function(x){return x.code===code;});
+  var s=_premobState(code), dt=plantDetails(code), st=_premobStatus(code);
+  var doc=new window.jspdf.jsPDF('p','mm','a4');
+  var W=210, M=14, GOLD=[184,150,12], GREEN=[44,107,94]; var y=16;
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Pre-Mobilisation Checklist', M, y);
+  if(typeof SLAN_LOGO_B64!=='undefined' && SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, 3, 34, 14); }catch(e){} }
+  y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=8;
+  doc.setFontSize(9);
+  function kv(k,v){ doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.text(k, M, y); doc.setFont('helvetica','normal'); doc.setTextColor(35,35,35); doc.text(String(v), M+36, y); y+=5.6; }
+  kv('Asset / reg:', a.code+(dt.rego?(' · '+dt.rego):''));
+  kv('Description:', a.type+' · '+a.make+' '+a.model);
+  kv('Supplier / owner:', isHired(code)?hireInfo(code).supplier:'Owned (company fleet)');
+  kv('Project / site:', assetSite(code));
+  kv('Hours / km:', (a.hours?a.hours.toLocaleString()+' hrs':(dt.km?dt.km.toLocaleString()+' km':'—')));
+  kv('Status:', st.label);
+  y+=2;
+  function bar(t){ if(y>270){doc.addPage();y=16;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=10.5; doc.setTextColor(40,40,40); doc.setFont('helvetica','normal'); }
+  var si=s.site_items||{}, rs=s.site_item_reasons||{};
+  function part(title, items, partKey){
+    bar(title);
+    items.forEach(function(it,i){
+      if(y>278){doc.addPage();y=16;}
+      var key=partKey+i, v=si[key]||(s.site_done?'ok':'');
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.4); doc.setTextColor(40,40,40);
+      var qLine=doc.splitTextToSize(it, W-2*M-34); doc.text(qLine, M, y);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.6);
+      doc.setTextColor(110,110,110); doc.text('Sup '+(s.supplier_done?'Y':'–'), W-M-20, y);
+      var siteTxt=v==='ok'?'OK':(v==='no'?'NOT OK':'–');
+      if(v==='no'){ doc.setTextColor(163,45,45); } else if(v==='ok'){ doc.setTextColor(27,110,58); } else { doc.setTextColor(150,150,150); }
+      doc.text(siteTxt, W-M, y, {align:'right'});
+      y+=4.6*qLine.length;
+      if(v==='no' && rs[key]){ doc.setFont('helvetica','normal'); doc.setTextColor(150,45,45); doc.setFontSize(7.6); var r=doc.splitTextToSize('   ↳ '+rs[key], W-2*M-6); doc.text(r, M+4, y); y+=4.2*r.length; doc.setTextColor(40,40,40); }
+      y+=1.4;
+    });
+    y+=2;
+  }
+  part('Part A — Minimum requirements ('+a.type+')', _premobPartA(a), 'A');
+  part('Part B — Condition of plant & equipment', PREMOB_PARTB, 'B');
+  part('Part C — Compliance documentation', PREMOB_PARTC, 'C');
+  if(s.photos && s.photos.length){ if(y>262){doc.addPage();y=16;} bar('Arrival photos ('+s.photos.length+')'); doc.setFontSize(8.4); doc.setTextColor(40,40,40); s.photos.forEach(function(n){ if(y>284){doc.addPage();y=16;} doc.text('•  '+n, M, y); y+=4.8; }); y+=2; }
+  if(s.flagged && s.flag_note){ if(y>258){doc.addPage();y=16;} bar('Defects flagged to supplier'); doc.setFontSize(8.8); doc.setTextColor(150,45,45); var f=doc.splitTextToSize(s.flag_note, W-2*M); doc.text(f, M, y); y+=4.8*f.length+3; doc.setTextColor(40,40,40); }
+  if(y>250){doc.addPage();y=16;}
+  bar('Declaration & signatures');
+  doc.setFontSize(8.6); doc.setTextColor(40,40,40); doc.text('I declare that this machine is in a safe condition, free from defect and fit for purpose.', M, y); y+=9;
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('SUPPLIER / OWNER', M, y); doc.text('SITE (TICKETED OPERATOR)', W/2+6, y); y+=7;
+  doc.setFont('times','italic'); doc.setFontSize(16); doc.setTextColor(27,58,45);
+  if(s.supplier_done) doc.text(isHired(code)?'M. Reilly':'P. Doherty', M, y);
+  if(s.site_done||s.flagged) doc.text(s.site_assignee||'Site', W/2+6, y);
+  y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120);
+  doc.text(isHired(code)?hireInfo(code).supplier:'Murphy Civil Construction', M, y);
+  doc.text(s.site_done?'Accepted on arrival':(s.flagged?'Defects noted — sent back':'—'), W/2+6, y);
+  var pages=doc.internal.getNumberOfPages();
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-012 · Plant Pre-Mobilisation · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
+  return doc;
+}
 function premobComplete(code){
   _premobSaveState(code, { site_done:true, cleared:true, flagged:false, site_at:new Date().toISOString() });
   if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">'+code+' cleared for use</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">On-site check complete and signed off. It now sits with your in-service plant under the <b>Cleared</b> tab and its machine page.</div></div>', function(){ premobSub='cleared'; renderOversight(); });
