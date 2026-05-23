@@ -17146,8 +17146,9 @@ function supUpdatePlantApprovalsChip(){
 // "Pre-starts done" pill on the SUPERVISOR home — how many machines completed a pre-start today
 function supUpdatePlantPrestartChip(){
   var recs=[]; try{ recs=JSON.parse(localStorage.getItem('slan_plant_records')||'[]'); if(!Array.isArray(recs)) recs=[]; }catch(e){}
+  var SUPSITE='Bondi Junction Mixed Use'; // Eoin's site — count only his machines' pre-starts (max = his fleet size)
   var t=new Date(); t.setHours(0,0,0,0);
-  var codes={}; recs.forEach(function(r){ var d=new Date(r.when); if(!isNaN(d)&&d>=t) codes[r.code]=1; });
+  var codes={}; recs.forEach(function(r){ if(r.site && r.site!==SUPSITE) return; var d=new Date(r.when); if(!isNaN(d)&&d>=t) codes[r.code]=1; });
   var n=Object.keys(codes).length;
   var pill=document.getElementById('d-pill-plant-ps'), lbl=document.getElementById('d-pill-plant-ps-lbl');
   if(!pill) return;

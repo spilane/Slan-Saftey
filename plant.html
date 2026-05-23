@@ -1561,10 +1561,11 @@ function renderOversight(){
 function renderTodayPrestarts(){
   var supLocked=(getRole()==='supervisor');
   if(supLocked){ oversightSite = getSiteParam() || 'Bondi Junction Mixed Use'; }
-  // Match the supervisor "N pre-starts done" pill, which counts the whole fleet (all sites) — show every pre-start completed today.
+  // Scoped to the supervisor's site — a supervisor with N machines sees at most N pre-starts a day.
+  var siteMatch=function(code){ return oversightSite==='All' || assetSite(code)===oversightSite; };
   var t=new Date(); t.setHours(0,0,0,0);
-  var recs=_allPlantRecords().filter(function(r){ return r.when>=t; }); // today only, newest first
-  var fleet=ASSETS;
+  var recs=_allPlantRecords().filter(function(r){ return r.when>=t && siteMatch(r.code); }); // today only, this site, newest first
+  var fleet=ASSETS.filter(function(a){ return siteMatch(a.code); });
   var okN=recs.filter(function(r){ return !r.faults; }).length;
   var issueN=recs.length-okN;
   var dateStr=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -1584,7 +1585,7 @@ function renderTodayPrestarts(){
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="renderOversight()">‹ Back to dashboard</button>'+
     '<div class="h1">Today&rsquo;s pre-starts</div>'+
-    '<div class="sub">'+dateStr+'</div>'+
+    '<div class="sub">'+dateStr+' · '+(oversightSite==='All'?'all sites':oversightSite)+'</div>'+
     summary+
     '<div class="tile">'+rows+'</div>'+
     '<div style="font-size:11px;color:var(--t3);text-align:center;margin-top:12px">Shows only today&rsquo;s completed pre-starts · tap any to open its PDF record</div>'+
