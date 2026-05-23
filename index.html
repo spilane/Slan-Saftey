@@ -1953,7 +1953,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="sp-plant" onclick="workerChipTapPlant()" style="display:none">
         <div class="sp-dot sp-pending"></div><span id="sp-plant-lbl">Plant</span>
       </div>
-      <div class="status-pill" id="sp-plant-appr" onclick="workerChipTapPlant()" style="display:none">
+      <div class="status-pill" id="sp-plant-appr" onclick="workerChipTapApproval()" style="display:none">
         <div class="sp-dot sp-pending"></div><span id="sp-plant-appr-lbl">Pre-start approval</span>
       </div>
     </div>
@@ -17061,13 +17061,30 @@ function supUpdatePlantChip() {
     else { sub.textContent = 'Machines, pre-starts & service'; sub.style.color = ''; sub.style.fontWeight = ''; if (tile) tile.style.borderColor = ''; }
   }
 }
-function workerChipTapPlant() { location.href = 'plant.html'; }
+function workerChipTapPlant() {
+  // Shortcut: if exactly one machine is flagged, jump straight to it and into the pre-start.
+  var alerts = [];
+  try { alerts = JSON.parse(localStorage.getItem('slan_plant_alerts') || '[]'); } catch(e) {}
+  if (alerts.length === 1 && alerts[0].code) { location.href = 'plant.html?machine=' + encodeURIComponent(alerts[0].code) + '&start=1'; return; }
+  location.href = 'plant.html';
+}
+// Worker "pre-start approval" pill — jump to the machine awaiting/decided so they can act on it
+function workerChipTapApproval() {
+  var all = _plantApprovalsLoad();
+  var pending = all.filter(function(x){ return x.status==='pending'; });
+  var decided = all.filter(function(x){ return x.status==='approved'||x.status==='rejected'; }).sort(function(a,b){ return new Date(b.decided_at||0)-new Date(a.decided_at||0); });
+  var code = (pending[0] && pending[0].code) || (decided[0] && decided[0].code);
+  if (code) { location.href = 'plant.html?machine=' + encodeURIComponent(code) + '&start=1'; return; }
+  location.href = 'plant.html';
+}
 /* ── Plant pre-start approvals — reviewed inside the WHS app, mirrors the permit flow ── */
 function _plantApprovalsLoad(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_approvals')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function _plantApprovalsSave(arr){ try{ localStorage.setItem('slan_plant_approvals', JSON.stringify(arr)); }catch(e){} }
 function _plantAlertsRead(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_alerts')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 var _plantCurrentApproval=null;
 function supChipOpenPlantPage(){ window.open('plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use','_blank'); }
+// Open a specific flagged machine in Plant & Equipment (supervisor view) instead of just the dashboard
+function supOpenPlantMachine(code){ window.open('plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&machine='+encodeURIComponent(code),'_blank'); }
 function openPlantApprovals(){
   goTo('screen-plant-approvals');
   var pending=_plantApprovalsLoad().filter(function(x){return x.status==='pending';});
@@ -17080,7 +17097,7 @@ function openPlantApprovals(){
   }
   if(alerts.length){
     body += '<div style="font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin:20px 0 8px">Flagged machines</div>';
-    body += alerts.map(function(al){ return '<div onclick="supChipOpenPlantPage()" style="background:var(--card);border:1px solid var(--border);border-left:4px solid '+(al.critical?'#A32D2D':'#BA7517')+';border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer"><div style="font-weight:700;color:var(--text);font-size:14px">'+al.code+(al.critical?' — OUT OF SERVICE':'')+'</div><div style="font-size:12.5px;color:var(--muted);margin-top:4px">'+(al.fault||'Fault flagged')+'</div></div>'; }).join('');
+    body += alerts.map(function(al){ return '<div onclick="supOpenPlantMachine(\''+al.code+'\')" style="background:var(--card);border:1px solid var(--border);border-left:4px solid '+(al.critical?'#A32D2D':'#BA7517')+';border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer"><div style="font-weight:700;color:var(--text);font-size:14px">'+al.code+(al.critical?' — OUT OF SERVICE':'')+'</div><div style="font-size:12.5px;color:var(--muted);margin-top:4px">'+(al.fault||'Fault flagged')+'</div></div>'; }).join('');
     body += '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">Tap a machine to open it in Plant &amp; Equipment.</div>';
   }
   document.getElementById('plant-approvals-body').innerHTML=body;

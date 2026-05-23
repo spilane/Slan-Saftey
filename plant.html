@@ -294,13 +294,7 @@ var WORKERS=[
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
               {cls:'crane',expiry:iso(dOffset(420)),verified:true},
               {cls:'telehandler',expiry:iso(dOffset(380)),verified:true} ],
-    voc:[ {cls:'crane',make:'Franna',model:'AT-40'}, {cls:'crane',make:'Tadano',model:'GR-250'}, {cls:'telehandler',make:'Magni',model:'RTH 6.46'} ], swms_signed:iso(dOffset(-44)), ra_signed:iso(dOffset(-8)) },
-  { id:'w3', name:'Anthony Walsh', trade:'Driver · Walsh Logistics', induction_expiry:iso(dOffset(200)),
-    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'truck_hr',expiry:iso(dOffset(330)),verified:true} ], voc:[], swms_signed:iso(dOffset(-6)), ra_signed:iso(dOffset(-6)) },
-  { id:'w4', name:'Conor Foley', trade:'Plant Operator · Foley Excavation', induction_expiry:iso(dOffset(150)),
-    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'telehandler',expiry:iso(dOffset(-25)),verified:true} ], voc:[], swms_signed:iso(dOffset(-9)), ra_signed:iso(dOffset(-55)) }
+    voc:[ {cls:'crane',make:'Franna',model:'AT-40'}, {cls:'crane',make:'Tadano',model:'GR-250'}, {cls:'telehandler',make:'Magni',model:'RTH 6.46'} ], swms_signed:iso(dOffset(-44)), ra_signed:iso(dOffset(-8)) }
 ];
 
 /* ---------- ASSETS ---------- */
@@ -1621,10 +1615,13 @@ try{
 renderAssets();
 (function(){
   var tm=/[?&]tab=([a-z]+)/.exec(location.search); if(tm){ platTab=tm[1]; }
-  // QR deep-link: plant.html?machine=EXC-001 opens straight to that machine's hub
+  // QR / shortcut deep-link: plant.html?machine=EWP-018 opens straight to that machine's hub.
+  // Add &start=1 (used by the worker's "flagged machine" shortcut pills) to go straight into the pre-start.
   var m=/[?&]machine=([^&]+)/.exec(location.search);
   var code=m?decodeURIComponent(m[1]).toUpperCase():null;
-  if(code){ var idx=-1; ASSETS.forEach(function(a,i){ if(a.code===code) idx=i; }); if(idx>-1){ openHub(idx); return; } }
+  if(code){ var idx=-1; ASSETS.forEach(function(a,i){ if(a.code===code) idx=i; }); if(idx>-1){ openHub(idx);
+    if(/[?&]start=1/.test(location.search) && getRole()==='worker'){ try{ openGate(); }catch(e){} }
+    return; } }
   if(['manager','supervisor','director'].indexOf(getRole())>-1) renderOversight();
 })();
 </script>
