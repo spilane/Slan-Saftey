@@ -1152,6 +1152,36 @@ var RA_GENERIC=[
   {h:'Manual handling (access/egress, attachments)', r:'Musculoskeletal strain', c:'Maintain 3 points of contact; mechanical aids for heavy attachments; team lift; training', res:'Low'}
 ];
 function _raFor(a){ return (RA_SPECIFIC[_raCat(a)]||[]).concat(RA_GENERIC); }
+function _raRefs(a){
+  var refs=['WHS Act 2011 (NSW) — primary duty of care, s.19','WHS Regulation 2017 — Chapter 5 Plant & structures (reg 203–228); reg 213 pre-start hazard ID','Code of Practice — Managing the risks of plant in the workplace (Safe Work Australia)','Code of Practice — How to manage work health & safety risks'];
+  var as={
+    crane:['AS 2550.1 Cranes — safe use','AS 1418.1 / 1418.5 Cranes, hoists & winches','AS 2550.5 Mobile & vehicle-loading cranes'],
+    telehandler:['AS 2550.1 Cranes/telehandlers — safe use','AS 1418.19 Telehandlers'],
+    ewp:['AS 2550.10 / AS/NZS 1418.10 — Elevating Work Platforms, safe use','EWPA / SafeWork EWP operator guidance'],
+    truck:['Heavy Vehicle National Law — load restraint','National Transport Commission Load Restraint Guide'],
+    vehicle:['Road Transport Act 2013 (NSW)','Light-vehicle daily inspection requirements'],
+    generator:['AS/NZS 3012 — Electrical installations: construction & demolition sites','AS/NZS 3760 — In-service inspection & testing of electrical equipment (test & tag)'],
+    lighting:['AS/NZS 3012 — Electrical, construction sites','AS 4602.1 — High-visibility safety garments / site lighting guidance']
+  };
+  return refs.concat(as[_raCat(a)]||[]);
+}
+function _raPPE(a){
+  var ppe=['Hard hat','Hi-vis clothing','Safety boots','Safety glasses','Gloves','Hearing protection where noise exceeds 85 dB(A)'];
+  var c=_raCat(a);
+  if(c==='ewp') ppe.push('Full-body harness & lanyard to a rated anchor (boom-type EWP)');
+  if(c==='crane'||c==='telehandler') ppe.push('Tag lines for load control');
+  return ppe;
+}
+function _raComp(a){
+  var t=a.type;
+  if(/Crane|Magni/.test(t)) return 'High-Risk Work Licence (relevant crane class), dogging/rigging as required, and a verification of competency (VOC) for this machine.';
+  if(t==='Telehandler') return 'Telehandler / load-shifting competency and a VOC for this machine.';
+  if(t==='EWP') return 'EWP licence (WP — boom over 11 m) or Yellow Card / EWPA operator training, plus a VOC.';
+  if(t==='Truck') return 'Appropriate heavy-vehicle licence (e.g. HR) for the class.';
+  if(t==='Bus') return 'Driver licence appropriate to the seating capacity (LR if more than 12 adults).';
+  if(t==='Ute') return 'Current car (class C) driver licence.';
+  return 'Site induction, plant pre-start competency and a verification of competency (VOC).';
+}
 function plantRiskPDF(a){
   var doc=new window.jspdf.jsPDF('p','mm','a4');
   var W=210,M=14,GOLD=[184,150,12],GREEN=[44,107,94]; var y=16;
@@ -1170,6 +1200,8 @@ function plantRiskPDF(a){
   y+=2;
   function bar(t){ if(y>266){doc.addPage();y=16;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=10.5; doc.setTextColor(40,40,40); doc.setFont('helvetica','normal'); }
   bar('Hazards & controls');
+  doc.setFont('helvetica','italic'); doc.setFontSize(7.8); doc.setTextColor(110,110,110);
+  doc.text('Risk = Likelihood × Consequence (Safe Work Australia matrix). Controls follow the hierarchy of control. Initial = before controls; Residual = with the controls in place.', M, y, {maxWidth:W-2*M}); y+=8; doc.setFont('helvetica','normal');
   _raFor(a).forEach(function(hz,i){
     doc.setFontSize(9);
     var hLine=doc.splitTextToSize((i+1)+'.  '+hz.h, W-2*M);
@@ -1180,9 +1212,25 @@ function plantRiskPDF(a){
     doc.setFont('helvetica','bold'); doc.setTextColor(27,58,45); doc.text(hLine, M, y); y+=4.8*hLine.length;
     doc.setFont('helvetica','normal'); doc.setFontSize(8.4); doc.setTextColor(120,60,60); doc.text(rLine, M+4, y); y+=4.4*rLine.length;
     doc.setTextColor(45,45,45); doc.text(cLine, M+4, y); y+=4.4*cLine.length;
+    var initR = /Med/.test(hz.res)?'Extreme':(/High/.test(hz.res)?'Extreme':'High');
     var rc = /High/.test(hz.res)?[163,45,45]:(/Med/.test(hz.res)?[160,96,0]:[27,110,58]);
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(rc[0],rc[1],rc[2]); doc.text('Residual risk: '+hz.res, M+4, y); y+=6.5;
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('Initial risk: '+initR+'  →  ', M+4, y); doc.setTextColor(rc[0],rc[1],rc[2]); doc.text('Residual (with controls): '+hz.res, M+44, y); y+=6.5;
   });
+  // legislation & standards
+  if(y>248){doc.addPage();y=16;}
+  bar('Legislation & standards'); doc.setFontSize(8.4); doc.setFont('helvetica','normal'); doc.setTextColor(45,45,45);
+  _raRefs(a).forEach(function(t){ var dl=doc.splitTextToSize('• '+t, W-2*M-4); if(y+4.4*dl.length>284){doc.addPage();y=16;} doc.text(dl, M+4, y); y+=4.4*dl.length+0.8; });
+  y+=2;
+  // PPE & competency
+  if(y>250){doc.addPage();y=16;}
+  bar('PPE & competency required'); doc.setFontSize(8.6); doc.setTextColor(45,45,45);
+  doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.text('PPE:', M, y); doc.setFont('helvetica','normal'); doc.setTextColor(45,45,45); var ppe=doc.splitTextToSize(_raPPE(a).join(' · '), W-2*M-13); doc.text(ppe, M+13, y); y+=4.6*ppe.length+2;
+  doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.text('Operator:', M, y); doc.setFont('helvetica','normal'); doc.setTextColor(45,45,45); var comp=doc.splitTextToSize(_raComp(a), W-2*M-20); doc.text(comp, M+20, y); y+=4.6*comp.length+3;
+  // emergency
+  if(y>252){doc.addPage();y=16;}
+  bar('Emergency response'); doc.setFontSize(8.6); doc.setFont('helvetica','normal'); doc.setTextColor(45,45,45);
+  var em=doc.splitTextToSize('In an emergency: stop the machine and make the area safe; raise the alarm and call 000 if anyone is injured; notify the site supervisor and first-aider. Do not operate damaged plant — tag it out and report it. Keep the SWMS and rescue plan with the machine for work at height or near live services.', W-2*M);
+  doc.text(em, M, y); y+=4.6*em.length+5;
   if(y>250){doc.addPage();y=16;}
   bar('Assessment & sign-off');
   doc.setFontSize(8.6); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40);
