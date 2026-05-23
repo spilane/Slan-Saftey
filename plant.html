@@ -1461,12 +1461,8 @@ function _premobSection(title, partKey, items, supplierOn, code, editable){
     var siteCell = editable
       ? '<button id="pmc-'+key+'" onclick="premobToggleItem(\''+code+'\',\''+key+'\')" style="width:32px;height:28px;border:1.5px solid '+col+';border-radius:6px;background:'+bg+';color:'+col+';font-weight:800;cursor:pointer;font-family:inherit;font-size:14px;line-height:1">'+sym+'</button>'
       : '<span style="color:'+col+';font-weight:800">'+sym+'</span>';
-    // When marked "not OK", show a reason dropdown (his form: items ticked No need a reason)
-    var reasonSel = (v==='no')
-      ? (editable
-          ? '<select onchange="premobSetReason(\''+code+'\',\''+key+'\',this.value)" style="margin-top:5px;width:100%;padding:6px 8px;border:1.5px solid #E2B4B4;border-radius:6px;font-size:11.5px;font-family:inherit;color:#A32D2D;background:#fff">'+PREMOB_REASONS.map(function(r){ return '<option value="'+r+'"'+(rs[key]===r?' selected':'')+'>'+(r||'Reason for “not OK”…')+'</option>'; }).join('')+'</select>'
-          : (rs[key]?'<div style="margin-top:4px;font-size:11px;color:#A32D2D;font-weight:600">⚠ '+rs[key]+'</div>':''))
-      : '';
+    // When marked "not OK", show the reason as text under the item (the dropdown to SET it lives in the section below the checklist)
+    var reasonSel = (v==='no' && rs[key]) ? '<div style="margin-top:4px;font-size:11px;color:#A32D2D;font-weight:600">⚠ '+rs[key]+'</div>' : '';
     return '<tr><td style="font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--border);line-height:1.4">'+it+reasonSel+'</td><td style="text-align:center;border-bottom:1px solid var(--border);vertical-align:top;padding-top:8px">'+_premobTick(supplierOn)+'</td><td style="text-align:center;border-bottom:1px solid var(--border);vertical-align:top;padding-top:6px">'+siteCell+'</td></tr>';
   }).join('');
   return '<div class="sec-h">'+title+'</div><div style="overflow-x:auto"><table class="reg"><thead><tr><th style="text-align:left">Item</th><th>Supplier</th><th>Site</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
@@ -1480,7 +1476,15 @@ function premobToggleItem(code,key){
   _premobSaveState(code,patch);
   var y=window.scrollY; plantPremobOpen(code); window.scrollTo(0,y); // re-render so the reason dropdown shows/hides, keep scroll position
 }
-function premobSetReason(code,key,val){ var st=_premobState(code), rs=Object.assign({}, st.site_item_reasons||{}); rs[key]=val; _premobSaveState(code,{ site_item_reasons:rs }); }
+function premobSetReason(code,key,val){ var st=_premobState(code), rs=Object.assign({}, st.site_item_reasons||{}); rs[key]=val; _premobSaveState(code,{ site_item_reasons:rs }); var y=window.scrollY; plantPremobOpen(code); window.scrollTo(0,y); }
+function _premobNoList(a){ var st=_premobState(a.code), si=st.site_items||{}; return _premobKeys(a).filter(function(k){ return si[k]==='no'; }).map(function(k){ var idx=parseInt(k.slice(1),10); var arr=(k.charAt(0)==='A'?_premobPartA(a):(k.charAt(0)==='B'?PREMOB_PARTB:PREMOB_PARTC)); return {key:k, item:arr[idx]}; }); }
+function _premobReasonsBlock(a, code){
+  var noList=_premobNoList(a); if(!noList.length) return '';
+  var rs=_premobState(code).site_item_reasons||{};
+  return '<div class="sec-h">Items marked “not OK” — give a reason</div><div class="tile" style="margin-bottom:14px">'+noList.map(function(x){
+    return '<div style="padding:9px 11px;border-bottom:1px solid var(--border)"><div style="font-size:12px;font-weight:700;color:#A32D2D;line-height:1.4">✗ '+x.item+'</div><select onchange="premobSetReason(\''+code+'\',\''+x.key+'\',this.value)" style="margin-top:6px;width:100%;padding:8px 10px;border:1.5px solid #E2B4B4;border-radius:8px;font-size:12.5px;font-family:inherit;color:#A32D2D;background:#fff;box-sizing:border-box">'+PREMOB_REASONS.map(function(r){ return '<option value="'+r+'"'+(rs[x.key]===r?' selected':'')+'>'+(r||'Reason for “not OK”…')+'</option>'; }).join('')+'</select></div>';
+  }).join('')+'</div>';
+}
 function _premobKeys(a){ var keys=[]; _premobPartA(a).forEach(function(_,i){keys.push('A'+i);}); PREMOB_PARTB.forEach(function(_,i){keys.push('B'+i);}); PREMOB_PARTC.forEach(function(_,i){keys.push('C'+i);}); return keys; }
 function premobMarkAllOk(code){ var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var si={}; _premobKeys(a).forEach(function(k){ si[k]='ok'; }); _premobSaveState(code,{ site_items:si }); plantPremobOpen(code); }
 function premobCompleteCheck(code){
@@ -1556,7 +1560,7 @@ function plantPremobOpen(code){
       siteBox='<div class="sec-h">On-site check — '+s.site_assignee+'</div><div style="font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.5"><b>'+s.site_assignee+'</b> (ticketed operator) ticks each item below as OK (✓) or not OK (✗) on arrival, adds photos, then clears it. Any “not OK” flags it back to the supplier.</div><button class="btn-ghost" onclick="premobMarkAllOk(\''+code+'\')">Mark all items OK</button>';
       var phs=(s.photos||[]);
       var photosList = phs.length ? ('<div class="tile" style="margin-bottom:10px">'+phs.map(function(n){ return '<div class="row" style="cursor:default"><div class="row-ic">📷</div><div class="row-main"><div class="row-s" style="word-break:break-all">'+n+'</div></div></div>'; }).join('')+'</div>') : '<div style="font-size:12px;color:var(--t3);margin:2px 0 10px">No arrival photos yet.</div>';
-      siteActions='<div class="sec-h">Arrival photos &amp; sign-off</div>'+photosList+
+      siteActions=_premobReasonsBlock(a, code)+'<div class="sec-h">Arrival photos &amp; sign-off</div>'+photosList+
         '<button class="btn-ghost" onclick="premobPhotoPick(\''+code+'\')" style="margin-bottom:12px">📷 Add arrival photos</button>'+
         '<input id="premob-photo-input" type="file" accept="image/*" multiple style="display:none" onchange="premobPhotoOnFile(this)">'+
         '<button class="cta" onclick="premobCompleteCheck(\''+code+'\')">✓ Complete on-site check &amp; clear machine</button>'+

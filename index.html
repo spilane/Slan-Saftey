@@ -17160,7 +17160,7 @@ function workerUpdatePremobChip(){
   if(pend){ pill.style.display=''; if(lbl) lbl.textContent=pend.code+' — pre-mob to complete'; setPillState('sp-premob','warn'); window._premobWorkerCode=pend.code; }
   else { pill.style.display='none'; window._premobWorkerCode=null; }
 }
-function workerChipTapPremob(){ location.href = window._premobWorkerCode ? ('plant.html?premob='+encodeURIComponent(window._premobWorkerCode)) : 'plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob'; }
+function workerChipTapPremob(){ location.href = window._premobWorkerCode ? ('plant.html?machine='+encodeURIComponent(window._premobWorkerCode)) : 'plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob'; }
 function supUpdatePremobChip(){
   var o=_premobIdx(), flagged=null, cleared=null, awaiting=0;
   Object.keys(o).forEach(function(code){ var s=o[code]; if(!s) return; if(s.flagged) flagged=flagged||code; else if(s.cleared) cleared=cleared||code; else if(s.site_assignee && !s.site_done) awaiting++; });
@@ -17176,7 +17176,8 @@ function supChipTapPremob(){
   Object.keys(o).forEach(function(code){ var s=o[code]; if(s&&s.flagged&&!target) target=code; }); // flagged first
   if(!target){ var aw=Object.keys(o).filter(function(code){ var s=o[code]; return s&&s.site_assignee&&!s.site_done&&!s.cleared; }); if(aw.length===1) target=aw[0]; }
   var base='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use';
-  window.open(target ? (base+'&premob='+encodeURIComponent(target)) : (base+'&tab=premob'), '_blank');
+  // Shortcut → open that machine's page directly (its page routes to the pre-mob form for uncleared hired plant)
+  window.open(target ? (base+'&machine='+encodeURIComponent(target)) : (base+'&tab=premob'), '_blank');
 }
 function supUpdatePlantChip() {
   var alerts = [];
