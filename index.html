@@ -13924,6 +13924,12 @@ function _applyMyTicket(t, expiry, name){
 }
 
 function myProfBackToHome() {
+  // If we arrived here from a Plant page avatar, go back to that exact plant page.
+  if (window.__whsProfileReturn) {
+    var u = window.__whsProfileReturn; window.__whsProfileReturn = null;
+    try { sessionStorage.removeItem('slan_whs_profile_return'); } catch(e) {}
+    location.href = u; return;
+  }
   const p = getProfile();
   if (p && p.role === 'Site Supervisor') { goTo('screen-dash'); return; }
   if (p && p.role === 'Company Director') { goToAnalytics('director'); return; }
@@ -16223,6 +16229,16 @@ document.addEventListener('DOMContentLoaded',()=>{
   try {
     var _pSwitch = /[?&]plantSwitch=([a-z]+)/.exec(location.search);
     if (_pSwitch && typeof plantDemoSwitch === 'function') { plantDemoSwitch(_pSwitch[1]); }
+  } catch(e) {}
+
+  // Tapping the avatar on a Plant page lands here (?profile=1) → open the same My Profile page;
+  // Back returns to the plant page they came from (remembered in sessionStorage).
+  try {
+    if (/[?&]profile=1/.test(location.search)) {
+      try { window.__whsProfileReturn = sessionStorage.getItem('slan_whs_profile_return'); } catch(e) { window.__whsProfileReturn = null; }
+      try { history.replaceState(null, '', location.pathname); } catch(e) {}
+      setTimeout(function() { try { if (typeof avatarTap === 'function') avatarTap(); } catch(e) {} }, 0);
+    }
   } catch(e) {}
 
   // iOS PWA reload guard: when iOS Safari evicts the WebView while the
