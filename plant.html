@@ -1473,9 +1473,12 @@ function _premobSection(title, partKey, items, supplierOn, code, editable){
     var siteCell = editable
       ? '<button id="pmc-'+key+'" onclick="premobToggleItem(\''+code+'\',\''+key+'\')" style="width:32px;height:28px;border:1.5px solid '+col+';border-radius:6px;background:'+bg+';color:'+col+';font-weight:800;cursor:pointer;font-family:inherit;font-size:14px;line-height:1">'+sym+'</button>'
       : '<span style="color:'+col+';font-weight:800">'+sym+'</span>';
-    // When marked "not OK", show the reason as text under the item (the dropdown to SET it lives in the section below the checklist)
-    var reasonSel = (v==='no' && rs[key]) ? '<div style="margin-top:4px;font-size:11px;color:#A32D2D;font-weight:600">⚠ '+rs[key]+'</div>' : '';
-    return '<tr><td style="font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--border);line-height:1.4">'+it+reasonSel+'</td><td style="text-align:center;border-bottom:1px solid var(--border);vertical-align:top;padding-top:8px">'+_premobTick(supplierOn)+'</td><td style="text-align:center;border-bottom:1px solid var(--border);vertical-align:top;padding-top:6px">'+siteCell+'</td></tr>';
+    // read-only reason text under the item (for cleared/flagged views)
+    var reasonTxt = (v==='no' && rs[key] && !editable) ? '<div style="margin-top:4px;font-size:11px;color:#A32D2D;font-weight:600">⚠ '+rs[key]+'</div>' : '';
+    var mainRow='<tr><td style="font-size:11.5px;padding:6px 8px;'+((editable&&v==='no')?'':'border-bottom:1px solid var(--border);')+'line-height:1.4">'+it+reasonTxt+'</td><td style="text-align:center;'+((editable&&v==='no')?'':'border-bottom:1px solid var(--border);')+'vertical-align:top;padding-top:8px">'+_premobTick(supplierOn)+'</td><td style="text-align:center;'+((editable&&v==='no')?'':'border-bottom:1px solid var(--border);')+'vertical-align:top;padding-top:6px">'+siteCell+'</td></tr>';
+    // editable + "not OK": a reason dropdown directly UNDER the item (full width)
+    var reasonRow = (editable && v==='no') ? '<tr><td colspan="3" style="padding:0 8px 9px;border-bottom:1px solid var(--border)"><select onchange="premobSetReason(\''+code+'\',\''+key+'\',this.value)" style="width:100%;padding:7px 10px;border:1.5px solid #E2B4B4;border-radius:7px;font-size:12px;font-family:inherit;color:#A32D2D;background:#fff;box-sizing:border-box">'+PREMOB_REASONS.map(function(r){ return '<option value="'+r+'"'+(rs[key]===r?' selected':'')+'>'+(r||'Reason for “not OK”…')+'</option>'; }).join('')+'</select></td></tr>' : '';
+    return mainRow + reasonRow;
   }).join('');
   return '<div class="sec-h">'+title+'</div><div style="overflow-x:auto"><table class="reg"><thead><tr><th style="text-align:left">Item</th><th>Supplier</th><th>Site</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
@@ -1527,10 +1530,11 @@ function plantPremobBody(fleet){
     var oc = cl ? ('openHub('+ASSETS.indexOf(a)+')') : ('plantPremobOpen(\''+a.code+'\')'); // cleared -> normal machine page; outstanding -> the pre-mob form
     return '<button class="row" onclick="'+oc+'"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+(hi?hi.supplier+' · ':'')+'<span style="color:'+st.col+';font-weight:700">'+st.label+'</span></div></div><div class="chev">›</div></button>';
   }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">'+(premobSub==='awaiting'?'Nothing awaiting clearance.':'No hired machines cleared yet.')+'</div></div></div>';
-  var intro='<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site. The <b>supplier</b> completes the checklist before delivery; a <b>ticketed operator on site</b> verifies, photographs and accepts it on arrival.</div></div>';
   var typeOpts=['EWP','Telehandler','Crane','Generator','Lighting tower','Truck / vehicle'];
-  var formsPicker='<div class="fcard"><div class="fcard-hdr">📄 Blank forms — send to a supplier</div><div class="fcard-body"><div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:8px">Hiring a new machine? Pick the type and download a blank pre-mob checklist to send the supplier before it comes to site.</div><div style="display:flex;gap:6px"><select id="premob-blank-type" style="flex:1;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff">'+typeOpts.map(function(t){return '<option>'+t+'</option>';}).join('')+'</select><button class="btn-amber" onclick="plantPremobBlankByType(document.getElementById(\'premob-blank-type\').value)" style="white-space:nowrap;padding:9px 14px">⬇ Blank form</button></div></div></div>';
-  return intro + formsPicker + tabs + '<div class="tile">'+rows+'</div>';
+  var intro='<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site — the <b>supplier</b> completes the checklist before delivery; a <b>ticketed operator on site</b> verifies, photographs and accepts it on arrival.'+
+    '<div style="margin-top:11px;border-top:1px solid var(--border);padding-top:11px"><div style="font-weight:700;color:var(--text);margin-bottom:6px">Hiring something new? Send the supplier a blank form:</div><div style="display:flex;gap:6px"><select id="premob-blank-type" style="flex:1;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff">'+typeOpts.map(function(t){return '<option>'+t+'</option>';}).join('')+'</select><button class="btn-amber" onclick="premobSendBlank()" style="white-space:nowrap;padding:9px 14px">Send / download</button></div></div>'+
+  '</div></div>';
+  return intro + tabs + '<div class="tile">'+rows+'</div>';
 }
 function plantPremobOpen(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
@@ -1577,7 +1581,7 @@ function plantPremobOpen(code){
       siteBox='<div class="sec-h">On-site check — '+s.site_assignee+'</div><div style="font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.5"><b>'+s.site_assignee+'</b> (ticketed operator) ticks each item below as OK (✓) or not OK (✗) on arrival, adds photos, then clears it. Any “not OK” flags it back to the supplier.</div><button class="btn-ghost" onclick="premobMarkAllOk(\''+code+'\')">Mark all items OK</button>';
       var phs=(s.photos||[]);
       var photosList = phs.length ? ('<div class="tile" style="margin-bottom:10px">'+phs.map(function(n){ return '<div class="row" style="cursor:default"><div class="row-ic">📷</div><div class="row-main"><div class="row-s" style="word-break:break-all">'+n+'</div></div></div>'; }).join('')+'</div>') : '<div style="font-size:12px;color:var(--t3);margin:2px 0 10px">No arrival photos yet.</div>';
-      siteActions=_premobReasonsBlock(a, code)+'<div class="sec-h">Arrival photos &amp; sign-off</div>'+photosList+
+      siteActions='<div class="sec-h">Arrival photos &amp; sign-off</div>'+photosList+
         '<button class="btn-ghost" onclick="premobPhotoPick(\''+code+'\')" style="margin-bottom:12px">📷 Add arrival photos</button>'+
         '<input id="premob-photo-input" type="file" accept="image/*" multiple style="display:none" onchange="premobPhotoOnFile(this)">'+
         '<button class="cta" onclick="premobCompleteCheck(\''+code+'\')">✓ Complete on-site check &amp; clear machine</button>'+
@@ -1643,7 +1647,7 @@ function premobFlag(code){
 }
 function premobUnflag(code){ _premobSaveState(code, { flagged:false, flag_note:'' }); plantPremobOpen(code); }
 /* §6 — pre-mob as a PDF. blank=true → empty form to SEND to the supplier to complete before delivery; else the completed form to send back / file. */
-function plantPremobViewPDF(code){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(plantPremobPDF(code,false), 'PreMob-'+code+'.pdf'); }
+function plantPremobViewPDF(code){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } _premobShare(plantPremobPDF(code,false), 'PreMob-'+code+'.pdf', 'Pre-mobilisation — '+code, 'Pre-mobilisation checklist for '+code+'.'); }
 function plantPremobBlankPDF(code){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(plantPremobPDF(code,true), 'PreMob-BLANK-'+code+'.pdf'); }
 function plantPremobPDF(code, blank){
   var a=ASSETS.find(function(x){return x.code===code;});
@@ -1714,6 +1718,15 @@ function plantPremobPDF(code, blank){
 }
 /* Blank pre-mob form by equipment TYPE — to send a supplier before a machine (not yet in the system) comes to site */
 function plantPremobBlankByType(type){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(_premobBlankByTypePDF(type), 'PreMob-BLANK-'+(type||'plant').replace(/[^A-Za-z0-9]+/g,'-')+'.pdf'); }
+/* Send a PDF straight from the app (phone share sheet → email/WhatsApp/etc.); falls back to the viewer+download on desktop / unsupported */
+function _premobShare(doc, filename, title, msg){
+  try{
+    var blob=doc.output('blob'), file=new File([blob], filename, {type:'application/pdf'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){ navigator.share({files:[file], title:title, text:msg||title}).catch(function(){ try{ openPdfDoc(doc, filename); }catch(e){} }); return; }
+  }catch(e){}
+  openPdfDoc(doc, filename);
+}
+function premobSendBlank(){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } var t=(document.getElementById('premob-blank-type')||{}).value||'EWP'; _premobShare(_premobBlankByTypePDF(t), 'PreMob-BLANK-'+t.replace(/[^A-Za-z0-9]+/g,'-')+'.pdf', 'Pre-mobilisation checklist — '+t, 'Please complete this pre-mobilisation checklist and return it before the machine mobilises to site.'); }
 function _premobBlankByTypePDF(type){
   var doc=new window.jspdf.jsPDF('p','mm','a4');
   var W=210,M=14,GOLD=[184,150,12],GREEN=[44,107,94]; var y=16;
