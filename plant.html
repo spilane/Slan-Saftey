@@ -432,7 +432,7 @@ try{ var _wi=parseInt(localStorage.getItem('slan_plant_worker'),10); if(!isNaN(_
 var curAsset=0;
 function setTopRight(html){ var el=document.getElementById('tb-right'); if(el) el.innerHTML=html; }
 function _initials(n){ return (n||'').split(/\s+/).filter(Boolean).map(function(w){return w.charAt(0);}).join('').slice(0,2).toUpperCase()||'?'; }
-function _profileAvatar(name){ return '<button onclick="openProfile()" title="'+name+'" style="width:38px;height:38px;border-radius:50%;background:rgba(184,150,12,.3);border:1.5px solid rgba(184,150,12,.6);color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;letter-spacing:.5px">'+_initials(name)+'</button>'; }
+function _profileAvatar(name){ return '<div onclick="openProfile()" title="'+name+'" style="width:38px;height:38px;border-radius:50%;background:rgba(184,150,12,.2);border:2px solid rgba(184,150,12,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(184,150,12,.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>'; }
 function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><span id="who-name">'+currentWorker.name+'</span></button>'; }
 var _homeView='list';
 function plantGoBack(){
@@ -449,7 +449,7 @@ function openProfile(){
   function row(l,v){ return '<div class="svc-row"><span>'+l+'</span><span>'+v+'</span></div>'; }
   document.getElementById('profile-body').innerHTML =
     '<div style="text-align:center;padding:4px 0 12px">'+
-      '<div style="width:66px;height:66px;border-radius:50%;background:#2C6B5E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;letter-spacing:1px;margin:0 auto 10px">'+_initials(name)+'</div>'+
+      '<div style="width:64px;height:64px;border-radius:50%;background:#FAC775;color:#412402;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;margin:0 auto 10px;font-family:\'DM Sans\',sans-serif">'+_initials(name)+'</div>'+
       '<div style="font-size:17px;font-weight:700;color:var(--deep)">'+name+'</div>'+
       '<div style="font-size:12.5px;color:var(--t2);margin-top:2px">'+role+'</div>'+
     '</div>'+
@@ -1508,6 +1508,7 @@ function _premobKeys(a){ var keys=[]; _premobPartA(a).forEach(function(_,i){keys
 function premobMarkAllOk(code){ var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var si={}; _premobKeys(a).forEach(function(k){ si[k]='ok'; }); _premobSaveState(code,{ site_items:si }); plantPremobOpen(code); }
 function premobCompleteCheck(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
+  premobSaveComment(code);
   var keys=_premobKeys(a), si=_premobState(code).site_items||{};
   var marked=keys.filter(function(k){return si[k]==='ok'||si[k]==='no';}).length;
   var noKeys=keys.filter(function(k){return si[k]==='no';});
@@ -1588,6 +1589,8 @@ function plantPremobOpen(code){
       siteActions='<div class="sec-h">Arrival photos &amp; sign-off</div>'+photosList+
         '<button class="btn-ghost" onclick="premobPhotoPick(\''+code+'\')" style="margin-bottom:12px">📷 Add arrival photos</button>'+
         '<input id="premob-photo-input" type="file" accept="image/*" multiple style="display:none" onchange="premobPhotoOnFile(this)">'+
+        '<div class="sec-h">Operator comments</div>'+
+        '<textarea id="premob-site-comment" onblur="premobSaveComment(\''+code+'\')" placeholder="Anything to note for the supervisor? (optional) — e.g. minor scratches, missing manual, hose weeping. Marking any item NOT OK above auto-flags it back to the supplier." style="width:100%;min-height:70px;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;line-height:1.45;outline:none;margin-bottom:12px;resize:vertical">'+_premobEsc(s.site_comment||'')+'</textarea>'+
         '<button class="cta" onclick="premobCompleteCheck(\''+code+'\')">✓ Complete on-site check &amp; clear machine</button>'+
         '<button class="btn-ghost" onclick="premobAssign(\''+code+'\',null)">Change operator</button>';
     } else {
@@ -1596,6 +1599,7 @@ function plantPremobOpen(code){
       siteBox='<div class="sec-h">On-site check</div>'+(ops.length?('<div style="font-size:12px;color:var(--t2);margin-bottom:8px;line-height:1.5">Assign the on-site check to an operator who holds the ticket for this machine:</div><div class="tile">'+ops.map(function(w){ return '<button class="row" onclick="premobAssign(\''+code+'\',\''+w.name.replace(/'/g,"\\'")+'\')"><div class="row-ic">👷</div><div class="row-main"><div class="row-t">'+w.name+'</div><div class="row-s">'+w.trade+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div>'):'<div style="font-size:12px;color:var(--t2);line-height:1.5">No operator on the roster holds the ticket for this machine.</div>')+addRow;
     }
   }
+  var commentRO = (s.site_comment && !editable) ? ('<div class="sec-h">Operator comments</div><div style="background:#F6F8F7;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--t2);line-height:1.5;margin-bottom:4px">“'+_premobEsc(s.site_comment)+'”<div style="font-size:11px;color:var(--t3);margin-top:6px">— '+(s.site_assignee||'operator')+' on arrival</div></div>') : '';
   var backTo = s.cleared ? ('openHub('+ASSETS.indexOf(a)+')') : 'renderOversight()'; // cleared opens from the machine page; outstanding from the fleet list
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="'+backTo+'">‹ Back</button>'+
@@ -1605,7 +1609,7 @@ function plantPremobOpen(code){
     _premobSection('Part A — Minimum requirements ('+a.type+')', 'A', _premobPartA(a), ownerOn, code, editable)+
     _premobSection('Part B — Condition of plant & equipment', 'B', PREMOB_PARTB, ownerOn, code, editable)+
     _premobSection('Part C — Compliance documentation', 'C', PREMOB_PARTC, ownerOn, code, editable)+
-    siteActions + decl+
+    siteActions + commentRO + decl+
     ((s.flagged||s.cleared) ? '<button class="btn-ghost" onclick="plantPremobViewPDF(\''+code+'\')" style="margin-top:10px;width:100%">⬇ Download / send to supplier (PDF)</button>' : '')+
     '<div style="height:24px"></div>'+
   '</div>';
@@ -1641,7 +1645,9 @@ function premobAssign(code, name){
 /* §3 — assigned operator completes the site column + arrival photos + clears the machine */
 var _premobPhotoRef=null;
 function premobPhotoPick(code){ _premobPhotoRef=code; var i=document.getElementById('premob-photo-input'); if(i) i.click(); }
-function premobPhotoOnFile(input){ var code=_premobPhotoRef; if(!code) return; var s=_premobState(code); var ph=(s.photos||[]).slice(); if(input&&input.files){ for(var i=0;i<input.files.length;i++) ph.push(input.files[i].name); } if(input) input.value=''; _premobSaveState(code,{ photos:ph }); plantPremobOpen(code); }
+function premobPhotoOnFile(input){ var code=_premobPhotoRef; if(!code) return; var s=_premobState(code); var ph=(s.photos||[]).slice(); if(input&&input.files){ for(var i=0;i<input.files.length;i++) ph.push(input.files[i].name); } if(input) input.value=''; premobSaveComment(code); _premobSaveState(code,{ photos:ph }); plantPremobOpen(code); }
+function _premobEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function premobSaveComment(code){ var el=document.getElementById('premob-site-comment'); if(el) _premobSaveState(code,{ site_comment:(el.value||'').trim() }); }
 function premobShowFlag(){ var w=document.getElementById('premob-flag-wrap'); if(w) w.style.display=(w.style.display==='none'?'block':'none'); }
 function premobFlag(code){
   var el=document.getElementById('premob-flag-note'); var note=el?(el.value||'').trim():'';
@@ -1700,6 +1706,7 @@ function plantPremobPDF(code, blank){
   part('Part B — Condition of plant & equipment', PREMOB_PARTB, 'B');
   part('Part C — Compliance documentation', PREMOB_PARTC, 'C');
   if(!blank && s.photos && s.photos.length){ if(y>262){doc.addPage();y=16;} bar('Arrival photos ('+s.photos.length+')'); doc.setFontSize(8.4); doc.setTextColor(40,40,40); s.photos.forEach(function(n){ if(y>284){doc.addPage();y=16;} doc.text('•  '+n, M, y); y+=4.8; }); y+=2; }
+  if(!blank && s.site_comment){ if(y>262){doc.addPage();y=16;} bar('Operator comments'); doc.setFont('helvetica','italic'); doc.setFontSize(8.8); doc.setTextColor(40,40,40); var cm=doc.splitTextToSize(s.site_comment, W-2*M); doc.text(cm, M, y); y+=4.8*cm.length+1; doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('— '+(s.site_assignee||'operator')+' on arrival', M, y); y+=5; doc.setTextColor(40,40,40); }
   if(!blank && s.flagged && s.flag_note){ if(y>258){doc.addPage();y=16;} bar('Defects flagged to supplier'); doc.setFontSize(8.8); doc.setTextColor(150,45,45); var f=doc.splitTextToSize(s.flag_note, W-2*M); doc.text(f, M, y); y+=4.8*f.length+3; doc.setTextColor(40,40,40); }
   if(y>250){doc.addPage();y=16;}
   bar('Declaration & signatures');
