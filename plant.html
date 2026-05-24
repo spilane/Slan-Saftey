@@ -371,12 +371,28 @@ function plantDetails(code){ return PLANT_DETAILS[code]||{}; }
 /* Ownership — most plant is OWNED by the principal (director's company). A couple are hired in.
    Owned machines show no hire note; only hired ones are flagged. rate = weekly hire $ (for a future off-hire view). */
 var PLANT_HIRE={
-  'EWP-019':{ supplier:'Access Hire Australia', rate:760 },
-  'TLH-003':{ supplier:'Onsite Rental Group', rate:1180 },
-  'GEN-005':{ supplier:'Coates Hire', rate:340 }
+  'EWP-019':{ supplier:'Access Hire Australia', rate:760,  po:'PO-4471', on_hire_days:26, idle_days:0 },
+  'TLH-003':{ supplier:'Onsite Rental Group',   rate:1180, po:'PO-4439', on_hire_days:44, idle_days:0 },
+  'GEN-005':{ supplier:'Coates Hire',           rate:340,  po:'PO-4502', on_hire_days:55, idle_days:15 }
 };
+var HIRE_IDLE_DAYS=7; // a cleared hired machine sitting unused this many days gets flagged as a money-saver / off-hire candidate
 function isHired(code){ return !!PLANT_HIRE[code]; }
 function hireInfo(code){ return PLANT_HIRE[code]||null; }
+function hireDaily(code){ var h=PLANT_HIRE[code]; return h?Math.round(h.rate/7):0; }
+function hireOnHireDate(code){ var h=PLANT_HIRE[code]; return h?iso(dOffset(-(h.on_hire_days||0))):null; }
+function _hireStateAll(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_hirestate')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function hireOffState(code){ return _hireStateAll()[code]||null; }
+function _saveHireState(code, patch){ var o=_hireStateAll(); o[code]=Object.assign({}, o[code]||{}, patch); try{ localStorage.setItem('slan_plant_hirestate', JSON.stringify(o)); }catch(e){} return o[code]; }
+function _hireOffRequested(code){ var o=hireOffState(code); return !!(o&&o.off_hire_requested); }
+// idle days for a CLEARED (on-site, in-service) hired machine that hasn't been off-hired; null when it doesn't apply
+function hireIdleDays(code){ var h=PLANT_HIRE[code]; if(!h||_hireOffRequested(code)) return null; if(!_premobState(code).cleared) return null; return (h.idle_days!=null?h.idle_days:null); }
+function hireIdleCost(code){ var d=hireIdleDays(code), h=PLANT_HIRE[code]; if(d==null||!h||d<HIRE_IDLE_DAYS) return 0; return Math.round(h.rate*d/7); }
+function plantOffHire(code){
+  var hi=hireInfo(code); if(!hi) return;
+  _saveHireState(code, { off_hire_requested:true, at:new Date().toISOString() });
+  var a=ASSETS.find(function(x){return x.code===code;}), i=a?ASSETS.indexOf(a):-1;
+  if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:40px">📤</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Off-hire requested</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — an off-hire request has been logged for <b>'+hi.supplier+'</b>. The weekly charge stops once they collect.<br><span style="color:var(--t3)">(Once the backend is live this emails the supplier and books the collection automatically.)</span></div></div>', function(){ if(i>=0){ openHub(i); } else { renderOversight(); } });
+}
 function hiredChip(code, small){ if(!isHired(code)) return ''; var fs=small?'9.5px':'10px'; return ' <span style="font-size:'+fs+';font-weight:700;color:#8A5A00;background:#FBEFD3;border:1px solid #E8C97A;border-radius:5px;padding:0 6px;vertical-align:middle;letter-spacing:.03em">HIRED</span>'; }
 /* docs per machine (type-specific extras for crane/telehandler) */
 function getDocs(a){
@@ -581,6 +597,31 @@ function openHub(i){
     '<input id="plant-doc-input" type="file" style="display:none" onchange="plantDocOnFile(this)">'+
     (uploads.length ? ('<div class="tile" style="margin-top:10px">'+uploads.map(function(dc,di){ var m=DOC_TYPES[dc.type]||DOC_TYPES.other; return '<button class="row" onclick="plantDocView(\''+a.code+'\','+di+')"><div class="row-ic">'+m.ic+'</div><div class="row-main"><div class="row-t">'+m.label+'</div><div class="row-s" style="word-break:break-all">'+dc.name+' · '+fmtShort(dc.when)+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div>') : '')
   ) : '';
+  var hireBlock='';
+  if(isHired(a.code) && getRole()!=='worker'){
+    var hi=hireInfo(a.code), off=hireOffState(a.code), idle=hireIdleDays(a.code), idleCost=hireIdleCost(a.code);
+    var hr='<div class="svc-row"><span>Hired from</span><span>'+hi.supplier+'</span></div>'+
+      '<div class="svc-row"><span>Hire ref / PO</span><span>'+(hi.po||'—')+'</span></div>'+
+      '<div class="svc-row"><span>On hire since</span><span>'+fmt(hireOnHireDate(a.code))+' · '+Math.round((hi.on_hire_days||0)/7)+' wks</span></div>'+
+      '<div class="svc-row"><span>Hire rate</span><span>'+money(hi.rate)+'/wk · '+money(hireDaily(a.code))+'/day</span></div>';
+    if(off && off.off_hire_requested){
+      hr+='<div class="svc-row"><span>Off-hire</span><span style="color:var(--pass);font-weight:700">Requested '+fmt(off.at)+'</span></div>';
+    } else if(idle!=null){
+      var ucol = idle>=HIRE_IDLE_DAYS ? 'var(--fail)' : (idle>=3?'var(--warn)':'var(--pass)');
+      hr+='<div class="svc-row"><span>Utilisation</span><span style="color:'+ucol+';font-weight:700">'+(idle===0?'In use today':('Idle '+idle+' day'+(idle>1?'s':'')))+'</span></div>';
+    }
+    var hireNudge='';
+    if(idleCost>0){
+      hireNudge='<div style="background:#FCEFEF;border:1px solid #E2B4B4;border-radius:10px;padding:11px 13px;margin-top:8px">'+
+        '<div style="font-size:12.5px;font-weight:800;color:#A32D2D">💸 Idle '+idle+' days — ~'+money(idleCost)+' on hire while unused</div>'+
+        '<div style="font-size:11.5px;color:#7a2a2a;margin-top:5px;line-height:1.5">No pre-start logged on it in '+idle+' days, but it\'s still on hire at '+money(hi.rate)+'/wk. If it\'s not needed this week, off-hire it to stop the charge.</div>'+
+        '<button class="cta" style="margin:10px 0 0;background:#A32D2D" onclick="plantOffHire(\''+a.code+'\')">Arrange off-hire with '+hi.supplier+'</button>'+
+      '</div>';
+    } else if(off && off.off_hire_requested){
+      hireNudge='<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:11px 13px;margin-top:8px;font-size:12.5px;color:#1B5E3F;line-height:1.5">✓ Off-hire requested from '+hi.supplier+' on '+fmt(off.at)+' — collection pending. The hire charge stops on collection.</div>';
+    }
+    hireBlock='<div class="sec-h">Hire details</div><div class="svc">'+hr+'</div>'+hireNudge;
+  }
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="showList()">‹ All machines</button>'+
     '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+hiredChip(a.code)+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace(/_/g,' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
@@ -590,7 +631,6 @@ function openHub(i){
       : '<button class="cta" onclick="openGate()">Start Pre-Start</button>')+
     (getRole()!=='worker' ? ('<div class="sec-h">Machine details</div><div class="svc">'+
       '<div class="svc-row"><span>Site</span><span>'+assetSite(a.code)+'</span></div>'+
-      (isHired(a.code)?'<div class="svc-row"><span>Hired from</span><span>'+hireInfo(a.code).supplier+'</span></div>':'')+
       '<div class="svc-row"><span>Year</span><span>'+(dt.year||'—')+'</span></div>'+
       '<div class="svc-row"><span>Serial / VIN</span><span>'+(dt.vin||'—')+'</span></div>'+
       '<div class="svc-row"><span>Registration</span><span>'+(dt.rego?(dt.rego+' · '+dt.rego_state):'— (plant)')+'</span></div>'+
@@ -601,6 +641,7 @@ function openHub(i){
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
     '</div>') : '')+
+    hireBlock +
     '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift + premobHubRow + paperPrestartRow + dropHtml +
     ((hired && !premCleared) ? '' : '<div class="sec-h">Recent pre-starts (last 7 days)</div><div class="tile">'+(rec||'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No pre-starts in the last 7 days.</div></div></div>')+'</div>')+
     '<div class="sec-h">Service</div><div class="svc">'+
@@ -1523,6 +1564,24 @@ function premobFlagFromItems(code, badItems){
 }
 var premobSub='cleared'; // Cleared tab first (Niall's preference)
 function premobSetSub(s){ premobSub=s; renderOversight(); }
+function plantHireMoneyPanel(hired){
+  if(!hired.length) return '';
+  var totalWk=hired.reduce(function(s,a){ return s+(hireInfo(a.code).rate||0); },0);
+  var idleList=hired.filter(function(a){ return hireIdleCost(a.code)>0; });
+  var wasted=idleList.reduce(function(s,a){ return s+hireIdleCost(a.code); },0);
+  var offList=hired.filter(function(a){ return _hireOffRequested(a.code); });
+  var idleRows=idleList.map(function(a){ var idle=hireIdleDays(a.code), c=hireIdleCost(a.code), hi=hireInfo(a.code);
+    return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:#A32D2D;font-weight:700">Idle '+idle+' days · '+money(c)+' on hire unused · '+hi.supplier+'</div></div><div class="chev">›</div></button>';
+  }).join('');
+  return '<div class="fcard"><div class="fcard-hdr">💰 Hire cost &amp; utilisation</div><div class="fcard-body">'+
+    '<div style="display:flex;gap:10px">'+
+      '<div style="flex:1;background:#F6F8F7;border:1px solid var(--border);border-radius:10px;padding:11px 12px"><div style="font-size:20px;font-weight:800;color:var(--deep)">'+money(totalWk)+'</div><div style="font-size:11px;color:var(--t2);margin-top:2px">per week · '+hired.length+' machine'+(hired.length>1?'s':'')+' on hire</div></div>'+
+      '<div style="flex:1;background:'+(wasted>0?'#FCEFEF':'#F6F8F7')+';border:1px solid '+(wasted>0?'#E2B4B4':'var(--border)')+';border-radius:10px;padding:11px 12px"><div style="font-size:20px;font-weight:800;color:'+(wasted>0?'#A32D2D':'var(--deep)')+'">'+money(wasted)+'</div><div style="font-size:11px;color:'+(wasted>0?'#7a2a2a':'var(--t2)')+';margin-top:2px">'+(wasted>0?('idle on '+idleList.length+' machine'+(idleList.length>1?'s':'')):'nothing sitting idle')+'</div></div>'+
+    '</div>'+
+    (idleList.length ? ('<div style="font-size:11.5px;font-weight:700;color:#A32D2D;margin:12px 0 6px">Idle plant — consider off-hire</div><div class="tile" style="margin:0">'+idleRows+'</div>') : '')+
+    (offList.length ? ('<div style="font-size:11.5px;color:#1B5E3F;margin-top:10px">✓ '+offList.length+' off-hire request'+(offList.length>1?'s':'')+' pending collection — charge stops on pickup.</div>') : '')+
+  '</div></div>';
+}
 function plantPremobBody(fleet){
   var hired=fleet.filter(function(a){ return isHired(a.code); }); // pre-mob view is for hired-in plant
   var cleared    =hired.filter(function(a){ return _premobState(a.code).cleared; });
@@ -1539,7 +1598,7 @@ function plantPremobBody(fleet){
   var intro='<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site — the <b>supplier</b> completes the checklist before delivery; a <b>ticketed operator on site</b> verifies, photographs and accepts it on arrival.'+
     '<div style="margin-top:11px;border-top:1px solid var(--border);padding-top:11px"><div style="font-weight:700;color:var(--text);margin-bottom:6px">Hiring something new? Send the supplier a blank form:</div><div style="display:flex;gap:6px"><select id="premob-blank-type" style="flex:1;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff">'+typeOpts.map(function(t){return '<option>'+t+'</option>';}).join('')+'</select><button class="btn-amber" onclick="premobSendBlank()" style="white-space:nowrap;padding:9px 14px">Send / download</button></div></div>'+
   '</div></div>';
-  return intro + tabs + '<div class="tile">'+rows+'</div>';
+  return plantHireMoneyPanel(hired) + intro + tabs + '<div class="tile">'+rows+'</div>';
 }
 function plantPremobOpen(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
