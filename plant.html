@@ -1528,7 +1528,9 @@ function plantPremobBody(fleet){
     return '<button class="row" onclick="'+oc+'"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+(hi?hi.supplier+' · ':'')+'<span style="color:'+st.col+';font-weight:700">'+st.label+'</span></div></div><div class="chev">›</div></button>';
   }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">'+(premobSub==='awaiting'?'Nothing awaiting clearance.':'No hired machines cleared yet.')+'</div></div></div>';
   var intro='<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site. The <b>supplier</b> completes the checklist before delivery; a <b>ticketed operator on site</b> verifies, photographs and accepts it on arrival.</div></div>';
-  return intro + tabs + '<div class="tile">'+rows+'</div>';
+  var typeOpts=['EWP','Telehandler','Crane','Generator','Lighting tower','Truck / vehicle'];
+  var formsPicker='<div class="fcard"><div class="fcard-hdr">📄 Blank forms — send to a supplier</div><div class="fcard-body"><div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:8px">Hiring a new machine? Pick the type and download a blank pre-mob checklist to send the supplier before it comes to site.</div><div style="display:flex;gap:6px"><select id="premob-blank-type" style="flex:1;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff">'+typeOpts.map(function(t){return '<option>'+t+'</option>';}).join('')+'</select><button class="btn-amber" onclick="plantPremobBlankByType(document.getElementById(\'premob-blank-type\').value)" style="white-space:nowrap;padding:9px 14px">⬇ Blank form</button></div></div></div>';
+  return intro + formsPicker + tabs + '<div class="tile">'+rows+'</div>';
 }
 function plantPremobOpen(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
@@ -1708,6 +1710,35 @@ function plantPremobPDF(code, blank){
   }
   var pages=doc.internal.getNumberOfPages();
   for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-012 · Plant Pre-Mobilisation · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
+  return doc;
+}
+/* Blank pre-mob form by equipment TYPE — to send a supplier before a machine (not yet in the system) comes to site */
+function plantPremobBlankByType(type){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(_premobBlankByTypePDF(type), 'PreMob-BLANK-'+(type||'plant').replace(/[^A-Za-z0-9]+/g,'-')+'.pdf'); }
+function _premobBlankByTypePDF(type){
+  var doc=new window.jspdf.jsPDF('p','mm','a4');
+  var W=210,M=14,GOLD=[184,150,12],GREEN=[44,107,94]; var y=16;
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Pre-Mobilisation Checklist', M, y);
+  if(typeof SLAN_LOGO_B64!=='undefined' && SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG',W-M-34,3,34,14); }catch(e){} }
+  y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=8;
+  doc.setFontSize(9);
+  function kv(k,v){ doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.text(k,M,y); doc.setFont('helvetica','normal'); doc.setTextColor(35,35,35); doc.text(String(v),M+40,y); y+=5.6; }
+  kv('Equipment type:', type);
+  kv('Asset / reg no.:', '____________________'); kv('Make / model:', '____________________'); kv('Serial / VIN:', '____________________'); kv('Hours / km:', '____________________'); kv('Supplier:', '____________________');
+  y+=2;
+  doc.setFont('helvetica','italic'); doc.setFontSize(8.2); doc.setTextColor(90,90,90); var ib=doc.splitTextToSize('To be completed by the equipment owner / supplier and returned to the site before this machine mobilises. Tick each item Yes / No / N/A; for any "No", give a reason in the comments. The Part C compliance documents must travel with the machine.', W-2*M); doc.text(ib,M,y); y+=4.4*ib.length+3; doc.setFont('helvetica','normal');
+  function bar(t){ if(y>270){doc.addPage();y=16;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=10.5; doc.setTextColor(40,40,40); doc.setFont('helvetica','normal'); }
+  function part(title, items){ bar(title); items.forEach(function(it){ if(y>278){doc.addPage();y=16;} doc.setFont('helvetica','normal'); doc.setFontSize(8.4); doc.setTextColor(40,40,40); var qLine=doc.splitTextToSize(it, W-2*M-48); doc.text(qLine,M,y); ['Yes','No','N/A'].forEach(function(lbl,bi){ var xx=W-M-44+bi*15; doc.setDrawColor(120,120,120); doc.setLineWidth(0.3); doc.rect(xx,y-2.6,3,3); doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(80,80,80); doc.text(lbl,xx+4.2,y); }); y+=4.6*qLine.length+1.4; }); y+=2; }
+  part('Part A — Minimum requirements ('+type+')', _premobPartA({type:type}));
+  part('Part B — Condition of plant & equipment', PREMOB_PARTB);
+  part('Part C — Compliance documentation (tick each provided & enclosed)', PREMOB_PARTC);
+  if(y>250){doc.addPage();y=16;}
+  bar('Declaration & signature');
+  doc.setFontSize(8.6); doc.setTextColor(40,40,40); doc.text('I declare that this machine is in a safe condition, free from defect and fit for purpose.', M, y); y+=9;
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('EQUIPMENT OWNER / SUPPLIER', M, y); doc.text('ACCEPTED BY PROJECT / SITE', W/2+6, y); y+=7;
+  doc.setDrawColor(150,150,150); doc.setLineWidth(0.3); doc.line(M,y,M+72,y); doc.line(W/2+6,y,W/2+6+72,y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('Name / signature / date', M, y+4); doc.text('Name / signature / date', W/2+6, y+4);
+  var pages=doc.internal.getNumberOfPages();
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-012 · Plant Pre-Mobilisation · Slán Safety', W/2,292,{align:'center'}); doc.text('Page '+p+' of '+pages, W-M,292,{align:'right'}); }
   return doc;
 }
 function premobComplete(code){
