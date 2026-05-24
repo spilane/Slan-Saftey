@@ -431,6 +431,8 @@ var currentWorker=WORKERS[0];
 try{ var _wi=parseInt(localStorage.getItem('slan_plant_worker'),10); if(!isNaN(_wi)&&WORKERS[_wi]) currentWorker=WORKERS[_wi]; }catch(e){}
 var curAsset=0;
 function setTopRight(html){ var el=document.getElementById('tb-right'); if(el) el.innerHTML=html; }
+function _initials(n){ return (n||'').split(/\s+/).filter(Boolean).map(function(w){return w.charAt(0);}).join('').slice(0,2).toUpperCase()||'?'; }
+function _profileAvatar(name){ return '<button onclick="openProfile()" title="'+name+'" style="width:38px;height:38px;border-radius:50%;background:rgba(184,150,12,.3);border:1.5px solid rgba(184,150,12,.6);color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;letter-spacing:.5px">'+_initials(name)+'</button>'; }
 function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><span id="who-name">'+currentWorker.name+'</span></button>'; }
 var _homeView='list';
 function plantGoBack(){
@@ -442,15 +444,17 @@ function plantGoBack(){
 var PLANT_SUP_NAME={ 'Bondi Junction Mixed Use':'Eoin Burke', 'Parramatta Metro Stage 2':'Eoin Murphy', 'Sydney Olympic Park':"Sean O'Connor" };
 function openProfile(){
   var supLocked=getRole()==='supervisor';
-  var role = supLocked ? (oversightSite+' Supervisor') : 'Company Director';
-  var name = supLocked ? (PLANT_SUP_NAME[oversightSite]||'Site Supervisor') : 'Director';
+  var role = supLocked ? 'Site Supervisor' : 'Company Director';
+  var name = supLocked ? (PLANT_SUP_NAME[oversightSite]||'Site Supervisor') : 'Patrick Murphy';
+  function row(l,v){ return '<div class="svc-row"><span>'+l+'</span><span>'+v+'</span></div>'; }
   document.getElementById('profile-body').innerHTML =
-    '<div style="text-align:center;padding:4px 0 14px">'+
-      '<div style="width:66px;height:66px;border-radius:50%;background:#EAF1ED;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 10px">👤</div>'+
+    '<div style="text-align:center;padding:4px 0 12px">'+
+      '<div style="width:66px;height:66px;border-radius:50%;background:#2C6B5E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;letter-spacing:1px;margin:0 auto 10px">'+_initials(name)+'</div>'+
       '<div style="font-size:17px;font-weight:700;color:var(--deep)">'+name+'</div>'+
       '<div style="font-size:12.5px;color:var(--t2);margin-top:2px">'+role+'</div>'+
     '</div>'+
-    '<div style="font-size:11.5px;color:var(--t3);text-align:center;line-height:1.5">Demo profile — once logins are added this opens the signed-in person\'s real profile, licences and settings.</div>';
+    '<div class="svc">'+row('Company','Murphy Civil Construction')+row('Role',role)+(supLocked?row('Site',oversightSite):row('Oversight','All sites'))+'</div>'+
+    '<div style="font-size:11px;color:var(--t3);text-align:center;line-height:1.5;margin-top:10px">Demo profile — once logins are added this opens the signed-in person’s real profile, licences and settings.</div>';
   document.getElementById('profile-sheet').classList.add('on');
 }
 function closeProfile(){ document.getElementById('profile-sheet').classList.remove('on'); }
@@ -1916,7 +1920,7 @@ function plantViewPrestartPDF(){ if(!_lastPrestartRec || !window.jspdf){ slanMsg
 function renderOversight(){
   var supLocked = (getRole()==='supervisor');
   if(supLocked){ oversightSite = getSiteParam() || 'Bondi Junction Mixed Use'; }
-  setTopRight('<button class="profile-btn" onclick="openProfile()">👤 '+(supLocked ? (PLANT_SUP_NAME[oversightSite]||'Supervisor') : 'Director')+'</button>');
+  setTopRight(_profileAvatar(supLocked ? (PLANT_SUP_NAME[oversightSite]||'Supervisor') : 'Patrick Murphy'));
   var siteMatch=function(code){ return oversightSite==='All' || assetSite(code)===oversightSite; };
   var fleet=ASSETS.filter(function(a){ return siteMatch(a.code); });
   var open=WORKORDERS.filter(function(w){ return w.status!=='Returned to service' && siteMatch(w.code); });
