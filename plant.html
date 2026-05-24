@@ -371,15 +371,19 @@ function plantDetails(code){ return PLANT_DETAILS[code]||{}; }
 /* Ownership — most plant is OWNED by the principal (director's company). A couple are hired in.
    Owned machines show no hire note; only hired ones are flagged. rate = weekly hire $ (for a future off-hire view). */
 var PLANT_HIRE={
-  'EWP-019':{ supplier:'Access Hire Australia', rate:760,  po:'PO-4471', on_hire_days:26, idle_days:0 },
-  'TLH-003':{ supplier:'Onsite Rental Group',   rate:1180, po:'PO-4439', on_hire_days:44, idle_days:0 },
-  'GEN-005':{ supplier:'Coates Hire',           rate:340,  po:'PO-4502', on_hire_days:55, idle_days:15 }
+  'EWP-019':{ supplier:'Access Hire Australia', rate:760,  po:'PO-4471', on_hire_days:26, idle_days:0,  off_hire_due_days:18 },
+  'TLH-003':{ supplier:'Onsite Rental Group',   rate:1180, po:'PO-4439', on_hire_days:44, idle_days:0,  off_hire_due_days:25 },
+  'GEN-005':{ supplier:'Coates Hire',           rate:340,  po:'PO-4502', on_hire_days:55, idle_days:15, off_hire_due_days:4 }
 };
-var HIRE_IDLE_DAYS=7; // a cleared hired machine sitting unused this many days gets flagged as a money-saver / off-hire candidate
+var HIRE_IDLE_DAYS=7;        // a cleared hired machine sitting unused this many days gets flagged as a money-saver / off-hire candidate
+var HIRE_RETURN_REMIND_DAYS=7; // remind when the expected off-hire date is within this many days (or overdue)
 function isHired(code){ return !!PLANT_HIRE[code]; }
 function hireInfo(code){ return PLANT_HIRE[code]||null; }
 function hireDaily(code){ var h=PLANT_HIRE[code]; return h?Math.round(h.rate/7):0; }
 function hireOnHireDate(code){ var h=PLANT_HIRE[code]; return h?iso(dOffset(-(h.on_hire_days||0))):null; }
+function hireDueDate(code){ var h=PLANT_HIRE[code]; return (h&&h.off_hire_due_days!=null)?iso(dOffset(h.off_hire_due_days)):null; }
+function hireDueInDays(code){ var h=PLANT_HIRE[code]; if(!h||h.off_hire_due_days==null||_hireOffRequested(code)) return null; return h.off_hire_due_days; }
+function hireCostPerHour(code){ var h=PLANT_HIRE[code], hrs=(typeof UTIL_MONTHLY!=='undefined'?(UTIL_MONTHLY[code]||0):0); if(!h||!hrs) return null; return Math.round((h.rate*52/12)/hrs); }
 function _hireStateAll(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_hirestate')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
 function hireOffState(code){ return _hireStateAll()[code]||null; }
 function _saveHireState(code, patch){ var o=_hireStateAll(); o[code]=Object.assign({}, o[code]||{}, patch); try{ localStorage.setItem('slan_plant_hirestate', JSON.stringify(o)); }catch(e){} return o[code]; }
@@ -391,7 +395,41 @@ function plantOffHire(code){
   var hi=hireInfo(code); if(!hi) return;
   _saveHireState(code, { off_hire_requested:true, at:new Date().toISOString() });
   var a=ASSETS.find(function(x){return x.code===code;}), i=a?ASSETS.indexOf(a):-1;
-  if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:40px">📤</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Off-hire requested</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' — an off-hire request has been logged for <b>'+hi.supplier+'</b>. The weekly charge stops once they collect.<br><span style="color:var(--t3)">(Once the backend is live this emails the supplier and books the collection automatically.)</span></div></div>', function(){ if(i>=0){ openHub(i); } else { renderOversight(); } });
+  if(i>=0) openHub(i); // re-render hub to show the pending state
+  plantOffHireSend(code); // build + share the off-hire request to the supplier
+}
+function plantOffHireSend(code){
+  var hi=hireInfo(code); if(!hi) return;
+  if(!window.jspdf){ if(typeof slanMsg==='function') slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; }
+  _premobShare(plantOffHirePDF(code), 'OffHire-'+code+'.pdf', 'Off-hire request — '+code, 'Off-hire / collection request for '+code+' ('+hi.supplier+'). Hire charges to cease on collection.');
+}
+function plantOffHirePDF(code){
+  var a=ASSETS.find(function(x){return x.code===code;}), hi=hireInfo(code), dt=plantDetails(code), off=hireOffState(code);
+  var doc=new window.jspdf.jsPDF('p','mm','a4');
+  var W=210, M=14, GOLD=[184,150,12]; var y=16;
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Off-Hire / Collection Request', M, y);
+  if(typeof SLAN_LOGO_B64!=='undefined' && SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, 3, 34, 14); }catch(e){} }
+  y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=9;
+  doc.setFontSize(9.5);
+  function kv(k,v){ doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.text(k, M, y); doc.setFont('helvetica','normal'); doc.setTextColor(35,35,35); doc.text(String(v), M+46, y); y+=6.2; }
+  kv('To (hire company):', hi.supplier);
+  kv('Hire ref / PO:', hi.po||'—');
+  kv('Asset / reg:', a.code+(dt.rego?(' · '+dt.rego):''));
+  kv('Description:', a.type+' · '+a.make+' '+a.model);
+  kv('Site / location:', assetSite(code));
+  kv('On hire since:', fmt(hireOnHireDate(code)));
+  kv('Off-hire requested:', fmt(off&&off.at?off.at:new Date().toISOString()));
+  y+=4;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(35,35,35);
+  var body=doc.splitTextToSize('Please arrange collection of the above hired equipment at your earliest convenience. We confirm the item is being taken off hire from the date of this request — please confirm the collection date and the final off-hire meter reading. Hire charges to cease on collection.', W-2*M);
+  doc.text(body, M, y); y+=5.4*body.length+8;
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(110,110,110); doc.text('REQUESTED BY', M, y); doc.text('SUPPLIER ACKNOWLEDGEMENT', W/2+6, y); y+=8;
+  doc.setFont('times','italic'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text((PLANT_SUP_NAME[assetSite(code)]||'Site Supervisor'), M, y);
+  doc.setDrawColor(150,150,150); doc.setLineWidth(0.3); doc.line(W/2+6, y, W/2+6+72, y);
+  y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120);
+  doc.text('Murphy Civil Construction · '+fmt(new Date().toISOString()), M, y); doc.text('Name / signature / collection date', W/2+6, y);
+  doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-013 · Plant Off-Hire Request · Slán Safety', W/2, 292, {align:'center'});
+  return doc;
 }
 function hiredChip(code, small){ if(!isHired(code)) return ''; var fs=small?'9.5px':'10px'; return ' <span style="font-size:'+fs+';font-weight:700;color:#8A5A00;background:#FBEFD3;border:1px solid #E8C97A;border-radius:5px;padding:0 6px;vertical-align:middle;letter-spacing:.03em">HIRED</span>'; }
 /* docs per machine (type-specific extras for crane/telehandler) */
@@ -602,11 +640,17 @@ function openHub(i){
   var hireBlock='';
   if(isHired(a.code) && getRole()!=='worker'){
     var hi=hireInfo(a.code), off=hireOffState(a.code), idle=hireIdleDays(a.code), idleCost=hireIdleCost(a.code);
+    var offReq=!!(off && off.off_hire_requested), due=hireDueInDays(a.code), cph=hireCostPerHour(a.code);
     var hr='<div class="svc-row"><span>Hired from</span><span>'+hi.supplier+'</span></div>'+
       '<div class="svc-row"><span>Hire ref / PO</span><span>'+(hi.po||'—')+'</span></div>'+
-      '<div class="svc-row"><span>On hire since</span><span>'+fmt(hireOnHireDate(a.code))+' · '+Math.round((hi.on_hire_days||0)/7)+' wks</span></div>'+
-      '<div class="svc-row"><span>Hire rate</span><span>'+money(hi.rate)+'/wk · '+money(hireDaily(a.code))+'/day</span></div>';
-    if(off && off.off_hire_requested){
+      '<div class="svc-row"><span>On hire since</span><span>'+fmt(hireOnHireDate(a.code))+' · '+Math.round((hi.on_hire_days||0)/7)+' wks</span></div>';
+    if(!offReq && hireDueDate(a.code)){
+      var dcol = (due!=null && due<=HIRE_RETURN_REMIND_DAYS) ? (due<0?'var(--fail)':'var(--warn)') : '';
+      hr+='<div class="svc-row"><span>Expected off-hire</span><span style="'+(dcol?('color:'+dcol+';font-weight:700'):'')+'">'+fmt(hireDueDate(a.code))+(due!=null?(due<0?(' · '+Math.abs(due)+'d overdue'):(due<=HIRE_RETURN_REMIND_DAYS?(' · in '+due+'d'):'')):'')+'</span></div>';
+    }
+    hr+='<div class="svc-row"><span>Hire rate</span><span>'+money(hi.rate)+'/wk · '+money(hireDaily(a.code))+'/day</span></div>'+
+      '<div class="svc-row"><span>Cost / run-hour</span><span>'+(cph!=null?(money(cph)+'/hr · '+(UTIL_MONTHLY[a.code]||0)+' hrs/mo'):'— no hours logged')+'</span></div>';
+    if(offReq){
       hr+='<div class="svc-row"><span>Off-hire</span><span style="color:var(--pass);font-weight:700">Requested '+fmt(off.at)+'</span></div>';
     } else if(idle!=null){
       var ucol = idle>=HIRE_IDLE_DAYS ? 'var(--fail)' : (idle>=3?'var(--warn)':'var(--pass)');
@@ -619,8 +663,17 @@ function openHub(i){
         '<div style="font-size:11.5px;color:#7a2a2a;margin-top:5px;line-height:1.5">No pre-start logged on it in '+idle+' days, but it\'s still on hire at '+money(hi.rate)+'/wk. If it\'s not needed this week, off-hire it to stop the charge.</div>'+
         '<button class="cta" style="margin:10px 0 0;background:#A32D2D" onclick="plantOffHire(\''+a.code+'\')">Arrange off-hire with '+hi.supplier+'</button>'+
       '</div>';
-    } else if(off && off.off_hire_requested){
-      hireNudge='<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:11px 13px;margin-top:8px;font-size:12.5px;color:#1B5E3F;line-height:1.5">✓ Off-hire requested from '+hi.supplier+' on '+fmt(off.at)+' — collection pending. The hire charge stops on collection.</div>';
+    } else if(offReq){
+      hireNudge='<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:11px 13px;margin-top:8px;font-size:12.5px;color:#1B5E3F;line-height:1.5">✓ Off-hire requested from '+hi.supplier+' on '+fmt(off.at)+' — collection pending. The hire charge stops on collection.</div>'+
+        '<button class="btn-ghost" onclick="plantOffHireSend(\''+a.code+'\')" style="margin-top:8px">⬇ Download / send the off-hire request (PDF)</button>';
+    } else if(due!=null && due<=HIRE_RETURN_REMIND_DAYS){
+      hireNudge='<div style="background:#FFF6E6;border:1px solid #E8C97A;border-radius:10px;padding:11px 13px;margin-top:8px">'+
+        '<div style="font-size:12.5px;font-weight:800;color:#8A5A00">⏰ '+(due<0?('Off-hire was due '+Math.abs(due)+' days ago — still being charged'):('Off-hire due in '+due+' day'+(due===1?'':'s'))) +'</div>'+
+        '<div style="font-size:11.5px;color:#7a5a14;margin-top:5px;line-height:1.5">Expected back '+fmt(hireDueDate(a.code))+'. Arrange the return so you don\'t keep paying '+money(hi.rate)+'/wk past it.</div>'+
+        '<button class="cta" style="margin:10px 0 0;background:#B8960C" onclick="plantOffHire(\''+a.code+'\')">Arrange off-hire with '+hi.supplier+'</button>'+
+      '</div>';
+    } else if(!offReq){
+      hireNudge='<button class="btn-ghost" onclick="plantOffHire(\''+a.code+'\')" style="margin-top:8px">Arrange off-hire with '+hi.supplier+'</button>';
     }
     hireBlock='<div class="sec-h">Hire details</div><div class="svc">'+hr+'</div>'+hireNudge;
   }
@@ -2034,7 +2087,8 @@ function renderOversight(){
       '<div class="fcard" style="border-top-color:#A32D2D"><div style="padding:14px 15px;background:#FCE9E9"><div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🔒 Due-diligence — operations blocked</div><div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>'+blocked+'</b> attempt'+(blocked===1?'':'s')+' this month to operate a machine without the required licence/ticket '+(blocked===1?'was':'were')+' <b>stopped at the gate</b> before work began.</div></div></div>'+
       '<div class="fcard"><div class="fcard-hdr">⚠ Needs Action ('+need.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+attHtml+'</div></div>'+
       '<div class="fcard"><div class="fcard-hdr">📋 Recent pre-starts ('+savedRecs.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+recFeed+'</div></div>'+
-      '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend-hero"><div class="s-l">Last 12 months</div><div class="s-v">'+money(spend12)+'</div><div class="s-tr">▼ 8% vs prior year</div></div><div class="spend-mini"><div class="s-l">Last 6 months</div><div class="s-v">'+money(Math.round(spend12*0.45))+'</div></div></div></div>';
+      '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend-hero"><div class="s-l">Last 12 months</div><div class="s-v">'+money(spend12)+'</div><div class="s-tr">▼ 8% vs prior year</div></div><div class="spend-mini"><div class="s-l">Last 6 months</div><div class="s-v">'+money(Math.round(spend12*0.45))+'</div></div></div></div>'+
+      plantHireMoneyPanel(fleet.filter(function(a){ return isHired(a.code); }));
   } else if(platTab==='assets'){
     var rows=fleet.map(function(a){
       var dt=plantDetails(a.code);
