@@ -2062,6 +2062,7 @@ function _premobDownload(blob, filename, doc){
     var url=URL.createObjectURL(blob), a=document.createElement('a');
     a.href=url; a.download=filename; document.body.appendChild(a); a.click();
     setTimeout(function(){ try{ document.body.removeChild(a); URL.revokeObjectURL(url); }catch(e){} }, 1500);
+    if(typeof slanMsg==='function') slanMsg('', '<div style="text-align:center"><div style="font-size:38px">📄</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Form downloaded</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55"><b>'+filename+'</b> saved to your device — attach it to your email to the supplier.<br><span style="color:var(--t3)">(On a phone, use the share button to send it straight to email/WhatsApp. The backend will email suppliers automatically later.)</span></div></div>');
   }catch(e){ try{ openPdfDoc(doc, filename); }catch(_){} }
 }
 function premobSendBlank(){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } var t=(document.getElementById('premob-blank-type')||{}).value||'EWP'; _premobShare(_premobBlankByTypePDF(t), 'PreMob-BLANK-'+t.replace(/[^A-Za-z0-9]+/g,'-')+'.pdf', 'Pre-mobilisation checklist — '+t, 'Please complete this pre-mobilisation checklist and return it before the machine mobilises to site.'); }
