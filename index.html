@@ -10185,7 +10185,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div id="an-status-strip" style="background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px;display:none">
     <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Needs your attention</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="status-pill" id="an-pill-inc" onclick="dirChipTapIncidents()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-inc-lbl">Incidents</span></div>
+      <div class="status-pill" id="an-pill-plant" onclick="dirChipTapPlant()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-plant-lbl">Plant</span></div>
       <div class="status-pill" id="an-pill-hirereq" onclick="dirChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-hirereq-lbl">Hire requests</span></div>
+      <div class="status-pill" id="an-pill-gate" onclick="dirChipTapGate()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-gate-lbl">Gate stops</span></div>
     </div>
   </div>
   <div class="syncbar">
@@ -17233,14 +17236,29 @@ function supUpdateHireReqChip(){
 }
 function supChipTapHireReq(){ var a=_hireReqsRead(); a.forEach(function(r){ if(r.status==='approved'||r.status==='rejected') r.seen_sup=true; }); _hireReqsSave(a); location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob'; }
 function dirUpdateActivityStrip(){
+  // Director pills are EXCEPTION/escalation only — what an officer needs to see, not day-to-day ops.
   var strip=document.getElementById('an-status-strip'); if(!strip) return;
-  var pill=document.getElementById('an-pill-hirereq'), lbl=document.getElementById('an-pill-hirereq-lbl');
   var any=false;
+  function setPill(id, show, label, state){ var p=document.getElementById('an-pill-'+id), l=document.getElementById('an-pill-'+id+'-lbl'); if(!p) return; if(show){ p.style.display=''; if(l) l.textContent=label; setPillState('an-pill-'+id, state||'warn'); any=true; } else { p.style.display='none'; } }
+  // 1) Major / notifiable incidents (critical only — not routine first-aid)
+  var crit=(typeof incLoadCritical==='function')?incLoadCritical():[];
+  setPill('inc', crit.length>0, crit.length+' major incident'+(crit.length>1?'s':'')+' to review', 'fail');
+  // 2) Plant out of service / damaged (flagged faults from the plant page)
+  var alerts=[]; try{ alerts=JSON.parse(localStorage.getItem('slan_plant_alerts')||'[]'); }catch(e){}
+  var outCt=alerts.filter(function(x){ return x.critical; }).length;
+  setPill('plant', alerts.length>0, (outCt? (outCt+' machine'+(outCt>1?'s':'')+' out of service') : (alerts.length+' machine'+(alerts.length>1?'s':'')+' flagged')), outCt?'fail':'warn');
+  // 3) Hire requests to approve
   var pending=_hireReqsRead().filter(function(r){ return r.status==='pending'; });
-  if(pill){ if(pending.length){ pill.style.display=''; if(lbl) lbl.textContent=pending.length+' hire request'+(pending.length>1?'s':'')+' to approve'; setPillState('an-pill-hirereq','warn'); any=true; } else { pill.style.display='none'; } }
+  setPill('hirereq', pending.length>0, pending.length+' hire request'+(pending.length>1?'s':'')+' to approve', 'warn');
+  // 4) Due-diligence — people stopped at the gate this month (company-wide oversight figure)
+  var gateStops=3;
+  setPill('gate', gateStops>0, gateStops+' stopped at the gate', 'warn');
   strip.style.display = any ? '' : 'none';
 }
 function dirChipTapHireReq(){ location.href='plant.html?role=director&tab=premob'; }
+function dirChipTapIncidents(){ if(typeof goToIncidentList==='function'){ goToIncidentList(); } }
+function dirChipTapPlant(){ location.href='plant.html?role=director'; }
+function dirChipTapGate(){ location.href='plant.html?role=director'; }
 function supChipTapPremob(){
   var o=_premobIdx(), target=null;
   Object.keys(o).forEach(function(code){ var s=o[code]; if(s&&s.flagged&&!target) target=code; }); // flagged first
