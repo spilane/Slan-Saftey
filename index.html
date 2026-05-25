@@ -2280,6 +2280,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="d-pill-plant-ps" onclick="supOpenPlantToday()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-ps-lbl">Pre-starts</span></div>
       <div class="status-pill" id="d-pill-premob" onclick="supChipTapPremob()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-premob-lbl">Pre-mob</span></div>
       <div class="status-pill" id="d-pill-hirereturn" onclick="supChipTapHireReturn()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereturn-lbl">Hire returns</span></div>
+      <div class="status-pill" id="d-pill-hirereq" onclick="supChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereq-lbl">Hire request</span></div>
     </div>
   </div>
 
@@ -10180,6 +10181,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div id="an-role-badge" class="badge" style="background:rgba(184,150,12,.15);border-color:rgba(184,150,12,.3);color:rgba(184,150,12,.9)">Director</div>
     </div>
   </div>
+  <!-- DIRECTOR ACTIVITY STRIP (mirrors worker/supervisor pills) -->
+  <div id="an-status-strip" style="background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px;display:none">
+    <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Needs your attention</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="status-pill" id="an-pill-hirereq" onclick="dirChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-hirereq-lbl">Hire requests</span></div>
+    </div>
+  </div>
   <div class="syncbar">
     <div class="sync-l"><div class="bdot g"></div><span>Live data</span></div>
     <div class="sync-r" id="an-last-sync">Updated just now</div>
@@ -17165,6 +17173,7 @@ function updateSupActivityStrip() {
   try { supUpdatePlantPrestartChip(); } catch(e) {}
   try { supUpdatePremobChip(); } catch(e) {}
   try { supUpdateHireReturnChip(); } catch(e) {}
+  try { supUpdateHireReqChip(); } catch(e) {}
 }
 
 function supChipTapPlant() { openPlantApprovals(); }
@@ -17209,6 +17218,29 @@ function supUpdateHireReturnChip(){
   } else { pill.style.display='none'; }
 }
 function supChipTapHireReturn(){ location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob'; }
+/* ── Hire requests (written by plant.html). Supervisor gets notified when their request is decided; director gets a "to approve" pill. ── */
+function _hireReqsRead(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_hire_requests')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function _hireReqsSave(a){ try{ localStorage.setItem('slan_plant_hire_requests', JSON.stringify(a)); }catch(e){} }
+function supUpdateHireReqChip(){
+  var pill=document.getElementById('d-pill-hirereq'), lbl=document.getElementById('d-pill-hirereq-lbl'); if(!pill) return;
+  var decided=_hireReqsRead().filter(function(r){ return (r.status==='approved'||r.status==='rejected') && !r.seen_sup; });
+  if(decided.length){
+    pill.style.display='';
+    var rej=decided.filter(function(r){ return r.status==='rejected'; });
+    if(lbl){ lbl.textContent = (decided.length===1) ? ('Hire '+(decided[0].status==='approved'?'approved':'rejected')+' — '+decided[0].type) : (decided.length+' hire requests decided'); }
+    setPillState('d-pill-hirereq', rej.length?'fail':'done');
+  } else { pill.style.display='none'; }
+}
+function supChipTapHireReq(){ var a=_hireReqsRead(); a.forEach(function(r){ if(r.status==='approved'||r.status==='rejected') r.seen_sup=true; }); _hireReqsSave(a); location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob'; }
+function dirUpdateActivityStrip(){
+  var strip=document.getElementById('an-status-strip'); if(!strip) return;
+  var pill=document.getElementById('an-pill-hirereq'), lbl=document.getElementById('an-pill-hirereq-lbl');
+  var any=false;
+  var pending=_hireReqsRead().filter(function(r){ return r.status==='pending'; });
+  if(pill){ if(pending.length){ pill.style.display=''; if(lbl) lbl.textContent=pending.length+' hire request'+(pending.length>1?'s':'')+' to approve'; setPillState('an-pill-hirereq','warn'); any=true; } else { pill.style.display='none'; } }
+  strip.style.display = any ? '' : 'none';
+}
+function dirChipTapHireReq(){ location.href='plant.html?role=director&tab=premob'; }
 function supChipTapPremob(){
   var o=_premobIdx(), target=null;
   Object.keys(o).forEach(function(code){ var s=o[code]; if(s&&s.flagged&&!target) target=code; }); // flagged first
@@ -36847,6 +36879,8 @@ function goToAnalytics(fromRole) {
   anIsDirector = (fromRole === 'director');
   console.log('✅ Navigating to screen-analytics, isDirector:', anIsDirector);
   goTo('screen-analytics');
+  // Director activity-pill strip (hire requests to approve, etc.) — directors only
+  try { if (anIsDirector) { dirUpdateActivityStrip(); } else { var _anStrip=document.getElementById('an-status-strip'); if(_anStrip) _anStrip.style.display='none'; } } catch(e) {}
   const p = getProfile();
   // Set logo
   const logo = document.getElementById('an-logo');
