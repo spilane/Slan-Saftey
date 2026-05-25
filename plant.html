@@ -873,6 +873,7 @@ function openHub(i){
       ? (premCleared ? '' : '<button class="cta" style="background:var(--warn)" onclick="plantPremobOpen(\''+a.code+'\')">⚠ Not cleared for site — complete pre-mobilisation first</button>')
       : '<button class="cta" onclick="openGate()">Start Pre-Start</button>')+
     warrantyFlag +
+    '<button class="btn-ghost" style="margin-top:10px" onclick="plantRaiseWO(\''+a.code+'\')">'+(getRole()==='worker'?'⚠ Report a fault':'➕ Raise a work order')+'</button>'+
     (getRole()!=='worker' ? ('<div class="sec-h">Machine details</div><div class="svc">'+
       '<div class="svc-row"><span>Site</span><span>'+assetSite(a.code)+'</span></div>'+
       '<div class="svc-row"><span>Year</span><span>'+(dt.year||'—')+'</span></div>'+
@@ -2961,6 +2962,43 @@ function woComplete(i){
 }
 function _woBack(){ if(_asMechWO!=null && _woCur!=null && WORKORDERS[_woCur]){ _woReadForm(WORKORDERS[_woCur]); _saveWO(WORKORDERS[_woCur]); } _asMechWO=null; _woCur=null; renderOversight(); }
 function completeWO(wo){ var w=_woFind(wo); var i=w?WORKORDERS.indexOf(w):-1; if(i>=0) woComplete(i); }
+/* ---------- Raise a work order / report a fault from the machine page (any role) ---------- */
+function _rwoSevRow(val,icon,title,sub){
+  return '<label style="display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer"><input type="radio" name="rwo-sev" value="'+val+'"'+(val==='med'?' checked':'')+' style="width:18px;height:18px;accent-color:#2D6A45;flex-shrink:0"><span style="font-size:18px">'+icon+'</span><span><span style="font-size:13px;font-weight:700;color:var(--deep);display:block">'+title+'</span><span style="font-size:11px;color:var(--t2)">'+sub+'</span></span></label>';
+}
+function plantRaiseWO(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
+  var isWorker=getRole()==='worker', idx=ASSETS.indexOf(a);
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="openHub('+idx+')">‹ Back to machine</button>'+
+    '<div class="hub-head"><div class="hub-ic">🛠️</div><div style="flex:1"><div class="hub-code">'+(isWorker?'Report a fault':'Raise a work order')+'</div><div class="hub-mm">'+a.code+' · '+a.make+' '+a.model+'</div></div></div>'+
+    '<div class="sec-h">What&rsquo;s wrong?</div>'+
+    '<textarea id="rwo-desc" placeholder="Describe the fault — what you noticed, where, and any safety concern…" style="width:100%;box-sizing:border-box;min-height:90px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical"></textarea>'+
+    '<div class="sec-h">How serious is it?</div><div class="tile" style="padding:4px 0">'+
+      _rwoSevRow('low','🟢','Minor — still usable','Note it; the machine can keep working')+
+      _rwoSevRow('med','🟠','Needs repair soon','Flag for repair; still usable for now')+
+      _rwoSevRow('crit','🔴','Critical — take out of service','Unsafe to use; stop the machine now')+
+    '</div>'+
+    '<button class="cta" style="margin-top:16px" onclick="plantRaiseWOSubmit(\''+code+'\')">'+(isWorker?'Report fault':'Raise work order')+'</button>'+
+  '</div>';
+  showDetail(html);
+}
+function plantRaiseWOSubmit(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
+  var dEl=document.getElementById('rwo-desc'), desc=dEl?(dEl.value||'').trim():'';
+  if(!desc){ if(dEl){ dEl.style.borderColor='#A32D2D'; dEl.focus(); } return; }
+  var sevEl=document.querySelector('input[name="rwo-sev"]:checked'), sev=sevEl?sevEl.value:'med';
+  var prio=(sev==='crit')?'High':(sev==='med'?'Medium':'Low'), critical=(sev==='crit');
+  var who=getRole()==='worker' ? ((currentWorker&&currentWorker.name)?currentWorker.name:'Operator') : (getRole()==='director'?'Patrick Murphy':((typeof PLANT_SUP_NAME!=='undefined'&&PLANT_SUP_NAME[oversightSite])?PLANT_SUP_NAME[oversightSite]:'Supervisor'));
+  var woObj={ wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:desc, priority:prio, status:'Raised', raised:'just now · '+who };
+  WORKORDERS.unshift(woObj); _saveWO(woObj);
+  if(typeof _setPlantAlert==='function') _setPlantAlert(a, desc, critical);
+  a.status = critical?'out_of_service':'fault_reported';
+  var msg = critical
+    ? (a.code+' has been flagged <b>critical</b> and taken out of service. Work order '+woObj.wo+' is raised and the supervisor has been notified.')
+    : ('Work order '+woObj.wo+' raised for '+a.code+'. The supervisor has been notified and can assign it to a mechanic.');
+  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">'+(critical?'⛔':'🛠️')+'</div><div style="font-size:16px;font-weight:800;color:'+(critical?'#A32D2D':'var(--deep)')+';margin-top:6px">'+(critical?'Taken out of service':'Work order raised')+'</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+msg+'</div></div>', function(){ if(getRole()==='worker'){ openHub(ASSETS.indexOf(a)); } else { platTab='workorders'; woSub='open'; renderOversight(); } });
+}
 var QR_SIZE='M'; var QR_ONE=null;
 function _qrPx(){ return QR_SIZE==='S'?105:(QR_SIZE==='L'?300:175); }
 function _qrCols(){ return QR_SIZE==='S'?3:(QR_SIZE==='L'?1:2); }
