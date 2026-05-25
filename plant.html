@@ -1733,6 +1733,19 @@ function plantHireMoneyPanel(hired){
     (retList.length ? ('<div style="font-size:11.5px;color:var(--t2);margin-top:'+(pendList.length?'4px':'10px')+'">📦 '+retList.length+' machine'+(retList.length>1?'s':'')+' off-hired — charge stopped.</div>') : '')+
   '</div></div>';
 }
+function plantHireReturnsWatchlist(hired){
+  var active=hired.filter(function(a){ return !_hireReturned(a.code) && hireDueDate(a.code); });
+  if(!active.length) return '';
+  active.sort(function(a,b){ var da=hireDueInDays(a.code), db=hireDueInDays(b.code); return (da==null?9999:da)-(db==null?9999:db); });
+  var dueSoon=active.filter(function(a){ var d=hireDueInDays(a.code); return d!=null && d<=HIRE_RETURN_REMIND_DAYS; });
+  var rows=active.map(function(a){
+    var d=hireDueInDays(a.code), hi=hireInfo(a.code), soon=(d!=null && d<=HIRE_RETURN_REMIND_DAYS);
+    var col=soon?(d<0?'#A32D2D':'#8A5A00'):'var(--t2)';
+    var when=(d!=null)?(d<0?(Math.abs(d)+'d overdue'):(d===0?'due today':('due in '+d+'d'))):'';
+    return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic">'+(soon?'⏰':a.icon)+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+hi.supplier+' · back '+fmtShort(hireDueDate(a.code))+' · <span style="color:'+col+';font-weight:700">'+when+'</span></div></div><div class="chev">›</div></button>';
+  }).join('');
+  return '<div class="fcard"'+(dueSoon.length?' style="border-top-color:#B8960C"':'')+'><div class="fcard-hdr">📅 Hire returns — due back'+(dueSoon.length?(' · '+dueSoon.length+' soon'):'')+'</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+rows+'</div></div>';
+}
 function plantPremobBody(fleet){
   var hired=fleet.filter(function(a){ return isHired(a.code); }); // pre-mob view is for hired-in plant
   var cleared    =hired.filter(function(a){ return _premobState(a.code).cleared && !_hireReturned(a.code); });
@@ -1754,7 +1767,7 @@ function plantPremobBody(fleet){
   var intro='<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site — the <b>supplier</b> completes the checklist before delivery; a <b>ticketed operator on site</b> verifies, photographs and accepts it on arrival.'+
     '<div style="margin-top:11px;border-top:1px solid var(--border);padding-top:11px"><div style="font-weight:700;color:var(--text);margin-bottom:6px">Hiring something new? Send the supplier a blank form:</div><div style="display:flex;gap:6px"><select id="premob-blank-type" style="flex:1;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff">'+typeOpts.map(function(t){return '<option>'+t+'</option>';}).join('')+'</select><button class="btn-amber" onclick="premobSendBlank()" style="white-space:nowrap;padding:9px 14px">Send / download</button></div></div>'+
   '</div></div>';
-  return plantHireMoneyPanel(hired) + intro + tabs + '<div class="tile">'+rows+'</div>';
+  return plantHireMoneyPanel(hired) + plantHireReturnsWatchlist(hired) + intro + tabs + '<div class="tile">'+rows+'</div>';
 }
 function plantPremobOpen(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
@@ -2189,7 +2202,8 @@ function renderOversight(){
       '<div class="fcard"><div class="fcard-hdr">⚠ Needs Action ('+need.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+attHtml+'</div></div>'+
       '<div class="fcard"><div class="fcard-hdr">📋 Recent pre-starts ('+savedRecs.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+recFeed+'</div></div>'+
       '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend-hero"><div class="s-l">Last 12 months</div><div class="s-v">'+money(spend12)+'</div><div class="s-tr">▼ 8% vs prior year</div></div><div class="spend-mini"><div class="s-l">Last 6 months</div><div class="s-v">'+money(Math.round(spend12*0.45))+'</div></div></div></div>'+
-      plantHireMoneyPanel(fleet.filter(function(a){ return isHired(a.code); }));
+      plantHireMoneyPanel(fleet.filter(function(a){ return isHired(a.code); }))+
+      plantHireReturnsWatchlist(fleet.filter(function(a){ return isHired(a.code); }));
   } else if(platTab==='assets'){
     var rows=fleet.map(function(a){
       var dt=plantDetails(a.code);
