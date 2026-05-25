@@ -1902,16 +1902,9 @@ function plantHireRequestsCard(hired){
   var topEl = isDir
     ? (pending.length ? '<div style="font-size:11.5px;color:#A06000;font-weight:700;margin:0 0 10px;line-height:1.45">'+pending.length+' request'+(pending.length>1?'s':'')+' awaiting your approval — open below.</div>' : '<div style="font-size:11.5px;color:var(--t2);margin:0 0 10px;line-height:1.45">Requests are raised by the site supervisor; you approve or reject them here.</div>')
     : '<button class="btn-ghost" onclick="hireReqOpen()" style="margin:0 0 10px">+ Request a hire</button>';
-  // suppliers folded into the same card — pick the company when requesting; contacts handy here too
-  var counts={}; (hired||[]).forEach(function(a){ var s=hireInfo(a.code).supplier; if(s) counts[s]=(counts[s]||0)+1; });
-  var supRows=Object.keys(HIRE_SUPPLIERS).map(function(s){ var c=HIRE_SUPPLIERS[s]||{}, n=counts[s]||0;
-    return '<div class="row" style="cursor:default"><div class="row-ic">🏢</div><div class="row-main"><div class="row-t">'+s+'</div><div class="row-s">'+(n?(n+' on hire · '):'')+'<a href="tel:'+c.phone.replace(/\s/g,'')+'" style="color:var(--mid);font-weight:700;text-decoration:none">'+c.phone+'</a> · <a href="mailto:'+c.email+'" style="color:var(--mid);font-weight:700;text-decoration:none">email</a></div></div></div>';
-  }).join('');
-  return '<div class="fcard"'+(isDir&&pending.length?' style="border-top-color:#A06000"':'')+'><div class="fcard-hdr">📝 Hire requests &amp; suppliers'+(pending.length?(' · '+pending.length+' pending'+(isDir?' approval':'')):'')+'</div><div class="fcard-body" style="padding-bottom:8px">'+
+  return '<div class="fcard"'+(isDir&&pending.length?' style="border-top-color:#A06000"':'')+'><div class="fcard-hdr">📝 Hire requests'+(pending.length?(' · '+pending.length+' pending'+(isDir?' approval':'')):'')+'</div><div class="fcard-body" style="padding-bottom:8px">'+
     topEl+
     '<div class="tile" style="margin:0">'+rows+'</div>'+
-    '<div style="font-size:10.5px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin:14px 0 6px">Hire suppliers</div>'+
-    '<div class="tile" style="margin:0">'+supRows+'</div>'+
   '</div></div>';
 }
 function plantHireReturnsWatchlist(hired){
