@@ -17220,7 +17220,13 @@ function supUpdateHireReturnChip(){
     setPillState('d-pill-hirereturn', overdue.length?'fail':'warn');
   } else { pill.style.display='none'; }
 }
-function supChipTapHireReturn(){ location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob'; }
+function supChipTapHireReturn(){
+  // shortcut → open the exact machine that's due back (soonest), not the tab
+  var hs=_hireStateIdx();
+  var due=SUP_HIRE_RETURNS.filter(function(h){ if(!h.onSite) return false; var st=hs[h.code]; if(st&&(st.returned||st.off_hire_requested)) return false; return h.dueDays<=7; }).sort(function(a,b){ return a.dueDays-b.dueDays; });
+  var base='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use';
+  location.href = due.length ? (base+'&machine='+encodeURIComponent(due[0].code)) : (base+'&tab=premob');
+}
 /* ── Hire requests (written by plant.html). Supervisor gets notified when their request is decided; director gets a "to approve" pill. ── */
 function _hireReqsRead(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_hire_requests')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function _hireReqsSave(a){ try{ localStorage.setItem('slan_plant_hire_requests', JSON.stringify(a)); }catch(e){} }
@@ -17234,7 +17240,14 @@ function supUpdateHireReqChip(){
     setPillState('d-pill-hirereq', rej.length?'fail':'done');
   } else { pill.style.display='none'; }
 }
-function supChipTapHireReq(){ var a=_hireReqsRead(); a.forEach(function(r){ if(r.status==='approved'||r.status==='rejected') r.seen_sup=true; }); _hireReqsSave(a); location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob'; }
+function supChipTapHireReq(){
+  var a=_hireReqsRead();
+  var decided=a.filter(function(r){ return (r.status==='approved'||r.status==='rejected') && !r.seen_sup; });
+  var target=decided.length?decided[0]:null; // newest-first; open the exact decided request
+  a.forEach(function(r){ if(r.status==='approved'||r.status==='rejected') r.seen_sup=true; }); _hireReqsSave(a);
+  var base='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use';
+  location.href = target ? (base+'&hirereq='+encodeURIComponent(target.id)) : (base+'&tab=premob');
+}
 function dirUpdateActivityStrip(){
   // Director pills are EXCEPTION/escalation only — what an officer needs to see, not day-to-day ops.
   var strip=document.getElementById('an-status-strip'); if(!strip) return;
@@ -17255,10 +17268,25 @@ function dirUpdateActivityStrip(){
   setPill('gate', gateStops>0, gateStops+' stopped at the gate', 'warn');
   strip.style.display = any ? '' : 'none';
 }
-function dirChipTapHireReq(){ location.href='plant.html?role=director&tab=premob'; }
-function dirChipTapIncidents(){ if(typeof goToIncidentList==='function'){ goToIncidentList(); } }
-function dirChipTapPlant(){ location.href='plant.html?role=director'; }
-function dirChipTapGate(){ location.href='plant.html?role=director'; }
+function dirChipTapHireReq(){
+  // shortcut → open the exact pending request to approve (newest first), not the tab
+  var pending=_hireReqsRead().filter(function(r){ return r.status==='pending'; });
+  var base='plant.html?role=director';
+  location.href = pending.length ? (base+'&hirereq='+encodeURIComponent(pending[0].id)) : (base+'&tab=premob');
+}
+function dirChipTapIncidents(){
+  // shortcut → open the exact critical incident if there's one, else the list
+  var crit=(typeof incLoadCritical==='function')?incLoadCritical():[];
+  if(crit.length===1 && crit[0] && crit[0].ref && typeof goToIncidentDetail==='function'){ goToIncidentDetail(crit[0].ref); return; }
+  if(typeof goToIncidentList==='function'){ goToIncidentList(); }
+}
+function dirChipTapPlant(){
+  // shortcut → open the exact flagged machine if there's one, else the plant dashboard
+  var alerts=[]; try{ alerts=JSON.parse(localStorage.getItem('slan_plant_alerts')||'[]'); }catch(e){}
+  var base='plant.html?role=director';
+  location.href = (alerts.length===1 && alerts[0] && alerts[0].code) ? (base+'&machine='+encodeURIComponent(alerts[0].code)) : base;
+}
+function dirChipTapGate(){ location.href='plant.html?role=director'; } // gate stops = an oversight figure (no single record) → the plant dashboard's due-diligence callout
 function supChipTapPremob(){
   var o=_premobIdx(), target=null;
   Object.keys(o).forEach(function(code){ var s=o[code]; if(s&&s.flagged&&!target) target=code; }); // flagged first

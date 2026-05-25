@@ -2044,11 +2044,25 @@ function plantPremobPDF(code, blank){
 function plantPremobBlankByType(type){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(_premobBlankByTypePDF(type), 'PreMob-BLANK-'+(type||'plant').replace(/[^A-Za-z0-9]+/g,'-')+'.pdf'); }
 /* Send a PDF straight from the app (phone share sheet → email/WhatsApp/etc.); falls back to the viewer+download on desktop / unsupported */
 function _premobShare(doc, filename, title, msg){
+  var blob, file;
+  try{ blob=doc.output('blob'); file=new File([blob], filename, {type:'application/pdf'}); }
+  catch(e){ try{ openPdfDoc(doc, filename); }catch(_){} return; }
   try{
-    var blob=doc.output('blob'), file=new File([blob], filename, {type:'application/pdf'});
-    if(navigator.canShare && navigator.canShare({files:[file]})){ navigator.share({files:[file], title:title, text:msg||title}).catch(function(){ try{ openPdfDoc(doc, filename); }catch(e){} }); return; }
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      // Phone share sheet WITH the PDF attached (email / WhatsApp / etc.)
+      navigator.share({files:[file], title:title, text:msg||title}).catch(function(err){ if(err && err.name==='AbortError') return; _premobDownload(blob, filename, doc); });
+      return;
+    }
   }catch(e){}
-  openPdfDoc(doc, filename);
+  // No file-sharing (e.g. desktop) → download the actual PDF so it can be attached, viewer as last resort
+  _premobDownload(blob, filename, doc);
+}
+function _premobDownload(blob, filename, doc){
+  try{
+    var url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+    setTimeout(function(){ try{ document.body.removeChild(a); URL.revokeObjectURL(url); }catch(e){} }, 1500);
+  }catch(e){ try{ openPdfDoc(doc, filename); }catch(_){} }
 }
 function premobSendBlank(){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } var t=(document.getElementById('premob-blank-type')||{}).value||'EWP'; _premobShare(_premobBlankByTypePDF(t), 'PreMob-BLANK-'+t.replace(/[^A-Za-z0-9]+/g,'-')+'.pdf', 'Pre-mobilisation checklist — '+t, 'Please complete this pre-mobilisation checklist and return it before the machine mobilises to site.'); }
 function _premobBlankByTypePDF(type){
@@ -2456,6 +2470,9 @@ renderAssets();
   // Pre-mob deep-link: plant.html?premob=EWP-019 opens that machine's pre-mobilisation form (from the assigned operator's task pill)
   var pmm=/[?&]premob=([^&]+)/.exec(location.search);
   if(pmm){ var pmc=decodeURIComponent(pmm[1]).toUpperCase(); try{ plantPremobOpen(pmc); return; }catch(e){} }
+  // Hire-request deep-link: plant.html?hirereq=HR-123 opens that request's detail (from the supervisor/director hire pills — pills are shortcuts to the exact item)
+  var hrm=/[?&]hirereq=([^&]+)/.exec(location.search);
+  if(hrm){ var hrid=decodeURIComponent(hrm[1]); try{ if(getRole()==='supervisor'){ oversightSite=getSiteParam()||'Bondi Junction Mixed Use'; } hireReqOpenDetail(hrid); return; }catch(e){} }
   // Supervisor shortcut: plant.html?view=today opens the "Today's pre-starts" list (from the "N pre-starts done" pill)
   if(/[?&]view=today/.test(location.search) && ['manager','supervisor','director'].indexOf(getRole())>-1){ try{ renderTodayPrestarts(); return; }catch(e){} }
   if(['manager','supervisor','director'].indexOf(getRole())>-1) renderOversight();
