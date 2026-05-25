@@ -2279,6 +2279,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="d-pill-plant-appr" onclick="openPlantApprovals()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-appr-lbl">Plant approvals</span></div>
       <div class="status-pill" id="d-pill-plant-ps" onclick="supOpenPlantToday()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-ps-lbl">Pre-starts</span></div>
       <div class="status-pill" id="d-pill-premob" onclick="supChipTapPremob()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-premob-lbl">Pre-mob</span></div>
+      <div class="status-pill" id="d-pill-hirereturn" onclick="supChipTapHireReturn()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereturn-lbl">Hire returns</span></div>
     </div>
   </div>
 
@@ -17163,6 +17164,7 @@ function updateSupActivityStrip() {
   try { supUpdatePlantApprovalsChip(); } catch(e) {}
   try { supUpdatePlantPrestartChip(); } catch(e) {}
   try { supUpdatePremobChip(); } catch(e) {}
+  try { supUpdateHireReturnChip(); } catch(e) {}
 }
 
 function supChipTapPlant() { openPlantApprovals(); }
@@ -17187,6 +17189,26 @@ function supUpdatePremobChip(){
   else if(cleared){ pill.style.display=''; if(lbl) lbl.textContent=cleared+' — pre-mob cleared'; setPillState('d-pill-premob','done'); }
   else { pill.style.display='none'; }
 }
+/* ── Hire returns due-back nudge (supervisor home). Mirrors plant.html PLANT_HIRE off_hire_due_days — keep in sync until the backend unifies them. ── */
+var SUP_HIRE_RETURNS=[
+  {code:'EWP-019', supplier:'Access Hire Australia', dueDays:18},
+  {code:'TLH-003', supplier:'Onsite Rental Group',   dueDays:25},
+  {code:'GEN-005', supplier:'Coates Hire',           dueDays:4}
+];
+function _hireStateIdx(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_hirestate')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function supUpdateHireReturnChip(){
+  var pill=document.getElementById('d-pill-hirereturn'), lbl=document.getElementById('d-pill-hirereturn-lbl');
+  if(!pill) return;
+  var hs=_hireStateIdx();
+  var soon=SUP_HIRE_RETURNS.filter(function(h){ var st=hs[h.code]; if(st&&(st.returned||st.off_hire_requested)) return false; return h.dueDays<=7; });
+  if(soon.length){
+    pill.style.display='';
+    var overdue=soon.filter(function(h){return h.dueDays<0;});
+    if(lbl){ lbl.textContent = (soon.length===1) ? (soon[0].code+' — hire due back '+(soon[0].dueDays<0?(Math.abs(soon[0].dueDays)+'d overdue'):('in '+soon[0].dueDays+'d'))) : (soon.length+' hires due back soon'); }
+    setPillState('d-pill-hirereturn', overdue.length?'fail':'warn');
+  } else { pill.style.display='none'; }
+}
+function supChipTapHireReturn(){ location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use&tab=premob'; }
 function supChipTapPremob(){
   var o=_premobIdx(), target=null;
   Object.keys(o).forEach(function(code){ var s=o[code]; if(s&&s.flagged&&!target) target=code; }); // flagged first
