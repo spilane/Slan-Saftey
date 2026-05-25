@@ -794,9 +794,10 @@ function openHub(i){
     } else if(!offReq){
       hireNudge='<button class="btn-ghost" onclick="plantOffHire(\''+a.code+'\')" style="margin-top:8px">Arrange off-hire with '+hi.supplier+'</button>';
     }
-    // Buy-vs-hire insight (honest): once it's been on hire a while, show spend-to-date vs buy price + break-even
+    // Buy-vs-hire insight (honest): once it's been on hire a while, show spend-to-date vs buy price + break-even.
+    // Skip it when the machine is idle — the message there is "off-hire it", not "compare buying".
     var buyVsHire='';
-    if(!ret){
+    if(!ret && !(idleCost>0)){
       var wks=hireWeeksOnHire(a.code), be=hireBreakevenWeeks(a.code,a), spent=hireSpentToDate(a.code), buy=_hireBuyPrice(a);
       if(wks>=4 && be){
         var pctBE=Math.round(wks/be*100), buyCase=(wks>=be*0.5);
