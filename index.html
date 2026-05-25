@@ -17191,16 +17191,16 @@ function supUpdatePremobChip(){
 }
 /* ── Hire returns due-back nudge (supervisor home). Mirrors plant.html PLANT_HIRE off_hire_due_days — keep in sync until the backend unifies them. ── */
 var SUP_HIRE_RETURNS=[
-  {code:'EWP-019', supplier:'Access Hire Australia', dueDays:18},
-  {code:'TLH-003', supplier:'Onsite Rental Group',   dueDays:25},
-  {code:'GEN-005', supplier:'Coates Hire',           dueDays:4}
+  {code:'EWP-019', supplier:'Access Hire Australia', dueDays:18, onSite:false},
+  {code:'TLH-003', supplier:'Onsite Rental Group',   dueDays:25, onSite:false},
+  {code:'GEN-005', supplier:'Coates Hire',           dueDays:4,  onSite:true}
 ];
 function _hireStateIdx(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_hirestate')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
 function supUpdateHireReturnChip(){
   var pill=document.getElementById('d-pill-hirereturn'), lbl=document.getElementById('d-pill-hirereturn-lbl');
   if(!pill) return;
   var hs=_hireStateIdx();
-  var soon=SUP_HIRE_RETURNS.filter(function(h){ var st=hs[h.code]; if(st&&(st.returned||st.off_hire_requested)) return false; return h.dueDays<=7; });
+  var soon=SUP_HIRE_RETURNS.filter(function(h){ if(!h.onSite) return false; var st=hs[h.code]; if(st&&(st.returned||st.off_hire_requested)) return false; return h.dueDays<=7; });
   if(soon.length){
     pill.style.display='';
     var overdue=soon.filter(function(h){return h.dueDays<0;});

@@ -501,7 +501,7 @@ function plantReturnPDF(code){
     doc.setFont('helvetica','bold');
     if(v==='ok'){ doc.setTextColor(27,110,58); doc.text('OK', W-M, y, {align:'right'}); } else if(v==='no'){ doc.setTextColor(163,45,45); doc.text('ISSUE', W-M, y, {align:'right'}); } else { doc.setTextColor(150,150,150); doc.text('–', W-M, y, {align:'right'}); }
     y+=4.8*q.length;
-    if(v==='no' && rn[i]){ doc.setFont('helvetica','normal'); doc.setTextColor(150,45,45); doc.setFontSize(7.8); var r=doc.splitTextToSize('   ↳ '+rn[i], W-2*M-6); doc.text(r, M+4, y); y+=4.2*r.length; doc.setTextColor(40,40,40); }
+    if(v==='no' && rn[i]){ doc.setFont('helvetica','normal'); doc.setTextColor(150,45,45); doc.setFontSize(7.8); var r=doc.splitTextToSize('   » '+rn[i], W-2*M-6); doc.text(r, M+4, y); y+=4.2*r.length; doc.setTextColor(40,40,40); }
     y+=1.4;
   });
   y+=2;
@@ -1734,7 +1734,8 @@ function plantHireMoneyPanel(hired){
   '</div></div>';
 }
 function plantHireReturnsWatchlist(hired){
-  var active=hired.filter(function(a){ return !_hireReturned(a.code) && hireDueDate(a.code); });
+  // only machines actually ON SITE (pre-mob cleared) and not yet off-hired — don't clutter with plant still being pre-mobilised
+  var active=hired.filter(function(a){ return _premobState(a.code).cleared && !_hireReturned(a.code) && hireDueDate(a.code); });
   if(!active.length) return '';
   active.sort(function(a,b){ var da=hireDueInDays(a.code), db=hireDueInDays(b.code); return (da==null?9999:da)-(db==null?9999:db); });
   var dueSoon=active.filter(function(a){ var d=hireDueInDays(a.code); return d!=null && d<=HIRE_RETURN_REMIND_DAYS; });
@@ -1922,7 +1923,7 @@ function plantPremobPDF(code, blank){
         if(v==='no'){ doc.setTextColor(163,45,45); } else if(v==='ok'){ doc.setTextColor(27,110,58); } else { doc.setTextColor(150,150,150); }
         doc.text(siteTxt, W-M, y, {align:'right'});
         y+=4.6*qLine.length;
-        if(v==='no' && (rs[key]||nt[key])){ doc.setFont('helvetica','normal'); doc.setTextColor(150,45,45); doc.setFontSize(7.6); var r=doc.splitTextToSize('   ↳ '+(rs[key]||'')+(nt[key]?((rs[key]?' — ':'')+nt[key]):''), W-2*M-6); doc.text(r, M+4, y); y+=4.2*r.length; doc.setTextColor(40,40,40); }
+        if(v==='no' && (rs[key]||nt[key])){ doc.setFont('helvetica','normal'); doc.setTextColor(150,45,45); doc.setFontSize(7.6); var r=doc.splitTextToSize('   » '+(rs[key]||'')+(nt[key]?((rs[key]?' — ':'')+nt[key]):''), W-2*M-6); doc.text(r, M+4, y); y+=4.2*r.length; doc.setTextColor(40,40,40); }
       }
       y+=1.4;
     });
