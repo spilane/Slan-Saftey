@@ -1701,8 +1701,46 @@ var WORKORDERS=[
   {wo:'WO-2026-0036', code:'TLH-003', machine:'Manitou MT1840 Telehandler', fault:'Reversing alarm intermittent', priority:'Low', status:'Awaiting parts', raised:'4 days ago · Mark Flynn'}
 ];
 function _prioCol(p){ return p==='High'?'#A32D2D':(p==='Medium'?'#A06000':'#4B6358'); }
+/* ---------- WORK ORDERS / REPAIRS — mechanic assignment, diagnosis, parts, labour, cost, return-to-service sign-off ---------- */
+var MECHANICS=[
+  { name:'FleetServ Mechanical', type:'External workshop', rate:140 },
+  { name:'Dave Wilkins',         type:'In-house mechanic',  rate:95 },
+  { name:'OnSite Plant Repairs', type:'Mobile mechanic',    rate:165 }
+];
+var _woCur=null;               // index of the WO currently open (for the live cost preview)
+function _woFind(id){ return WORKORDERS.find(function(w){ return w.wo===id; }); }
+function _woPartsCost(w){ return (w.parts||[]).reduce(function(s,p){ return s+(Number(p.cost)||0); }, 0); }
+function _woLabourCost(w){ return (Number(w.labour_hrs)||0)*(Number(w.labour_rate)||0); }
+function _woTotal(w){ return _woPartsCost(w)+_woLabourCost(w); }
+function _woClientCost(w){ return w.warranty_claim ? 0 : _woTotal(w); }   // what the client actually pays (warranty claim = $0)
+/* completed repair costs the client paid for this machine — added on top of the historical seed spend */
+function _woSpendFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; }).reduce(function(s,w){ return s+_woClientCost(w); }, 0); }
+function assetSpend12(a){ return (a.spend12mo||0)+_woSpendFor(a.code); }
+/* read the editable worksheet fields back into the WO object (no storage write) */
+function _woReadForm(w){
+  if(!w) return;
+  var d=document.getElementById('wo-diagnosis'); if(d) w.diagnosis=d.value;
+  var lh=document.getElementById('wo-labour-hrs'); if(lh) w.labour_hrs=parseFloat(lh.value)||0;
+  var lr=document.getElementById('wo-labour-rate'); if(lr) w.labour_rate=parseFloat(lr.value)||0;
+  var wc=document.getElementById('wo-warranty'); if(wc) w.warranty_claim=wc.checked;
+}
+/* live-update the cost summary as labour hrs/rate are typed, without re-rendering (keeps input focus) */
+function _woCostPreview(){
+  var w=(_woCur!=null)?WORKORDERS[_woCur]:null; if(!w) return;
+  var hrs=parseFloat((document.getElementById('wo-labour-hrs')||{}).value)||0;
+  var rate=parseFloat((document.getElementById('wo-labour-rate')||{}).value)||0;
+  var wcEl=document.getElementById('wo-warranty'), claim=wcEl?wcEl.checked:!!w.warranty_claim;
+  var parts=_woPartsCost(w), labour=hrs*rate, total=parts+labour, client=claim?0:total;
+  var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+  set('wo-cost-labour', money(labour));
+  set('wo-cost-total', money(total));
+  var ce=document.getElementById('wo-cost-client');
+  if(ce){ ce.innerHTML = claim ? ('<span style="color:#1B6E3A">Covered by warranty — '+money(0)+' to you</span>') : ('<b>'+money(client)+'</b>'); }
+}
 var platTab='dashboard';
 function platSetTab(t){ platTab=t; renderOversight(); }
+var woSub='open';
+function woSetSub(s){ woSub=s; renderOversight(); }
 function _expired(d){ return d && new Date(d) < new Date(); }
 function _siteFleet(){ return ASSETS.filter(function(a){ return oversightSite==='All' || assetSite(a.code)===oversightSite; }); }
 function _lastMonths(n){ var out=[],d=new Date(); for(var i=n-1;i>=0;i--){ var x=new Date(d.getFullYear(),d.getMonth()-i,1); out.push(x.toLocaleDateString('en-AU',{month:'short'})); } return out; }
@@ -1738,8 +1776,8 @@ function renderPlantCharts(){
   var fault=fleet.filter(function(a){return a.status!=='operational';}).length;
   var attn=Math.max(0, fleet.length-op-fault);
   _mkChart('ch-avail',{type:'doughnut',data:{labels:['Ready','Attention','Fault / blocked'],datasets:[{data:[op,attn,fault],backgroundColor:['#1B6E3A','#A06000','#A32D2D'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom'}}}});
-  var sB=fleet.slice().sort(function(a,b){return (b.spend12mo||0)-(a.spend12mo||0);});
-  _mkChart('ch-spend',{type:'bar',data:{labels:sB.map(function(a){return a.code;}),datasets:[{data:sB.map(function(a){return a.spend12mo||0;}),backgroundColor:'#2D6A45',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return '$'+(v/1000)+'k';}}}}}});
+  var sB=fleet.slice().sort(function(a,b){return assetSpend12(b)-assetSpend12(a);});
+  _mkChart('ch-spend',{type:'bar',data:{labels:sB.map(function(a){return a.code;}),datasets:[{data:sB.map(function(a){return assetSpend12(a);}),backgroundColor:'#2D6A45',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return '$'+(v/1000)+'k';}}}}}});
   renderUtilChart();
   var d7=[]; for(var i=6;i>=0;i--){ d7.push(fmtShort(dOffset(-i))); }
   _mkChart('ch-prestart',{type:'line',data:{labels:d7,datasets:[{data:[88,92,85,90,87,93,91],borderColor:'#1B6E3A',backgroundColor:'rgba(27,110,58,.12)',fill:true,tension:.35,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:function(v){return v+'%';}}}}}});
@@ -2443,9 +2481,10 @@ function renderOversight(){
   var siteMatch=function(code){ return oversightSite==='All' || assetSite(code)===oversightSite; };
   var fleet=ASSETS.filter(function(a){ return siteMatch(a.code); });
   var open=WORKORDERS.filter(function(w){ return w.status!=='Returned to service' && siteMatch(w.code); });
+  var done=WORKORDERS.filter(function(w){ return w.status==='Returned to service' && siteMatch(w.code); });
   var opCount=fleet.filter(function(a){return a.status==='operational';}).length;
   var attnCount=fleet.filter(function(a){ return a.status!=='operational' || _expired(a.service_due) || _expired(a.rego_expiry); }).length;
-  var spend12=fleet.reduce(function(s,a){ return s+(a.spend12mo||0); },0);
+  var spend12=fleet.reduce(function(s,a){ return s+assetSpend12(a); },0);
 
   var chipRow='';
   if(!supLocked){
@@ -2517,7 +2556,7 @@ function renderOversight(){
         '<td>'+(function(){ if(isHired(a.code)) return '<span style="color:var(--t3)">— hired</span>'; var w=warrantyInfo(a.code); if(!w) return '<span style="color:var(--t3)">—</span>'; return inWarranty(a.code)?('<span style="color:#1B6E3A;font-weight:700">In warranty</span><div class="cell-sub">'+fmtShort(warrantyUntil(a.code))+'</div>'):'<span style="color:var(--t3)">Out</span>'; })()+'</td>'+
         '<td>'+lpCell+'</td>'+
         '<td style="text-align:center">'+woCell+'</td>'+
-        '<td>'+money(a.spend12mo||0)+'</td>'+
+        '<td>'+money(assetSpend12(a))+'</td>'+
         '<td>'+stB+'</td>'+
         '<td><button onclick="event.stopPropagation();openHub('+ASSETS.indexOf(a)+')" style="padding:6px 12px;border-radius:7px;border:1.5px solid var(--border);background:#fff;color:var(--deep);font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap">View ›</button></td></tr>';
     }).join('');
@@ -2532,10 +2571,23 @@ function renderOversight(){
   } else if(platTab==='compliance'){
     body=plantComplianceBody(fleet);
   } else {
-    var woHtml=open.length?open.map(function(w){ var idx=WORKORDERS.indexOf(w);
-      return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
-    }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No open work orders.</div></div></div>';
-    body='<div class="tile">'+woHtml+'</div>';
+    var woSubNav='<div style="display:flex;gap:6px;margin-bottom:12px">'+[['open','Open ('+open.length+')'],['done','Completed ('+done.length+')']].map(function(s){
+      var on=(woSub===s[0]);
+      return '<button onclick="woSetSub(\''+s[0]+'\')" style="padding:6px 14px;border-radius:16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+'">'+s[1]+'</button>';
+    }).join('')+'</div>';
+    var woHtml;
+    if(woSub==='done'){
+      woHtml=done.length?done.map(function(w){ var idx=WORKORDERS.indexOf(w);
+        var when=w.signoff&&w.signoff.when?new Date(w.signoff.when).toLocaleDateString('en-AU',{day:'numeric',month:'short'}):'';
+        var costTxt=w.warranty_claim?'warranty claim · $0':money(_woClientCost(w));
+        return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+w.fault+' · '+(w.mechanic||'—')+(when?(' · '+when):'')+'</div></div><span class="row-s" style="flex-shrink:0;color:var(--deep);font-weight:700">'+costTxt+'</span><div class="chev">›</div></button>';
+      }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No completed repairs yet.</div></div></div>';
+    } else {
+      woHtml=open.length?open.map(function(w){ var idx=WORKORDERS.indexOf(w);
+        return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+(w.mechanic?(' · '+w.mechanic):'')+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
+      }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No open work orders.</div></div></div>';
+    }
+    body=woSubNav+'<div class="tile">'+woHtml+'</div>';
   }
 
   var subText = supLocked ? (oversightSite+' — your site only') : (oversightSite==='All'?'All sites':oversightSite);
@@ -2588,20 +2640,102 @@ function renderTodayPrestarts(){
 }
 function openWO(i){
   var w=WORKORDERS[i]; if(!w) return;
+  _woCur=i;
+  var inW=(typeof inWarranty==='function') && inWarranty(w.code) && !(typeof isHired==='function' && isHired(w.code));
+  var done=(w.status==='Returned to service');
   var pdfBtn = _loadPlantRecord(w.code) ? '<button class="btn-ghost" style="margin-top:12px" onclick="plantViewSavedPDF(\''+w.code+'\')">📄  View operator&rsquo;s pre-start record (PDF)</button>' : '';
+  var head='<div class="hub-head"><div class="hub-ic">🛠️</div><div style="flex:1"><div class="hub-code">'+w.wo+'</div><div class="hub-mm">'+w.code+' · '+w.machine+'</div><div class="hub-hours">'+w.priority+' priority · '+w.status+(w.mechanic?(' · '+w.mechanic):'')+'</div></div></div>';
+  var faultSec='<div class="sec-h">Reported fault</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-t">'+w.fault+'</div><div class="row-s">Raised '+w.raised+'</div></div></div></div>';
+  var body;
+  if(done){
+    body = _woCompletedView(w) + pdfBtn;
+  } else {
+    var warrantyBanner='';
+    if(inW){
+      var wf=warrantyInfo(w.code);
+      warrantyBanner='<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:11px 13px;margin:14px 0">'+
+        '<div style="font-size:12.5px;font-weight:800;color:#1B5E3F">🛡 Under '+wf.provider+' warranty until '+fmt(warrantyUntil(w.code))+'</div>'+
+        '<div style="font-size:11.5px;color:#1B5E3F;margin-top:5px;line-height:1.5">'+wf.terms+' — claim this repair with '+wf.provider+' before paying for it.</div>'+
+        '<label style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;font-weight:700;color:#1B5E3F;cursor:pointer"><input type="checkbox" id="wo-warranty" '+(w.warranty_claim?'checked':'')+' onchange="woFormChanged('+i+')" style="width:17px;height:17px;accent-color:#1B6E3A"> Claim this repair under warranty ($0 to you)</label>'+
+      '</div>';
+    }
+    var mechSec;
+    if(!w.mechanic){
+      mechSec='<div class="sec-h">Assign to a mechanic</div><div class="tile">'+MECHANICS.map(function(m,mi){
+        return '<button class="row" onclick="woAssign('+i+','+mi+')"><div class="row-main"><div class="row-t">'+m.name+'</div><div class="row-s">'+m.type+' · '+money(m.rate)+'/hr labour</div></div><div class="chev">›</div></button>';
+      }).join('')+'</div>';
+    } else {
+      mechSec='<div class="sec-h">Mechanic</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-t">'+w.mechanic+'</div><div class="row-s">'+(w.mech_type||'')+'</div></div><button onclick="woUnassign('+i+')" style="background:none;border:none;color:var(--gold);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">Change</button></div></div>';
+    }
+    var worksheet='';
+    if(w.mechanic){
+      var partsRows=(w.parts||[]).length ? (w.parts||[]).map(function(p,pi){
+        return '<div class="svc-row"><span>'+_premobEsc(p.desc)+'</span><span style="display:flex;align-items:center;gap:8px">'+money(p.cost||0)+' <button onclick="woRemovePart('+i+','+pi+')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;line-height:1;padding:0">✕</button></span></div>';
+      }).join('') : '<div class="svc-row" style="color:var(--t3)"><span>No parts added yet</span><span></span></div>';
+      worksheet=
+        '<div class="sec-h">Diagnosis</div>'+
+        '<textarea id="wo-diagnosis" placeholder="What was found and what was done…" style="width:100%;box-sizing:border-box;min-height:78px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical">'+_premobEsc(w.diagnosis||'')+'</textarea>'+
+        '<div class="sec-h">Parts &amp; materials</div><div class="svc">'+partsRows+'</div>'+
+        '<div style="display:flex;gap:6px;margin-top:8px">'+
+          '<input id="wo-part-desc" placeholder="Part / material" style="flex:1;min-width:0;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
+          '<input id="wo-part-cost" type="number" inputmode="decimal" placeholder="$" style="width:84px;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
+          '<button onclick="woAddPart('+i+')" style="padding:9px 14px;border:none;border-radius:9px;background:var(--deep);color:#fff;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit">Add</button>'+
+        '</div>'+
+        '<div class="sec-h">Labour</div><div class="svc">'+
+          '<div class="svc-row"><span>Hours</span><span><input id="wo-labour-hrs" type="number" inputmode="decimal" value="'+(w.labour_hrs||'')+'" oninput="_woCostPreview()" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div>'+
+          '<div class="svc-row"><span>Rate ($/hr)</span><span><input id="wo-labour-rate" type="number" inputmode="decimal" value="'+(w.labour_rate||'')+'" oninput="_woCostPreview()" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div>'+
+          '<div class="svc-row"><span>Labour cost</span><span id="wo-cost-labour">'+money(_woLabourCost(w))+'</span></div>'+
+        '</div>'+
+        '<div class="svc" style="margin-top:10px">'+
+          '<div class="svc-row"><span>Parts</span><span>'+money(_woPartsCost(w))+'</span></div>'+
+          '<div class="svc-row"><span>Total repair cost</span><span id="wo-cost-total">'+money(_woTotal(w))+'</span></div>'+
+          '<div class="svc-row"><span>Cost to you</span><span id="wo-cost-client">'+(w.warranty_claim?('<span style="color:#1B6E3A">Covered by warranty — '+money(0)+' to you</span>'):('<b>'+money(_woClientCost(w))+'</b>'))+'</span></div>'+
+        '</div>'+
+        '<button class="btn-ghost" style="margin-top:14px" onclick="woSaveDetails('+i+')">Save repair details</button>'+
+        '<button class="cta" style="background:var(--pass);margin-top:10px" onclick="woComplete('+i+')">Complete repair &amp; return to service</button>';
+    }
+    body = warrantyBanner + mechSec + worksheet + pdfBtn;
+  }
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="renderOversight()">‹ Work orders</button>'+
-    '<div class="hub-head"><div class="hub-ic">🛠️</div><div style="flex:1"><div class="hub-code">'+w.wo+'</div><div class="hub-mm">'+w.code+' · '+w.machine+'</div><div class="hub-hours">'+w.priority+' priority · '+w.status+'</div></div></div>'+
-    '<div class="sec-h">Reported fault</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-t">'+w.fault+'</div><div class="row-s">Raised '+w.raised+'</div></div></div></div>'+
-    pdfBtn+
-    '<button class="cta" style="background:var(--pass);margin-top:16px" onclick="completeWO(\''+w.wo+'\')">Complete &amp; return machine to service</button>'+
+    '<button class="back" onclick="_woBack()">‹ Work orders</button>'+
+    head + faultSec + body +
     '</div>';
   showDetail(html);
 }
-function completeWO(wo){
-  var w=WORKORDERS.find(function(x){return x.wo===wo;}); if(w){ w.status='Returned to service'; _clearPlantAlert(w.code); _removeSavedWO(wo); var ast=ASSETS.find(function(x){return x.code===w.code;}); if(ast) ast.status='operational'; }
-  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Work order complete</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+wo+' completed — machine marked returned to service.</div></div>', function(){ renderOversight(); });
+function _woCompletedView(w){
+  var partsRows=(w.parts||[]).length ? (w.parts||[]).map(function(p){ return '<div class="svc-row"><span>'+_premobEsc(p.desc)+'</span><span>'+money(p.cost||0)+'</span></div>'; }).join('') : '<div class="svc-row" style="color:var(--t3)"><span>No parts recorded</span><span></span></div>';
+  var when=w.signoff&&w.signoff.when?new Date(w.signoff.when).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}):'';
+  return '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:11px 13px;margin:14px 0;font-size:12.5px;color:#1B5E3F;font-weight:700">✅ Returned to service'+(when?(' · '+when):'')+(w.signoff&&w.signoff.by?(' · signed off by '+w.signoff.by):'')+'</div>'+
+    '<div class="sec-h">Diagnosis</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-s" style="white-space:pre-wrap">'+(_premobEsc(w.diagnosis||'')||'—')+'</div></div></div></div>'+
+    '<div class="sec-h">Parts &amp; materials</div><div class="svc">'+partsRows+'</div>'+
+    '<div class="svc" style="margin-top:10px">'+
+      '<div class="svc-row"><span>Labour</span><span>'+(w.labour_hrs||0)+' hr × '+money(w.labour_rate||0)+' = '+money(_woLabourCost(w))+'</span></div>'+
+      '<div class="svc-row"><span>Parts</span><span>'+money(_woPartsCost(w))+'</span></div>'+
+      '<div class="svc-row"><span>Total repair cost</span><span>'+money(_woTotal(w))+'</span></div>'+
+      '<div class="svc-row"><span>Cost to you</span><span>'+(w.warranty_claim?('<span style="color:#1B6E3A;font-weight:700">'+money(0)+' — claimed under warranty</span>'):('<b>'+money(_woClientCost(w))+'</b>'))+'</span></div>'+
+    '</div>';
 }
+function woFormChanged(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); _saveWO(w); openWO(i); }
+function woAssign(i, mi){ var w=WORKORDERS[i], m=MECHANICS[mi]; if(!w||!m) return; _woReadForm(w); w.mechanic=m.name; w.mech_type=m.type; if(!w.labour_rate) w.labour_rate=m.rate; if(w.status==='Raised') w.status='Assigned'; _saveWO(w); openWO(i); }
+function woUnassign(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); w.mechanic=''; w.mech_type=''; if(w.status==='Assigned'||w.status==='In progress') w.status='Raised'; _saveWO(w); openWO(i); }
+function woAddPart(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); var dEl=document.getElementById('wo-part-desc'), cEl=document.getElementById('wo-part-cost'); var desc=dEl?(dEl.value||'').trim():'', cost=cEl?(parseFloat(cEl.value)||0):0; if(!desc){ if(dEl){ dEl.style.borderColor='#A32D2D'; dEl.focus(); } return; } w.parts=(w.parts||[]).concat([{desc:desc, cost:cost}]); if(w.status==='Assigned') w.status='In progress'; _saveWO(w); openWO(i); }
+function woRemovePart(i, pi){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); (w.parts||[]).splice(pi,1); _saveWO(w); openWO(i); }
+function woSaveDetails(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); if((w.diagnosis||'').trim() && w.status==='Assigned') w.status='In progress'; _saveWO(w); slanMsg('', '<div style="text-align:center"><div style="font-size:38px">💾</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Repair details saved</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px">'+w.wo+' — diagnosis, parts and labour saved.</div></div>', function(){ openWO(i); }); }
+function woComplete(i){
+  var w=WORKORDERS[i]; if(!w) return; _woReadForm(w);
+  if(!w.mechanic){ slanMsg('Assign a mechanic first','<div style="font-size:13px;color:var(--t2);line-height:1.55">Pick the mechanic or workshop doing the repair before you sign it back into service.</div>'); return; }
+  if(!(w.diagnosis||'').trim()){ slanMsg('Record the diagnosis first','<div style="font-size:13px;color:var(--t2);line-height:1.55">Add a short diagnosis of what was found and fixed before returning the machine to service.</div>'); return; }
+  w.signoff={ by:w.mechanic, when:new Date().toISOString() };
+  w.status='Returned to service';
+  _saveWO(w);
+  if(typeof _clearPlantAlert==='function') _clearPlantAlert(w.code);
+  var ast=ASSETS.find(function(x){ return x.code===w.code; }); if(ast) ast.status='operational';
+  var total=_woTotal(w);
+  var costLine = w.warranty_claim ? ('Repair cost '+money(total)+' — <b>claimed under warranty ($0 to you)</b>.') : (money(total)+' added to this machine&rsquo;s maintenance spend.');
+  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Returned to service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+w.wo+' — '+w.code+' signed back into service by '+w.mechanic+'.<br>'+costLine+'</div></div>', function(){ platTab='workorders'; woSub='open'; renderOversight(); });
+}
+function _woBack(){ _woCur=null; renderOversight(); }
+function completeWO(wo){ var w=_woFind(wo); var i=w?WORKORDERS.indexOf(w):-1; if(i>=0) woComplete(i); }
 var QR_SIZE='M'; var QR_ONE=null;
 function _qrPx(){ return QR_SIZE==='S'?105:(QR_SIZE==='L'?300:175); }
 function _qrCols(){ return QR_SIZE==='S'?3:(QR_SIZE==='L'?1:2); }
@@ -2637,7 +2771,10 @@ seedDemoPlant();
 try{ _plantAlerts().forEach(function(al){ var a=ASSETS.find(function(x){return x.code===al.code;}); if(a) a.status=al.critical?'out_of_service':'fault_reported'; }); }catch(e){}
 // merge persisted work orders so an open issue carries into the next pre-start + the supervisor list, and continue WO numbering past the highest existing id
 try{
-  var _sw=_savedWOs(), _have={}; WORKORDERS.forEach(function(w){ _have[w.wo]=1; });
+  var _sw=_savedWOs(), _savedById={}; _sw.forEach(function(w){ _savedById[w.wo]=w; });
+  // the saved (localStorage) version of a WO is authoritative — it overrides the seeded one so a mechanic's diagnosis/parts/cost and a completed sign-off survive a reload
+  WORKORDERS=WORKORDERS.map(function(w){ return _savedById[w.wo]||w; });
+  var _have={}; WORKORDERS.forEach(function(w){ _have[w.wo]=1; });
   for(var _i=_sw.length-1;_i>=0;_i--){ if(!_have[_sw[_i].wo]){ WORKORDERS.unshift(_sw[_i]); } }
   var _max=42; WORKORDERS.forEach(function(w){ var m=/(\d{4})$/.exec(w.wo||''); if(m){ var n=parseInt(m[1],10); if(n>=_max) _max=n+1; } }); _woSeq=_max-42;
 }catch(e){}
