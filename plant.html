@@ -878,7 +878,10 @@ function _docExtract(type, a){
   if(type==='rego'){ return { _display:[['Registration', d.rego||'—'],['State', d.rego_state||'NSW'],['Expiry date', fmt(plus(12))]], apply:{ rego_expiry:plus(12) } }; }
   if(type==='insurance'){ return { _display:[['Insurer', d.insurer||'CGU Plant & Equipment'],['Policy no.', d.policy||'PLE-884500'],['Expiry date', fmt(plus(12))]], apply:{ insurance_expiry:plus(12) } }; }
   if(type==='service'){ var reading=sm?(sm.meter==='km'?(d.km||0):(a.hours||0)):(a.hours||0); var nd=plus(3); return { _display:[['Service date', fmt(iso(now))],['Next service due', fmt(nd)],[(sm&&sm.meter==='km'?'Odometer':'Engine hours'), reading.toLocaleString()+' '+(sm&&sm.meter==='km'?'km':'hrs')],['Workshop','FleetServ Mechanical']], apply:{ service_last:iso(now), service_due:nd } }; }
-  if(type==='invoice'){ return { _display:[['Supplier','FleetServ Mechanical'],['Invoice no.','INV-'+(10000+Math.floor(Math.random()*89999))],['Amount','$'+((a.swl?1850:640)).toLocaleString()],['Date', fmt(iso(now))]], apply:{} }; }
+  if(type==='invoice'){
+    if(typeof isHired==='function' && isHired(a.code)){ var _ih=hireInfo(a.code); return { _display:[['From', _ih?_ih.supplier:'Hire company'],['Invoice no.','INV-'+(10000+Math.floor(Math.random()*89999))],['For','Weekly hire charge'],['Amount', _ih?money(_ih.rate):'—'],['Date', fmt(iso(now))]], apply:{} }; }
+    return { _display:[['Supplier','FleetServ Mechanical'],['Invoice no.','INV-'+(10000+Math.floor(Math.random()*89999))],['Amount','$'+((a.swl?1850:640)).toLocaleString()],['Date', fmt(iso(now))]], apply:{} };
+  }
   if(type==='inspection'){ return { _display:[['Inspection','Periodic (green sticker)'],['Result','Pass'],['Inspected', fmt(iso(now))],['Next due', fmt(plus(6))]], apply:{} }; }
   if(type==='hire_agreement'){ var hi=(typeof hireInfo==='function')?hireInfo(a.code):null; return { _display:[['Supplier', hi?hi.supplier:'—'],['Hire ref / PO', (hi&&hi.po)?hi.po:'—'],['On hire since', (typeof hireOnHireDate==='function'&&hireOnHireDate(a.code))?fmt(hireOnHireDate(a.code)):'—'],['Rate', hi?(money(hi.rate)+'/wk'):'—'],['Filed', fmt(iso(now))]], apply:{} }; }
   if(type==='swms'){ return { _display:[['Document','Safe Work Method Statement'],['Filed', fmt(iso(now))]], apply:{} }; }
