@@ -1733,6 +1733,86 @@ function plantHireMoneyPanel(hired){
     (retList.length ? ('<div style="font-size:11.5px;color:var(--t2);margin-top:'+(pendList.length?'4px':'10px')+'">📦 '+retList.length+' machine'+(retList.length>1?'s':'')+' off-hired — charge stopped.</div>') : '')+
   '</div></div>';
 }
+/* ----- Hire request → director approval (front-end). Supervisor raises a request; director approves/rejects. ----- */
+function _hireReqAll(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_hire_requests')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function _hireReqSave(arr){ try{ localStorage.setItem('slan_plant_hire_requests', JSON.stringify(arr)); }catch(e){} }
+function _hireReqSiteList(){ return _hireReqAll().filter(function(r){ return oversightSite==='All' || !r.site || r.site===oversightSite; }); }
+var HIRE_REQ_TYPES=['EWP','Telehandler','Crane','Generator','Lighting tower','Truck / vehicle','Other'];
+function _hireReqWho(){ return getRole()==='director' ? 'Patrick Murphy' : (PLANT_SUP_NAME[oversightSite]||'Site Supervisor'); }
+var _hreqInput='width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:10px;background:#fff';
+function hireReqOpen(){
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="platSetTab(\'premob\')">‹ Back</button>'+
+    '<div class="h1">Request a hire</div>'+
+    '<div class="sub">Raised by '+_hireReqWho()+(oversightSite==='All'?'':' · '+oversightSite)+'</div>'+
+    '<div class="sec-h">What do you need?</div>'+
+    '<select id="hreq-type" style="'+_hreqInput+'">'+HIRE_REQ_TYPES.map(function(t){return '<option>'+t+'</option>';}).join('')+'</select>'+
+    '<input id="hreq-supplier" placeholder="Preferred supplier (optional)" style="'+_hreqInput+'">'+
+    '<div class="sec-h">When &amp; how long</div>'+
+    '<input id="hreq-from" type="date" style="'+_hreqInput+'">'+
+    '<input id="hreq-weeks" type="number" min="1" placeholder="Duration (weeks)" style="'+_hreqInput+'">'+
+    '<input id="hreq-rate" type="number" min="0" placeholder="Est. weekly rate ($) — optional" style="'+_hreqInput+'">'+
+    '<div class="sec-h">Why is it needed?</div>'+
+    '<textarea id="hreq-reason" placeholder="Job / area it\'s for, and why" style="'+_hreqInput+';min-height:64px;resize:vertical"></textarea>'+
+    '<button class="cta" onclick="hireReqSubmit()" style="margin-top:6px">Submit request'+(getRole()==='director'?'':' for approval')+'</button>'+
+    '<div style="height:24px"></div>'+
+  '</div>';
+  showDetail(html);
+}
+function hireReqSubmit(){
+  var g=function(id){ var e=document.getElementById(id); return e?(e.value||'').trim():''; };
+  var type=g('hreq-type'), supplier=g('hreq-supplier'), from=g('hreq-from'), reason=g('hreq-reason');
+  var weeks=parseInt(g('hreq-weeks'),10)||0, rate=parseInt(g('hreq-rate'),10)||0;
+  if(!reason){ slanMsg('Add a reason','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">Say what the hire is for so the director can approve it.</div>'); return; }
+  var dir=getRole()==='director', now=new Date().toISOString();
+  var arr=_hireReqAll();
+  arr.unshift({ id:'HR-'+Date.now(), type:type, supplier:supplier, from:from, weeks:weeks, rate:rate, reason:reason, by:_hireReqWho(), site:(oversightSite==='All'?'':oversightSite), at:now, status:(dir?'approved':'pending'), decided_by:(dir?'Patrick Murphy':''), decided_at:(dir?now:''), note:'' });
+  _hireReqSave(arr);
+  slanMsg('', '<div style="text-align:center"><div style="font-size:40px">📝</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Hire request '+(dir?'logged':'submitted')+'</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+type+(dir?' — approved (you\'re the director).':' — sent to the director for approval. You\'ll see the decision here.')+'</div></div>', function(){ platSetTab('premob'); });
+}
+function hireReqOpenDetail(id){
+  var r=_hireReqAll().find(function(x){return x.id===id;}); if(!r) return;
+  var isDir=getRole()==='director';
+  function row(l,v){ return '<div class="svc-row"><span>'+l+'</span><span>'+(v||'—')+'</span></div>'; }
+  var sc=r.status==='approved'?'#1B6E3A':(r.status==='rejected'?'#A32D2D':'#A06000');
+  var tEsc=(r.type||'').replace(/'/g,'');
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="platSetTab(\'premob\')">‹ Back</button>'+
+    '<div class="h1">Hire request</div>'+
+    '<div class="sub">'+r.type+' · <span style="color:'+sc+';font-weight:700">'+(r.status.charAt(0).toUpperCase()+r.status.slice(1))+'</span></div>'+
+    '<div class="sec-h">Details</div><div class="svc">'+
+      row('Equipment', r.type)+row('Preferred supplier', r.supplier)+row('Needed from', r.from?fmt(r.from):'—')+row('Duration', r.weeks?(r.weeks+' weeks'):'—')+row('Est. weekly rate', r.rate?money(r.rate):'—')+row('Est. total', (r.rate&&r.weeks)?money(r.rate*r.weeks):'—')+row('Raised by', r.by+(r.site?(' · '+r.site):''))+row('Raised', fmt(r.at))+
+    '</div>'+
+    '<div class="sec-h">Reason</div><div style="background:#F6F8F7;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--t2);line-height:1.5">'+_premobEsc(r.reason||'—')+'</div>'+
+    (r.status!=='pending' ? ('<div style="margin-top:12px;font-size:12.5px;color:'+sc+';font-weight:700">'+(r.status==='approved'?'✓ Approved':'✕ Rejected')+' by '+(r.decided_by||'director')+' · '+fmt(r.decided_at)+'</div>'+(r.note?('<div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:1.5">“'+_premobEsc(r.note)+'”</div>'):'')) : '')+
+    (r.status==='approved' ? ('<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:11px 13px;margin-top:10px;font-size:12px;color:#1B5E3F;line-height:1.5">Approved — when it lands on site, start its pre-mobilisation. Send the supplier the blank form now so it arrives compliant:</div><button class="btn-ghost" onclick="premobSendBlankType(\''+tEsc+'\')" style="margin-top:8px">Send blank pre-mob form to supplier</button>') : '')+
+    (isDir && r.status==='pending' ? (
+      '<button class="cta" onclick="hireReqApprove(\''+r.id+'\')" style="margin-top:14px">✓ Approve hire</button>'+
+      '<button class="btn-ghost" onclick="var w=document.getElementById(\'hreq-reject-wrap\'); if(w) w.style.display=\'block\'" style="margin-top:8px">Reject…</button>'+
+      '<div id="hreq-reject-wrap" style="display:none;margin-top:8px"><textarea id="hreq-reject-note" placeholder="Reason for rejecting (optional)" style="width:100%;min-height:54px;padding:10px;border:1.5px solid #E2B4B4;border-radius:8px;font-family:inherit;font-size:13px;outline:none;box-sizing:border-box;margin-bottom:8px"></textarea><button class="btn" style="background:#A32D2D;color:#fff" onclick="hireReqReject(\''+r.id+'\')">Confirm reject</button></div>'
+    ) : '')+
+    (!isDir && r.status==='pending' ? '<div style="margin-top:14px;font-size:12.5px;color:#A06000;font-weight:700">⏳ Awaiting director approval</div>' : '')+
+    '<div style="height:24px"></div>'+
+  '</div>';
+  showDetail(html);
+}
+function hireReqApprove(id){ if(getRole()!=='director') return; var arr=_hireReqAll(), r=arr.find(function(x){return x.id===id;}); if(!r) return; r.status='approved'; r.decided_by='Patrick Murphy'; r.decided_at=new Date().toISOString(); _hireReqSave(arr); slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:15px;font-weight:800;color:var(--pass);margin-top:6px">Hire approved</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+r.type+' approved — the site can mobilise it on arrival.</div></div>', function(){ platSetTab('premob'); }); }
+function hireReqReject(id){ if(getRole()!=='director') return; var note=((document.getElementById('hreq-reject-note')||{}).value||'').trim(); var arr=_hireReqAll(), r=arr.find(function(x){return x.id===id;}); if(!r) return; r.status='rejected'; r.decided_by='Patrick Murphy'; r.decided_at=new Date().toISOString(); r.note=note; _hireReqSave(arr); slanMsg('', '<div style="text-align:center"><div style="font-size:40px">✕</div><div style="font-size:15px;font-weight:800;color:#A32D2D;margin-top:6px">Hire request rejected</div></div>', function(){ platSetTab('premob'); }); }
+function premobSendBlankType(t){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } _premobShare(_premobBlankByTypePDF(t), 'PreMob-BLANK-'+t.replace(/[^A-Za-z0-9]+/g,'-')+'.pdf', 'Pre-mobilisation checklist — '+t, 'Please complete this pre-mobilisation checklist and return it before the machine mobilises to site.'); }
+function plantHireRequestsCard(){
+  var list=_hireReqSiteList(), isDir=getRole()==='director';
+  var pending=list.filter(function(r){return r.status==='pending';});
+  var rows=list.length? list.map(function(r){
+    var col=r.status==='approved'?'#1B6E3A':(r.status==='rejected'?'#A32D2D':'#A06000');
+    var badge=r.status==='approved'?'Approved':(r.status==='rejected'?'Rejected':'Pending');
+    var est=(r.rate&&r.weeks)?(' · ~'+money(r.rate*r.weeks)):'';
+    return '<button class="row" onclick="hireReqOpenDetail(\''+r.id+'\')"><div class="row-ic">📝</div><div class="row-main"><div class="row-t">'+r.type+(r.supplier?(' · '+r.supplier):'')+'</div><div class="row-s">'+r.by+(r.weeks?(' · '+r.weeks+' wks'):'')+est+' · <span style="color:'+col+';font-weight:700">'+badge+'</span></div></div><div class="chev">›</div></button>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No hire requests yet.</div></div></div>';
+  return '<div class="fcard"'+(isDir&&pending.length?' style="border-top-color:#A06000"':'')+'><div class="fcard-hdr">📝 Hire requests'+(pending.length?(' · '+pending.length+' pending'+(isDir?' approval':'')):'')+'</div><div class="fcard-body" style="padding-bottom:8px">'+
+    '<button class="btn-ghost" onclick="hireReqOpen()" style="margin:0 0 10px">+ Request a hire</button>'+
+    '<div class="tile" style="margin:0">'+rows+'</div>'+
+  '</div></div>';
+}
 function plantHireReturnsWatchlist(hired){
   // only machines actually ON SITE (pre-mob cleared) and not yet off-hired — don't clutter with plant still being pre-mobilised
   var active=hired.filter(function(a){ return _premobState(a.code).cleared && !_hireReturned(a.code) && hireDueDate(a.code); });
@@ -1768,7 +1848,7 @@ function plantPremobBody(fleet){
   var intro='<div class="fcard"><div class="fcard-hdr">🚚 Hired equipment — pre-mobilisation</div><div class="fcard-body" style="font-size:12.5px;color:var(--t2);line-height:1.55">Hired-in plant must be pre-mobilised before it operates on site — the <b>supplier</b> completes the checklist before delivery; a <b>ticketed operator on site</b> verifies, photographs and accepts it on arrival.'+
     '<div style="margin-top:11px;border-top:1px solid var(--border);padding-top:11px"><div style="font-weight:700;color:var(--text);margin-bottom:6px">Hiring something new? Send the supplier a blank form:</div><div style="display:flex;gap:6px"><select id="premob-blank-type" style="flex:1;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff">'+typeOpts.map(function(t){return '<option>'+t+'</option>';}).join('')+'</select><button class="btn-amber" onclick="premobSendBlank()" style="white-space:nowrap;padding:9px 14px">Send / download</button></div></div>'+
   '</div></div>';
-  return plantHireMoneyPanel(hired) + plantHireReturnsWatchlist(hired) + intro + tabs + '<div class="tile">'+rows+'</div>';
+  return plantHireMoneyPanel(hired) + plantHireReturnsWatchlist(hired) + plantHireRequestsCard() + intro + tabs + '<div class="tile">'+rows+'</div>';
 }
 function plantPremobOpen(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
