@@ -740,7 +740,7 @@ function openHub(i){
     '<div id="plant-dropzone" ondragover="plantDocDragOver(event)" ondragleave="plantDocDragLeave(event)" ondrop="plantDocDrop(event)" onclick="plantDocPick()" style="border:2px dashed #BBB;border-radius:12px;padding:22px 16px;text-align:center;cursor:pointer;background:#FAFAF7">'+
       '<div style="font-size:30px">📎</div>'+
       '<div style="font-size:13.5px;font-weight:700;color:var(--deep);margin-top:6px">Drop a document here, or tap to choose</div>'+
-      '<div style="font-size:11.5px;color:var(--t2);margin-top:4px;line-height:1.5">Rego &amp; insurance certificates, service reports, invoices and inspections are read automatically and filed to this machine.</div>'+
+      '<div style="font-size:11.5px;color:var(--t2);margin-top:4px;line-height:1.5">Rego &amp; insurance certificates, service reports, invoices, inspections'+(isHired(a.code)?' and hire agreements':'')+' are read automatically and filed to this machine.</div>'+
     '</div>'+
     '<input id="plant-doc-input" type="file" style="display:none" onchange="plantDocOnFile(this)">'+
     (uploads.length ? ('<div class="tile" style="margin-top:10px">'+uploads.map(function(dc,di){ var m=DOC_TYPES[dc.type]||DOC_TYPES.other; return '<button class="row" onclick="plantDocView(\''+a.code+'\','+di+')"><div class="row-ic">'+m.ic+'</div><div class="row-main"><div class="row-t">'+m.label+'</div><div class="row-s" style="word-break:break-all">'+dc.name+' · '+fmtShort(dc.when)+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div>') : '')
@@ -749,9 +749,11 @@ function openHub(i){
   if(isHired(a.code) && getRole()!=='worker'){
     var hi=hireInfo(a.code), off=hireOffState(a.code), idle=hireIdleDays(a.code), idleCost=hireIdleCost(a.code);
     var offReq=!!(off && off.off_hire_requested), ret=_hireReturned(a.code), due=hireDueInDays(a.code), cph=hireCostPerHour(a.code), hc=hireSupplierContact(hi.supplier);
+    var _hdocs=_plantDocsFor(a.code), hireDocIdx=_hdocs.map(function(d){return d.type;}).indexOf('hire_agreement');
     var hr='<div class="svc-row"><span>Hired from</span><span>'+hi.supplier+'</span></div>'+
       (hc?('<div class="svc-row"><span>Supplier contact</span><span><a href="tel:'+hc.phone.replace(/\s/g,'')+'" style="color:var(--mid);text-decoration:none;font-weight:700">'+hc.phone+'</a> · <a href="mailto:'+hc.email+'" style="color:var(--mid);text-decoration:none;font-weight:700">email</a></span></div>'):'')+
       '<div class="svc-row"><span>Hire ref / PO</span><span>'+(hi.po||'—')+'</span></div>'+
+      '<div class="svc-row"><span>Hire agreement</span><span>'+(hireDocIdx>-1?('<a href="javascript:void(0)" onclick="plantDocView(\''+a.code+'\','+hireDocIdx+')" style="color:var(--mid);font-weight:700;text-decoration:none">On file ✓ · view</a>'):'<span style="color:var(--t3)">drop it in “Upload” below</span>')+'</span></div>'+
       '<div class="svc-row"><span>On hire since</span><span>'+fmt(hireOnHireDate(a.code))+' · '+Math.round((hi.on_hire_days||0)/7)+' wks</span></div>';
     if(!offReq && hireDueDate(a.code)){
       var dcol = (due!=null && due<=HIRE_RETURN_REMIND_DAYS) ? (due<0?'var(--fail)':'var(--warn)') : '';
@@ -847,12 +849,14 @@ var DOC_TYPES={
   service:{label:'Service report', ic:'🛠️'},
   invoice:{label:'Tax invoice', ic:'🧾'},
   inspection:{label:'Inspection report', ic:'🟢'},
+  hire_agreement:{label:'Hire agreement', ic:'📑'},
   swms:{label:'SWMS', ic:'📄'},
   manual:{label:'Operator manual', ic:'📘'},
   other:{label:'Document', ic:'📎'}
 };
 function _inferDocType(name){
   var n=(name||'').toLowerCase();
+  if(/hire.?agreement|hire.?contract|rental.?agreement|hire.?docket|on.?hire/.test(n)) return 'hire_agreement';
   if(/rego|registration|\brms\b|\brta\b|transport/.test(n)) return 'rego';
   if(/insur|policy|currency|\bcoc\b/.test(n)) return 'insurance';
   if(/service|maintenance|logbook|repair/.test(n)) return 'service';
@@ -870,6 +874,7 @@ function _docExtract(type, a){
   if(type==='service'){ var reading=sm?(sm.meter==='km'?(d.km||0):(a.hours||0)):(a.hours||0); var nd=plus(3); return { _display:[['Service date', fmt(iso(now))],['Next service due', fmt(nd)],[(sm&&sm.meter==='km'?'Odometer':'Engine hours'), reading.toLocaleString()+' '+(sm&&sm.meter==='km'?'km':'hrs')],['Workshop','FleetServ Mechanical']], apply:{ service_last:iso(now), service_due:nd } }; }
   if(type==='invoice'){ return { _display:[['Supplier','FleetServ Mechanical'],['Invoice no.','INV-'+(10000+Math.floor(Math.random()*89999))],['Amount','$'+((a.swl?1850:640)).toLocaleString()],['Date', fmt(iso(now))]], apply:{} }; }
   if(type==='inspection'){ return { _display:[['Inspection','Periodic (green sticker)'],['Result','Pass'],['Inspected', fmt(iso(now))],['Next due', fmt(plus(6))]], apply:{} }; }
+  if(type==='hire_agreement'){ var hi=(typeof hireInfo==='function')?hireInfo(a.code):null; return { _display:[['Supplier', hi?hi.supplier:'—'],['Hire ref / PO', (hi&&hi.po)?hi.po:'—'],['On hire since', (typeof hireOnHireDate==='function'&&hireOnHireDate(a.code))?fmt(hireOnHireDate(a.code)):'—'],['Rate', hi?(money(hi.rate)+'/wk'):'—'],['Filed', fmt(iso(now))]], apply:{} }; }
   if(type==='swms'){ return { _display:[['Document','Safe Work Method Statement'],['Filed', fmt(iso(now))]], apply:{} }; }
   if(type==='manual'){ return { _display:[['Document', a.make+' '+a.model+' manual'],['Filed', fmt(iso(now))]], apply:{} }; }
   return { _display:[['Filed', fmt(iso(now))]], apply:{} };
