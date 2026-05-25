@@ -167,7 +167,7 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .spend-mini .s-l{font-size:9px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;opacity:.8;margin-bottom:6px}
 .spend-mini .s-v{font-size:26px;font-weight:800;line-height:1}
 table.reg{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
-table.reg th{text-align:left;padding:9px 11px;background:#EAF1ED;color:var(--t2);font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+table.reg th{text-align:left;padding:9px 11px;background:#EAF1ED;color:var(--t2);font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;position:sticky;top:0;z-index:2}
 table.reg td{padding:10px 11px;border-top:1px solid #EEF2F0;white-space:nowrap;vertical-align:top}
 table.reg tbody tr{cursor:pointer}
 table.reg tbody tr:hover{background:#F6FAF7}
@@ -558,6 +558,24 @@ function warrantyInfo(code){ return PLANT_WARRANTY[code]||null; }
 function warrantyUntil(code){ var w=PLANT_WARRANTY[code]; return w?iso(dOffset(w.until_days)):null; }
 function inWarranty(code){ var w=PLANT_WARRANTY[code]; return !!(w && w.until_days>0); }
 function warrantyDaysLeft(code){ var w=PLANT_WARRANTY[code]; return w?w.until_days:null; }
+/* Purchase / asset value — OWNED plant. Current value = straight-line written-down over effective life, floored at ~10% residual. Indicative only (real book value = client's finance system). */
+var PLANT_PURCHASE={
+  'TRK-006':{ price:165000, purchased_yrs:5.4, life:12 },
+  'MAG-009':{ price:385000, purchased_yrs:3.4, life:15 },
+  'CRN-007':{ price:420000, purchased_yrs:7.4, life:15 },
+  'CRN-011':{ price:360000, purchased_yrs:6.4, life:15 },
+  'TLH-012':{ price:135000, purchased_yrs:4.4, life:12 },
+  'LT-013':{  price:22000,  purchased_yrs:4.4, life:10 },
+  'LT-014':{  price:24000,  purchased_yrs:3.4, life:10 },
+  'GEN-016':{ price:32000,  purchased_yrs:2.4, life:10 },
+  'EWP-018':{ price:48000,  purchased_yrs:4.4, life:10 },
+  'BUS-021':{ price:78000,  purchased_yrs:6.4, life:12 },
+  'UTE-022':{ price:52000,  purchased_yrs:3.4, life:8 }
+};
+function purchaseInfo(code){ return PLANT_PURCHASE[code]||null; }
+function assetPurchaseDate(code){ var p=PLANT_PURCHASE[code]; return p?iso(dOffset(-Math.round(p.purchased_yrs*365))):null; }
+function assetCurrentValue(code){ var p=PLANT_PURCHASE[code]; if(!p) return null; var resid=p.price*0.1; return Math.round(Math.max(resid, p.price*(1-(p.purchased_yrs/p.life)))); }
+function assetDepPct(code){ var p=PLANT_PURCHASE[code], cv=assetCurrentValue(code); return (p&&cv!=null)?Math.round((1-cv/p.price)*100):null; }
 /* docs per machine (type-specific extras for crane/telehandler) */
 function getDocs(a){
   var d=[ {ic:'📘',t:'Operator Manual',s:a.make+' '+a.model},
@@ -869,6 +887,8 @@ function openHub(i){
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
       (warrantyInfo(a.code) ? '<div class="svc-row"><span>Warranty</span><span style="color:'+(inWarranty(a.code)?'var(--pass)':'var(--t3)')+';font-weight:'+(inWarranty(a.code)?'700':'600')+'">'+(inWarranty(a.code)?('In warranty · until '+fmt(warrantyUntil(a.code))):'Out of warranty')+'</span></div>' : '')+
+      (purchaseInfo(a.code) ? '<div class="svc-row"><span>Purchased</span><span>'+fmt(assetPurchaseDate(a.code))+' · '+money(purchaseInfo(a.code).price)+'</span></div>'+
+        '<div class="svc-row"><span>Current value (est.)</span><span>'+money(assetCurrentValue(a.code))+' · '+assetDepPct(a.code)+'% depreciated</span></div>' : '')+
     '</div>') : '')+
     hireBlock +
     '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift + premobHubRow + paperPrestartRow + dropHtml +
@@ -2278,6 +2298,7 @@ function plantComplianceBody(fleet){
   }).join('');
   var fc=[];
   fleet.forEach(function(a){ [['Registration',a.rego_expiry],['Insurance',a.insurance_expiry]].forEach(function(p){ if(p[1]){ var dl=daysBetween(p[1],today); if(dl<=90){ fc.push({who:a.code+' · '+a.make+' '+a.model,what:p[0],date:p[1],d:dl}); } } }); });
+  fleet.forEach(function(a){ if(!isHired(a.code) && warrantyInfo(a.code)){ var wd=warrantyUntil(a.code), dl=daysBetween(wd,today); if(dl<=90 && dl>=-30){ fc.push({who:a.code+' · '+a.make+' '+a.model,what:'Warranty ('+warrantyInfo(a.code).provider+')',date:wd,d:dl}); } } });
   WORKERS.forEach(function(w){ (w.tickets||[]).forEach(function(t){ if(t.expiry){ var dl=daysBetween(t.expiry,today); if(dl<=90){ fc.push({who:w.name,what:licName(t.cls),date:t.expiry,d:dl}); } } }); });
   fc.sort(function(a,b){return a.d-b.d;});
   var fcRows=fc.length?fc.map(function(x){ var band=x.d<0?'#A32D2D':(x.d<=30?'#A06000':'#4B6358'); var lbl=x.d<0?('Expired '+Math.abs(x.d)+'d ago'):('in '+x.d+' days'); return '<tr><td>'+x.who+'</td><td>'+x.what+'</td><td>'+fmtShort(x.date)+'</td><td style="color:'+band+';font-weight:700">'+lbl+'</td></tr>'; }).join(''):'<tr><td colspan="4" style="color:var(--t3)">Nothing expiring in the next 90 days.</td></tr>';
@@ -2493,6 +2514,7 @@ function renderOversight(){
         '<td>'+svcCell+'</td>'+
         '<td style="'+(_expired(a.rego_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?fmtShort(a.rego_expiry):'— (plant)')+'</td>'+
         '<td style="'+(_expired(a.insurance_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.insurance_expiry?fmtShort(a.insurance_expiry):'—')+'</td>'+
+        '<td>'+(function(){ if(isHired(a.code)) return '<span style="color:var(--t3)">— hired</span>'; var w=warrantyInfo(a.code); if(!w) return '<span style="color:var(--t3)">—</span>'; return inWarranty(a.code)?('<span style="color:#1B6E3A;font-weight:700">In warranty</span><div class="cell-sub">'+fmtShort(warrantyUntil(a.code))+'</div>'):'<span style="color:var(--t3)">Out</span>'; })()+'</td>'+
         '<td>'+lpCell+'</td>'+
         '<td style="text-align:center">'+woCell+'</td>'+
         '<td>'+money(a.spend12mo||0)+'</td>'+
@@ -2501,7 +2523,7 @@ function renderOversight(){
     }).join('');
     body='<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
         '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
-      '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
       '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
   } else if(platTab==='premob'){
     body=plantPremobBody(fleet);
