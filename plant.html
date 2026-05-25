@@ -540,6 +540,24 @@ function plantReturnPDF(code){
   return doc;
 }
 function hiredChip(code, small){ if(!isHired(code)) return ''; var fs=small?'9.5px':'10px'; return ' <span style="font-size:'+fs+';font-weight:700;color:#8A5A00;background:#FBEFD3;border:1px solid #E8C97A;border-radius:5px;padding:0 6px;vertical-align:middle;letter-spacing:.03em">HIRED</span>'; }
+/* Manufacturer/dealer warranty — OWNED plant only (hired plant is the supplier's). until_days = days from today (>0 in warranty). */
+var PLANT_WARRANTY={
+  'MAG-009':{ provider:'Magni Australia', terms:'3 yr / 3,000 hr', until_days:120 },
+  'GEN-016':{ provider:'Atlas Copco',     terms:'2 yr / 2,000 hr', until_days:300 },
+  'UTE-022':{ provider:'Toyota',          terms:'5 yr / 200,000 km', until_days:430 },
+  'LT-014':{  provider:'Atlas Copco',     terms:'2 yr', until_days:60 },
+  'TLH-012':{ provider:'JCB',             terms:'2 yr / 2,000 hr', until_days:-90 },
+  'EWP-018':{ provider:'Genie',           terms:'2 yr', until_days:-210 },
+  'LT-013':{  provider:'Allight Sykes',   terms:'2 yr', until_days:-320 },
+  'TRK-006':{ provider:'Hino',            terms:'5 yr / 500,000 km', until_days:-180 },
+  'CRN-007':{ provider:'TIDD / PACCAR',   terms:'3 yr', until_days:-1300 },
+  'CRN-011':{ provider:'Tadano',          terms:'3 yr', until_days:-1000 },
+  'BUS-021':{ provider:'Toyota',          terms:'5 yr / 160,000 km', until_days:-560 }
+};
+function warrantyInfo(code){ return PLANT_WARRANTY[code]||null; }
+function warrantyUntil(code){ var w=PLANT_WARRANTY[code]; return w?iso(dOffset(w.until_days)):null; }
+function inWarranty(code){ var w=PLANT_WARRANTY[code]; return !!(w && w.until_days>0); }
+function warrantyDaysLeft(code){ var w=PLANT_WARRANTY[code]; return w?w.until_days:null; }
 /* docs per machine (type-specific extras for crane/telehandler) */
 function getDocs(a){
   var d=[ {ic:'📘',t:'Operator Manual',s:a.make+' '+a.model},
@@ -555,6 +573,11 @@ function getDocs(a){
   if(typeof isHired==='function' && isHired(a.code) && (typeof getRole!=='function' || getRole()!=='worker')){
     var _hi=hireInfo(a.code);
     d.push({ic:'📑', t:'Hire agreement', s:(_hi?_hi.supplier:'')+(_hi&&_hi.po?(' · '+_hi.po):''), act:'hireagreement'});
+  }
+  // Warranty — owned plant only, supervisor/director
+  if(typeof warrantyInfo==='function' && warrantyInfo(a.code) && !(typeof isHired==='function'&&isHired(a.code)) && (typeof getRole!=='function' || getRole()!=='worker')){
+    var _w=warrantyInfo(a.code);
+    d.push({ic:'📜', t:'Warranty', s:_w.provider+' · '+(inWarranty(a.code)?'in warranty':'out of warranty'), act:'warranty'});
   }
   return d;
 }
@@ -725,7 +748,7 @@ function openHub(i){
   var hubQr=''; try{ var _q=qrcode(0,'M'); _q.addData(location.origin+location.pathname+'?machine='+a.code); _q.make(); hubQr=_q.createImgTag(5,6); }catch(e){}
   var dt=plantDetails(a.code), t0=new Date();
   var docs=getDocs(a).map(function(d){
-    var oc = d.act==='ra' ? 'plantViewRA()' : (d.act==='hireagreement' ? ('plantViewHireAgreement(\''+a.code+'\')') : "slanMsg('Document','Opens the "+d.t.replace(/'/g,'')+" for this machine (the stored file).')");
+    var oc = d.act==='ra' ? 'plantViewRA()' : (d.act==='hireagreement' ? ('plantViewHireAgreement(\''+a.code+'\')') : (d.act==='warranty' ? ('plantViewWarranty(\''+a.code+'\')') : "slanMsg('Document','Opens the "+d.t.replace(/'/g,'')+" for this machine (the stored file).')"));
     return '<button class="row" onclick="'+oc+'"><div class="row-ic">'+d.ic+'</div><div class="row-main"><div class="row-t">'+d.t+'</div><div class="row-s">'+d.s+'</div></div><div class="chev">›</div></button>';
   }).join('');
   var rec=recentPrestarts(a).map(function(p){
@@ -815,6 +838,15 @@ function openHub(i){
     }
     hireBlock='<div class="sec-h">Hire details</div><div class="svc">'+hr+'</div>'+hireNudge+buyVsHire;
   }
+  // Under-warranty + open fault → claim it (don't pay for repairs the warranty covers)
+  var warrantyFlag='';
+  if(getRole()!=='worker' && inWarranty(a.code) && _openWOsFor(a.code).length){
+    var _wf=warrantyInfo(a.code);
+    warrantyFlag='<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:11px 13px;margin-bottom:14px">'+
+      '<div style="font-size:12.5px;font-weight:800;color:#1B5E3F">🛡 Under warranty until '+fmt(warrantyUntil(a.code))+'</div>'+
+      '<div style="font-size:11.5px;color:#1B5E3F;margin-top:5px;line-height:1.5">This machine has an open fault and is still under '+_wf.provider+' warranty ('+_wf.terms+'). Claim the repair with '+_wf.provider+' before paying for it.</div>'+
+    '</div>';
+  }
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="showList()">‹ All machines</button>'+
     '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+hiredChip(a.code)+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace(/_/g,' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
@@ -822,6 +854,7 @@ function openHub(i){
     (hired
       ? (premCleared ? '' : '<button class="cta" style="background:var(--warn)" onclick="plantPremobOpen(\''+a.code+'\')">⚠ Not cleared for site — complete pre-mobilisation first</button>')
       : '<button class="cta" onclick="openGate()">Start Pre-Start</button>')+
+    warrantyFlag +
     (getRole()!=='worker' ? ('<div class="sec-h">Machine details</div><div class="svc">'+
       '<div class="svc-row"><span>Site</span><span>'+assetSite(a.code)+'</span></div>'+
       '<div class="svc-row"><span>Year</span><span>'+(dt.year||'—')+'</span></div>'+
@@ -835,6 +868,7 @@ function openHub(i){
           '<div class="svc-row"><span>Insurance expiry</span><span>'+(a.insurance_expiry?fmt(a.insurance_expiry):'—')+'</span></div>')+
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
+      (warrantyInfo(a.code) ? '<div class="svc-row"><span>Warranty</span><span style="color:'+(inWarranty(a.code)?'var(--pass)':'var(--t3)')+';font-weight:'+(inWarranty(a.code)?'700':'600')+'">'+(inWarranty(a.code)?('In warranty · until '+fmt(warrantyUntil(a.code))):'Out of warranty')+'</span></div>' : '')+
     '</div>') : '')+
     hireBlock +
     '<div class="sec-h">Documents</div><div class="tile">'+docs+'</div>'+ lift + premobHubRow + paperPrestartRow + dropHtml +
@@ -860,6 +894,7 @@ var DOC_TYPES={
   inspection:{label:'Inspection report', ic:'🟢'},
   hire_agreement:{label:'Signed hire agreement', ic:'📑'},
   delivery_docket:{label:'Delivery docket', ic:'🚚'},
+  warranty:{label:'Warranty', ic:'📜'},
   swms:{label:'SWMS', ic:'📄'},
   manual:{label:'Operator manual', ic:'📘'},
   other:{label:'Document', ic:'📎'}
@@ -868,6 +903,7 @@ function _inferDocType(name){
   var n=(name||'').toLowerCase();
   if(/hire.?agreement|hire.?contract|rental.?agreement|on.?hire/.test(n)) return 'hire_agreement';
   if(/delivery.?docket|delivery.?note|proof.?of.?deliver|goods.?received|despatch/.test(n)) return 'delivery_docket';
+  if(/warranty|guarantee/.test(n)) return 'warranty';
   if(/rego|registration|\brms\b|\brta\b|transport/.test(n)) return 'rego';
   if(/insur|policy|currency|\bcoc\b/.test(n)) return 'insurance';
   if(/service|maintenance|logbook|repair/.test(n)) return 'service';
@@ -893,6 +929,7 @@ function _docExtract(type, a){
   if(type==='inspection'){ return { _display:[['Inspection','Periodic (green sticker)'],['Result','Pass'],['Inspected', fmt(iso(now))],['Next due', fmt(plus(6))]], apply:{} }; }
   if(type==='hire_agreement'){ var hi=(typeof hireInfo==='function')?hireInfo(a.code):null; return { _display:[['Supplier', hi?hi.supplier:'—'],['Hire ref / PO', (hi&&hi.po)?hi.po:'—'],['On hire since', (typeof hireOnHireDate==='function'&&hireOnHireDate(a.code))?fmt(hireOnHireDate(a.code)):'—'],['Rate', hi?(money(hi.rate)+'/wk'):'—'],['Filed', fmt(iso(now))]], apply:{} }; }
   if(type==='delivery_docket'){ var _dh=(typeof isHired==='function'&&isHired(a.code))?hireInfo(a.code):null; return { _display:[['From', _dh?_dh.supplier:'Supplier'],['Asset', a.code+' · '+a.make+' '+a.model],['Delivered to', (typeof assetSite==='function')?assetSite(a.code):'site'],['Delivered', fmt(iso(now))]], apply:{} }; }
+  if(type==='warranty'){ var _w=(typeof warrantyInfo==='function')?warrantyInfo(a.code):null; return { _display:[['Provider', _w?_w.provider:'—'],['Cover', _w?_w.terms:'—'],['Status', (_w&&_w.until_days>0)?('In warranty until '+fmt(warrantyUntil(a.code))):'Out of warranty'],['Filed', fmt(iso(now))]], apply:{} }; }
   if(type==='swms'){ return { _display:[['Document','Safe Work Method Statement'],['Filed', fmt(iso(now))]], apply:{} }; }
   if(type==='manual'){ return { _display:[['Document', a.make+' '+a.model+' manual'],['Filed', fmt(iso(now))]], apply:{} }; }
   return { _display:[['Filed', fmt(iso(now))]], apply:{} };
@@ -943,6 +980,15 @@ function plantDocApply(){
   slanMsg('', '<div style="text-align:center"><div style="font-size:40px">✅</div><div style="font-size:15px;font-weight:800;color:var(--pass);margin-top:6px">Filed to '+a.code+'</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.55">'+meta.label+' saved to this machine’s documents'+(willUpdate?' and its record has been updated.':'.')+'</div></div>', function(){ renderAssets(); openHub(curAsset); });
 }
 function plantDocView(code, idx){ var docs=_plantDocsFor(code), dc=docs[idx]; if(!dc) return; var meta=DOC_TYPES[dc.type]||DOC_TYPES.other; var rows=(dc.display||[]).map(function(p){ return '<div class="svc-row"><span>'+p[0]+'</span><span style="font-weight:700">'+p[1]+'</span></div>'; }).join(''); slanMsg(meta.ic+' '+meta.label, '<div style="font-size:12px;color:var(--t2);margin-bottom:10px;word-break:break-all">'+dc.name+'</div><div class="svc">'+rows+'</div>'); }
+function plantViewWarranty(code){
+  var a=ASSETS.find(function(x){return x.code===code;}), w=warrantyInfo(code); if(!a||!w) return;
+  var ud=_plantDocsFor(code).filter(function(d){return d.type==='warranty';})[0];
+  var disp = (ud && ud.display) ? ud.display : _docExtract('warranty', a)._display;
+  var rows=disp.map(function(p){ return '<div class="svc-row"><span>'+p[0]+'</span><span style="font-weight:700">'+p[1]+'</span></div>'; }).join('');
+  var inW=inWarranty(code), open=(typeof _openWOsFor==='function')?_openWOsFor(code):[];
+  var claim = (inW && open.length) ? '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:10px 13px;margin-top:10px;font-size:12px;color:#1B5E3F;line-height:1.5">🛡 This machine has an open fault and is still under warranty — claim the repair with '+w.provider+' before paying for it.</div>' : '';
+  slanMsg('📜 Warranty', '<div style="font-size:12px;color:var(--t2);margin-bottom:10px;word-break:break-all">'+(ud?ud.name:(code+' · '+w.provider))+'</div><div class="svc">'+rows+'</div>'+claim+(ud?'':'<div style="font-size:11px;color:var(--t3);margin-top:10px;line-height:1.5">Drop the warranty certificate in the machine’s <b>Upload</b> box to attach the document.</div>'));
+}
 function plantViewHireAgreement(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
   var ud=_plantDocsFor(code).filter(function(d){return d.type==='hire_agreement';})[0]; // an uploaded one, if any
