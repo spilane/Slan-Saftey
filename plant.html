@@ -1467,7 +1467,7 @@ function _recOutcome(rec){
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
 }
 /* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
-var DEMO_SEED_VERSION='eoin-v4';
+var DEMO_SEED_VERSION='eoin-v5';
 var DEMO_DAYS=5; // seed a pre-start for each of the last 5 days, per machine
 /* per-machine demo script: ops rotate across days; faultDays = which daysAgo the issue shows (re-flagged each day so it 'carries on'); the WO is raised on the earliest fault day */
 var DEMO_FLEET=[
@@ -1529,9 +1529,9 @@ function seedDemoPlant(){
         _setPlantAlert(a, ftext, critical);
       }
     });
-    // two finished repairs so the Completed tab is never empty in a demo — one paid (feeds spend) + one warranty claim ($0)
-    _saveWO({ wo:'WO-2026-0033', code:'CRN-007', machine:'Franna AT-40', fault:'Slew brake drifting + hydraulic return filter due', priority:'Medium', status:'Returned to service', raised:'2 weeks ago · scheduled service', mechanic:'FleetServ Mechanical', mech_type:'External workshop', diagnosis:'Slew brake adjusted and the hydraulic return filter replaced during the scheduled service. Function and load test completed — safe to return to service.', parts:[{desc:'Hydraulic return filter', cost:145},{desc:'Slew brake shim kit', cost:90}], labour_hrs:4, labour_rate:140, warranty_claim:false, invoice_doc:'Tax Invoice - FleetServ Mechanical.pdf', repair_date:iso(dOffset(-12)), declared:true, repair_photos:['repair-brake-adjustment.jpg','repair-filter-replaced.jpg'], signoff:{by:'FleetServ Mechanical', when:new Date(Date.now()-12*86400000).toISOString()} });
-    _saveWO({ wo:'WO-2026-0031', code:'UTE-022', machine:'Toyota Hilux SR 4x4', fault:'Engine warning light — fault code on the dash', priority:'Low', status:'Returned to service', raised:'3 weeks ago · Anthony Walsh', mechanic:'FleetServ Mechanical', mech_type:'External workshop', diagnosis:'Diagnosed a faulty fuel injector. Replaced under the Toyota 5-year new-vehicle warranty — no charge to the company. Codes cleared and road tested OK.', parts:[{desc:'Fuel injector (warranty replacement)', cost:480}], labour_hrs:2, labour_rate:140, warranty_claim:true, invoice_doc:'', repair_date:iso(dOffset(-20)), declared:true, repair_photos:[], signoff:{by:'FleetServ Mechanical', when:new Date(Date.now()-20*86400000).toISOString()} });
+    // two finished repairs so the Completed tab is never empty in a demo — one IN-HOUSE (Dave Wilkins, signed declaration, feeds spend) + one EXTERNAL (Toyota dealer, warranty $0, no declaration)
+    _saveWO({ wo:'WO-2026-0033', code:'CRN-007', machine:'Franna AT-40', fault:'Slew brake drifting + hydraulic return filter due', priority:'Medium', status:'Returned to service', raised:'2 weeks ago · scheduled service', mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, diagnosis:'Slew brake adjusted and the hydraulic return filter replaced during the scheduled service. Function and load test completed — safe to return to service.', parts:[{desc:'Hydraulic return filter', cost:145},{desc:'Slew brake shim kit', cost:90}], labour_hrs:4, labour_rate:95, warranty_claim:false, invoice_doc:'', repair_date:iso(dOffset(-12)), declared:true, repair_photos:['repair-brake-adjustment.jpg','repair-filter-replaced.jpg'], signoff:{by:'Dave Wilkins', when:new Date(Date.now()-12*86400000).toISOString(), external:false} });
+    _saveWO({ wo:'WO-2026-0031', code:'UTE-022', machine:'Toyota Hilux SR 4x4', fault:'Engine warning light — fault code on the dash', priority:'Low', status:'Returned to service', raised:'3 weeks ago · Anthony Walsh', mechanic:'Sydney City Toyota', mech_type:'Toyota dealer (warranty)', mech_inhouse:false, diagnosis:'Vehicle sent to the Toyota dealer under the 5-year new-vehicle warranty. Faulty fuel injector diagnosed and replaced, codes cleared, road tested. No charge to the company — see the dealer’s report.', external_cost:760, warranty_claim:true, invoice_doc:'Toyota warranty repair report.pdf', repair_date:iso(dOffset(-20)), repair_photos:[], signoff:{by:'Sydney City Toyota', when:new Date(Date.now()-20*86400000).toISOString(), external:true} });
     localStorage.setItem('slan_plant_seed', DEMO_SEED_VERSION);
   }catch(e){}
 }
@@ -1706,9 +1706,9 @@ var WORKORDERS=[
 function _prioCol(p){ return p==='High'?'#A32D2D':(p==='Medium'?'#A06000':'#4B6358'); }
 /* ---------- WORK ORDERS / REPAIRS — mechanic assignment, diagnosis, parts, labour, cost, return-to-service sign-off ---------- */
 var MECHANICS=[
-  { name:'FleetServ Mechanical', type:'External workshop', rate:140 },
-  { name:'Dave Wilkins',         type:'In-house mechanic',  rate:95 },
-  { name:'OnSite Plant Repairs', type:'Mobile mechanic',    rate:165 }
+  { name:'Dave Wilkins',         type:'In-house mechanic',  rate:95,  inhouse:true },
+  { name:'FleetServ Mechanical', type:'External workshop',  rate:140, inhouse:false },
+  { name:'OnSite Plant Repairs', type:'Mobile mechanic',    rate:165, inhouse:false }
 ];
 var WO_DECLARATION = "I certify that this repair has been carried out in accordance with the manufacturer's specifications and applicable Australian standards, that all parts and materials used are fit for purpose, that the plant has been function-tested following the repair, and that it is mechanically sound and safe to be returned to service.";
 var _woCur=null;               // index of the WO currently open (for the live cost preview)
@@ -1717,7 +1717,7 @@ var _woPhotoRef=null;          // wo id awaiting a repair photo / invoice file p
 function _woFind(id){ return WORKORDERS.find(function(w){ return w.wo===id; }); }
 function _woPartsCost(w){ return (w.parts||[]).reduce(function(s,p){ return s+(Number(p.cost)||0); }, 0); }
 function _woLabourCost(w){ return (Number(w.labour_hrs)||0)*(Number(w.labour_rate)||0); }
-function _woTotal(w){ return _woPartsCost(w)+_woLabourCost(w); }
+function _woTotal(w){ if(w.mech_inhouse===false){ return Number(w.external_cost)||0; } return _woPartsCost(w)+_woLabourCost(w); }
 function _woClientCost(w){ return w.warranty_claim ? 0 : _woTotal(w); }   // what the client actually pays (warranty claim = $0)
 /* completed repair costs the client paid for this machine — added on top of the historical seed spend */
 function _woSpendFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; }).reduce(function(s,w){ return s+_woClientCost(w); }, 0); }
@@ -1731,19 +1731,24 @@ function _woReadForm(w){
   var wc=document.getElementById('wo-warranty'); if(wc) w.warranty_claim=wc.checked;
   var rd=document.getElementById('wo-repair-date'); if(rd) w.repair_date=rd.value;
   var dec=document.getElementById('wo-declare'); if(dec) w.declared=dec.checked;
+  var ec=document.getElementById('wo-ext-cost'); if(ec) w.external_cost=parseFloat(ec.value)||0;
 }
 /* live-update the cost summary as labour hrs/rate are typed, without re-rendering (keeps input focus) */
 function _woCostPreview(){
   var w=(_woCur!=null)?WORKORDERS[_woCur]:null; if(!w) return;
-  var hrs=parseFloat((document.getElementById('wo-labour-hrs')||{}).value)||0;
-  var rate=parseFloat((document.getElementById('wo-labour-rate')||{}).value)||0;
   var wcEl=document.getElementById('wo-warranty'), claim=wcEl?wcEl.checked:!!w.warranty_claim;
-  var parts=_woPartsCost(w), labour=hrs*rate, total=parts+labour, client=claim?0:total;
-  var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
-  set('wo-cost-labour', money(labour));
-  set('wo-cost-total', money(total));
+  var extEl=document.getElementById('wo-ext-cost'), total, client;
+  if(extEl){ // external: single repair-cost figure
+    total=parseFloat(extEl.value)||0; client=claim?0:total;
+  } else { // in-house: parts + labour
+    var hrs=parseFloat((document.getElementById('wo-labour-hrs')||{}).value)||0;
+    var rate=parseFloat((document.getElementById('wo-labour-rate')||{}).value)||0;
+    var parts=_woPartsCost(w), labour=hrs*rate; total=parts+labour; client=claim?0:total;
+    var le=document.getElementById('wo-cost-labour'); if(le) le.textContent=money(labour);
+    var te=document.getElementById('wo-cost-total'); if(te) te.textContent=money(total);
+  }
   var ce=document.getElementById('wo-cost-client');
-  if(ce){ ce.innerHTML = claim ? ('<span style="color:#1B6E3A">Covered by warranty — '+money(0)+' to you</span>') : ('<b>'+money(client)+'</b>'); }
+  if(ce){ ce.innerHTML = claim ? ('<span style="color:#1B6E3A">Covered by warranty — '+money(0)+'</span>') : ('<b>'+money(client)+'</b>'); }
 }
 var platTab='dashboard';
 function platSetTab(t){ platTab=t; renderOversight(); }
@@ -2488,7 +2493,8 @@ function plantWorkOrderPDF(w){
   var W=210, M=14, GOLD=[184,150,12], GREEN=[44,107,94]; var y=16;
   var a=ASSETS.find(function(x){return x.code===w.code;})||{};
   var dt=(typeof plantDetails==='function')?(plantDetails(w.code)||{}):{};
-  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Plant Repair Record', M, y);
+  var ext=(w.mech_inhouse===false);
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text(ext?'External Repair Record':'Plant Repair Record', M, y);
   if(SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, 3, 34, 14); }catch(e){} }
   y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=8;
   doc.setFontSize(9); doc.setTextColor(60,60,60);
@@ -2504,29 +2510,37 @@ function plantWorkOrderPDF(w){
   var rd=[]; if(a.hours){ rd.push(a.hours.toLocaleString()+' hrs'); } if(dt.km){ rd.push(dt.km.toLocaleString()+' km'); } kv('Reading:', rd.length?rd.join(' · '):'—');
   kv('Last service:', a.service_last?fmt(a.service_last):'—');
   kv('Next service due:', a.service_due?fmt(a.service_due):'—');
-  kv('Mechanic / workshop:', (w.mechanic||'—')+(w.mech_type?(' · '+w.mech_type):''));
-  kv('Repair date:', w.repair_date?fmt(w.repair_date):(w.signoff&&w.signoff.when?fmt(new Date(w.signoff.when)):'—'));
+  kv(ext?'External workshop:':'Mechanic / workshop:', (w.mechanic||'—')+(w.mech_type?(' · '+w.mech_type):''));
+  kv(ext?'Date returned:':'Repair date:', w.repair_date?fmt(w.repair_date):(w.signoff&&w.signoff.when?fmt(new Date(w.signoff.when)):'—'));
   kv('Priority:', w.priority||'—');
   y+=2;
   bar('Reported fault'); para((w.fault||'—')+(w.raised?('   (raised '+w.raised+')'):''));
-  bar('Diagnosis & work carried out'); para(w.diagnosis||'—');
-  // parts table
-  bar('Parts & materials'); doc.setFontSize(8.8);
-  if((w.parts||[]).length){ (w.parts||[]).forEach(function(p){ if(y>284){doc.addPage();y=16;} var nm=doc.splitTextToSize(String(p.desc||'—'), W-2*M-30); doc.setTextColor(40,40,40); doc.text(nm, M, y); doc.text(money(p.cost||0), W-M, y, {align:'right'}); y+=4.8*nm.length+0.6; }); }
-  else { doc.setTextColor(120,120,120); doc.text('No parts recorded.', M, y); y+=5; }
-  doc.setDrawColor(222,212,170); doc.setLineWidth(0.2); doc.line(M,y,W-M,y); y+=4.6;
-  doc.setFont('helvetica','bold'); doc.setTextColor(40,40,40); doc.text('Parts subtotal', M, y); doc.text(money(_woPartsCost(w)), W-M, y, {align:'right'}); doc.setFont('helvetica','normal'); y+=6.5;
-  // labour
-  bar('Labour'); doc.setFontSize(8.8); doc.setTextColor(40,40,40);
-  doc.text((w.labour_hrs||0)+' hr  x  '+money(w.labour_rate||0)+'/hr', M, y); doc.text(money(_woLabourCost(w)), W-M, y, {align:'right'}); y+=6.5;
-  // cost summary
-  bar('Cost summary'); doc.setFontSize(8.8);
+  bar(ext?'Work carried out (per the workshop)':'Diagnosis & work carried out'); para(w.diagnosis||'—');
   function costRow(k,v,bold){ doc.setFont('helvetica',bold?'bold':'normal'); doc.setTextColor(40,40,40); doc.text(k,M,y); doc.text(v,W-M,y,{align:'right'}); doc.setFont('helvetica','normal'); y+=5.4; }
-  costRow('Parts', money(_woPartsCost(w))); costRow('Labour', money(_woLabourCost(w))); costRow('Total repair cost', money(_woTotal(w)), true);
-  if(w.warranty_claim){ var prov=(typeof warrantyInfo==='function'&&warrantyInfo(w.code))?warrantyInfo(w.code).provider:'the manufacturer'; doc.setFont('helvetica','bold'); doc.setTextColor(27,110,58); doc.text('Cost to client', M, y); doc.text(money(0)+' — claimed under '+prov+' warranty', W-M, y, {align:'right'}); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40); y+=5.4; }
-  else { costRow('Cost to client', money(_woClientCost(w)), true); }
-  if(w.invoice_doc){ doc.setFontSize(8.2); doc.setTextColor(90,90,90); var iv=doc.splitTextToSize('Workshop invoice on file: '+w.invoice_doc, W-2*M); doc.text(iv, M, y); y+=4.4*iv.length+1; }
-  y+=2;
+  if(ext){
+    // external: single repair cost from the workshop invoice — no in-house parts/labour breakdown
+    bar('Cost summary'); doc.setFontSize(8.8);
+    costRow('Repair cost (per workshop invoice)', money(_woTotal(w)), true);
+    if(w.warranty_claim){ var eprov=(typeof warrantyInfo==='function'&&warrantyInfo(w.code))?warrantyInfo(w.code).provider:'the manufacturer'; doc.setFont('helvetica','bold'); doc.setTextColor(27,110,58); doc.text('Cost to client', M, y); doc.text(money(0)+' — claimed under '+eprov+' warranty', W-M, y, {align:'right'}); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40); y+=5.4; }
+    else { costRow('Cost to client', money(_woClientCost(w)), true); }
+    if(w.invoice_doc){ doc.setFontSize(8.2); doc.setTextColor(90,90,90); var eiv=doc.splitTextToSize('Workshop invoice / report on file: '+w.invoice_doc, W-2*M); doc.text(eiv, M, y); y+=4.4*eiv.length+1; }
+    y+=2;
+  } else {
+    // parts table
+    bar('Parts & materials'); doc.setFontSize(8.8);
+    if((w.parts||[]).length){ (w.parts||[]).forEach(function(p){ if(y>284){doc.addPage();y=16;} var nm=doc.splitTextToSize(String(p.desc||'—'), W-2*M-30); doc.setTextColor(40,40,40); doc.text(nm, M, y); doc.text(money(p.cost||0), W-M, y, {align:'right'}); y+=4.8*nm.length+0.6; }); }
+    else { doc.setTextColor(120,120,120); doc.text('No parts recorded.', M, y); y+=5; }
+    doc.setDrawColor(222,212,170); doc.setLineWidth(0.2); doc.line(M,y,W-M,y); y+=4.6;
+    doc.setFont('helvetica','bold'); doc.setTextColor(40,40,40); doc.text('Parts subtotal', M, y); doc.text(money(_woPartsCost(w)), W-M, y, {align:'right'}); doc.setFont('helvetica','normal'); y+=6.5;
+    bar('Labour'); doc.setFontSize(8.8); doc.setTextColor(40,40,40);
+    doc.text((w.labour_hrs||0)+' hr  x  '+money(w.labour_rate||0)+'/hr', M, y); doc.text(money(_woLabourCost(w)), W-M, y, {align:'right'}); y+=6.5;
+    bar('Cost summary'); doc.setFontSize(8.8);
+    costRow('Parts', money(_woPartsCost(w))); costRow('Labour', money(_woLabourCost(w))); costRow('Total repair cost', money(_woTotal(w)), true);
+    if(w.warranty_claim){ var prov=(typeof warrantyInfo==='function'&&warrantyInfo(w.code))?warrantyInfo(w.code).provider:'the manufacturer'; doc.setFont('helvetica','bold'); doc.setTextColor(27,110,58); doc.text('Cost to client', M, y); doc.text(money(0)+' — claimed under '+prov+' warranty', W-M, y, {align:'right'}); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40); y+=5.4; }
+    else { costRow('Cost to client', money(_woClientCost(w)), true); }
+    if(w.invoice_doc){ doc.setFontSize(8.2); doc.setTextColor(90,90,90); var iv=doc.splitTextToSize('Workshop invoice on file: '+w.invoice_doc, W-2*M); doc.text(iv, M, y); y+=4.4*iv.length+1; }
+    y+=2;
+  }
   // photos (placeholder boxes for the demo)
   bar('Repair photos');
   var photos=(w.repair_photos||[]).slice(); if(!photos.length){ photos=['Photo placeholder','Photo placeholder']; }
@@ -2541,19 +2555,29 @@ function plantWorkOrderPDF(w){
   });
   if(col===1){ rowY+=boxH+9; } y=rowY+1;
   doc.setFontSize(7.6); doc.setTextColor(120,120,120); doc.text('Photographs are held against this work order in the app. (Demo shows placeholders.)', M, y); y+=6;
-  // declaration & sign-off — keep on one page
-  doc.setFontSize(8.8); var dlines=doc.splitTextToSize(WO_DECLARATION, W-2*M);
-  var blockH=10.5 + 4.8*dlines.length + 14 + 7 + 10;
-  if(y+blockH>286){ doc.addPage(); y=16; }
-  bar('Return to service — declaration & sign-off');
-  doc.setFontSize(8.8); doc.setTextColor(40,40,40); doc.text(dlines, M, y); y+=4.8*dlines.length+12;
-  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('MECHANIC SIGNATURE', M, y); y+=7;
-  doc.setFont('times','italic'); doc.setFontSize(20); doc.setTextColor(27,58,45); doc.text(w.mechanic||'', M, y); y+=5;
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,120,120);
   var sd=w.repair_date?fmt(w.repair_date):(w.signoff&&w.signoff.when?fmt(new Date(w.signoff.when)):'');
-  doc.text('Signed by the attending mechanic'+(w.mech_type?(' ('+w.mech_type+')'):'')+(sd?(' · '+sd):''), M, y);
+  if(ext){
+    // external: no in-app declaration — the workshop's own invoice/report is the certification
+    var ctext='This repair was carried out by an external workshop ('+(w.mechanic||'—')+') who do not use the app. It is certified by the workshop’s own invoice/report'+(w.invoice_doc?' (on file: '+w.invoice_doc+')':'')+'. This record was logged in Slán'+(sd?(' on '+sd):'')+' to confirm the machine has been returned to service.';
+    doc.setFontSize(8.8); var clines=doc.splitTextToSize(ctext, W-2*M);
+    if(y+10.5+4.8*clines.length+4>286){ doc.addPage(); y=16; }
+    bar('Certification');
+    doc.setFontSize(8.8); doc.setTextColor(40,40,40); doc.text(clines, M, y); y+=4.8*clines.length+2;
+  } else {
+    // in-house: return-to-service declaration + mechanic signature — keep on one page
+    doc.setFontSize(8.8); var dlines=doc.splitTextToSize(WO_DECLARATION, W-2*M);
+    var blockH=10.5 + 4.8*dlines.length + 14 + 7 + 10;
+    if(y+blockH>286){ doc.addPage(); y=16; }
+    bar('Return to service — declaration & sign-off');
+    doc.setFontSize(8.8); doc.setTextColor(40,40,40); doc.text(dlines, M, y); y+=4.8*dlines.length+12;
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('MECHANIC SIGNATURE', M, y); y+=7;
+    doc.setFont('times','italic'); doc.setFontSize(20); doc.setTextColor(27,58,45); doc.text(w.mechanic||'', M, y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,120,120);
+    doc.text('Signed by the attending mechanic'+(w.mech_type?(' ('+w.mech_type+')'):'')+(sd?(' · '+sd):''), M, y);
+  }
+  var docref = ext ? 'SLS-REG-017 · External Repair Record · Slán Safety' : 'SLS-REG-016 · Plant Repair Record · Slán Safety';
   var pages=doc.internal.getNumberOfPages();
-  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-016 · Plant Repair Record · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text(docref, W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
   return doc;
 }
 function plantViewWorkOrderPDF(woId){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } var w=_woFind(woId); if(!w) return; openPdfDoc(plantWorkOrderPDF(w), 'Repair-'+w.code+'-'+w.wo+'.pdf'); }
@@ -2735,12 +2759,52 @@ function openWO(i){
   } else if(!w.mechanic){
     // ---- supervisor / director: assign only ----
     var assignList='<div class="sec-h">Assign to a mechanic</div><div class="tile">'+MECHANICS.map(function(m,mi){
-      return '<button class="row" onclick="woAssign('+i+','+mi+')"><div class="row-main"><div class="row-t">'+m.name+'</div><div class="row-s">'+m.type+' · '+money(m.rate)+'/hr labour</div></div><div class="chev">›</div></button>';
+      var tag = m.inhouse ? '<span style="color:#1B6E3A;font-weight:700">In-house · completes it in the app</span>' : '<span style="color:#7A4F00;font-weight:700">External · you log their work</span>';
+      return '<button class="row" onclick="woAssign('+i+','+mi+')"><div class="row-main"><div class="row-t">'+m.name+'</div><div class="row-s">'+m.type+' · '+money(m.rate)+'/hr · '+tag+'</div></div><div class="chev">›</div></button>';
     }).join('')+'</div>'+
-    '<div style="font-size:11.5px;color:var(--t3);margin-top:8px;line-height:1.5">Assign the job to a mechanic or workshop — they complete the diagnosis, parts, labour, invoice and sign-off.</div>';
+    '<div style="font-size:11.5px;color:var(--t3);margin-top:8px;line-height:1.5">An <b>in-house</b> mechanic completes the repair in the app and signs it off. An <b>external</b> workshop doesn’t use the app — you log their work and attach their invoice/report.</div>';
     body = assignList + pdfBtn;
+  } else if(w.mech_inhouse===false){
+    // ---- EXTERNAL workshop: not an app user. The office (or in-house mechanic) logs their work + attaches their invoice/report. No in-app declaration. ----
+    var extBanner='<div style="background:#FBF1E6;border:1px solid #E6CFA8;border-radius:10px;padding:11px 13px;margin:14px 0">'+
+      '<div style="font-size:12.5px;font-weight:800;color:#7A4F00">🏭 External repair — '+w.mechanic+'</div>'+
+      '<div style="font-size:11.5px;color:#7A4F00;margin-top:4px;line-height:1.5">'+(w.mech_type||'External workshop')+' don’t use the app. Log the work they carried out and attach their invoice/report — that is their certification, so there is no in-app declaration.</div>'+
+      '<button onclick="woUnassign('+i+')" style="background:none;border:none;color:#7A4F00;font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit;margin-top:6px;text-decoration:underline">Reassign</button>'+
+    '</div>';
+    var extWarranty='';
+    if(inW){
+      var ewf=warrantyInfo(w.code);
+      extWarranty='<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:11px 13px;margin:0 0 14px">'+
+        '<div style="font-size:12.5px;font-weight:800;color:#1B5E3F">🛡 Under '+ewf.provider+' warranty until '+fmt(warrantyUntil(w.code))+'</div>'+
+        '<div style="font-size:11.5px;color:#1B5E3F;margin-top:5px;line-height:1.5">'+ewf.terms+' — this should be a warranty repair (no charge to you).</div>'+
+        '<label style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;font-weight:700;color:#1B5E3F;cursor:pointer"><input type="checkbox" id="wo-warranty" '+(w.warranty_claim?'checked':'')+' onchange="woFormChanged('+i+')" style="width:17px;height:17px;accent-color:#1B6E3A"> Repair claimed under warranty ($0 to you)</label>'+
+      '</div>';
+    }
+    var extInvRow = w.invoice_doc
+      ? '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:10px 13px;font-size:12px;color:#1B5E3F;display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="word-break:break-all">📄 '+_premobEsc(w.invoice_doc)+' · on file</span><button onclick="woRemoveInvoice('+i+')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;flex-shrink:0">✕</button></div>'
+      : '<div id="wo-inv-dz" onclick="woInvoicePick('+i+')" ondragover="woInvDragOver(event)" ondragleave="woInvDragLeave(event)" ondrop="woInvDrop(event,'+i+')" style="border:1.5px dashed #C7CFC9;border-radius:10px;padding:14px;text-align:center;cursor:pointer;color:var(--t2);font-size:12px">📎 Drop the workshop’s invoice / report here, or tap to add<div style="font-size:10.5px;color:var(--t3);margin-top:3px">Their paperwork is the certification &amp; fills the cost</div></div>';
+    var extPhotos=(w.repair_photos||[]).length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+(w.repair_photos||[]).map(function(p,pi){
+      return '<div style="background:#EEF1EE;border:1px solid #D8DFD8;border-radius:8px;padding:6px 9px;font-size:11px;color:var(--t2);display:flex;align-items:center;gap:6px">🖼 '+_premobEsc(p)+' <button onclick="woRemovePhoto('+i+','+pi+')" style="background:none;border:none;color:#A32D2D;font-size:13px;cursor:pointer;padding:0">✕</button></div>';
+    }).join('')+'</div>' : '';
+    var extWs=
+      extBanner + extWarranty +
+      '<div class="sec-h">Work carried out (per the workshop)</div>'+
+      '<textarea id="wo-diagnosis" placeholder="What the workshop reported they did…" style="width:100%;box-sizing:border-box;min-height:78px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical">'+_premobEsc(w.diagnosis||'')+'</textarea>'+
+      '<div class="sec-h">Workshop invoice / report</div>'+extInvRow+
+      '<div class="sec-h">Photos (optional)</div>'+
+      '<button onclick="woPhotoPick('+i+')" style="width:100%;padding:11px;border:1.5px dashed #C7CFC9;border-radius:10px;background:#fff;color:var(--t2);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">📷  Add photos</button>'+extPhotos+
+      '<div class="sec-h">Cost &amp; date</div><div class="svc">'+
+        '<div class="svc-row"><span>Repair cost (per invoice)</span><span>$ <input id="wo-ext-cost" type="number" inputmode="decimal" value="'+(w.external_cost||'')+'" oninput="_woCostPreview()" placeholder="0" style="width:90px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div>'+
+        '<div class="svc-row"><span>Cost to you</span><span id="wo-cost-client">'+(w.warranty_claim?('<span style="color:#1B6E3A">Covered by warranty — '+money(0)+'</span>'):('<b>'+money(_woClientCost(w))+'</b>'))+'</span></div>'+
+        '<div class="svc-row"><span>Date returned</span><span><input type="date" id="wo-repair-date" value="'+(w.repair_date||iso(new Date()))+'" style="padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px"></span></div>'+
+      '</div>'+
+      '<button class="btn-ghost" style="margin-top:14px" onclick="woSaveDetails('+i+')">Save</button>'+
+      '<button class="cta" style="background:var(--pass);margin-top:10px" onclick="woComplete('+i+')">Mark returned to service</button>'+
+      '<input type="file" id="wo-inv-input" accept="application/pdf,image/*" style="display:none" onchange="woInvoiceOnFile(this)">'+
+      '<input type="file" id="wo-photo-input" accept="image/*" multiple style="display:none" onchange="woPhotoOnFile(this)">';
+    body = extWs + pdfBtn;
   } else if(_asMechWO!==w.wo){
-    // ---- supervisor / director: assigned, read-only, awaiting the mechanic's report ----
+    // ---- supervisor / director: assigned, read-only, awaiting the IN-HOUSE mechanic's report ----
     var started = (w.parts&&w.parts.length) || (w.diagnosis||'').trim() || w.labour_hrs || w.invoice_doc;
     var assignedBox='<div style="background:#FFF8E6;border:1px solid #ECD9A0;border-radius:10px;padding:11px 13px;margin:14px 0">'+
       '<div style="font-size:12.5px;font-weight:800;color:#7A5B00">🔧 Assigned to '+w.mechanic+'</div>'+
@@ -2810,10 +2874,29 @@ function openWO(i){
   showDetail(html);
 }
 function _woCompletedView(w){
-  var partsRows=(w.parts||[]).length ? (w.parts||[]).map(function(p){ return '<div class="svc-row"><span>'+_premobEsc(p.desc)+'</span><span>'+money(p.cost||0)+'</span></div>'; }).join('') : '<div class="svc-row" style="color:var(--t3)"><span>No parts recorded</span><span></span></div>';
+  var ext=(w.mech_inhouse===false);
   var when=w.signoff&&w.signoff.when?new Date(w.signoff.when).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}):'';
-  var invSec = w.invoice_doc ? ('<div class="sec-h">Workshop invoice</div><div class="tile"><div class="row" style="cursor:default"><div class="row-ic">📄</div><div class="row-main"><div class="row-t" style="word-break:break-all">'+_premobEsc(w.invoice_doc)+'</div><div class="row-s">On file against this work order</div></div></div></div>') : '';
+  var invLabel = ext ? 'Workshop invoice / report' : 'Workshop invoice';
+  var invSec = w.invoice_doc ? ('<div class="sec-h">'+invLabel+'</div><div class="tile"><div class="row" style="cursor:default"><div class="row-ic">📄</div><div class="row-main"><div class="row-t" style="word-break:break-all">'+_premobEsc(w.invoice_doc)+'</div><div class="row-s">'+(ext?'The workshop’s own record — their certification':'On file against this work order')+'</div></div></div></div>') : '';
   var photoSec = (w.repair_photos||[]).length ? ('<div class="sec-h">Repair photos</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+(w.repair_photos||[]).map(function(p){ return '<div style="background:#EEF1EE;border:1px solid #D8DFD8;border-radius:8px;padding:6px 9px;font-size:11px;color:var(--t2)">🖼 '+_premobEsc(p)+'</div>'; }).join('')+'</div>') : '';
+  var pdfBtn='<button class="cta" style="margin-top:16px" onclick="plantViewWorkOrderPDF(\''+w.wo+'\')">📄  View / download '+(ext?'external repair record':'repair record')+' (PDF)</button>';
+  if(ext){
+    var extSign='<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:12px;padding:14px 15px;margin:14px 0">'+
+      '<div style="font-size:15px;font-weight:800;color:#15543B">✅ Returned to service</div>'+
+      '<div style="font-size:12px;color:#1B5E3F;margin-top:3px">'+w.code+' · '+w.machine+'</div>'+
+      '<div style="font-size:11.8px;color:#33433C;margin-top:10px;line-height:1.55">Repair carried out by <b>'+(w.mechanic||'an external workshop')+'</b> (external). Certified by the workshop’s own invoice/report'+(w.invoice_doc?' (on file)':'')+' — no in-app declaration.</div>'+
+      '<div style="font-size:11.5px;color:#1B5E3F;margin-top:10px;font-weight:700;border-top:1px solid #CFE6D8;padding-top:9px">Logged'+(when?(' '+when):'')+'</div>'+
+    '</div>';
+    return extSign +
+      '<div class="sec-h">Work carried out (per the workshop)</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-s" style="white-space:pre-wrap">'+(_premobEsc(w.diagnosis||'')||'—')+'</div></div></div></div>'+
+      invSec + photoSec +
+      '<div class="svc" style="margin-top:10px">'+
+        '<div class="svc-row"><span>Date returned</span><span>'+(w.repair_date?fmt(w.repair_date):(when||'—'))+'</span></div>'+
+        '<div class="svc-row"><span>Repair cost (per invoice)</span><span>'+money(_woTotal(w))+'</span></div>'+
+        '<div class="svc-row"><span>Cost to you</span><span>'+(w.warranty_claim?('<span style="color:#1B6E3A;font-weight:700">'+money(0)+' — claimed under warranty</span>'):('<b>'+money(_woClientCost(w))+'</b>'))+'</span></div>'+
+      '</div>'+ pdfBtn;
+  }
+  var partsRows=(w.parts||[]).length ? (w.parts||[]).map(function(p){ return '<div class="svc-row"><span>'+_premobEsc(p.desc)+'</span><span>'+money(p.cost||0)+'</span></div>'; }).join('') : '<div class="svc-row" style="color:var(--t3)"><span>No parts recorded</span><span></span></div>';
   var signBlock='<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:12px;padding:14px 15px;margin:14px 0">'+
     '<div style="font-size:15px;font-weight:800;color:#15543B">✅ Returned to service</div>'+
     '<div style="font-size:12px;color:#1B5E3F;margin-top:3px">'+w.code+' · '+w.machine+'</div>'+
@@ -2830,11 +2913,10 @@ function _woCompletedView(w){
       '<div class="svc-row"><span>Parts</span><span>'+money(_woPartsCost(w))+'</span></div>'+
       '<div class="svc-row"><span>Total repair cost</span><span>'+money(_woTotal(w))+'</span></div>'+
       '<div class="svc-row"><span>Cost to you</span><span>'+(w.warranty_claim?('<span style="color:#1B6E3A;font-weight:700">'+money(0)+' — claimed under warranty</span>'):('<b>'+money(_woClientCost(w))+'</b>'))+'</span></div>'+
-    '</div>'+
-    '<button class="cta" style="margin-top:16px" onclick="plantViewWorkOrderPDF(\''+w.wo+'\')">📄  View / download repair record (PDF)</button>';
+    '</div>'+ pdfBtn;
 }
 function woFormChanged(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); _saveWO(w); openWO(i); }
-function woAssign(i, mi){ var w=WORKORDERS[i], m=MECHANICS[mi]; if(!w||!m) return; w.mechanic=m.name; w.mech_type=m.type; if(!w.labour_rate) w.labour_rate=m.rate; if(w.status==='Raised') w.status='Assigned'; _saveWO(w); openWO(i); }
+function woAssign(i, mi){ var w=WORKORDERS[i], m=MECHANICS[mi]; if(!w||!m) return; w.mechanic=m.name; w.mech_type=m.type; w.mech_inhouse=(m.inhouse!==false); if(!w.labour_rate) w.labour_rate=m.rate; if(w.status==='Raised') w.status=(m.inhouse===false?'At workshop':'Assigned'); _saveWO(w); openWO(i); }
 function woUnassign(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); w.mechanic=''; w.mech_type=''; if(w.status==='Assigned'||w.status==='In progress') w.status='Raised'; _asMechWO=null; _saveWO(w); openWO(i); }
 function woOpenAsMech(i){ var w=WORKORDERS[i]; if(!w) return; _asMechWO=w.wo; openWO(i); }
 /* invoice + photo file handling (the mechanic's section) */
@@ -2845,11 +2927,11 @@ function woInvDragLeave(ev){ var d=document.getElementById('wo-inv-dz'); if(d) d
 function woInvDrop(ev,i){ ev.preventDefault(); _woReadForm(WORKORDERS[i]); var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) _woInvoiceImport(i, f.name); }
 function _woInvoiceImport(i, name){
   var w=WORKORDERS[i]; if(!w) return; w.invoice_doc=name;
-  // demo: if no parts/labour entered yet, fill a representative breakdown from the invoice so the repair cost auto-fills (real OCR = backend)
-  if(!(w.parts&&w.parts.length) && !w.labour_hrs){ w.labour_rate=w.labour_rate||140; w.labour_hrs=2.5; w.parts=[{desc:'Parts & materials (per invoice)', cost:285}]; }
-  if(w.status==='Assigned') w.status='In progress';
+  // demo: auto-fill a representative cost from the invoice (real OCR = backend)
+  if(w.mech_inhouse===false){ if(!w.external_cost){ w.external_cost=890; } }
+  else { if(!(w.parts&&w.parts.length) && !w.labour_hrs){ w.labour_rate=w.labour_rate||140; w.labour_hrs=2.5; w.parts=[{desc:'Parts & materials (per invoice)', cost:285}]; } if(w.status==='Assigned') w.status='In progress'; }
   _saveWO(w); openWO(i);
-  slanMsg('', '<div style="text-align:center"><div style="font-size:38px">📄</div><div style="font-size:15px;font-weight:800;color:var(--pass);margin-top:6px">Invoice attached</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.5">'+_premobEsc(name)+' is on file against this job and the repair cost has been filled in — check the figures before signing off.</div></div>');
+  slanMsg('', '<div style="text-align:center"><div style="font-size:38px">📄</div><div style="font-size:15px;font-weight:800;color:var(--pass);margin-top:6px">'+(w.mech_inhouse===false?'Workshop report attached':'Invoice attached')+'</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.5">'+_premobEsc(name)+' is on file against this job and the repair cost has been filled in — check the figures before closing it off.</div></div>');
 }
 function woRemoveInvoice(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); w.invoice_doc=''; _saveWO(w); openWO(i); }
 function woPhotoPick(i){ _woReadForm(WORKORDERS[i]); _woPhotoRef=i; var el=document.getElementById('wo-photo-input'); if(el) el.click(); }
@@ -2860,11 +2942,12 @@ function woRemovePart(i, pi){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w)
 function woSaveDetails(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); if((w.diagnosis||'').trim() && w.status==='Assigned') w.status='In progress'; _saveWO(w); slanMsg('', '<div style="text-align:center"><div style="font-size:38px">💾</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Repair details saved</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px">'+w.wo+' — diagnosis, parts and labour saved.</div></div>', function(){ openWO(i); }); }
 function woComplete(i){
   var w=WORKORDERS[i]; if(!w) return; _woReadForm(w);
+  var ext=(w.mech_inhouse===false);
   if(!w.mechanic){ slanMsg('Assign a mechanic first','<div style="font-size:13px;color:var(--t2);line-height:1.55">Pick the mechanic or workshop doing the repair before you sign it back into service.</div>'); return; }
-  if(!(w.diagnosis||'').trim()){ slanMsg('Record the diagnosis first','<div style="font-size:13px;color:var(--t2);line-height:1.55">Add a short diagnosis of what was found and fixed before returning the machine to service.</div>'); return; }
-  if(!w.declared){ slanMsg('Confirm it’s safe to return','<div style="font-size:13px;color:var(--t2);line-height:1.55">Tick the return-to-service declaration to confirm the repair is complete and the machine is safe before signing it off.</div>'); return; }
+  if(!(w.diagnosis||'').trim()){ slanMsg(ext?'Record the work done first':'Record the diagnosis first','<div style="font-size:13px;color:var(--t2);line-height:1.55">'+(ext?'Note what the workshop carried out before closing this off.':'Add a short diagnosis of what was found and fixed before returning the machine to service.')+'</div>'); return; }
+  if(!ext && !w.declared){ slanMsg('Confirm it’s safe to return','<div style="font-size:13px;color:var(--t2);line-height:1.55">Tick the return-to-service declaration to confirm the repair is complete and the machine is safe before signing it off.</div>'); return; }
   if(!w.repair_date) w.repair_date=iso(new Date());
-  w.signoff={ by:w.mechanic, when:new Date().toISOString() };
+  w.signoff={ by:w.mechanic, when:new Date().toISOString(), external:ext };
   w.status='Returned to service';
   _saveWO(w);
   if(typeof _clearPlantAlert==='function') _clearPlantAlert(w.code);
@@ -2872,7 +2955,9 @@ function woComplete(i){
   _asMechWO=null;
   var total=_woTotal(w);
   var costLine = w.warranty_claim ? ('Repair cost '+money(total)+' — <b>claimed under warranty ($0 to you)</b>.') : (money(total)+' added to this machine&rsquo;s maintenance spend.');
-  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Returned to service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+w.wo+' — '+w.code+' signed back into service by '+w.mechanic+'.<br>'+costLine+'<br><span style="font-size:11.5px;color:var(--t3)">A repair record (PDF) has been filed — open it from the Completed tab.</span></div></div>', function(){ platTab='workorders'; woSub='done'; renderOversight(); });
+  var byLine = ext ? ('returned to service after repair by '+w.mechanic+' (external).') : ('signed back into service by '+w.mechanic+'.');
+  var recLine = ext ? 'An external repair record (PDF) has been filed — open it from the Completed tab.' : 'A repair record (PDF) has been filed — open it from the Completed tab.';
+  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Returned to service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+w.wo+' — '+w.code+' '+byLine+'<br>'+costLine+'<br><span style="font-size:11.5px;color:var(--t3)">'+recLine+'</span></div></div>', function(){ platTab='workorders'; woSub='done'; renderOversight(); });
 }
 function _woBack(){ if(_asMechWO!=null && _woCur!=null && WORKORDERS[_woCur]){ _woReadForm(WORKORDERS[_woCur]); _saveWO(WORKORDERS[_woCur]); } _asMechWO=null; _woCur=null; renderOversight(); }
 function completeWO(wo){ var w=_woFind(wo); var i=w?WORKORDERS.indexOf(w):-1; if(i>=0) woComplete(i); }
