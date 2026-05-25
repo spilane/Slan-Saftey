@@ -745,7 +745,7 @@ function openHub(i){
     '<div id="plant-dropzone" ondragover="plantDocDragOver(event)" ondragleave="plantDocDragLeave(event)" ondrop="plantDocDrop(event)" onclick="plantDocPick()" style="border:2px dashed #BBB;border-radius:12px;padding:22px 16px;text-align:center;cursor:pointer;background:#FAFAF7">'+
       '<div style="font-size:30px">📎</div>'+
       '<div style="font-size:13.5px;font-weight:700;color:var(--deep);margin-top:6px">Drop a document here, or tap to choose</div>'+
-      '<div style="font-size:11.5px;color:var(--t2);margin-top:4px;line-height:1.5">Rego &amp; insurance certificates, service reports, invoices, inspections'+(isHired(a.code)?' and hire agreements':'')+' are read automatically and filed to this machine.</div>'+
+      '<div style="font-size:11.5px;color:var(--t2);margin-top:4px;line-height:1.5">Rego &amp; insurance certificates, service reports, invoices, inspections'+(isHired(a.code)?', hire agreements and delivery dockets':'')+' are read automatically and filed to this machine.</div>'+
     '</div>'+
     '<input id="plant-doc-input" type="file" style="display:none" onchange="plantDocOnFile(this)">'+
     (uploads.length ? ('<div class="tile" style="margin-top:10px">'+uploads.map(function(dc,di){ var m=DOC_TYPES[dc.type]||DOC_TYPES.other; return '<button class="row" onclick="plantDocView(\''+a.code+'\','+di+')"><div class="row-ic">'+m.ic+'</div><div class="row-main"><div class="row-t">'+m.label+'</div><div class="row-s" style="word-break:break-all">'+dc.name+' · '+fmtShort(dc.when)+'</div></div><div class="chev">›</div></button>'; }).join('')+'</div>') : '')
@@ -759,6 +759,7 @@ function openHub(i){
       (hc?('<div class="svc-row"><span>Supplier contact</span><span><a href="tel:'+hc.phone.replace(/\s/g,'')+'" style="color:var(--mid);text-decoration:none;font-weight:700">'+hc.phone+'</a> · <a href="mailto:'+hc.email+'" style="color:var(--mid);text-decoration:none;font-weight:700">email</a></span></div>'):'')+
       '<div class="svc-row"><span>Hire ref / PO</span><span>'+(hi.po||'—')+'</span></div>'+
       '<div class="svc-row"><span>Hire agreement</span><span><a href="javascript:void(0)" onclick="plantViewHireAgreement(\''+a.code+'\')" style="color:var(--mid);font-weight:700;text-decoration:none">'+(hireDocIdx>-1?'On file ✓ · view':'View')+'</a></span></div>'+
+      (function(){ var di=_hdocs.map(function(d){return d.type;}).indexOf('delivery_docket'); return '<div class="svc-row"><span>Delivery docket</span><span>'+(di>-1?('<a href="javascript:void(0)" onclick="plantDocView(\''+a.code+'\','+di+')" style="color:var(--mid);font-weight:700;text-decoration:none">On file ✓ · view</a>'):'<span style="color:var(--warn);font-weight:700">Upload on delivery</span>')+'</span></div>'; })()+
       '<div class="svc-row"><span>On hire since</span><span>'+fmt(hireOnHireDate(a.code))+' · '+Math.round((hi.on_hire_days||0)/7)+' wks</span></div>';
     if(!offReq && hireDueDate(a.code)){
       var dcol = (due!=null && due<=HIRE_RETURN_REMIND_DAYS) ? (due<0?'var(--fail)':'var(--warn)') : '';
@@ -827,9 +828,11 @@ function openHub(i){
       '<div class="svc-row"><span>Serial / VIN</span><span>'+(dt.vin||'—')+'</span></div>'+
       '<div class="svc-row"><span>Registration</span><span>'+(dt.rego?(dt.rego+' · '+dt.rego_state):'— (plant)')+'</span></div>'+
       '<div class="svc-row"><span>Rego expiry</span><span style="'+(a.rego_expiry&&new Date(a.rego_expiry)<t0?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?(fmt(a.rego_expiry)+(new Date(a.rego_expiry)<t0?' · EXPIRED':'')):'—')+'</span></div>'+
-      '<div class="svc-row"><span>Insurance</span><span>'+(dt.insurer||'—')+'</span></div>'+
-      '<div class="svc-row"><span>Policy no.</span><span>'+(dt.policy||'—')+'</span></div>'+
-      '<div class="svc-row"><span>Insurance expiry</span><span>'+(a.insurance_expiry?fmt(a.insurance_expiry):'—')+'</span></div>'+
+      (isHired(a.code)
+        ? '<div class="svc-row"><span>Insurance</span><span>Supplier\'s cover (hire company)</span></div>'
+        : '<div class="svc-row"><span>Insurance</span><span>'+(dt.insurer||'—')+'</span></div>'+
+          '<div class="svc-row"><span>Policy no.</span><span>'+(dt.policy||'—')+'</span></div>'+
+          '<div class="svc-row"><span>Insurance expiry</span><span>'+(a.insurance_expiry?fmt(a.insurance_expiry):'—')+'</span></div>')+
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       '<div class="svc-row"><span>Odometer</span><span>'+(dt.km?dt.km.toLocaleString()+' km':'—')+'</span></div>'+
     '</div>') : '')+
@@ -855,14 +858,16 @@ var DOC_TYPES={
   service:{label:'Service report', ic:'🛠️'},
   invoice:{label:'Tax invoice', ic:'🧾'},
   inspection:{label:'Inspection report', ic:'🟢'},
-  hire_agreement:{label:'Hire agreement', ic:'📑'},
+  hire_agreement:{label:'Signed hire agreement', ic:'📑'},
+  delivery_docket:{label:'Delivery docket', ic:'🚚'},
   swms:{label:'SWMS', ic:'📄'},
   manual:{label:'Operator manual', ic:'📘'},
   other:{label:'Document', ic:'📎'}
 };
 function _inferDocType(name){
   var n=(name||'').toLowerCase();
-  if(/hire.?agreement|hire.?contract|rental.?agreement|hire.?docket|on.?hire/.test(n)) return 'hire_agreement';
+  if(/hire.?agreement|hire.?contract|rental.?agreement|on.?hire/.test(n)) return 'hire_agreement';
+  if(/delivery.?docket|delivery.?note|proof.?of.?deliver|goods.?received|despatch/.test(n)) return 'delivery_docket';
   if(/rego|registration|\brms\b|\brta\b|transport/.test(n)) return 'rego';
   if(/insur|policy|currency|\bcoc\b/.test(n)) return 'insurance';
   if(/service|maintenance|logbook|repair/.test(n)) return 'service';
@@ -876,7 +881,10 @@ function _docExtract(type, a){
   var d=plantDetails(a.code), sm=svcMeter(a), now=new Date();
   function plus(mo){ var x=new Date(); x.setMonth(x.getMonth()+mo); return iso(x); }
   if(type==='rego'){ return { _display:[['Registration', d.rego||'—'],['State', d.rego_state||'NSW'],['Expiry date', fmt(plus(12))]], apply:{ rego_expiry:plus(12) } }; }
-  if(type==='insurance'){ return { _display:[['Insurer', d.insurer||'CGU Plant & Equipment'],['Policy no.', d.policy||'PLE-884500'],['Expiry date', fmt(plus(12))]], apply:{ insurance_expiry:plus(12) } }; }
+  if(type==='insurance'){
+    if(typeof isHired==='function' && isHired(a.code)){ var _insH=hireInfo(a.code); return { _display:[['Cover',"Supplier's cover (hire company)"],['Supplier', _insH?_insH.supplier:'—'],['Verified', fmt(iso(now))]], apply:{} }; }
+    return { _display:[['Insurer', d.insurer||'CGU Plant & Equipment'],['Policy no.', d.policy||'PLE-884500'],['Expiry date', fmt(plus(12))]], apply:{ insurance_expiry:plus(12) } };
+  }
   if(type==='service'){ var reading=sm?(sm.meter==='km'?(d.km||0):(a.hours||0)):(a.hours||0); var nd=plus(3); return { _display:[['Service date', fmt(iso(now))],['Next service due', fmt(nd)],[(sm&&sm.meter==='km'?'Odometer':'Engine hours'), reading.toLocaleString()+' '+(sm&&sm.meter==='km'?'km':'hrs')],['Workshop','FleetServ Mechanical']], apply:{ service_last:iso(now), service_due:nd } }; }
   if(type==='invoice'){
     if(typeof isHired==='function' && isHired(a.code)){ var _ih=hireInfo(a.code); return { _display:[['From', _ih?_ih.supplier:'Hire company'],['Invoice no.','INV-'+(10000+Math.floor(Math.random()*89999))],['For','Weekly hire charge'],['Amount', _ih?money(_ih.rate):'—'],['Date', fmt(iso(now))]], apply:{} }; }
@@ -884,6 +892,7 @@ function _docExtract(type, a){
   }
   if(type==='inspection'){ return { _display:[['Inspection','Periodic (green sticker)'],['Result','Pass'],['Inspected', fmt(iso(now))],['Next due', fmt(plus(6))]], apply:{} }; }
   if(type==='hire_agreement'){ var hi=(typeof hireInfo==='function')?hireInfo(a.code):null; return { _display:[['Supplier', hi?hi.supplier:'—'],['Hire ref / PO', (hi&&hi.po)?hi.po:'—'],['On hire since', (typeof hireOnHireDate==='function'&&hireOnHireDate(a.code))?fmt(hireOnHireDate(a.code)):'—'],['Rate', hi?(money(hi.rate)+'/wk'):'—'],['Filed', fmt(iso(now))]], apply:{} }; }
+  if(type==='delivery_docket'){ var _dh=(typeof isHired==='function'&&isHired(a.code))?hireInfo(a.code):null; return { _display:[['From', _dh?_dh.supplier:'Supplier'],['Asset', a.code+' · '+a.make+' '+a.model],['Delivered to', (typeof assetSite==='function')?assetSite(a.code):'site'],['Delivered', fmt(iso(now))]], apply:{} }; }
   if(type==='swms'){ return { _display:[['Document','Safe Work Method Statement'],['Filed', fmt(iso(now))]], apply:{} }; }
   if(type==='manual'){ return { _display:[['Document', a.make+' '+a.model+' manual'],['Filed', fmt(iso(now))]], apply:{} }; }
   return { _display:[['Filed', fmt(iso(now))]], apply:{} };
