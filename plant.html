@@ -2830,6 +2830,9 @@ function renderMechanic(){
       '<button class="row" onclick="renderMechWarranties()"><div class="row-ic">🛡️</div><div class="row-main"><div class="row-t">Warranties</div><div class="row-s">Which machines are in / out of warranty</div></div><div class="chev">›</div></button>'+
       '<button class="row" onclick="renderPartsLedger()"><div class="row-ic">🔩</div><div class="row-main"><div class="row-t">Parts fitted</div><div class="row-s">Every part replaced, when, &amp; its warranty</div></div><div class="chev">›</div></button>'+
       '<button class="row" onclick="renderMechSpend()"><div class="row-ic">💲</div><div class="row-main"><div class="row-t">Maintenance spend</div><div class="row-s">Fleet total, broken down per machine &amp; per repair</div></div><div class="chev">›</div></button>'+
+      '<button class="row" onclick="renderMechServicesDue()"><div class="row-ic">🗓️</div><div class="row-main"><div class="row-t">Service schedule</div><div class="row-s">What&rsquo;s due, overdue &amp; booked across the fleet</div></div><div class="chev">›</div></button>'+
+      '<button class="row" onclick="renderMechWaiting()"><div class="row-ic">⏸️</div><div class="row-main"><div class="row-t">Waiting on parts</div><div class="row-s">Jobs on hold for parts, longest first</div></div><div class="chev">›</div></button>'+
+      '<button class="row" onclick="renderMechRecurring()"><div class="row-ic">🔁</div><div class="row-main"><div class="row-t">Recurring faults</div><div class="row-s">The same problem flagged 2+ times on a machine</div></div><div class="chev">›</div></button>'+
     '</div>';
   } else {
     var woRows=myOpen.length?myOpen.map(function(w){ var idx=WORKORDERS.indexOf(w); var _ag=_woAgeText(w);
@@ -3028,6 +3031,66 @@ function renderMachineSpend(code){
     '<div class="svc" style="margin-bottom:12px"><div class="svc-row"><span><b>Total (12 mo)</b></span><span style="font-weight:800;font-size:15px">'+money(sp)+'</span></div></div>'+
     '<div class="sec-h">What makes it up</div><div class="svc">'+body+'</div>'+
     '<button class="btn-ghost" style="margin-top:12px" onclick="renderMachineHistory(\''+code+'\')">📜  Open full machine history</button>'+
+  '</div>';
+  showDetail(html);
+}
+/* Mechanic: upcoming service schedule — everything due / overdue / booked across the fleet, soonest/most-urgent first. */
+function renderMechServicesDue(){
+  if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  var fleet=ASSETS.filter(function(a){ return !isHired(a.code); });
+  var items=[]; fleet.forEach(function(a){ var st=_svcStatus(a); if(!st || st.state==='done') return; items.push({a:a,st:st}); });
+  var rank={overdue:0,due_soon:1,ok:3};
+  items.sort(function(x,y){ var rx=x.st.booked?2:(rank[x.st.state]!=null?rank[x.st.state]:3), ry=y.st.booked?2:(rank[y.st.state]!=null?rank[y.st.state]:3); if(rx!==ry) return rx-ry; return new Date(x.a.service_due)-new Date(y.a.service_due); });
+  var rows=items.length?items.map(function(o){ var a=o.a, st=o.st, idx=ASSETS.indexOf(a);
+    var col=st.booked?'#1B6E3A':(st.state==='overdue'?'#A32D2D':(st.state==='due_soon'?'#A06000':'var(--t3)'));
+    var label=st.booked?('Booked '+fmtShort(st.bookedDate)+(st.workshop?(' · '+st.workshop):'')):(st.state==='overdue'?'Overdue':(st.state==='due_soon'?'Due soon':'On schedule'));
+    return '<button class="row" onclick="openHub('+idx+')"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s"><span style="color:'+col+';font-weight:700">'+label+'</span> <span style="color:var(--t3)">· next due '+fmtShort(a.service_due)+(st.sm?(' · '+_svcDueText(st)):'')+'</span></div></div><div class="chev">›</div></button>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No services due or booked.</div></div></div>';
+  setHeader('Service schedule','What’s coming due across the fleet');
+  var html='<div class="wrap platform-wrap">'+
+    '<button class="back" onclick="mechSetTab(\'reports\')">‹ Reports</button>'+
+    '<div class="hub-head"><div class="hub-ic">🗓️</div><div style="flex:1"><div class="hub-code">Service schedule</div><div class="hub-mm">Upcoming, overdue &amp; booked services</div></div></div>'+
+    '<div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* Mechanic: waiting-on-parts — jobs on hold / awaiting parts, longest-waiting first, so parts get chased. */
+function renderMechWaiting(){
+  if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  var list=WORKORDERS.filter(function(w){ return w.status!=='Returned to service' && (_woOnHold(w) || w.status==='Awaiting parts'); });
+  list.sort(function(x,y){ return new Date(x.raised_at||0)-new Date(y.raised_at||0); });
+  var rows=list.length?list.map(function(w){ var idx=WORKORDERS.indexOf(w);
+    var holdTxt=_woOnHold(w)?('on hold to '+fmtShort(w.hold_until)+(w.hold_reason?(' · '+w.hold_reason):'')):'awaiting parts';
+    var ag=_woAgeText(w);
+    return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic">⏸️</div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+w.fault+' · <span style="color:#234E76;font-weight:700">'+holdTxt+'</span>'+(ag?(' · '+ag):'')+'</div></div><div class="chev">›</div></button>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">Nothing waiting on parts right now.</div></div></div>';
+  setHeader('Waiting on parts','Jobs paused for parts');
+  var html='<div class="wrap platform-wrap">'+
+    '<button class="back" onclick="mechSetTab(\'reports\')">‹ Reports</button>'+
+    '<div class="hub-head"><div class="hub-ic">⏸️</div><div style="flex:1"><div class="hub-code">Waiting on parts</div><div class="hub-mm">'+list.length+' job'+(list.length===1?'':'s')+' on hold</div></div></div>'+
+    '<div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* Mechanic: recurring faults — the same item flagged 2+ times on a machine (early warning of a deeper problem). Reads pre-start records' faulted items. */
+function _recurringFaults(code){
+  var counts={};
+  _recordsFor(code).forEach(function(r){ (r.items||[]).forEach(function(it){ if(it.status==='f'){ var k=it.q; if(!counts[k]) counts[k]={q:it.q,n:0,last:null}; counts[k].n++; var w=new Date(r.when); if(!counts[k].last||w>counts[k].last) counts[k].last=w; } }); });
+  return Object.keys(counts).map(function(k){return counts[k];}).filter(function(c){return c.n>=2;}).sort(function(a,b){return b.n-a.n;});
+}
+function renderMechRecurring(){
+  if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  var flagged=[]; ASSETS.forEach(function(a){ _recurringFaults(a.code).forEach(function(c){ flagged.push({a:a,c:c}); }); });
+  flagged.sort(function(x,y){ return y.c.n-x.c.n; });
+  var rows=flagged.length?flagged.map(function(o){ var a=o.a, c=o.c;
+    return '<button class="row" onclick="renderMachineHistory(\''+a.code+'\')"><div class="row-ic">🔁</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s"><span style="color:#A06000;font-weight:700">'+_premobEsc(c.q)+'</span> · flagged '+c.n+' times'+(c.last?(' · last '+fmtShort(c.last)):'')+'</div></div><div class="chev">›</div></button>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No recurring faults — nothing has been flagged more than once.</div></div></div>';
+  setHeader('Recurring faults','The same problem coming back');
+  var html='<div class="wrap platform-wrap">'+
+    '<button class="back" onclick="mechSetTab(\'reports\')">‹ Reports</button>'+
+    '<div class="hub-head"><div class="hub-ic">🔁</div><div style="flex:1"><div class="hub-code">Recurring faults</div><div class="hub-mm">Items flagged 2+ times on a machine</div></div></div>'+
+    '<div style="font-size:11.5px;color:var(--t2);line-height:1.5;margin-bottom:10px">A fault that keeps coming back usually means the real cause hasn&rsquo;t been fixed — worth a closer look.</div>'+
+    '<div class="tile">'+rows+'</div>'+
   '</div>';
   showDetail(html);
 }
