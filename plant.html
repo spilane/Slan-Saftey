@@ -2771,10 +2771,15 @@ function renderMechanic(){
   var svcRows=mySvc.length?mySvc.map(function(code){ var s=svcAll[code]; var a=ASSETS.find(function(x){return x.code===code;}); var mm=a?(a.make+' '+a.model):''; var overdue=_expired(s.booked_date);
     return '<button class="row" onclick="plantCompleteService(\''+code+'\')"><div class="row-ic"><span class="dot" style="background:'+(overdue?'#A32D2D':'#A06000')+'"></span></div><div class="row-main"><div class="row-t">'+code+' · '+mm+'</div><div class="row-s">'+(s.note||'Service')+' · booked '+fmtShort(s.booked_date)+(overdue?' · overdue':'')+'</div></div><div class="row-s" style="flex-shrink:0;color:var(--gold);font-weight:700">Complete ›</div></button>';
   }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No services booked to you right now.</div></div></div>';
+  var myDoneSvc=Object.keys(svcAll).filter(function(code){ var s=svcAll[code]; return s && s.status==='done' && s.workshop==='Dave Wilkins' && s.mech_inhouse!==false; });
   var doneRows=myDone.map(function(w){ var idx=WORKORDERS.indexOf(w); var when=w.signoff&&w.signoff.when?new Date(w.signoff.when).toLocaleDateString('en-AU',{day:'numeric',month:'short'}):'';
-    return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+w.fault+(when?(' · '+when):'')+'</div></div><div class="chev">›</div></button>';
+    return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">Repair · '+w.fault+(when?(' · '+when):'')+'</div></div><div class="chev">›</div></button>';
   }).join('');
-  var doneCard=myDone.length?('<div class="fcard"><div class="fcard-hdr">✅ Completed by you ('+myDone.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+doneRows+'</div></div>'):'';
+  var doneSvcRows=myDoneSvc.map(function(code){ var s=svcAll[code]; var a=ASSETS.find(function(x){return x.code===code;}); var mm=a?(a.make+' '+a.model):'';
+    return '<button class="row" onclick="plantViewServiceRecord(\''+code+'\')"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+code+' · '+mm+'</div><div class="row-s">Service · '+(s.note||'Service')+(s.completed_date?(' · '+fmtShort(s.completed_date)):'')+'</div></div><div class="chev">›</div></button>';
+  }).join('');
+  var doneTotal=myDone.length+myDoneSvc.length;
+  var doneCard=doneTotal?('<div class="fcard"><div class="fcard-hdr">✅ Completed by you ('+doneTotal+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+doneRows+doneSvcRows+'</div></div>'):'';
   _homeView='mechanic';
   setHeader('My jobs', 'Dave Wilkins · repairs & services assigned to you');
   var html='<div class="wrap platform-wrap">'+
@@ -3057,6 +3062,10 @@ function plantRaiseWO(code){
       _rwoSevRow('med','🟠','Needs repair soon','Flag for repair; still usable for now')+
       _rwoSevRow('crit','🔴','Critical — take out of service','Unsafe to use; stop the machine now')+
     '</div>'+
+    (!isWorker ? ('<div class="sec-h">Assign to a mechanic</div><div class="tile" style="padding:4px 0">'+
+      '<label style="display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer"><input type="radio" name="rwo-mech" value="-1" checked style="width:18px;height:18px;accent-color:#2D6A45;flex-shrink:0"><span><span style="font-size:13px;font-weight:700;color:var(--deep);display:block">Leave unassigned for now</span><span style="font-size:11px;color:var(--t2)">Assign it later from the work order</span></span></label>'+
+      MECHANICS.map(function(m,mi){ var tag=m.inhouse?'In-house · completes it in the app':'External · you log their work'; return '<label style="display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer"><input type="radio" name="rwo-mech" value="'+mi+'" style="width:18px;height:18px;accent-color:#2D6A45;flex-shrink:0"><span><span style="font-size:13px;font-weight:700;color:var(--deep);display:block">'+m.name+'</span><span style="font-size:11px;color:var(--t2)">'+m.type+' · '+tag+'</span></span></label>'; }).join('')+
+    '</div><div style="font-size:11px;color:var(--t3);margin-top:6px;line-height:1.5">Assign it to <b>Dave Wilkins</b> and it lands straight in his jobs list. Leave it unassigned and you can assign it later.</div>') : '')+
     '<button class="cta" style="margin-top:16px" onclick="plantRaiseWOSubmit(\''+code+'\')">'+(isWorker?'Report fault':'Raise work order')+'</button>'+
   '</div>';
   showDetail(html);
@@ -3070,6 +3079,12 @@ function plantRaiseWOSubmit(code){
   var who=getRole()==='worker' ? ((currentWorker&&currentWorker.name)?currentWorker.name:'Operator') : (getRole()==='director'?'Patrick Murphy':((typeof PLANT_SUP_NAME!=='undefined'&&PLANT_SUP_NAME[oversightSite])?PLANT_SUP_NAME[oversightSite]:'Supervisor'));
   var sevLbl=(sev==='crit')?'Critical — out of service':(sev==='med'?'Needs repair soon':'Minor — still usable');
   var woObj={ wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:desc, priority:prio, status:'Raised', raised:'just now · '+who, raised_at:new Date().toISOString() };
+  // sup/dir can assign it to a mechanic right here, so a raised (incl. critical) WO reaches the mechanic's jobs list immediately
+  var assignedMech=null;
+  if(getRole()!=='worker'){
+    var mEl=document.querySelector('input[name="rwo-mech"]:checked'); var midx=mEl?parseInt(mEl.value,10):-1;
+    if(midx>=0 && MECHANICS[midx]){ assignedMech=MECHANICS[midx]; woObj.mechanic=assignedMech.name; woObj.mech_type=assignedMech.type; woObj.mech_inhouse=(assignedMech.inhouse!==false); woObj.labour_rate=assignedMech.rate; woObj.status=(assignedMech.inhouse===false?'At workshop':'Assigned'); }
+  }
   // save a viewable FAULT REPORT (who flagged it, when, severity, the worker's signature) and link it to the work order
   var repId='FR-'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e4).toString(36);
   _saveFaultReport({ id:repId, code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:who, role:getRole(), when:new Date().toISOString(), severity:sev, severity_label:sevLbl, fault:desc, priority:prio, critical:critical, signature:who, wo:woObj.wo });
@@ -3077,9 +3092,12 @@ function plantRaiseWOSubmit(code){
   WORKORDERS.unshift(woObj); _saveWO(woObj);
   if(typeof _setPlantAlert==='function') _setPlantAlert(a, desc, critical);
   a.status = critical?'out_of_service':'fault_reported';
+  var assignLine = assignedMech
+    ? (' Assigned to <b>'+assignedMech.name+'</b>'+(assignedMech.inhouse!==false?' — it’s now in his jobs list to complete.':' (external — log their work when it’s done).'))
+    : (getRole()==='worker' ? '' : ' Assign it to a mechanic from the work order when you’re ready.');
   var msg = critical
-    ? (a.code+' has been flagged <b>critical</b> and taken out of service. Work order '+woObj.wo+' is raised and the supervisor has been notified.')
-    : ('Work order '+woObj.wo+' raised for '+a.code+'. The supervisor has been notified and can assign it to a mechanic.');
+    ? (a.code+' has been flagged <b>critical</b> and taken out of service. Work order '+woObj.wo+' is raised.'+assignLine)
+    : ('Work order '+woObj.wo+' raised for '+a.code+'.'+assignLine);
   slanMsg('', '<div style="text-align:center"><div style="font-size:42px">'+(critical?'⛔':'🛠️')+'</div><div style="font-size:16px;font-weight:800;color:'+(critical?'#A32D2D':'var(--deep)')+';margin-top:6px">'+(critical?'Taken out of service':'Work order raised')+'</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+msg+'</div></div>', function(){ if(getRole()==='worker'){ openHub(ASSETS.indexOf(a)); } else { platTab='workorders'; woSub='open'; renderOversight(); } });
 }
 /* fault reports — who flagged it, when, severity, signature (separate store so it doesn't disturb the pre-start record feeds) */
@@ -3117,12 +3135,14 @@ function _svcWsRow(mi, m, checked){
 function plantBookService(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var idx=ASSETS.indexOf(a);
   var s=_svcState(code)||{};
+  var _todayIso=iso(new Date());
   var dueDefault = s.booked_date || a.service_due || iso(dOffset(14));
+  if(dueDefault < _todayIso) dueDefault = _todayIso; // never default a booking into the past
   var pickedIdx = (function(){ for(var i=0;i<MECHANICS.length;i++){ if(MECHANICS[i].name===s.workshop) return i; } return 0; })();
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="openHub('+idx+')">‹ Back to machine</button>'+
     '<div class="hub-head"><div class="hub-ic">🗓️</div><div style="flex:1"><div class="hub-code">'+(s.status==='booked'?'Reschedule service':'Book a service')+'</div><div class="hub-mm">'+a.code+' · '+a.make+' '+a.model+'</div><div class="hub-hours">Next due '+fmt(a.service_due)+'</div></div></div>'+
-    '<div class="sec-h">Scheduled date</div><div class="svc"><div class="svc-row"><span>Service date</span><span><input type="date" id="svc-date" value="'+dueDefault+'" style="padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px"></span></div></div>'+
+    '<div class="sec-h">Scheduled date</div><div class="svc"><div class="svc-row"><span>Service date</span><span><input type="date" id="svc-date" min="'+iso(new Date())+'" value="'+dueDefault+'" style="padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px"></span></div></div>'+
     '<div class="sec-h">Workshop / mechanic</div><div class="tile" style="padding:4px 0">'+MECHANICS.map(function(m,mi){ return _svcWsRow(mi, m, mi===pickedIdx); }).join('')+'</div>'+
     '<div class="sec-h">Service type (optional)</div>'+
     '<input id="svc-note" value="'+_premobEsc(s.note||'')+'" placeholder="e.g. 500-hour service, annual service" style="width:100%;box-sizing:border-box;padding:10px 11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px">'+
@@ -3135,6 +3155,7 @@ function plantBookServiceSubmit(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var idx=ASSETS.indexOf(a);
   var dEl=document.getElementById('svc-date'), date=dEl?dEl.value:'';
   if(!date){ if(dEl){ dEl.style.borderColor='#A32D2D'; } return; }
+  if(date < iso(new Date())){ if(dEl){ dEl.style.borderColor='#A32D2D'; } slanMsg('Pick a future date','<div style="font-size:13px;color:var(--t2);line-height:1.55">A service can only be booked for today or a later date — you can’t schedule one in the past.</div>'); return; }
   var mEl=document.querySelector('input[name="svc-ws"]:checked'), mi=mEl?(+mEl.value):0, m=MECHANICS[mi]||MECHANICS[0];
   var note=(document.getElementById('svc-note')||{}).value||'';
   _svcSave(code, { status:'booked', booked_date:date, workshop:m.name, mech_type:m.type, mech_inhouse:(m.inhouse!==false), note:note.trim(), booked_at:new Date().toISOString() });
@@ -3168,7 +3189,7 @@ function plantServicesDueCard(fleet){
   fleet.forEach(function(a){ var st=_svcStatus(a); if(!st) return; if(st.booked){ booked.push({a:a,st:st}); } else if(st.state==='overdue'||st.state==='due_soon'){ needs.push({a:a,st:st}); } });
   if(!needs.length && !booked.length) return '';
   needs.sort(function(x,y){ return (x.st.state==='overdue'?0:1)-(y.st.state==='overdue'?0:1); });
-  var needRows=needs.map(function(n){ var col=n.st.state==='overdue'?'#A32D2D':'#A06000'; return '<button class="row" onclick="openHub('+ASSETS.indexOf(n.a)+')"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+n.a.code+' · '+n.a.make+' '+n.a.model+'</div><div class="row-s" style="color:'+col+';font-weight:700">'+(n.st.state==='overdue'?'Service overdue':'Service due soon')+' · '+_svcDueText(n.st)+'</div></div><div class="row-s" style="flex-shrink:0;color:var(--gold);font-weight:700">Book ›</div></button>'; }).join('');
+  var needRows=needs.map(function(n){ var col=n.st.state==='overdue'?'#A32D2D':'#A06000'; return '<button class="row" onclick="plantBookService(\''+n.a.code+'\')"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+n.a.code+' · '+n.a.make+' '+n.a.model+'</div><div class="row-s" style="color:'+col+';font-weight:700">'+(n.st.state==='overdue'?'Service overdue':'Service due soon')+' · '+_svcDueText(n.st)+'</div></div><div class="row-s" style="flex-shrink:0;color:var(--gold);font-weight:700">Book ›</div></button>'; }).join('');
   var bookedRows=booked.map(function(b){ return '<button class="row" onclick="openHub('+ASSETS.indexOf(b.a)+')"><div class="row-ic"><span class="dot" style="background:#1B6E3A"></span></div><div class="row-main"><div class="row-t">'+b.a.code+' · '+b.a.make+' '+b.a.model+'</div><div class="row-s">Booked '+fmtShort(b.st.bookedDate)+' · '+b.st.workshop+'</div></div><div class="chev">›</div></button>'; }).join('');
   var hot=needs.length>0;
   return '<div class="fcard"'+(hot?' style="border-top-color:#A06000"':'')+'><div class="fcard-hdr"'+(hot?' style="background:linear-gradient(135deg,#8A5A00,#A06000)"':'')+'>🗓️ Services due ('+needs.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+needRows+bookedRows+'</div></div>';
@@ -3202,7 +3223,7 @@ function plantCompleteService(code){
     '<textarea id="svc-work" placeholder="What was done during the service…" style="width:100%;box-sizing:border-box;min-height:78px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical">'+_premobEsc(s.work_done||'')+'</textarea>'+
     costSec +
     '<div class="sec-h">Meter reading at service</div><div class="svc"><div class="svc-row"><span>'+(meterUnit==='km'?'Odometer (km)':'Engine hours')+'</span><span><input id="svc-meter" type="number" inputmode="decimal" value="'+curRead+'" style="width:100px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div>'+
-    '<div class="sec-h">Next service due</div><div class="svc"><div class="svc-row"><span>Next due date</span><span><input type="date" id="svc-nextdue" value="'+iso(dOffset(180))+'" style="padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px"></span></div></div>'+
+    '<div class="sec-h">Next service due</div><div class="svc"><div class="svc-row"><span>Next due date</span><span><input type="date" id="svc-nextdue" min="'+iso(new Date())+'" value="'+iso(dOffset(180))+'" style="padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px"></span></div></div>'+
     declRow +
     '<button class="cta" style="background:var(--pass);margin-top:16px" onclick="plantCompleteServiceSubmit(\''+code+'\')">Complete service</button>'+
     '<input type="file" id="svc-inv-input" accept="application/pdf,image/*" style="display:none" onchange="svcInvOnFile(this)">'+
@@ -3247,7 +3268,7 @@ function plantViewServiceRecord(code){
     ? '<div class="svc-row"><span>Service cost</span><span>'+money(_svcCost(s))+'</span></div>'
     : '<div class="svc-row"><span>Parts</span><span>'+money(s.parts_cost||0)+'</span></div><div class="svc-row"><span>Labour</span><span>'+(s.labour_hrs||0)+' hr × '+money(s.labour_rate||0)+'</span></div><div class="svc-row"><span>Total</span><span><b>'+money(_svcCost(s))+'</b></span></div>';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="'+(idx>=0?('openHub('+idx+')'):'showList()')+'">‹ Back to machine</button>'+
+    '<button class="back" onclick="'+(_mechMode()?('_svcBackTarget('+idx+')'):(idx>=0?('openHub('+idx+')'):'showList()'))+'">‹ '+(_mechMode()?'My jobs':'Back to machine')+'</button>'+
     '<div class="hub-head"><div class="hub-ic">🔧</div><div style="flex:1"><div class="hub-code">Service record</div><div class="hub-mm">'+code+' · '+(a?a.make+' '+a.model:'')+'</div></div></div>'+
     '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:12px;padding:14px 15px;margin:14px 0;font-size:12.5px;color:#1B5E3F">✅ Serviced '+when+(s.workshop?(' · '+s.workshop):'')+(ext?' (external — see attached invoice)':'')+(s.declared?'<div style="font-size:11.5px;font-style:italic;color:#33433C;margin-top:8px">&ldquo;'+SVC_DECLARATION+'&rdquo;</div>':'')+'</div>'+
     '<div class="sec-h">Work carried out</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-s" style="white-space:pre-wrap">'+(_premobEsc(s.work_done||'')||'—')+'</div></div></div></div>'+
