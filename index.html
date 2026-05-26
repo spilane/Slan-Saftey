@@ -2291,6 +2291,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="d-pill-premob" onclick="supChipTapPremob()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-premob-lbl">Pre-mob</span></div>
       <div class="status-pill" id="d-pill-hirereturn" onclick="supChipTapHireReturn()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereturn-lbl">Hire returns</span></div>
       <div class="status-pill" id="d-pill-hirereq" onclick="supChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereq-lbl">Hire request</span></div>
+      <div class="status-pill" id="d-pill-plantdone" onclick="supChipTapPlantDone()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plantdone-lbl">Repair done</span></div>
     </div>
   </div>
 
@@ -17269,6 +17270,45 @@ function updateSupActivityStrip() {
   try { supUpdatePremobChip(); } catch(e) {}
   try { supUpdateHireReturnChip(); } catch(e) {}
   try { supUpdateHireReqChip(); } catch(e) {}
+  try { supUpdatePlantDoneChip(); } catch(e) {}
+}
+
+/* ── Plant repairs/services completed by the mechanic (closes the loop: mechanic finishes → supervisor told).
+   Reads slan_plant_completions written by plant.html; scoped to the supervisor's site; clears when viewed. ── */
+function _plantCompletions(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_completions')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function _supUnseenCompletions(){
+  return _plantCompletions().filter(function(c){ return c && !c.seen_sup && (!c.site || c.site==='Bondi Junction Mixed Use'); });
+}
+function supUpdatePlantDoneChip(){
+  var pill=document.getElementById('d-pill-plantdone'), lbl=document.getElementById('d-pill-plantdone-lbl');
+  if(!pill) return;
+  var unseen=_supUnseenCompletions();
+  if(!unseen.length){ pill.style.display='none'; return; }
+  pill.style.display='';
+  if(unseen.length===1){
+    var c=unseen[0];
+    if(lbl) lbl.textContent=(c.kind==='service'?'Service':'Repair')+' done — '+c.code+(c.by?(' · '+c.by):'');
+  } else {
+    if(lbl) lbl.textContent=unseen.length+' jobs completed';
+  }
+  setPillState('d-pill-plantdone','done');
+}
+function supChipTapPlantDone(){
+  var unseen=_supUnseenCompletions();
+  // mark all seen for the supervisor (they're now looking at it)
+  try {
+    var all=_plantCompletions();
+    all.forEach(function(c){ if(c && (!c.site || c.site==='Bondi Junction Mixed Use')) c.seen_sup=true; });
+    localStorage.setItem('slan_plant_completions', JSON.stringify(all));
+  } catch(e) {}
+  // deep-link to the exact record when there's just one, else the Work Orders list
+  var base='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use';
+  if(unseen.length===1 && unseen[0]){
+    var c=unseen[0];
+    location.href = (c.kind==='service') ? (base+'&service='+encodeURIComponent(c.code)) : (base+'&wo='+encodeURIComponent(c.ref||''));
+  } else {
+    location.href = base+'&tab=workorders';
+  }
 }
 
 function supChipTapPlant() {

@@ -676,7 +676,7 @@ function openDemoSheet(){
 }
 function closeDemoSheet(){ document.getElementById('demo-sheet').classList.remove('on'); }
 function demoSwitchWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catch(e){} currentWorker=WORKERS[i]; closeDemoSheet(); if(getRole()!=='worker'){ location.href='plant.html'; } else { var el=document.getElementById('who-name'); if(el) el.textContent=currentWorker.name; showList(); } }
-function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides','slan_plant_premob','slan_plant_fault_reports','slan_plant_services'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
+function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides','slan_plant_premob','slan_plant_fault_reports','slan_plant_services','slan_plant_completions'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -1403,7 +1403,7 @@ function submitPrestart(){
   for(var ri=0;ri<_psList.length;ri++){ if(psState[ri]==='p'){ var _ki=_knownIssueForItem(a.code,_psList[ri].q); if(_ki){ _removeSavedWO(_ki.wo); WORKORDERS=WORKORDERS.filter(function(w){return w.wo!==_ki.wo;}); _resolved.push(_psList[ri].q); } } }
   // raise a work order only for NEW faults — a carried issue marked 'still there' keeps its existing WO + original date
   var _newFaults=faultIdx.filter(function(k){ return !_knownIssueForItem(a.code,_psList[+k].q); });
-  if(_newFaults.length){ var _fs=_newFaults.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(_newFaults.length>2?' +'+(_newFaults.length-2)+' more':''); var _woObj={wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name}; WORKORDERS.unshift(_woObj); _saveWO(_woObj);
+  if(_newFaults.length){ var _fs=_newFaults.map(function(k){return _psList[+k].q;}).slice(0,2).join(', ')+(_newFaults.length>2?' +'+(_newFaults.length-2)+' more':''); var _woObj={wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:_fs, priority:criticalFault?'High':'Medium', status:'Raised', raised:'just now · '+currentWorker.name, raised_at:new Date().toISOString()}; WORKORDERS.unshift(_woObj); _saveWO(_woObj);
     // a flagged fault (even minor) goes to the supervisor for approval straight away — they decide if it stays in service
     if(!criticalFault){ var _fdesc=''; for(var _fn=0;_fn<_newFaults.length;_fn++){ var _fk=_newFaults[_fn]; var _de=document.getElementById('ps-desc'+_fk); if(_de&&_de.value){ _fdesc=_de.value.trim(); break; } } var _ar=_approvals().filter(function(x){ return !(x.code===a.code && x.status==='pending'); }); _ar.push({ id:'AP-'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e4).toString(36), code:a.code, machine:a.make+' '+a.model, site:assetSite(a.code), worker:currentWorker.name, worker_reason:'Flagged on pre-start — supervisor to decide if it stays in service.', gate_reasons:['Fault flagged on pre-start'], fault:_fs, fault_desc:_fdesc, requested_at:new Date().toISOString(), status:'pending' }); _saveApprovals(_ar); }
   }
@@ -1451,6 +1451,15 @@ function _clearPlantAlert(code){ try{ localStorage.setItem('slan_plant_alerts', 
 function _savedWOs(){ try{ return JSON.parse(localStorage.getItem('slan_plant_wos')||'[]'); }catch(e){ return []; } }
 function _saveWO(wo){ try{ var arr=_savedWOs().filter(function(x){ return x.wo!==wo.wo && !(x.code===wo.code && x.fault===wo.fault); }); arr.unshift(wo); localStorage.setItem('slan_plant_wos', JSON.stringify(arr)); }catch(e){} }
 function _removeSavedWO(woId){ try{ localStorage.setItem('slan_plant_wos', JSON.stringify(_savedWOs().filter(function(x){return x.wo!==woId;}))); }catch(e){} }
+/* Completion feed — closes the loop: when the in-house mechanic finishes a repair/service, log it so the supervisor home gets a "completed" pill (index.html reads slan_plant_completions). */
+function _addPlantCompletion(kind, code, machine, by, ref){
+  try{
+    var arr=JSON.parse(localStorage.getItem('slan_plant_completions')||'[]'); if(!Array.isArray(arr)) arr=[];
+    arr.unshift({ id:'C-'+Date.now()+'-'+Math.floor(Math.random()*1000), kind:kind, code:code, machine:machine||'', site:(typeof assetSite==='function'?assetSite(code):''), by:by||'', when:new Date().toISOString(), ref:ref||'', seen_sup:false });
+    if(arr.length>50) arr=arr.slice(0,50);
+    localStorage.setItem('slan_plant_completions', JSON.stringify(arr));
+  }catch(e){}
+}
 /* persist pre-start records as a HISTORY (one entry per submitted pre-start) so 'last 7 days' is real and each day's PDF is openable; front-end, same-origin localStorage like the alerts */
 var _psSeq=0;
 function _savePlantRecord(rec){
@@ -1484,7 +1493,7 @@ function _recOutcome(rec){
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
 }
 /* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
-var DEMO_SEED_VERSION='eoin-v7';
+var DEMO_SEED_VERSION='eoin-v8';
 var DEMO_DAYS=5; // seed a pre-start for each of the last 5 days, per machine
 /* per-machine demo script: ops rotate across days; faultDays = which daysAgo the issue shows (re-flagged each day so it 'carries on'); the WO is raised on the earliest fault day */
 var DEMO_FLEET=[
@@ -1526,7 +1535,7 @@ function _seedBuildRecord(code, worker, daysAgo, faultObj, comment){
 function seedDemoPlant(){
   try{
     if(localStorage.getItem('slan_plant_seed')===DEMO_SEED_VERSION) return;
-    ['slan_plant_records','slan_plant_wos','slan_plant_alerts','slan_plant_iteminfo','slan_plant_fault_reports','slan_plant_services'].forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
+    ['slan_plant_records','slan_plant_wos','slan_plant_alerts','slan_plant_iteminfo','slan_plant_fault_reports','slan_plant_services','slan_plant_completions'].forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
     var woNum=43;
     DEMO_FLEET.forEach(function(m){
       var a=ASSETS.find(function(x){return x.code===m.code;}); if(!a) return;
@@ -1542,7 +1551,7 @@ function seedDemoPlant(){
         var ftext=''; var list=checklistFor(a);
         for(var i=0;i<list.length;i++){ if(list[i].q.toLowerCase().indexOf(m.fault.match.toLowerCase())>-1){ ftext=list[i].q; break; } }
         var rel=(earliest<=0)?'today':(earliest+' day'+(earliest>1?'s':'')+' ago');
-        _saveWO({wo:'WO-2026-'+('000'+(woNum++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:ftext, priority:critical?'High':'Medium', status:'Raised', raised:rel+' · '+m.ops[0]});
+        _saveWO({wo:'WO-2026-'+('000'+(woNum++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:ftext, priority:critical?'High':'Medium', status:'Raised', raised:rel+' · '+m.ops[0], raised_at:iso(dOffset(-Math.max(0,earliest)))});
         _setPlantAlert(a, ftext, critical);
       }
     });
@@ -1550,7 +1559,7 @@ function seedDemoPlant(){
     _saveWO({ wo:'WO-2026-0033', code:'CRN-007', machine:'Franna AT-40', fault:'Slew brake drifting + hydraulic return filter due', priority:'Medium', status:'Returned to service', raised:'2 weeks ago · scheduled service', mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, diagnosis:'Slew brake adjusted and the hydraulic return filter replaced during the scheduled service. Function and load test completed — safe to return to service.', parts:[{desc:'Hydraulic return filter', cost:145},{desc:'Slew brake shim kit', cost:90}], labour_hrs:4, labour_rate:95, warranty_claim:false, invoice_doc:'', repair_date:iso(dOffset(-12)), declared:true, repair_photos:['repair-brake-adjustment.jpg','repair-filter-replaced.jpg'], signoff:{by:'Dave Wilkins', when:new Date(Date.now()-12*86400000).toISOString(), external:false} });
     _saveWO({ wo:'WO-2026-0031', code:'UTE-022', machine:'Toyota Hilux SR 4x4', fault:'Engine warning light — fault code on the dash', priority:'Low', status:'Returned to service', raised:'3 weeks ago · Anthony Walsh', mechanic:'Sydney City Toyota', mech_type:'Toyota dealer (warranty)', mech_inhouse:false, diagnosis:'Vehicle sent to the Toyota dealer under the 5-year new-vehicle warranty. Faulty fuel injector diagnosed and replaced, codes cleared, road tested. No charge to the company — see the dealer’s report.', external_cost:760, warranty_claim:true, invoice_doc:'Toyota warranty repair report.pdf', repair_date:iso(dOffset(-20)), repair_photos:[], signoff:{by:'Sydney City Toyota', when:new Date(Date.now()-20*86400000).toISOString(), external:true} });
     // one OPEN in-house repair assigned to the mechanic (Dave Wilkins) so his "My jobs" portal has a repair to complete (Bondi → shows for Eoin too)
-    _saveWO({ wo:'WO-2026-0040', code:'LT-013', machine:'Allight ML20 Lighting Tower', fault:'One mast light not striking + RCD trips on start-up — flagged on a pre-start', priority:'Medium', status:'Assigned', raised:'yesterday · Jake Ryan', mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, labour_rate:95 });
+    _saveWO({ wo:'WO-2026-0040', code:'LT-013', machine:'Allight ML20 Lighting Tower', fault:'One mast light not striking + RCD trips on start-up — flagged on a pre-start', priority:'Medium', status:'Assigned', raised:'yesterday · Jake Ryan', raised_at:iso(dOffset(-1)), mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, labour_rate:95 });
     // one service booked to the mechanic so his "My jobs" portal has a service to complete & sign off
     _svcSave('MAG-009', { status:'booked', booked_date:iso(dOffset(6)), workshop:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, note:'500-hour scheduled service', booked_at:new Date().toISOString() });
     localStorage.setItem('slan_plant_seed', DEMO_SEED_VERSION);
@@ -1720,9 +1729,9 @@ function plantRiskPDF(a){
 }
 function plantViewRA(){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } var a=ASSETS[curAsset]; openPdfDoc(plantRiskPDF(a), 'RiskAssessment-'+a.code+'.pdf'); }
 var WORKORDERS=[
-  {wo:'WO-2026-0041', code:'CRN-011', machine:'Tadano GR-250 City Crane', fault:'Hydraulic leak at slew ring — flagged on a pre-start', priority:'High', status:'Raised', raised:"today · Lee O'Brien"},
-  {wo:'WO-2026-0039', code:'GEN-005', machine:'Denyo DCA-45 Generator', fault:'500 hr service overdue', priority:'Medium', status:'In progress', raised:'2 days ago · scheduled'},
-  {wo:'WO-2026-0036', code:'TLH-003', machine:'Manitou MT1840 Telehandler', fault:'Reversing alarm intermittent', priority:'Low', status:'Awaiting parts', raised:'4 days ago · Mark Flynn'}
+  {wo:'WO-2026-0041', code:'CRN-011', machine:'Tadano GR-250 City Crane', fault:'Hydraulic leak at slew ring — flagged on a pre-start', priority:'High', status:'Raised', raised:"today · Lee O'Brien", raised_at:iso(new Date())},
+  {wo:'WO-2026-0039', code:'GEN-005', machine:'Denyo DCA-45 Generator', fault:'500 hr service overdue', priority:'Medium', status:'In progress', raised:'2 days ago · scheduled', raised_at:iso(dOffset(-2))},
+  {wo:'WO-2026-0036', code:'TLH-003', machine:'Manitou MT1840 Telehandler', fault:'Reversing alarm intermittent', priority:'Low', status:'Awaiting parts', raised:'4 days ago · Mark Flynn', raised_at:iso(dOffset(-4))}
 ];
 function _prioCol(p){ return p==='High'?'#A32D2D':(p==='Medium'?'#A06000':'#4B6358'); }
 /* ---------- WORK ORDERS / REPAIRS — mechanic assignment, diagnosis, parts, labour, cost, return-to-service sign-off ---------- */
@@ -1740,6 +1749,10 @@ function _woPartsCost(w){ return (w.parts||[]).reduce(function(s,p){ return s+(N
 function _woLabourCost(w){ return (Number(w.labour_hrs)||0)*(Number(w.labour_rate)||0); }
 function _woTotal(w){ if(w.mech_inhouse===false){ return Number(w.external_cost)||0; } return _woPartsCost(w)+_woLabourCost(w); }
 function _woClientCost(w){ return w.warranty_claim ? 0 : _woTotal(w); }   // what the client actually pays (warranty claim = $0)
+/* how long a work order has been open — so the supervisor/director/mechanic can see ones that are dragging */
+function _woAge(w){ if(!w||!w.raised_at) return null; var d=Math.floor((Date.now()-new Date(w.raised_at).getTime())/86400000); return (isNaN(d)||d<0)?0:d; }
+function _woAgeText(w){ if(!w||w.status==='Returned to service') return ''; var d=_woAge(w); if(d===null) return ''; return d===0?'opened today':('open '+d+' day'+(d===1?'':'s')); }
+function _woAgeCol(w){ var d=_woAge(w); return (d===null)?'var(--t3)':(d>7?'#A32D2D':(d>3?'#A06000':'var(--t2)')); }
 /* completed repair costs the client paid for this machine — added on top of the historical seed spend */
 function _woSpendFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; }).reduce(function(s,w){ return s+_woClientCost(w); }, 0); }
 function assetSpend12(a){ return (a.spend12mo||0)+_woSpendFor(a.code)+(typeof _svcSpendFor==='function'?_svcSpendFor(a.code):0); }
@@ -2718,8 +2731,8 @@ function renderOversight(){
         return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+w.fault+' · '+(w.mechanic||'—')+(when?(' · '+when):'')+'</div></div><span class="row-s" style="flex-shrink:0;color:var(--deep);font-weight:700">'+costTxt+'</span><div class="chev">›</div></button>';
       }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No completed repairs yet.</div></div></div>';
     } else {
-      woHtml=open.length?open.map(function(w){ var idx=WORKORDERS.indexOf(w);
-        return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+(w.mechanic?(' · '+w.mechanic):'')+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
+      woHtml=open.length?open.map(function(w){ var idx=WORKORDERS.indexOf(w); var _ag=_woAgeText(w);
+        return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+(w.mechanic?(' · '+w.mechanic):'')+(_ag?(' · <span style="color:'+_woAgeCol(w)+';font-weight:700">'+_ag+'</span>'):'')+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
       }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No open work orders.</div></div></div>';
     }
     body=woSubNav+'<div class="tile">'+woHtml+'</div>';
@@ -2752,7 +2765,8 @@ function renderMechanic(){
   var svcAll=_svcAll();
   var mySvc=Object.keys(svcAll).filter(function(code){ var s=svcAll[code]; return s && s.status==='booked' && s.workshop==='Dave Wilkins' && s.mech_inhouse!==false; });
   var woRows=myOpen.length?myOpen.map(function(w){ var idx=WORKORDERS.indexOf(w);
-    return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
+    var _ag=_woAgeText(w);
+    return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+(_ag?(' · <span style="color:'+_woAgeCol(w)+';font-weight:700">'+_ag+'</span>'):'')+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
   }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No repairs assigned to you right now.</div></div></div>';
   var svcRows=mySvc.length?mySvc.map(function(code){ var s=svcAll[code]; var a=ASSETS.find(function(x){return x.code===code;}); var mm=a?(a.make+' '+a.model):''; var overdue=_expired(s.booked_date);
     return '<button class="row" onclick="plantCompleteService(\''+code+'\')"><div class="row-ic"><span class="dot" style="background:'+(overdue?'#A32D2D':'#A06000')+'"></span></div><div class="row-main"><div class="row-t">'+code+' · '+mm+'</div><div class="row-s">'+(s.note||'Service')+' · booked '+fmtShort(s.booked_date)+(overdue?' · overdue':'')+'</div></div><div class="row-s" style="flex-shrink:0;color:var(--gold);font-weight:700">Complete ›</div></button>';
@@ -2815,7 +2829,8 @@ function openWO(i){
   var inW=(typeof inWarranty==='function') && inWarranty(w.code) && !(typeof isHired==='function' && isHired(w.code));
   var done=(w.status==='Returned to service');
   var pdfBtn = _loadPlantRecord(w.code) ? '<button class="btn-ghost" style="margin-top:12px" onclick="plantViewSavedPDF(\''+w.code+'\')">📄  View operator&rsquo;s pre-start record (PDF)</button>' : '';
-  var head='<div class="hub-head"><div class="hub-ic">🛠️</div><div style="flex:1"><div class="hub-code">'+w.wo+'</div><div class="hub-mm">'+w.code+' · '+w.machine+'</div><div class="hub-hours">'+w.priority+' priority · '+w.status+(w.mechanic?(' · '+w.mechanic):'')+'</div></div></div>';
+  var _ageTxt=_woAgeText(w);
+  var head='<div class="hub-head"><div class="hub-ic">🛠️</div><div style="flex:1"><div class="hub-code">'+w.wo+'</div><div class="hub-mm">'+w.code+' · '+w.machine+'</div><div class="hub-hours">'+w.priority+' priority · '+w.status+(w.mechanic?(' · '+w.mechanic):'')+(_ageTxt?(' · '+_ageTxt):'')+'</div></div></div>';
   var faultSec='<div class="sec-h">Reported fault</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-t">'+w.fault+'</div><div class="row-s">Raised '+w.raised+'</div></div></div></div>'+
     (w.report_id ? '<button class="btn-ghost" style="margin-top:10px" onclick="plantViewFaultReport(\''+w.report_id+'\')">📄  View the fault report — who flagged it, when &amp; signature</button>' : '');
   var body;
@@ -3016,6 +3031,7 @@ function woComplete(i){
   _saveWO(w);
   if(typeof _clearPlantAlert==='function') _clearPlantAlert(w.code);
   var ast=ASSETS.find(function(x){ return x.code===w.code; }); if(ast) ast.status='operational';
+  if(!ext) _addPlantCompletion('repair', w.code, w.machine, w.mechanic, w.wo); // in-house repair done → tell the supervisor
   var total=_woTotal(w);
   var costLine = w.warranty_claim ? ('Repair cost '+money(total)+' — <b>claimed under warranty ($0 to you)</b>.') : (money(total)+' added to this machine&rsquo;s maintenance spend.');
   var byLine = ext ? ('returned to service after repair by '+w.mechanic+' (external).') : ('signed back into service by '+w.mechanic+'.');
@@ -3053,7 +3069,7 @@ function plantRaiseWOSubmit(code){
   var prio=(sev==='crit')?'High':(sev==='med'?'Medium':'Low'), critical=(sev==='crit');
   var who=getRole()==='worker' ? ((currentWorker&&currentWorker.name)?currentWorker.name:'Operator') : (getRole()==='director'?'Patrick Murphy':((typeof PLANT_SUP_NAME!=='undefined'&&PLANT_SUP_NAME[oversightSite])?PLANT_SUP_NAME[oversightSite]:'Supervisor'));
   var sevLbl=(sev==='crit')?'Critical — out of service':(sev==='med'?'Needs repair soon':'Minor — still usable');
-  var woObj={ wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:desc, priority:prio, status:'Raised', raised:'just now · '+who };
+  var woObj={ wo:'WO-2026-'+('000'+(42+_woSeq++)).slice(-4), code:a.code, machine:a.make+' '+a.model, fault:desc, priority:prio, status:'Raised', raised:'just now · '+who, raised_at:new Date().toISOString() };
   // save a viewable FAULT REPORT (who flagged it, when, severity, the worker's signature) and link it to the work order
   var repId='FR-'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e4).toString(36);
   _saveFaultReport({ id:repId, code:a.code, machine:a.make+' '+a.model, type:a.type, site:assetSite(a.code), worker:who, role:getRole(), when:new Date().toISOString(), severity:sev, severity_label:sevLbl, fault:desc, priority:prio, critical:critical, signature:who, wo:woObj.wo });
@@ -3219,6 +3235,7 @@ function plantCompleteServiceSubmit(code){
   a.service_last=todayIso; a.service_due=nextDue;
   var sm=svcMeter(a);
   if(!isNaN(meter)){ if(sm&&sm.meter==='km'){ if(PLANT_DETAILS[a.code]) PLANT_DETAILS[a.code].km=meter; } else { a.hours=meter; } if(SERVICE_METER[a.code]){ SERVICE_METER[a.code].due=meter+(SERVICE_METER[a.code].meter==='km'?10000:250); } }
+  if(!ext) _addPlantCompletion('service', code, a.make+' '+a.model, (s.workshop||'the mechanic'), code); // in-house service done → tell the supervisor
   var total=_svcCost(_svcState(code));
   slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Service completed</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' serviced'+(ext?(' by '+(s.workshop||'the workshop')):'')+'. '+money(total)+' added to maintenance spend · next service due '+fmt(nextDue)+'.</div></div>', function(){ _svcBackTarget(idx); });
 }
@@ -3337,8 +3354,12 @@ try{ _applyPlantOverrides(); }catch(e){}
 renderAssets();
 (function(){
   var tm=/[?&]tab=([a-z]+)/.exec(location.search); if(tm){ platTab=tm[1]; }
-  // Mechanic (Dave Wilkins) — show his profile avatar on every entry point into the plant page.
-  if(getRole()==='mechanic'){ try{ setTopRight(_profileAvatar('Dave Wilkins')); }catch(e){} }
+  // Plant header avatar by role (worker keeps the operator pill).
+  try{ var _rl=getRole();
+    if(_rl==='mechanic') setTopRight(_profileAvatar('Dave Wilkins'));
+    else if(_rl==='director') setTopRight(_profileAvatar('Patrick Murphy'));
+    else if(_rl==='supervisor') setTopRight(_profileAvatar(PLANT_SUP_NAME[getSiteParam()||'Bondi Junction Mixed Use']||'Supervisor'));
+  }catch(e){}
   // QR / shortcut deep-link: plant.html?machine=EWP-018 opens straight to that machine's hub.
   // Add &start=1 (used by the worker's "flagged machine" shortcut pills) to go straight into the pre-start.
   var m=/[?&]machine=([^&]+)/.exec(location.search);
@@ -3354,15 +3375,14 @@ renderAssets();
   if(hrm){ var hrid=decodeURIComponent(hrm[1]); try{ if(getRole()==='supervisor'){ oversightSite=getSiteParam()||'Bondi Junction Mixed Use'; } hireReqOpenDetail(hrid); return; }catch(e){} }
   // Supervisor shortcut: plant.html?view=today opens the "Today's pre-starts" list (from the "N pre-starts done" pill)
   if(/[?&]view=today/.test(location.search) && ['manager','supervisor','director'].indexOf(getRole())>-1){ try{ renderTodayPrestarts(); return; }catch(e){} }
-  // Mechanic deep-links from the home pills — open the exact repair (?wo=) or booked service (?service=), same tab.
-  if(getRole()==='mechanic'){
-    _homeView='mechanic';
-    var wom=/[?&]wo=([^&]+)/.exec(location.search);
-    if(wom){ var wid=decodeURIComponent(wom[1]); for(var _wi=0;_wi<WORKORDERS.length;_wi++){ if(WORKORDERS[_wi].wo===wid){ openWO(_wi); return; } } }
-    var svm=/[?&]service=([^&]+)/.exec(location.search);
-    if(svm){ var sc=decodeURIComponent(svm[1]).toUpperCase(); try{ plantCompleteService(sc); return; }catch(e){} }
-    renderMechanic(); return;
-  }
+  // Work-order deep-link (any role): the mechanic's "Repairs" pill + the supervisor's "completed" pill both land on the exact WO, same tab.
+  var wom=/[?&]wo=([^&]+)/.exec(location.search);
+  if(wom){ var wid=decodeURIComponent(wom[1]); for(var _wi=0;_wi<WORKORDERS.length;_wi++){ if(WORKORDERS[_wi].wo===wid){ if(getRole()==='supervisor'){ oversightSite=getSiteParam()||'Bondi Junction Mixed Use'; } _homeView=(getRole()==='mechanic')?'mechanic':'oversight'; openWO(_wi); return; } } }
+  // Service deep-link: the mechanic completes a booked one; everyone else opens the finished record.
+  var svm=/[?&]service=([^&]+)/.exec(location.search);
+  if(svm){ var sc=decodeURIComponent(svm[1]).toUpperCase(); if(getRole()==='supervisor'){ oversightSite=getSiteParam()||'Bondi Junction Mixed Use'; } _homeView=(getRole()==='mechanic')?'mechanic':'oversight'; try{ var _ss=_svcState(sc); if(getRole()!=='mechanic' && _ss && _ss.status==='done'){ plantViewServiceRecord(sc); } else { plantCompleteService(sc); } return; }catch(e){} }
+  // Role homes
+  if(getRole()==='mechanic'){ renderMechanic(); return; }
   if(['manager','supervisor','director'].indexOf(getRole())>-1) renderOversight();
 })();
 </script>
