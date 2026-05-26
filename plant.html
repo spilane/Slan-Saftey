@@ -630,7 +630,7 @@ function openWoCount(code){ return WORKORDERS.filter(function(w){ return w.code=
    (Broader than the 2-person demo gate switcher; the supervisor can also add someone not listed.) */
 var SITE_OPERATORS=[
   { name:'Daniel Byrne',  trade:'Plant Operator',       tickets:[{cls:'telehandler'},{cls:'ewp'}] },
-  { name:'Jake Sullivan', trade:'Crane Operator',        tickets:[{cls:'crane'},{cls:'telehandler'}] },
+  { name:'Jake Ryan', trade:'Crane Operator',        tickets:[{cls:'crane'},{cls:'telehandler'}] },
   { name:'Liam Walsh',    trade:'Plant Operator',        tickets:[{cls:'ewp'},{cls:'telehandler'}] },
   { name:'Sarah Nolan',   trade:'EWP Operator',          tickets:[{cls:'ewp'}] },
   { name:'Tom Kelly',     trade:'Telehandler Operator',  tickets:[{cls:'telehandler'}] }
@@ -1472,12 +1472,12 @@ function _recOutcome(rec){
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
 }
 /* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
-var DEMO_SEED_VERSION='eoin-v5';
+var DEMO_SEED_VERSION='eoin-v6';
 var DEMO_DAYS=5; // seed a pre-start for each of the last 5 days, per machine
 /* per-machine demo script: ops rotate across days; faultDays = which daysAgo the issue shows (re-flagged each day so it 'carries on'); the WO is raised on the earliest fault day */
 var DEMO_FLEET=[
-  { code:'CRN-007', ops:['Jake Sullivan'], comment:'Lifting precast panels to the upper levels.' },
-  { code:'MAG-009', ops:['Jake Sullivan'], faultDays:[0],
+  { code:'CRN-007', ops:['Jake Ryan'], comment:'Lifting precast panels to the upper levels.' },
+  { code:'MAG-009', ops:['Jake Ryan'], faultDays:[0],
     fault:{match:'Load moment indicator', sev:'Critical — do not operate', desc:'LMI reads zero under a known test load — not safe to lift. Out-of-service tag fitted and supervisor notified.'} },
   /* TLH-003, GEN-005, EWP-019 are HIRED — they run off the supplier's paper pre-start book, so no seeded digital pre-starts */
   { code:'TRK-006', ops:['Anthony Walsh'], faultDays:[2,1,0],
@@ -1487,7 +1487,7 @@ var DEMO_FLEET=[
     fault:{match:'Beacon, horn', sev:'Minor — still usable', desc:'Amber flashing beacon globe blown. Horn and movement alarms all work — fine for daytime use. Known issue, work order raised, awaiting a replacement globe.'} },
   { code:'BUS-021', ops:['Anthony Walsh'], comment:'Crew transport run — all good.' },
   { code:'UTE-022', ops:['Anthony Walsh'] },
-  { code:'CRN-011', ops:['Jake Sullivan'] },
+  { code:'CRN-011', ops:['Jake Ryan'] },
   { code:'TLH-012', ops:['Kevin Ryan'] },
   { code:'GEN-016', ops:['Kevin Ryan'] },
   { code:'LT-014', ops:['Aaron Quinn'] }
