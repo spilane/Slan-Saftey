@@ -679,7 +679,7 @@ function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><
 var _homeView='list';
 function plantGoBack(){
   var det=document.getElementById('screen-detail');
-  if(det && det.style.display!=='none'){ if(_homeView==='mechassets'){ renderMechAssets(); } else if(_homeView==='mechanic'){ renderMechanic(); } else if(_homeView==='oversight'){ renderOversight(); } else { showList(); } return; }
+  if(det && det.style.display!=='none'){ if(_homeView==='mechanic'){ renderMechanic(); } else if(_homeView==='oversight'){ renderOversight(); } else { showList(); } return; }
   // top level of the plant page → return to the WHS app (plant is a section of it)
   location.href='index.html';
 }
@@ -2832,8 +2832,7 @@ function renderMechanic(){
   var doneTotal=myDone.length+myDoneSvc.length;
   var doneCard=doneTotal?('<div class="fcard"><div class="fcard-hdr">✅ Completed by you ('+doneTotal+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+doneRows+doneSvcRows+'</div></div>'):'';
   _homeView='mechanic';
-  var linksRow='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">'+
-    '<button class="btn-ghost" style="flex:1 1 100%" onclick="renderMechAssets()">🚜  All machines (open one for its history)</button>'+
+  var linksRow='<div style="display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 18px">'+
     '<button class="btn-ghost" style="flex:1 1 45%" onclick="renderMechHistory()">📋  Repair &amp; service history</button>'+
     '<button class="btn-ghost" style="flex:1 1 45%" onclick="renderMechWarranties()">🛡  Warranties</button>'+
     '<button class="btn-ghost" style="flex:1 1 100%" onclick="renderPartsLedger()">🔩  Parts fitted (every part &amp; when)</button>'+
@@ -2844,6 +2843,7 @@ function renderMechanic(){
     '<div class="fcard"><div class="fcard-hdr">🗓️ Services booked to me ('+mySvc.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+svcRows+'</div></div>'+
     doneCard+
     linksRow+
+    _assetRegisterBody(ASSETS)+
   '</div>';
   var ov=document.getElementById('screen-oversight'); ov.innerHTML=html;
   document.getElementById('screen-list').style.display='none';
@@ -2931,16 +2931,6 @@ function renderPartsLedger(code){
     '<div class="hub-head"><div class="hub-ic">🔩</div><div style="flex:1"><div class="hub-code">Parts fitted</div><div class="hub-mm">'+(code?(code+' · '+(a?a.make+' '+a.model:'')):'Every part fitted across the fleet')+'</div></div></div>'+
     '<div class="sec-h">Parts replaced ('+items.length+')</div><div class="tile">'+rows+'</div>'+
     '<div style="font-size:11px;color:var(--t3);margin-top:8px">Logged automatically from completed repairs. A green dot = the part is still under its own warranty.</div>'+
-  '</div>';
-  showDetail(html);
-}
-/* Mechanic: full asset register — the same table the director/supervisor see; open any machine for its complete record. */
-function renderMechAssets(){
-  setTopRight(_profileAvatar('Dave Wilkins')); _homeView='mechassets';
-  setHeader('Asset register','Open any machine for its full record');
-  var html='<div class="wrap platform-wrap">'+
-    '<button class="back" onclick="renderMechanic()">‹ My jobs</button>'+
-    _assetRegisterBody(ASSETS)+
   '</div>';
   showDetail(html);
 }
