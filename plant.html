@@ -2829,6 +2829,7 @@ function renderMechanic(){
       '<button class="row" onclick="renderMechHistory()"><div class="row-ic">📋</div><div class="row-main"><div class="row-t">Repair &amp; service history</div><div class="row-s">Every completed repair &amp; service across the fleet</div></div><div class="chev">›</div></button>'+
       '<button class="row" onclick="renderMechWarranties()"><div class="row-ic">🛡️</div><div class="row-main"><div class="row-t">Warranties</div><div class="row-s">Which machines are in / out of warranty</div></div><div class="chev">›</div></button>'+
       '<button class="row" onclick="renderPartsLedger()"><div class="row-ic">🔩</div><div class="row-main"><div class="row-t">Parts fitted</div><div class="row-s">Every part replaced, when, &amp; its warranty</div></div><div class="chev">›</div></button>'+
+      '<button class="row" onclick="renderMechSpend()"><div class="row-ic">💲</div><div class="row-main"><div class="row-t">Maintenance spend</div><div class="row-s">Fleet total, broken down per machine &amp; per repair</div></div><div class="chev">›</div></button>'+
     '</div>';
   } else {
     var woRows=myOpen.length?myOpen.map(function(w){ var idx=WORKORDERS.indexOf(w); var _ag=_woAgeText(w);
@@ -2944,37 +2945,75 @@ function renderPartsLedger(code){
 /* Machine history timeline — the asset's whole life: pre-starts, faults, repairs (with the parts replaced + part warranty), services, documents. Newest first. */
 function _machineTimeline(code){
   var ev=[];
-  _recordsFor(code).forEach(function(r){ var o=_recOutcome(r); ev.push({ when:new Date(r.when), icon:'📋', title:'Pre-start', sub:(r.worker||'Operator')+' · '+o.label, col:o.col }); });
-  _faultReportsFor(code).forEach(function(r){ ev.push({ when:new Date(r.when), icon:'⚠️', title:'Fault reported', sub:(r.worker||'')+' · '+(r.severity_label||''), col:(r.critical?'#A32D2D':(r.severity==='med'?'#A06000':'#2D6A45')) }); });
+  _recordsFor(code).forEach(function(r){ var o=_recOutcome(r); ev.push({ cat:'prestart', when:new Date(r.when), icon:'📋', title:'Pre-start', sub:(r.worker||'Operator')+' · '+o.label, col:o.col }); });
+  _faultReportsFor(code).forEach(function(r){ ev.push({ cat:'fault', when:new Date(r.when), icon:'⚠️', title:'Fault reported', sub:(r.worker||'')+' · '+(r.severity_label||''), col:(r.critical?'#A32D2D':(r.severity==='med'?'#A06000':'#2D6A45')) }); });
   WORKORDERS.forEach(function(w){ if(w.code!==code) return;
     if(w.status==='Returned to service'){
       var when=(w.signoff&&w.signoff.when)?w.signoff.when:(w.repair_date||null);
       var partTxt=(w.parts||[]).map(function(p){ return p.desc+(p.warranty_months?(' ('+p.warranty_months+'mo warranty)'):''); }).join(', ');
       var costTxt=w.warranty_claim?'warranty claim · $0':money(_woClientCost(w));
-      ev.push({ when:new Date(when), icon:'🔧', title:'Repair completed', sub:(w.mechanic||'')+(partTxt?(' · replaced '+partTxt):'')+' · '+costTxt, col:'#1B6E3A' });
+      ev.push({ cat:'repair', when:new Date(when), icon:'🔧', title:'Repair completed', sub:(w.mechanic||'')+(partTxt?(' · replaced '+partTxt):'')+' · '+costTxt, col:'#1B6E3A' });
     } else {
-      ev.push({ when:new Date(w.raised_at||Date.now()), icon:'🛠️', title:'Work order raised', sub:w.fault+' · '+w.status+(w.mechanic?(' · '+w.mechanic):''), col:_prioCol(w.priority) });
+      ev.push({ cat:'repair', when:new Date(w.raised_at||Date.now()), icon:'🛠️', title:'Work order raised', sub:w.fault+' · '+w.status+(w.mechanic?(' · '+w.mechanic):''), col:_prioCol(w.priority) });
     }
   });
-  var s=_svcState(code); if(s && s.status==='done'){ ev.push({ when:new Date(s.completed_date), icon:'🔧', title:'Service completed', sub:(s.workshop||'')+' · '+money(_svcCost(s))+(s.next_due?(' · next due '+fmtShort(s.next_due)):''), col:'#1B6E3A' }); }
-  _plantDocsFor(code).forEach(function(d){ ev.push({ when:new Date(d.when||Date.now()), icon:'📄', title:'Document added', sub:(d.display||d.name||'Document'), col:'var(--t2)' }); });
+  var s=_svcState(code); if(s && s.status==='done'){ ev.push({ cat:'service', when:new Date(s.completed_date), icon:'🔧', title:'Service completed', sub:(s.workshop||'')+' · '+money(_svcCost(s))+(s.next_due?(' · next due '+fmtShort(s.next_due)):''), col:'#1B6E3A' }); }
+  _plantDocsFor(code).forEach(function(d){ ev.push({ cat:'doc', when:new Date(d.when||Date.now()), icon:'📄', title:'Document added', sub:(d.display||d.name||'Document'), col:'var(--t2)' }); });
   ev.sort(function(a,b){ return (b.when?b.when.getTime():0)-(a.when?a.when.getTime():0); });
   return ev;
 }
+var _mhFilter='all';
+function mhSetFilter(code,f){ _mhFilter=f; renderMachineHistory(code); }
 function renderMachineHistory(code){
   if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
   var a=ASSETS.find(function(x){return x.code===code;}); var idx=a?ASSETS.indexOf(a):-1;
   var ev=_machineTimeline(code);
-  var rows=ev.length?ev.map(function(e){
+  // filter chips so a year of daily pre-starts doesn't bury the repairs/services
+  var cats=[['all','All',ev.length]];
+  [['prestart','Pre-starts'],['repair','Repairs'],['service','Services'],['fault','Faults'],['doc','Docs']].forEach(function(c){
+    var n=ev.filter(function(e){return e.cat===c[0];}).length; if(n) cats.push([c[0],c[1],n]);
+  });
+  if(cats.length<2 || (_mhFilter!=='all' && !cats.some(function(c){return c[0]===_mhFilter;}))) _mhFilter='all';
+  var chips='<div style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px;padding-bottom:4px">'+cats.map(function(c){
+    var on=(_mhFilter===c[0]);
+    return '<button onclick="mhSetFilter(\''+code+'\',\''+c[0]+'\')" style="padding:6px 13px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;border:1.5px solid '+(on?'#B8960C':'#D8D8D8')+';background:'+(on?'#B8960C':'#fff')+';color:'+(on?'#fff':'#666')+'">'+c[1]+' ('+c[2]+')</button>';
+  }).join('')+'</div>';
+  var shown=ev.filter(function(e){ return _mhFilter==='all' || e.cat===_mhFilter; });
+  var rows=shown.length?shown.map(function(e){
     var dt=e.when?fmtShort(e.when):'—';
     return '<div class="row" style="cursor:default"><div class="row-ic">'+e.icon+'</div><div class="row-main"><div class="row-t">'+e.title+' <span style="color:var(--t3);font-weight:400;font-size:11px">· '+dt+'</span></div><div class="row-s" style="color:'+(e.col||'var(--t2)')+'">'+_premobEsc(e.sub)+'</div></div></div>';
-  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No history recorded yet for this machine.</div></div></div>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">Nothing in this category yet.</div></div></div>';
   setHeader('Machine history', a?(code+' · '+a.make+' '+a.model):code);
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="openHub('+idx+')">‹ Back to machine</button>'+
     '<div class="hub-head"><div class="hub-ic">📜</div><div style="flex:1"><div class="hub-code">Machine history</div><div class="hub-mm">'+(a?(code+' · '+a.make+' '+a.model):code)+'</div></div></div>'+
-    '<div class="sec-h">Full history ('+ev.length+')</div><div class="tile">'+rows+'</div>'+
-    '<div style="font-size:11px;color:var(--t3);margin-top:8px">Pre-starts, faults, repairs (with the parts replaced &amp; their warranty), services and documents — newest first.</div>'+
+    chips+
+    '<div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* Maintenance spend — fleet total broken down per machine, and each machine broken down into the actual repairs + services that make up its cost. */
+function renderMechSpend(){
+  if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
+  var fleet=ASSETS.filter(function(a){ return !isHired(a.code); });
+  var total=fleet.reduce(function(s,a){ return s+assetSpend12(a); },0);
+  var sorted=fleet.slice().sort(function(a,b){ return assetSpend12(b)-assetSpend12(a); });
+  var cards=sorted.map(function(a){
+    var sp=assetSpend12(a);
+    var done=WORKORDERS.filter(function(w){ return w.code===a.code && w.status==='Returned to service'; });
+    var items=done.map(function(w){ var c=w.warranty_claim?'$0 · warranty':money(_woClientCost(w)); var when=(w.signoff&&w.signoff.when)?fmtShort(w.signoff.when):(w.repair_date?fmtShort(w.repair_date):''); return '<div class="svc-row"><span>🔧 '+w.wo+' · '+_premobEsc((w.fault||'').slice(0,32))+(when?(' · '+when):'')+'</span><span>'+c+'</span></div>'; });
+    var svc=_svcState(a.code); if(svc&&svc.status==='done') items.push('<div class="svc-row"><span>🛠 Service · '+(svc.workshop||'')+(svc.completed_date?(' · '+fmtShort(svc.completed_date)):'')+'</span><span>'+money(_svcCost(svc))+'</span></div>');
+    if(a.spend12mo) items.push('<div class="svc-row" style="color:var(--t3)"><span>Earlier maintenance (prior 12 mo)</span><span>'+money(a.spend12mo)+'</span></div>');
+    var body=items.length?items.join(''):'<div class="svc-row" style="color:var(--t3)"><span>No recorded spend</span><span></span></div>';
+    return '<div class="fcard"><div class="fcard-hdr" style="display:flex;justify-content:space-between;align-items:center"><span>'+a.code+' · '+a.make+' '+a.model+'</span><span style="font-weight:800">'+money(sp)+'</span></div><div class="svc">'+body+'</div></div>';
+  }).join('');
+  setHeader('Maintenance spend','Across the fleet, broken down');
+  var html='<div class="wrap platform-wrap">'+
+    '<button class="back" onclick="mechSetTab(\'reports\')">‹ Reports</button>'+
+    '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">Maintenance spend</div><div class="hub-mm">Last 12 months · '+fleet.length+' owned machines</div></div></div>'+
+    '<div class="fcard"><div class="fcard-hdr">Total fleet spend (12 mo)</div><div style="padding:16px"><div style="font-size:30px;font-weight:800;color:var(--deep)">'+money(total)+'</div><div style="font-size:11.5px;color:var(--t3);margin-top:4px">Sum of every machine below — tap nothing, it&rsquo;s all shown.</div></div></div>'+
+    '<div class="sec-h">By machine (highest first)</div>'+
+    cards+
   '</div>';
   showDetail(html);
 }
