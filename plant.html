@@ -904,10 +904,11 @@ function openHub(i){
       '<div class="svc-row"><span>Next due</span><span style="color:'+(svcOverdue?'var(--fail)':'var(--pass)')+'">'+fmt(a.service_due)+(svcOverdue?' · OVERDUE':'')+'</span></div>'+
       svcMeterRow+
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
-      (function(){ var s=_svcState(a.code); if(s&&s.status==='booked'){ return '<div class="svc-row"><span>Service booked</span><span style="color:var(--gold);font-weight:700">'+fmt(s.booked_date)+' · '+s.workshop+(s.note?(' · '+_premobEsc(s.note)):'')+'</span></div>'; } return ''; })()+
+      (function(){ var s=_svcState(a.code); if(s&&s.status==='booked'){ return '<div class="svc-row"><span>Service booked</span><span style="color:var(--gold);font-weight:700">'+fmt(s.booked_date)+' · '+s.workshop+(s.note?(' · '+_premobEsc(s.note)):'')+'</span></div>'; } if(s&&s.status==='done'){ return '<div class="svc-row"><span>Last serviced</span><span style="color:var(--pass);font-weight:700">'+fmt(s.completed_date)+(s.workshop?(' · '+s.workshop):'')+'</span></div>'; } return ''; })()+
     '</div>'+
     ((getRole()!=='worker' && !isHired(a.code)) ? (function(){ var s=_svcState(a.code), st=_svcStatus(a);
-        if(s&&s.status==='booked') return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">Reschedule / change workshop</button>';
+        if(s&&s.status==='done') return '<button class="btn-ghost" style="margin-top:8px" onclick="plantViewServiceRecord(\''+a.code+'\')">📄  View service record</button>';
+        if(s&&s.status==='booked') return '<button class="cta" style="background:var(--pass);margin-top:8px" onclick="plantCompleteService(\''+a.code+'\')">Complete service</button><button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">Reschedule / change workshop</button>';
         if(st && (st.state==='overdue'||st.state==='due_soon')) return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>';
         return ''; })() : '')+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
@@ -1731,7 +1732,7 @@ function _woTotal(w){ if(w.mech_inhouse===false){ return Number(w.external_cost)
 function _woClientCost(w){ return w.warranty_claim ? 0 : _woTotal(w); }   // what the client actually pays (warranty claim = $0)
 /* completed repair costs the client paid for this machine — added on top of the historical seed spend */
 function _woSpendFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; }).reduce(function(s,w){ return s+_woClientCost(w); }, 0); }
-function assetSpend12(a){ return (a.spend12mo||0)+_woSpendFor(a.code); }
+function assetSpend12(a){ return (a.spend12mo||0)+_woSpendFor(a.code)+(typeof _svcSpendFor==='function'?_svcSpendFor(a.code):0); }
 /* read the editable worksheet fields back into the WO object (no storage write) */
 function _woReadForm(w){
   if(!w) return;
@@ -3111,6 +3112,93 @@ function plantServicesDueCard(fleet){
   var bookedRows=booked.map(function(b){ return '<button class="row" onclick="openHub('+ASSETS.indexOf(b.a)+')"><div class="row-ic"><span class="dot" style="background:#1B6E3A"></span></div><div class="row-main"><div class="row-t">'+b.a.code+' · '+b.a.make+' '+b.a.model+'</div><div class="row-s">Booked '+fmtShort(b.st.bookedDate)+' · '+b.st.workshop+'</div></div><div class="chev">›</div></button>'; }).join('');
   var hot=needs.length>0;
   return '<div class="fcard"'+(hot?' style="border-top-color:#A06000"':'')+'><div class="fcard-hdr"'+(hot?' style="background:linear-gradient(135deg,#8A5A00,#A06000)"':'')+'>🗓️ Services due ('+needs.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+needRows+bookedRows+'</div></div>';
+}
+/* §3 — complete a booked service (in-house signs off, external workshop logged) → records cost, resets the next-due */
+function _svcCost(s){ if(!s) return 0; if(s.mech_inhouse===false){ return Number(s.cost)||0; } return (Number(s.parts_cost)||0)+((Number(s.labour_hrs)||0)*(Number(s.labour_rate)||0)); }
+function _svcSpendFor(code){ var s=_svcState(code); return (s&&s.status==='done')?_svcCost(s):0; }
+var _svcInvRef=null;
+function svcInvPick(code){ _svcInvRef=code; var el=document.getElementById('svc-inv-input'); if(el) el.click(); }
+function svcInvOnFile(input){ var code=_svcInvRef, f=input&&input.files&&input.files[0]; if(input) input.value=''; if(f&&code){ _svcSave(code,{invoice_doc:f.name}); plantCompleteService(code); } }
+function svcRemoveInv(code){ _svcSave(code,{invoice_doc:''}); plantCompleteService(code); }
+function plantCompleteService(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var idx=ASSETS.indexOf(a);
+  var s=_svcState(code)||{}; var ext=(s.mech_inhouse===false);
+  var sm=svcMeter(a), meterUnit=sm?sm.meter:'hrs', curRead=sm?sm.cur:(a.hours||0);
+  var banner = ext
+    ? '<div style="background:#FBF1E6;border:1px solid #E6CFA8;border-radius:10px;padding:11px 13px;margin:14px 0;font-size:12px;color:#7A4F00;line-height:1.5"><b>🏭 External service — '+(s.workshop||'workshop')+'</b><br>Log what the workshop did and attach their invoice/report. No in-app declaration.</div>'
+    : '<div style="background:#EAF1F7;border:1px solid #BBD0E6;border-radius:10px;padding:9px 13px;margin:14px 0;font-size:12px;color:#234E76;font-weight:700">🔧 Completing the service as '+(s.workshop||'the mechanic')+'</div>';
+  var invRow = ext ? (s.invoice_doc
+      ? '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:10px 13px;font-size:12px;color:#1B5E3F;display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="word-break:break-all">📄 '+_premobEsc(s.invoice_doc)+' · on file</span><button onclick="svcRemoveInv(\''+code+'\')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;flex-shrink:0">✕</button></div>'
+      : '<div onclick="svcInvPick(\''+code+'\')" style="border:1.5px dashed #C7CFC9;border-radius:10px;padding:14px;text-align:center;cursor:pointer;color:var(--t2);font-size:12px">📎 Attach the workshop’s invoice / report</div>') : '';
+  var costSec = ext
+    ? '<div class="sec-h">Cost</div><div class="svc"><div class="svc-row"><span>Service cost (per invoice)</span><span>$ <input id="svc-extcost" type="number" inputmode="decimal" value="'+(s.cost||'')+'" placeholder="0" style="width:90px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div><div class="sec-h">Workshop invoice / report</div>'+invRow
+    : '<div class="sec-h">Parts &amp; materials</div><div class="svc"><div class="svc-row"><span>Parts cost</span><span>$ <input id="svc-parts" type="number" inputmode="decimal" value="'+(s.parts_cost||'')+'" placeholder="0" style="width:90px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div><div class="sec-h">Labour</div><div class="svc"><div class="svc-row"><span>Hours</span><span><input id="svc-lhrs" type="number" inputmode="decimal" value="'+(s.labour_hrs||'')+'" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div><div class="svc-row"><span>Rate ($/hr)</span><span><input id="svc-lrate" type="number" inputmode="decimal" value="'+(s.labour_rate||(s.mech_inhouse?95:140))+'" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div>';
+  var declRow = ext ? '' : '<div class="sec-h">Return-to-service declaration</div><label style="display:flex;align-items:flex-start;gap:9px;font-size:12px;font-weight:600;color:var(--deep);cursor:pointer;line-height:1.5;background:#F4F8F5;border:1px solid #D7E5DC;border-radius:10px;padding:12px 13px"><input type="checkbox" id="svc-declare" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:#2D6A45"> '+WO_DECLARATION+'</label>';
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="openHub('+idx+')">‹ Back to machine</button>'+
+    '<div class="hub-head"><div class="hub-ic">🔧</div><div style="flex:1"><div class="hub-code">Complete service</div><div class="hub-mm">'+a.code+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+(s.note||'Service')+' · '+(s.workshop||'')+'</div></div></div>'+
+    banner +
+    '<div class="sec-h">Work carried out</div>'+
+    '<textarea id="svc-work" placeholder="What was done during the service…" style="width:100%;box-sizing:border-box;min-height:78px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical">'+_premobEsc(s.work_done||'')+'</textarea>'+
+    costSec +
+    '<div class="sec-h">Meter reading at service</div><div class="svc"><div class="svc-row"><span>'+(meterUnit==='km'?'Odometer (km)':'Engine hours')+'</span><span><input id="svc-meter" type="number" inputmode="decimal" value="'+curRead+'" style="width:100px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div>'+
+    '<div class="sec-h">Next service due</div><div class="svc"><div class="svc-row"><span>Next due date</span><span><input type="date" id="svc-nextdue" value="'+iso(dOffset(180))+'" style="padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px"></span></div></div>'+
+    declRow +
+    '<button class="cta" style="background:var(--pass);margin-top:16px" onclick="plantCompleteServiceSubmit(\''+code+'\')">Complete service</button>'+
+    '<input type="file" id="svc-inv-input" accept="application/pdf,image/*" style="display:none" onchange="svcInvOnFile(this)">'+
+  '</div>';
+  showDetail(html);
+}
+function plantCompleteServiceSubmit(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var idx=ASSETS.indexOf(a);
+  var s=_svcState(code)||{}; var ext=(s.mech_inhouse===false);
+  var work=(document.getElementById('svc-work')||{}).value||''; work=work.trim();
+  if(!work){ slanMsg('Record the work','<div style="font-size:13px;color:var(--t2);line-height:1.55">Note what was done during the service before completing it.</div>'); return; }
+  var patch={ work_done:work };
+  if(ext){ patch.cost=parseFloat((document.getElementById('svc-extcost')||{}).value)||0; }
+  else {
+    patch.parts_cost=parseFloat((document.getElementById('svc-parts')||{}).value)||0;
+    patch.labour_hrs=parseFloat((document.getElementById('svc-lhrs')||{}).value)||0;
+    patch.labour_rate=parseFloat((document.getElementById('svc-lrate')||{}).value)||0;
+    var dec=document.getElementById('svc-declare');
+    if(!dec||!dec.checked){ slanMsg('Confirm it’s safe to return','<div style="font-size:13px;color:var(--t2);line-height:1.55">Tick the return-to-service declaration before signing the service off.</div>'); return; }
+    patch.declared=true;
+  }
+  var meter=parseFloat((document.getElementById('svc-meter')||{}).value);
+  var nextDue=(document.getElementById('svc-nextdue')||{}).value || iso(dOffset(180));
+  var todayIso=iso(new Date());
+  patch.status='done'; patch.completed_date=todayIso; patch.next_due=nextDue;
+  patch.meter_reading=(isNaN(meter)?null:meter);
+  patch.signoff={ by:(s.workshop||'Workshop'), when:new Date().toISOString(), external:ext };
+  _svcSave(code, patch);
+  // reset the machine's service clock + meter for the rest of the session
+  a.service_last=todayIso; a.service_due=nextDue;
+  var sm=svcMeter(a);
+  if(!isNaN(meter)){ if(sm&&sm.meter==='km'){ if(PLANT_DETAILS[a.code]) PLANT_DETAILS[a.code].km=meter; } else { a.hours=meter; } if(SERVICE_METER[a.code]){ SERVICE_METER[a.code].due=meter+(SERVICE_METER[a.code].meter==='km'?10000:250); } }
+  var total=_svcCost(_svcState(code));
+  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Service completed</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+a.code+' serviced'+(ext?(' by '+(s.workshop||'the workshop')):'')+'. '+money(total)+' added to maintenance spend · next service due '+fmt(nextDue)+'.</div></div>', function(){ openHub(idx); });
+}
+function plantViewServiceRecord(code){
+  var s=_svcState(code); if(!s||s.status!=='done'){ slanMsg('No service record','<div style="font-size:13px;color:var(--t2)">This machine has no completed service on this device.</div>'); return; }
+  var a=ASSETS.find(function(x){return x.code===code;}); var idx=a?ASSETS.indexOf(a):-1; var ext=(s.mech_inhouse===false);
+  var when=s.completed_date?fmt(s.completed_date):'';
+  var costRows = ext
+    ? '<div class="svc-row"><span>Service cost</span><span>'+money(_svcCost(s))+'</span></div>'
+    : '<div class="svc-row"><span>Parts</span><span>'+money(s.parts_cost||0)+'</span></div><div class="svc-row"><span>Labour</span><span>'+(s.labour_hrs||0)+' hr × '+money(s.labour_rate||0)+'</span></div><div class="svc-row"><span>Total</span><span><b>'+money(_svcCost(s))+'</b></span></div>';
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="'+(idx>=0?('openHub('+idx+')'):'showList()')+'">‹ Back to machine</button>'+
+    '<div class="hub-head"><div class="hub-ic">🔧</div><div style="flex:1"><div class="hub-code">Service record</div><div class="hub-mm">'+code+' · '+(a?a.make+' '+a.model:'')+'</div></div></div>'+
+    '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:12px;padding:14px 15px;margin:14px 0;font-size:12.5px;color:#1B5E3F">✅ Serviced '+when+(s.workshop?(' · '+s.workshop):'')+(ext?' (external — see attached invoice)':'')+(s.declared?'<div style="font-size:11.5px;font-style:italic;color:#33433C;margin-top:8px">&ldquo;'+WO_DECLARATION+'&rdquo;</div>':'')+'</div>'+
+    '<div class="sec-h">Work carried out</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-s" style="white-space:pre-wrap">'+(_premobEsc(s.work_done||'')||'—')+'</div></div></div></div>'+
+    (s.invoice_doc?'<div class="sec-h">Workshop invoice / report</div><div class="tile"><div class="row" style="cursor:default"><div class="row-ic">📄</div><div class="row-main"><div class="row-t" style="word-break:break-all">'+_premobEsc(s.invoice_doc)+'</div></div></div></div>':'')+
+    '<div class="svc" style="margin-top:10px">'+
+      '<div class="svc-row"><span>Date serviced</span><span>'+when+'</span></div>'+
+      (s.meter_reading!=null?'<div class="svc-row"><span>Meter reading</span><span>'+Number(s.meter_reading).toLocaleString()+' '+((svcMeter(a)&&svcMeter(a).meter)||'hrs')+'</span></div>':'')+
+      costRows+
+      '<div class="svc-row"><span>Next service due</span><span>'+(s.next_due?fmt(s.next_due):'—')+'</span></div>'+
+    '</div>'+
+  '</div>';
+  showDetail(html);
 }
 var QR_SIZE='M'; var QR_ONE=null;
 function _qrPx(){ return QR_SIZE==='S'?105:(QR_SIZE==='L'?300:175); }
