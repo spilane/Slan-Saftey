@@ -877,6 +877,7 @@ function openHub(i){
       ? (premCleared ? '' : '<button class="cta" style="background:var(--warn)" onclick="plantPremobOpen(\''+a.code+'\')">⚠ Not cleared for site — complete pre-mobilisation first</button>')
       : '<button class="cta" onclick="openGate()">Start Pre-Start</button>')+
     warrantyFlag +
+    (function(){ var s=_svcState(a.code); if(!(s&&s.status==='booked')) return ''; var isToday=s.booked_date===iso(new Date()); return '<div style="background:'+(isToday?'#FBEAEA':'#FFF8E6')+';border:1px solid '+(isToday?'#E6B0B0':'#ECD9A0')+';border-radius:10px;padding:11px 13px;margin-bottom:14px"><div style="font-size:12.5px;font-weight:800;color:'+(isToday?'#A32D2D':'#7A5B00')+'">🗓️ '+(isToday?'Service today':'Booked in for a service')+' — '+fmt(s.booked_date)+'</div><div style="font-size:11.5px;color:'+(isToday?'#7A2A2A':'#7A5B00')+';margin-top:4px;line-height:1.5">'+(s.workshop?(s.workshop+(s.note?(' · '+_premobEsc(s.note)):'')+'. '):'')+(getRole()==='worker'?('Check with your supervisor before operating'+(isToday?' it today':' it on the day')+'.'):'')+'</div></div>'; })()+
     '<button class="btn-ghost" style="margin-top:10px" onclick="plantRaiseWO(\''+a.code+'\')">'+(getRole()==='worker'?'⚠ Report a fault':'➕ Raise a work order')+'</button>'+
     (getRole()!=='worker' ? ('<div class="sec-h">Machine details</div><div class="svc">'+
       '<div class="svc-row"><span>Site</span><span>'+assetSite(a.code)+'</span></div>'+
@@ -905,9 +906,10 @@ function openHub(i){
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
       (function(){ var s=_svcState(a.code); if(s&&s.status==='booked'){ return '<div class="svc-row"><span>Service booked</span><span style="color:var(--gold);font-weight:700">'+fmt(s.booked_date)+' · '+s.workshop+(s.note?(' · '+_premobEsc(s.note)):'')+'</span></div>'; } return ''; })()+
     '</div>'+
-    ((getRole()!=='worker' && !isHired(a.code)) ? (function(){ var s=_svcState(a.code); return s&&s.status==='booked'
-        ? '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">Reschedule / change workshop</button>'
-        : '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>'; })() : '')+
+    ((getRole()!=='worker' && !isHired(a.code)) ? (function(){ var s=_svcState(a.code), st=_svcStatus(a);
+        if(s&&s.status==='booked') return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">Reschedule / change workshop</button>';
+        if(st && (st.state==='overdue'||st.state==='due_soon')) return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>';
+        return ''; })() : '')+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
   showDetail(html);
@@ -2659,8 +2661,12 @@ function renderOversight(){
       var rd=[]; if(a.hours) rd.push(a.hours.toLocaleString()+' hrs'); if(dt.km) rd.push(dt.km.toLocaleString()+' km');
       var reading = rd.length ? (rd[0] + (rd[1]?'<div class="cell-sub">'+rd[1]+'</div>':'')) : '—';
       var svcCell;
-      if(sm){ var over=sm.toGo<0, cls=over?'over':(soon?'soon':'ok');
-        svcCell='<span class="svc-go '+cls+'">'+(over?('Overdue '+Math.abs(sm.toGo).toLocaleString()+' '+sm.meter):('In '+sm.toGo.toLocaleString()+' '+sm.meter))+'</span><div class="cell-sub">'+fmtShort(a.service_due)+'</div>';
+      var svcSt=_svcStatus(a);
+      if(svcSt && svcSt.booked){ svcCell='<span class="svc-go ok">Booked</span><div class="cell-sub">'+fmtShort(svcSt.bookedDate)+'</div>'; }
+      else if(sm){ var cls=svcSt?(svcSt.state==='overdue'?'over':(svcSt.state==='due_soon'?'soon':'ok')):'ok';
+        var meterLbl=(sm.toGo<0?('Overdue '+Math.abs(sm.toGo).toLocaleString()+' '+sm.meter):('In '+sm.toGo.toLocaleString()+' '+sm.meter));
+        var main=(svcSt && svcSt.state==='overdue' && sm.toGo>=0) ? 'Overdue' : meterLbl; // overdue by date even if hrs/km still have headroom
+        svcCell='<span class="svc-go '+cls+'">'+main+'</span><div class="cell-sub" style="'+(_expired(a.service_due)?'color:var(--fail);font-weight:700':'')+'">'+fmtShort(a.service_due)+'</div>';
       } else { svcCell='<span class="'+(_expired(a.service_due)?'svc-go over':'')+'">'+fmtShort(a.service_due)+'</span>'; }
       var lp=lastPrestart(a), lpCell = lp?(_loadPlantRecord(a.code)?'<a href="javascript:void(0)" onclick="event.stopPropagation();plantViewSavedPDF(\''+a.code+'\')" style="color:var(--gold);font-weight:700;text-decoration:underline">'+fmtShort(lp)+' 📄</a>':fmtShort(lp)):'<span style="color:var(--fail);font-weight:600">None</span>';
       var woN=openWoCount(a.code), woCell = woN?('<span class="a-badge bg-flt">'+woN+'</span>'):'<span style="color:var(--t3)">—</span>';
@@ -2680,7 +2686,7 @@ function renderOversight(){
     }).join('');
     body='<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
         '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
-      '<div style="overflow-x:auto"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div style="overflow:auto;max-height:72vh"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
       '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
   } else if(platTab==='premob'){
     body=plantPremobBody(fleet);
