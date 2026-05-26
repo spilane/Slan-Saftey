@@ -2292,6 +2292,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="d-pill-hirereturn" onclick="supChipTapHireReturn()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereturn-lbl">Hire returns</span></div>
       <div class="status-pill" id="d-pill-hirereq" onclick="supChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereq-lbl">Hire request</span></div>
       <div class="status-pill" id="d-pill-plantdone" onclick="supChipTapPlantDone()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plantdone-lbl">Repair done</span></div>
+      <div class="status-pill" id="d-pill-woage" onclick="supChipTapWoAge()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-woage-lbl">Work orders open too long</span></div>
     </div>
   </div>
 
@@ -16786,7 +16787,12 @@ function updateMechanicStrip() {
     var woLbl = document.getElementById('sp-mech-wo-lbl');
     woPill.style.display = '';
     if (myWO.length === 0) { if (woLbl) woLbl.textContent = 'Repairs (none assigned)'; setPillState('sp-mech-wo', 'done'); }
-    else { if (woLbl) woLbl.textContent = 'Repairs (' + myWO.length + ' assigned)'; setPillState('sp-mech-wo', myWO.some(function(w){ return (w.priority||'') === 'High'; }) ? 'fail' : 'warn'); }
+    else {
+      var aged7 = myWO.filter(function(w){ return !_woHeld(w) && (_woAgeDays(w)||0) >= 7; });
+      var urgent = aged7.length || myWO.some(function(w){ return (w.priority||'') === 'High'; });
+      if (woLbl) woLbl.textContent = aged7.length ? ('Repairs (' + myWO.length + ' · ' + aged7.length + ' overdue)') : ('Repairs (' + myWO.length + ' assigned)');
+      setPillState('sp-mech-wo', urgent ? 'fail' : 'warn');
+    }
   }
   var mySvc = _mechMyServices();
   if (svcPill) {
@@ -17271,6 +17277,7 @@ function updateSupActivityStrip() {
   try { supUpdateHireReturnChip(); } catch(e) {}
   try { supUpdateHireReqChip(); } catch(e) {}
   try { supUpdatePlantDoneChip(); } catch(e) {}
+  try { supUpdateWoAgeChip(); } catch(e) {}
 }
 
 /* ── Plant repairs/services completed by the mechanic (closes the loop: mechanic finishes → supervisor told).
@@ -17289,7 +17296,8 @@ function supUpdatePlantDoneChip(){
     var c=unseen[0];
     if(lbl) lbl.textContent=(c.kind==='service'?'Service':'Repair')+' done — '+c.code+(c.by?(' · '+c.by):'');
   } else {
-    if(lbl) lbl.textContent=unseen.length+' jobs completed';
+    var codes=unseen.map(function(c){return c.code;}).filter(function(v,i,a){return a.indexOf(v)===i;});
+    if(lbl) lbl.textContent=unseen.length+' jobs done · '+codes.join(', ');
   }
   setPillState('d-pill-plantdone','done');
 }
@@ -17309,6 +17317,32 @@ function supChipTapPlantDone(){
   } else {
     location.href = base+'&tab=workorders';
   }
+}
+
+/* ── Work orders open too long (aging escalation). A WO open 3+ days = amber, 7+ days = red,
+   UNLESS the mechanic put it on hold (e.g. waiting for parts) — then it's paused. Reads slan_plant_wos. ── */
+function _woAgeDays(w){ if(!w||!w.raised_at) return null; var d=Math.floor((Date.now()-new Date(w.raised_at).getTime())/86400000); return (isNaN(d)||d<0)?0:d; }
+function _woHeld(w){ return !!(w && w.hold_until && new Date(w.hold_until).getTime() > Date.now()); }
+function _agedWOs(){
+  var wos=[]; try{ wos=JSON.parse(localStorage.getItem('slan_plant_wos')||'[]'); }catch(e){}
+  return (wos||[]).filter(function(w){ return w && w.status!=='Returned to service' && !_woHeld(w) && (_woAgeDays(w)||0) >= 3; });
+}
+function supUpdateWoAgeChip(){
+  var pill=document.getElementById('d-pill-woage'), lbl=document.getElementById('d-pill-woage-lbl');
+  if(!pill) return;
+  var aged=_agedWOs();
+  if(!aged.length){ pill.style.display='none'; return; }
+  var over7=aged.filter(function(w){ return (_woAgeDays(w)||0) >= 7; });
+  pill.style.display='';
+  if(over7.length){ if(lbl) lbl.textContent=over7.length+' work order'+(over7.length===1?'':'s')+' open 7+ days'; setPillState('d-pill-woage','fail'); }
+  else { if(lbl) lbl.textContent=aged.length+' work order'+(aged.length===1?'':'s')+' open 3+ days'; setPillState('d-pill-woage','warn'); }
+}
+function supChipTapWoAge(){
+  var aged=_agedWOs();
+  var base='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use';
+  // one aged WO → open it directly; otherwise the Work Orders list
+  if(aged.length===1 && aged[0]){ location.href=base+'&wo='+encodeURIComponent(aged[0].wo); }
+  else { location.href=base+'&tab=workorders'; }
 }
 
 function supChipTapPlant() {

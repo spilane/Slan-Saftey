@@ -1498,7 +1498,7 @@ function _recOutcome(rec){
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
 }
 /* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
-var DEMO_SEED_VERSION='eoin-v8';
+var DEMO_SEED_VERSION='eoin-v9';
 var DEMO_DAYS=5; // seed a pre-start for each of the last 5 days, per machine
 /* per-machine demo script: ops rotate across days; faultDays = which daysAgo the issue shows (re-flagged each day so it 'carries on'); the WO is raised on the earliest fault day */
 var DEMO_FLEET=[
@@ -1565,6 +1565,8 @@ function seedDemoPlant(){
     _saveWO({ wo:'WO-2026-0031', code:'UTE-022', machine:'Toyota Hilux SR 4x4', fault:'Engine warning light — fault code on the dash', priority:'Low', status:'Returned to service', raised:'3 weeks ago · Anthony Walsh', mechanic:'Sydney City Toyota', mech_type:'Toyota dealer (warranty)', mech_inhouse:false, diagnosis:'Vehicle sent to the Toyota dealer under the 5-year new-vehicle warranty. Faulty fuel injector diagnosed and replaced, codes cleared, road tested. No charge to the company — see the dealer’s report.', external_cost:760, warranty_claim:true, invoice_doc:'Toyota warranty repair report.pdf', repair_date:iso(dOffset(-20)), repair_photos:[], signoff:{by:'Sydney City Toyota', when:new Date(Date.now()-20*86400000).toISOString(), external:true} });
     // one OPEN in-house repair assigned to the mechanic (Dave Wilkins) so his "My jobs" portal has a repair to complete (Bondi → shows for Eoin too)
     _saveWO({ wo:'WO-2026-0040', code:'LT-013', machine:'Allight ML20 Lighting Tower', fault:'One mast light not striking + RCD trips on start-up — flagged on a pre-start', priority:'Medium', status:'Assigned', raised:'yesterday · Jake Ryan', raised_at:iso(dOffset(-1)), mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, labour_rate:95 });
+    // an OVERDUE repair (open 9 days, assigned to Dave, waiting for parts) — shows the red "open too long" aging + lets the mechanic put it on hold
+    _saveWO({ wo:'WO-2026-0047', code:'BUS-021', machine:'Toyota Coaster (12-seat)', fault:'Air-conditioning not cooling — replacement compressor on back-order', priority:'Medium', status:'Awaiting parts', raised:'9 days ago · Eoin Burke', raised_at:iso(dOffset(-9)), mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, labour_rate:95 });
     // one service booked to the mechanic so his "My jobs" portal has a service to complete & sign off
     _svcSave('MAG-009', { status:'booked', booked_date:iso(dOffset(6)), workshop:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, note:'500-hour scheduled service', booked_at:new Date().toISOString() });
     localStorage.setItem('slan_plant_seed', DEMO_SEED_VERSION);
@@ -1754,10 +1756,13 @@ function _woPartsCost(w){ return (w.parts||[]).reduce(function(s,p){ return s+(N
 function _woLabourCost(w){ return (Number(w.labour_hrs)||0)*(Number(w.labour_rate)||0); }
 function _woTotal(w){ if(w.mech_inhouse===false){ return Number(w.external_cost)||0; } return _woPartsCost(w)+_woLabourCost(w); }
 function _woClientCost(w){ return w.warranty_claim ? 0 : _woTotal(w); }   // what the client actually pays (warranty claim = $0)
-/* how long a work order has been open — so the supervisor/director/mechanic can see ones that are dragging */
+/* how long a work order has been open — so the supervisor/director/mechanic can see ones that are dragging.
+   A WO the mechanic put on hold (waiting for parts) is paused: it doesn't count as "aged" until the hold lapses. */
 function _woAge(w){ if(!w||!w.raised_at) return null; var d=Math.floor((Date.now()-new Date(w.raised_at).getTime())/86400000); return (isNaN(d)||d<0)?0:d; }
-function _woAgeText(w){ if(!w||w.status==='Returned to service') return ''; var d=_woAge(w); if(d===null) return ''; return d===0?'opened today':('open '+d+' day'+(d===1?'':'s')); }
-function _woAgeCol(w){ var d=_woAge(w); return (d===null)?'var(--t3)':(d>7?'#A32D2D':(d>3?'#A06000':'var(--t2)')); }
+function _woOnHold(w){ return !!(w && w.hold_until && new Date(w.hold_until).getTime() > Date.now()); }
+function _woAged(w){ return !!(w && w.status!=='Returned to service' && !_woOnHold(w) && (_woAge(w)||0) >= 3); } // 3+ days open & not on hold
+function _woAgeText(w){ if(!w||w.status==='Returned to service') return ''; if(_woOnHold(w)) return 'on hold to '+fmtShort(w.hold_until); var d=_woAge(w); if(d===null) return ''; return d===0?'opened today':('open '+d+' day'+(d===1?'':'s')); }
+function _woAgeCol(w){ if(_woOnHold(w)) return '#234E76'; var d=_woAge(w); return (d===null)?'var(--t3)':(d>7?'#A32D2D':(d>3?'#A06000':'var(--t2)')); }
 /* completed repair costs the client paid for this machine — added on top of the historical seed spend */
 function _woSpendFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; }).reduce(function(s,w){ return s+_woClientCost(w); }, 0); }
 function assetSpend12(a){ return (a.spend12mo||0)+_woSpendFor(a.code)+(typeof _svcSpendFor==='function'?_svcSpendFor(a.code):0); }
@@ -2975,10 +2980,14 @@ function openWO(i){
     var photoThumbs=(w.repair_photos||[]).length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+(w.repair_photos||[]).map(function(p,pi){
       return '<div style="background:#EEF1EE;border:1px solid #D8DFD8;border-radius:8px;padding:6px 9px;font-size:11px;color:var(--t2);display:flex;align-items:center;gap:6px">🖼 '+_premobEsc(p)+' <button onclick="woRemovePhoto('+i+','+pi+')" style="background:none;border:none;color:#A32D2D;font-size:13px;cursor:pointer;padding:0">✕</button></div>';
     }).join('')+'</div>' : '';
+    var holdSec = _woOnHold(w)
+      ? '<div class="sec-h">On hold</div><div style="background:#EAF1F7;border:1px solid #BBD0E6;border-radius:10px;padding:11px 13px"><div style="font-size:12.5px;font-weight:800;color:#234E76">⏸️ On hold until '+fmt(w.hold_until)+'</div><div style="font-size:11.5px;color:#234E76;margin-top:4px">'+_premobEsc(w.hold_reason||'Waiting for parts')+' — it won&rsquo;t show as overdue until then.</div><button class="btn-ghost" style="margin-top:10px" onclick="woResume('+i+')">▶ Resume now</button></div>'
+      : '<div class="sec-h">Waiting on parts? Put it on hold</div><input id="wo-hold-reason" placeholder="Reason — e.g. waiting for a part on order" style="width:100%;box-sizing:border-box;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px"><div style="display:flex;gap:8px;margin-top:8px"><button class="btn-ghost" style="flex:1" onclick="woHold('+i+',3)">Hold 3 days</button><button class="btn-ghost" style="flex:1" onclick="woHold('+i+',7)">Hold 7 days</button></div><div style="font-size:11px;color:var(--t3);margin-top:6px">Pauses the &ldquo;open too long&rdquo; alert so it doesn&rsquo;t flag while you&rsquo;re legitimately waiting.</div>';
     var ws=
       mechBanner + warrantyBanner +
       '<div class="sec-h">Diagnosis &amp; work carried out</div>'+
       '<textarea id="wo-diagnosis" placeholder="What was found and what was done…" style="width:100%;box-sizing:border-box;min-height:78px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical">'+_premobEsc(w.diagnosis||'')+'</textarea>'+
+      holdSec +
       '<div class="sec-h">Parts &amp; materials</div><div class="svc">'+partsRows+'</div>'+
       '<div style="font-size:11px;color:var(--t3);margin:9px 0 4px">Type the part name and its cost, then tap <b>Add</b> — it drops into the list above.</div>'+
       '<div style="display:flex;gap:6px">'+
@@ -3100,6 +3109,9 @@ function woComplete(i){
   slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Returned to service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+w.wo+' — '+w.code+' '+byLine+'<br>'+costLine+'<br><span style="font-size:11.5px;color:var(--t3)">'+recLine+'</span></div></div>', function(){ if(_mechMode()){ renderMechanic(); } else { platTab='workorders'; woSub='done'; renderOversight(); } });
 }
 function _woBack(){ if(_woCur!=null && WORKORDERS[_woCur]){ _woReadForm(WORKORDERS[_woCur]); _saveWO(WORKORDERS[_woCur]); } _woCur=null; _plantHomeAfterJob(); }
+/* Mechanic puts a WO on hold (e.g. waiting for parts) for N days — pauses the "open too long" alerts until the hold lapses. */
+function woHold(i, days){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); var rEl=document.getElementById('wo-hold-reason'); var reason=rEl?(rEl.value||'').trim():''; w.hold_until=iso(dOffset(days)); w.hold_reason=reason||'Waiting for parts'; if(w.status!=='Returned to service') w.status='Awaiting parts'; _saveWO(w); openWO(i); slanMsg('', '<div style="text-align:center"><div style="font-size:38px">⏸️</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">On hold for '+days+' days</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.5">'+w.wo+' won&rsquo;t show as overdue until '+fmt(w.hold_until)+'. Reason: '+_premobEsc(w.hold_reason)+'.</div></div>'); }
+function woResume(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); w.hold_until=null; w.hold_reason=''; if(w.status==='Awaiting parts') w.status='In progress'; _saveWO(w); openWO(i); }
 function completeWO(wo){ var w=_woFind(wo); var i=w?WORKORDERS.indexOf(w):-1; if(i>=0) woComplete(i); }
 /* ---------- Raise a work order / report a fault from the machine page (any role) ---------- */
 function _rwoSevRow(val,icon,title,sub){
@@ -3253,6 +3265,16 @@ function plantServicesDueCard(fleet){
 /* §3 — complete a booked service (in-house signs off, external workshop logged) → records cost, resets the next-due */
 function _svcCost(s){ if(!s) return 0; if(s.mech_inhouse===false){ return Number(s.cost)||0; } return (Number(s.parts_cost)||0)+((Number(s.labour_hrs)||0)*(Number(s.labour_rate)||0)); }
 function _svcSpendFor(code){ var s=_svcState(code); return (s&&s.status==='done')?_svcCost(s):0; }
+/* live cost summary on the in-house service form (mirrors the work-order worksheet) */
+function _svcCostPreview(){
+  var parts=parseFloat((document.getElementById('svc-parts')||{}).value)||0;
+  var hrs=parseFloat((document.getElementById('svc-lhrs')||{}).value)||0;
+  var rate=parseFloat((document.getElementById('svc-lrate')||{}).value)||0;
+  var labour=hrs*rate;
+  var le=document.getElementById('svc-cost-labour'); if(le) le.textContent=money(labour);
+  var pe=document.getElementById('svc-cost-parts'); if(pe) pe.textContent=money(parts);
+  var te=document.getElementById('svc-cost-total'); if(te) te.textContent=money(parts+labour);
+}
 var _svcInvRef=null;
 function svcInvPick(code){ _svcInvRef=code; var el=document.getElementById('svc-inv-input'); if(el) el.click(); }
 function svcInvOnFile(input){ var code=_svcInvRef, f=input&&input.files&&input.files[0]; if(input) input.value=''; if(f&&code){ _svcSave(code,{invoice_doc:f.name}); plantCompleteService(code); } }
@@ -3269,7 +3291,8 @@ function plantCompleteService(code){
       : '<div onclick="svcInvPick(\''+code+'\')" style="border:1.5px dashed #C7CFC9;border-radius:10px;padding:14px;text-align:center;cursor:pointer;color:var(--t2);font-size:12px">📎 Attach the workshop’s invoice / report</div>') : '';
   var costSec = ext
     ? '<div class="sec-h">Cost</div><div class="svc"><div class="svc-row"><span>Service cost (per invoice)</span><span>$ <input id="svc-extcost" type="number" inputmode="decimal" value="'+(s.cost||'')+'" placeholder="0" style="width:90px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div><div class="sec-h">Workshop invoice / report</div>'+invRow
-    : '<div class="sec-h">Parts &amp; materials</div><div class="svc"><div class="svc-row"><span>Parts cost</span><span>$ <input id="svc-parts" type="number" inputmode="decimal" value="'+(s.parts_cost||'')+'" placeholder="0" style="width:90px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div><div class="sec-h">Labour</div><div class="svc"><div class="svc-row"><span>Hours</span><span><input id="svc-lhrs" type="number" inputmode="decimal" value="'+(s.labour_hrs||'')+'" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div><div class="svc-row"><span>Rate ($/hr)</span><span><input id="svc-lrate" type="number" inputmode="decimal" value="'+(s.labour_rate||(s.mech_inhouse?95:140))+'" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div>';
+    : '<div class="sec-h">Parts &amp; materials</div><div class="svc"><div class="svc-row"><span>Parts cost</span><span>$ <input id="svc-parts" type="number" inputmode="decimal" value="'+(s.parts_cost||'')+'" oninput="_svcCostPreview()" placeholder="0" style="width:90px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div><div class="sec-h">Labour</div><div class="svc"><div class="svc-row"><span>Hours</span><span><input id="svc-lhrs" type="number" inputmode="decimal" value="'+(s.labour_hrs||'')+'" oninput="_svcCostPreview()" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div><div class="svc-row"><span>Rate ($/hr)</span><span><input id="svc-lrate" type="number" inputmode="decimal" value="'+(s.labour_rate||(s.mech_inhouse?95:140))+'" oninput="_svcCostPreview()" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div><div class="svc-row"><span>Labour cost</span><span id="svc-cost-labour">'+money((Number(s.labour_hrs)||0)*(Number(s.labour_rate)||0))+'</span></div></div>'+
+      '<div class="svc" style="margin-top:10px"><div class="svc-row"><span>Parts</span><span id="svc-cost-parts">'+money(Number(s.parts_cost)||0)+'</span></div><div class="svc-row"><span>Total service cost</span><span id="svc-cost-total">'+money(_svcCost(s))+'</span></div></div>';
   var declRow = ext ? '' : '<div class="sec-h">Return-to-service declaration</div><label style="display:flex;align-items:flex-start;gap:9px;font-size:12px;font-weight:600;color:var(--deep);cursor:pointer;line-height:1.5;background:#F4F8F5;border:1px solid #D7E5DC;border-radius:10px;padding:12px 13px"><input type="checkbox" id="svc-declare" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:#2D6A45"> '+SVC_DECLARATION+'</label>';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="_svcBackTarget('+idx+')">‹ '+(_mechMode()?'My jobs':'Back to machine')+'</button>'+
