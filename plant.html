@@ -1526,7 +1526,7 @@ function _recOutcome(rec){
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
 }
 /* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
-var DEMO_SEED_VERSION='eoin-v10';
+var DEMO_SEED_VERSION='eoin-v11';
 var DEMO_DAYS=5; // seed a pre-start for each of the last 5 days, per machine
 /* per-machine demo script: ops rotate across days; faultDays = which daysAgo the issue shows (re-flagged each day so it 'carries on'); the WO is raised on the earliest fault day */
 var DEMO_FLEET=[
@@ -1597,6 +1597,75 @@ function seedDemoPlant(){
     _saveWO({ wo:'WO-2026-0047', code:'BUS-021', machine:'Toyota Coaster (12-seat)', fault:'Air-conditioning not cooling — replacement compressor on back-order', priority:'Medium', status:'Awaiting parts', raised:'9 days ago · Eoin Burke', raised_at:iso(dOffset(-9)), mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, labour_rate:95 });
     // one service booked to the mechanic so his "My jobs" portal has a service to complete & sign off
     _svcSave('MAG-009', { status:'booked', booked_date:iso(dOffset(6)), workshop:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, note:'500-hour scheduled service', booked_at:new Date().toISOString() });
+    // ---- Fleet repair & service history ----
+    // Past completed repairs & services across the OWNED fleet so every machine shows a real
+    // breakdown of repairs, parts & costs in the mechanic portal (history timeline, spend breakdown,
+    // parts ledger, fleet reports) — not just daily pre-starts plus one lump 12-month figure.
+    // mech not in MECHANICS = an external dealer/workshop (warranty claims cost the client $0).
+    function _seedAgoTxt(days, by){ var mo=Math.round(days/30); var t=(mo<=1)?'about a month ago':(mo+' months ago'); return t+(by?(' · '+by):''); }
+    function _seedRepair(o){
+      var a=ASSETS.find(function(x){return x.code===o.code;}); if(!a) return;
+      var mech=MECHANICS.find(function(m){return m.name===o.mech;});
+      var mName=o.mech, mType=mech?mech.type:(o.mech_type||'External workshop'), mIn=mech?mech.inhouse:false;
+      var whenIso=iso(dOffset(-o.ago)), whenTs=new Date(Date.now()-o.ago*86400000).toISOString();
+      var w={ wo:o.wo, code:o.code, machine:a.make+' '+a.model, fault:o.fault, priority:o.priority||'Medium',
+        status:'Returned to service', raised:_seedAgoTxt(o.ago,o.by), raised_at:whenIso,
+        mechanic:mName, mech_type:mType, mech_inhouse:mIn, diagnosis:o.diagnosis,
+        warranty_claim:!!o.warranty, repair_date:whenIso, repair_photos:o.photos||[],
+        invoice_doc:o.inv||'', signoff:{ by:mName, when:whenTs, external:!mIn } };
+      if(mIn){ w.parts=o.parts||[]; w.labour_hrs=o.lhrs||0; w.labour_rate=95; w.declared=true; }
+      else { w.external_cost=o.cost||0; }
+      _saveWO(w);
+    }
+    function _seedService(o){
+      var a=ASSETS.find(function(x){return x.code===o.code;}); if(!a) return;
+      var mech=MECHANICS.find(function(m){return m.name===o.mech;});
+      var mName=o.mech, mType=mech?mech.type:(o.mech_type||'External workshop'), mIn=mech?mech.inhouse:false;
+      var doneIso=iso(dOffset(-o.ago)), nextIso=iso(dOffset(o.next||150)), whenTs=new Date(Date.now()-o.ago*86400000).toISOString();
+      var sm=SERVICE_METER[o.code], meter=(o.meter!=null)?o.meter:(sm&&sm.meter==='km'?(plantDetails(o.code).km||0):(a.hours||0));
+      var patch={ status:'done', workshop:mName, mech_type:mType, mech_inhouse:mIn, note:o.note,
+        work_done:o.work, completed_date:doneIso, next_due:nextIso, meter_reading:meter,
+        signoff:{ by:mName, when:whenTs, external:!mIn } };
+      if(mIn){ patch.parts_cost=o.parts_cost||0; patch.labour_hrs=o.lhrs||0; patch.labour_rate=95; patch.declared=true; }
+      else { patch.cost=o.cost||0; patch.invoice_doc=o.inv||''; }
+      _svcSave(o.code, patch);
+      a.service_last=doneIso; a.service_due=nextIso; // keep the asset's service clock consistent with the seeded service
+    }
+    [
+      // TLH-012 · JCB 540-170 telehandler (out of warranty)
+      { wo:'WO-2025-0312', code:'TLH-012', ago:248, mech:'FleetServ Mechanical', by:'Daniel Byrne', fault:'Hydraulic hose burst on the boom extend ram', cost:840, inv:'FleetServ invoice INV-20418.pdf', photos:['hose-failure-before.jpg','hose-replaced.jpg'], diagnosis:'Boom extend hose failed at the swaged fitting. Replaced the hose and fittings, bled the hydraulics and function-tested the boom under load. No further leaks.' },
+      { wo:'WO-2025-0356', code:'TLH-012', ago:150, mech:'Dave Wilkins', by:'Kevin Ryan', fault:'Park brake not holding on a slope', parts:[{desc:'Park brake caliper',cost:310,warranty_months:12}], lhrs:2.5, diagnosis:'Park brake caliper seized. Replaced the caliper, adjusted and confirmed the park brake holds on a graded surface.' },
+      { wo:'WO-2026-0008', code:'TLH-012', ago:60, mech:'Dave Wilkins', by:'Kevin Ryan', fault:'Excessive boom play — wear pads worn', parts:[{desc:'Boom wear pad kit',cost:265,warranty_months:0}], lhrs:4, diagnosis:'Boom wear pads worn beyond limit causing play. Fitted a new wear pad kit, shimmed and greased the boom, rechecked play within spec.' },
+      // GEN-016 · Atlas Copco QAS 60 generator (in warranty)
+      { wo:'WO-2025-0341', code:'GEN-016', ago:190, mech:'Atlas Copco Service', mech_type:'Atlas Copco (warranty)', by:'Anthony Walsh', warranty:true, cost:1180, inv:'Atlas Copco warranty report.pdf', fault:'Coolant leak at the water pump', diagnosis:'Water pump weeping at the gasket. Replaced under the Atlas Copco factory warranty at no charge to the company. Pressure-tested the cooling system — no leaks.' },
+      { wo:'WO-2026-0011', code:'GEN-016', ago:35, mech:'Dave Wilkins', by:'Kevin Ryan', fault:'Hard starting — fuel filter blocked', parts:[{desc:'Fuel filter & pre-filter',cost:95,warranty_months:12}], lhrs:1.5, diagnosis:'Blocked primary fuel filter causing hard starting. Replaced the filter and pre-filter, primed and bled the system. Starts and runs cleanly.' },
+      // LT-014 · Atlas Copco HiLight V5 lighting tower (in warranty)
+      { wo:'WO-2025-0349', code:'LT-014', ago:175, mech:'Atlas Copco Service', mech_type:'Atlas Copco (warranty)', by:'Aaron Quinn', warranty:true, cost:640, inv:'Atlas Copco warranty report.pdf', fault:'One LED flood head not igniting', diagnosis:'Failed LED head module. Replaced under the Atlas Copco warranty at no charge. All four heads tested working.' },
+      { wo:'WO-2026-0006', code:'LT-014', ago:95, mech:'Dave Wilkins', by:'Aaron Quinn', fault:'Mast winch cable frayed', parts:[{desc:'Mast winch cable',cost:140,warranty_months:0}], lhrs:1.5, diagnosis:'Mast raise/lower winch cable frayed near the drum. Replaced the cable, confirmed the mast raises and locks correctly.' },
+      // CRN-011 · Tadano GR-250 city crane (out of warranty)
+      { wo:'WO-2025-0288', code:'CRN-011', ago:300, mech:'OnSite Plant Repairs', by:'Liam Walsh', priority:'High', fault:'Boom telescope cylinder seal weeping', cost:2735, inv:'OnSite Plant Repairs invoice 7741.pdf', diagnosis:'Telescope cylinder rod seal weeping. Resealed the cylinder on site, refilled and bled the hydraulics, function and load tested the boom.' },
+      { wo:'WO-2025-0361', code:'CRN-011', ago:120, mech:'FleetServ Mechanical', by:'Jake Ryan', fault:'Hook block sheave bearing noisy', cost:1180, inv:'FleetServ invoice INV-20655.pdf', diagnosis:'Hook block sheave bearing worn and noisy under load. Replaced the bearing, regreased and load tested.' },
+      { wo:'WO-2026-0009', code:'CRN-011', ago:55, mech:'Dave Wilkins', by:'Jake Ryan', fault:'Outrigger beam slow to extend — proximity sensor fault', parts:[{desc:'Outrigger proximity sensor',cost:190,warranty_months:12}], lhrs:3, photos:['outrigger-sensor.jpg'], diagnosis:'Outrigger extend proximity sensor intermittent, holding the interlock. Replaced the sensor, calibrated and tested all four outriggers deploy and lock.' },
+      // TRK-006 · Hino 500 truck (out of warranty)
+      { wo:'WO-2025-0301', code:'TRK-006', ago:270, mech:'FleetServ Mechanical', by:'Anthony Walsh', fault:'Brake judder — warped front rotors', cost:1280, inv:'FleetServ invoice INV-20180.pdf', diagnosis:'Warped front brake rotors causing judder. Machined the rotors and replaced the pads, road tested — braking smooth and even.' },
+      { wo:'WO-2025-0372', code:'TRK-006', ago:95, mech:'Dave Wilkins', by:'Anthony Walsh', fault:'Air dryer purging continuously', parts:[{desc:'Air dryer cartridge',cost:180,warranty_months:12}], lhrs:2, diagnosis:'Air dryer cartridge saturated, purging non-stop and bleeding air pressure. Replaced the cartridge, governor cut-in/cut-out within spec.' },
+      // BUS-021 · Toyota Coaster (out of warranty)
+      { wo:'WO-2025-0333', code:'BUS-021', ago:215, mech:'FleetServ Mechanical', by:'Daniel Byrne', fault:'Front brake pads worn to minimum', cost:400, inv:'FleetServ invoice INV-20351.pdf', diagnosis:'Front brake pads at minimum thickness on inspection. Replaced the pads, cleaned and checked the rotors, road tested.' },
+      { wo:'WO-2026-0007', code:'BUS-021', ago:60, mech:'Dave Wilkins', by:'Anthony Walsh', fault:'Passenger door not sealing — wind noise and water ingress', parts:[{desc:'Door seal rubber',cost:120,warranty_months:0}], lhrs:1.5, diagnosis:'Perished passenger door seal letting in wind and water. Replaced the door seal, confirmed the door closes and seals correctly.' },
+      // MAG-009 · Magni RTH 6.46 (in warranty)
+      { wo:'WO-2025-0322', code:'MAG-009', ago:240, mech:'Magni Australia', mech_type:'Magni (warranty)', by:'Jake Ryan', warranty:true, cost:2100, inv:'Magni warranty report.pdf', fault:'Slew drive gearbox oil leak', diagnosis:'Slew drive gearbox seal leaking oil. Replaced under the Magni factory warranty at no charge. Refilled the gearbox and slew tested through 360 degrees.' },
+      { wo:'WO-2025-0368', code:'MAG-009', ago:100, mech:'Dave Wilkins', by:'Jake Ryan', fault:'Stabiliser foot pad cracked', parts:[{desc:'Stabiliser foot pad',cost:260,warranty_months:0}], lhrs:2, diagnosis:'Front stabiliser foot pad cracked. Replaced the pad, confirmed the stabiliser deploys and bears evenly.' },
+      // LT-013 · Allight ML20 lighting tower (out of warranty)
+      { wo:'WO-2025-0345', code:'LT-013', ago:185, mech:'FleetServ Mechanical', by:'Daniel Byrne', fault:'Engine overspeed shutdown intermittent', cost:510, inv:'FleetServ invoice INV-20502.pdf', diagnosis:'Faulty engine speed sensor triggering false overspeed shutdowns. Replaced the sensor, ran the set under load for an hour with no shutdown.' },
+      { wo:'WO-2026-0005', code:'LT-013', ago:110, mech:'Dave Wilkins', by:'Daniel Byrne', fault:'Lamp arm pivot seized', parts:[{desc:'Lamp arm pivot bush kit',cost:85,warranty_months:0}], lhrs:1, diagnosis:'Lamp arm pivot seized with corrosion. Freed and rebushed the pivot, greased and confirmed the lamp aims through full travel.' }
+    ].forEach(_seedRepair);
+    [
+      { code:'TLH-012', ago:70,  mech:'FleetServ Mechanical', note:'500-hour service', cost:1180, inv:'FleetServ service report SR-1182.pdf', work:'500-hour service: engine oil and filters, hydraulic return filter, greased the boom and pivots, checked brakes and tyres, full function test.' },
+      { code:'GEN-016', ago:55,  mech:'Dave Wilkins', note:'250-hour service', parts_cost:180, lhrs:2, work:'250-hour service: engine oil and filters, coolant and fuel system check, load test, test and tag of the output leads.' },
+      { code:'CRN-011', ago:80,  mech:'FleetServ Mechanical', note:'Annual major service', cost:3200, inv:'FleetServ service report SR-1090.pdf', work:'Annual major service: engine and hydraulics serviced, wire ropes inspected, slew and winch brakes checked, structural and load test, 12-monthly major inspection.' },
+      { code:'TRK-006', ago:50,  mech:'FleetServ Mechanical', note:'Logbook service', cost:1450, inv:'FleetServ service report SR-1141.pdf', work:'Logbook service: engine oil and filters, fuel filters, brakes inspected, driveline greased, lights and safety check, roadworthy inspection.' },
+      { code:'BUS-021', ago:65,  mech:'FleetServ Mechanical', note:'Logbook service', cost:620,  inv:'FleetServ service report SR-1118.pdf', work:'Logbook service: engine oil and filters, brakes inspected, air-conditioning check, seatbelts and lights, passenger safety inspection.' }
+    ].forEach(_seedService);
     localStorage.setItem('slan_plant_seed', DEMO_SEED_VERSION);
   }catch(e){}
 }
