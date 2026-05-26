@@ -675,7 +675,7 @@ function openDemoSheet(){
 }
 function closeDemoSheet(){ document.getElementById('demo-sheet').classList.remove('on'); }
 function demoSwitchWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catch(e){} currentWorker=WORKERS[i]; closeDemoSheet(); if(getRole()!=='worker'){ location.href='plant.html'; } else { var el=document.getElementById('who-name'); if(el) el.textContent=currentWorker.name; showList(); } }
-function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides','slan_plant_premob','slan_plant_fault_reports'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
+function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides','slan_plant_premob','slan_plant_fault_reports','slan_plant_services'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -903,8 +903,11 @@ function openHub(i){
       '<div class="svc-row"><span>Next due</span><span style="color:'+(svcOverdue?'var(--fail)':'var(--pass)')+'">'+fmt(a.service_due)+(svcOverdue?' · OVERDUE':'')+'</span></div>'+
       svcMeterRow+
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
-      '<button class="btn-ghost" onclick="slanMsg(\'Service template\',\'Opens the service template for the mechanic to complete.\')">Open service template</button>'+
+      (function(){ var s=_svcState(a.code); if(s&&s.status==='booked'){ return '<div class="svc-row"><span>Service booked</span><span style="color:var(--gold);font-weight:700">'+fmt(s.booked_date)+' · '+s.workshop+(s.note?(' · '+_premobEsc(s.note)):'')+'</span></div>'; } return ''; })()+
     '</div>'+
+    ((getRole()!=='worker' && !isHired(a.code)) ? (function(){ var s=_svcState(a.code); return s&&s.status==='booked'
+        ? '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">Reschedule / change workshop</button>'
+        : '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>'; })() : '')+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
   showDetail(html);
@@ -1514,7 +1517,7 @@ function _seedBuildRecord(code, worker, daysAgo, faultObj, comment){
 function seedDemoPlant(){
   try{
     if(localStorage.getItem('slan_plant_seed')===DEMO_SEED_VERSION) return;
-    ['slan_plant_records','slan_plant_wos','slan_plant_alerts','slan_plant_iteminfo','slan_plant_fault_reports'].forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
+    ['slan_plant_records','slan_plant_wos','slan_plant_alerts','slan_plant_iteminfo','slan_plant_fault_reports','slan_plant_services'].forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
     var woNum=43;
     DEMO_FLEET.forEach(function(m){
       var a=ASSETS.find(function(x){return x.code===m.code;}); if(!a) return;
@@ -3033,6 +3036,43 @@ function plantViewFaultReport(id){
   '</div>';
   showDetail(html);
 }
+/* ---------- SERVICE SCHEDULING — book/track a machine service (owned plant), parallel to work orders ---------- */
+function _svcAll(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_services')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function _svcState(code){ return _svcAll()[code]||null; }
+function _svcSave(code, patch){ try{ var o=_svcAll(); o[code]=Object.assign({}, o[code]||{}, patch); localStorage.setItem('slan_plant_services', JSON.stringify(o)); }catch(e){} }
+function _svcClear(code){ try{ var o=_svcAll(); delete o[code]; localStorage.setItem('slan_plant_services', JSON.stringify(o)); }catch(e){} }
+function _svcWsRow(mi, m, checked){
+  return '<label style="display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer"><input type="radio" name="svc-ws" value="'+mi+'"'+(checked?' checked':'')+' style="width:18px;height:18px;accent-color:#2D6A45;flex-shrink:0"><span><span style="font-size:13px;font-weight:700;color:var(--deep);display:block">'+m.name+'</span><span style="font-size:11px;color:var(--t2)">'+m.type+' · '+(m.inhouse?'in-house':'external')+'</span></span></label>';
+}
+function plantBookService(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var idx=ASSETS.indexOf(a);
+  var s=_svcState(code)||{};
+  var dueDefault = s.booked_date || a.service_due || iso(dOffset(14));
+  var pickedIdx = (function(){ for(var i=0;i<MECHANICS.length;i++){ if(MECHANICS[i].name===s.workshop) return i; } return 0; })();
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="openHub('+idx+')">‹ Back to machine</button>'+
+    '<div class="hub-head"><div class="hub-ic">🗓️</div><div style="flex:1"><div class="hub-code">'+(s.status==='booked'?'Reschedule service':'Book a service')+'</div><div class="hub-mm">'+a.code+' · '+a.make+' '+a.model+'</div><div class="hub-hours">Next due '+fmt(a.service_due)+'</div></div></div>'+
+    '<div class="sec-h">Scheduled date</div><div class="svc"><div class="svc-row"><span>Service date</span><span><input type="date" id="svc-date" value="'+dueDefault+'" style="padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px"></span></div></div>'+
+    '<div class="sec-h">Workshop / mechanic</div><div class="tile" style="padding:4px 0">'+MECHANICS.map(function(m,mi){ return _svcWsRow(mi, m, mi===pickedIdx); }).join('')+'</div>'+
+    '<div class="sec-h">Service type (optional)</div>'+
+    '<input id="svc-note" value="'+_premobEsc(s.note||'')+'" placeholder="e.g. 500-hour service, annual service" style="width:100%;box-sizing:border-box;padding:10px 11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px">'+
+    '<button class="cta" style="margin-top:16px" onclick="plantBookServiceSubmit(\''+code+'\')">'+(s.status==='booked'?'Update booking':'Book service')+'</button>'+
+    (s.status==='booked'?'<button class="btn-ghost" style="margin-top:10px" onclick="plantCancelService(\''+code+'\')">Cancel this booking</button>':'')+
+  '</div>';
+  showDetail(html);
+}
+function plantBookServiceSubmit(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var idx=ASSETS.indexOf(a);
+  var dEl=document.getElementById('svc-date'), date=dEl?dEl.value:'';
+  if(!date){ if(dEl){ dEl.style.borderColor='#A32D2D'; } return; }
+  var mEl=document.querySelector('input[name="svc-ws"]:checked'), mi=mEl?(+mEl.value):0, m=MECHANICS[mi]||MECHANICS[0];
+  var note=(document.getElementById('svc-note')||{}).value||'';
+  _svcSave(code, { status:'booked', booked_date:date, workshop:m.name, mech_type:m.type, mech_inhouse:(m.inhouse!==false), note:note.trim(), booked_at:new Date().toISOString() });
+  openHub(idx);
+  var noteStr = note.trim() ? (_premobEsc(note.trim())+' — ') : '';
+  slanMsg('', '<div style="text-align:center"><div style="font-size:40px">🗓️</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Service booked</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.5">'+a.code+' — '+noteStr+'booked with '+m.name+' for '+fmt(date)+'.</div></div>');
+}
+function plantCancelService(code){ var a=ASSETS.find(function(x){return x.code===code;}); _svcClear(code); if(a) openHub(ASSETS.indexOf(a)); }
 var QR_SIZE='M'; var QR_ONE=null;
 function _qrPx(){ return QR_SIZE==='S'?105:(QR_SIZE==='L'?300:175); }
 function _qrCols(){ return QR_SIZE==='S'?3:(QR_SIZE==='L'?1:2); }
