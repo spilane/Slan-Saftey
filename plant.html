@@ -2,6 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Timed demo-link gate (mirrors index.html) — honours ?access= and blocks after the deadline. -->
+<script>
+(function(){
+  try{
+    var KEY='slan_access_until';
+    var m=/[?&]access=([0-9a-z]+)/i.exec(location.search);
+    if(m){
+      var exp=parseInt(m[1],36);
+      if(!isNaN(exp) && exp>1e12){ try{ localStorage.setItem(KEY,String(exp)); }catch(e){} }
+      try{ var u=new URL(location.href); u.searchParams.delete('access'); history.replaceState(null,'',u.pathname+u.search+u.hash); }catch(e){}
+    }
+    var until=parseInt((function(){ try{ return localStorage.getItem(KEY)||'0'; }catch(e){ return '0'; } })(),10);
+    if(until>0 && Date.now()>until){
+      var show=function(){
+        if(document.getElementById('slan-access-expired')) return;
+        var d=document.createElement('div'); d.id='slan-access-expired';
+        d.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#0F2419;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif';
+        d.innerHTML='<div style="font-size:44px;margin-bottom:14px">⏳</div><div style="font-size:21px;font-weight:800;color:#B8960C">This demo link has expired</div><div style="font-size:14px;opacity:.85;margin-top:12px;max-width:360px;line-height:1.55">Thanks for taking a look at Slán Safety. This preview has timed out — get in touch and we’ll send you fresh access.</div>';
+        (document.body||document.documentElement).appendChild(d);
+        try{ document.documentElement.style.overflow='hidden'; }catch(e){}
+      };
+      if(document.body){ show(); } else { document.addEventListener('DOMContentLoaded',show); }
+    }
+  }catch(e){}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Slán Safety — Plant &amp; Equipment</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
