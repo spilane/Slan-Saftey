@@ -2892,7 +2892,7 @@ function openWO(i){
     }
     var partsRows=(w.parts||[]).length ? (w.parts||[]).map(function(p,pi){
       return '<div class="svc-row"><span>'+_premobEsc(p.desc)+'</span><span style="display:flex;align-items:center;gap:8px">'+money(p.cost||0)+' <button onclick="woRemovePart('+i+','+pi+')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;line-height:1;padding:0">✕</button></span></div>';
-    }).join('') : '<div class="svc-row" style="color:var(--t3)"><span>No parts added yet</span><span></span></div>';
+    }).join('') : '<div class="svc-row" style="color:var(--t3)"><span><i>Parts you add will be listed here.</i></span><span></span></div>';
     var invRow = w.invoice_doc
       ? '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:10px 13px;font-size:12px;color:#1B5E3F;display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="word-break:break-all">📄 '+_premobEsc(w.invoice_doc)+' · on file</span><button onclick="woRemoveInvoice('+i+')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;flex-shrink:0">✕</button></div>'
       : '<div id="wo-inv-dz" onclick="woInvoicePick('+i+')" ondragover="woInvDragOver(event)" ondragleave="woInvDragLeave(event)" ondrop="woInvDrop(event,'+i+')" style="border:1.5px dashed #C7CFC9;border-radius:10px;padding:14px;text-align:center;cursor:pointer;color:var(--t2);font-size:12px">📎 Drop the workshop invoice here, or tap to add<div style="font-size:10.5px;color:var(--t3);margin-top:3px">Attaches it to the job &amp; fills the repair cost</div></div>';
@@ -2904,7 +2904,8 @@ function openWO(i){
       '<div class="sec-h">Diagnosis &amp; work carried out</div>'+
       '<textarea id="wo-diagnosis" placeholder="What was found and what was done…" style="width:100%;box-sizing:border-box;min-height:78px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical">'+_premobEsc(w.diagnosis||'')+'</textarea>'+
       '<div class="sec-h">Parts &amp; materials</div><div class="svc">'+partsRows+'</div>'+
-      '<div style="display:flex;gap:6px;margin-top:8px">'+
+      '<div style="font-size:11px;color:var(--t3);margin:9px 0 4px">Type the part name and its cost, then tap <b>Add</b> — it drops into the list above.</div>'+
+      '<div style="display:flex;gap:6px">'+
         '<input id="wo-part-desc" placeholder="Part / material" style="flex:1;min-width:0;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
         '<input id="wo-part-cost" type="number" inputmode="decimal" placeholder="$" style="width:84px;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
         '<button onclick="woAddPart('+i+')" style="padding:9px 14px;border:none;border-radius:9px;background:var(--deep);color:#fff;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit">Add</button>'+

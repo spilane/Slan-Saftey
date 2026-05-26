@@ -16936,7 +16936,7 @@ function chipTapSignIn() {
 }
 function chipTapPrestart() { goTo('screen-prestart'); if (typeof initPrestart === 'function') setTimeout(initPrestart, 20); }
 function chipTapSwms()     { goTo('screen-swms-library'); if (typeof initSwmsLibrary === 'function') setTimeout(initSwmsLibrary, 20); }
-function chipTapTalk()     { goTo('screen-talk'); if (typeof initTalk === 'function') setTimeout(initTalk, 20); }
+function chipTapTalk()     { if (typeof goToTalk === 'function') goToTalk(); else goTo('screen-talk'); }
 function chipTapIncidents() {
   // Same routing as the tile click — list view if records, form if not
   if (typeof goToIncident === 'function') goToIncident();
@@ -17127,7 +17127,7 @@ function supChipTapSwms() {
   else goTo('screen-swms-library');
 }
 function supChipTapTalk() {
-  if (typeof initTalk === 'function') { goTo('screen-talk'); setTimeout(initTalk, 20); }
+  if (typeof goToTalk === 'function') goToTalk();
   else goTo('screen-talk');
 }
 function supChipTapSDS() {
