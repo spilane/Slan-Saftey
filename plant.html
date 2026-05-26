@@ -171,6 +171,8 @@ table.reg th{text-align:left;padding:9px 11px;background:#EAF1ED;color:var(--t2)
 table.reg td{padding:10px 11px;border-top:1px solid #EEF2F0;white-space:nowrap;vertical-align:top}
 table.reg tbody tr{cursor:pointer}
 table.reg tbody tr:hover{background:#F6FAF7}
+/* asset-register scroll box. Phone: the table scrolls inside this box and the sticky header holds at the box top. Desktop override (below) makes the header stick to the page instead, since on a big screen the whole page scrolls rather than the box. */
+.reg-wrap{overflow:auto;max-height:72vh;-webkit-overflow-scrolling:touch}
 .qr-code{font-size:16px;font-weight:800;color:var(--t1);margin-top:6px}
 .qr-mm{font-size:11px;color:var(--t2)}
 .qr-cap{font-size:9.5px;color:var(--t3);margin-top:4px}
@@ -186,6 +188,9 @@ table.reg tbody tr:hover{background:#F6FAF7}
   .platform-wrap table.reg{font-size:13px}
   .platform-wrap table.reg th{font-size:10.5px;padding:11px 13px}
   .platform-wrap table.reg td{padding:12px 13px}
+  /* Desktop: drop the inner scroll box so the PAGE scrolls, and stick the header just below the (sticky) top bar — so it stays put on a laptop where the whole page scrolls. --plat-hdr is set in JS to the top bar's height. */
+  .platform-wrap .reg-wrap{overflow:visible;max-height:none}
+  .platform-wrap .reg-wrap table.reg th{top:var(--plat-hdr,116px)}
 }
 /* assets register polish */
 .reg-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px}
@@ -2710,7 +2715,7 @@ function renderOversight(){
     }).join('');
     body='<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
         '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
-      '<div style="overflow:auto;max-height:72vh"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div class="reg-wrap"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
       '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
   } else if(platTab==='premob'){
     body=plantPremobBody(fleet);
@@ -2748,6 +2753,8 @@ function renderOversight(){
   document.getElementById('screen-list').style.display='none';
   document.getElementById('screen-detail').style.display='none';
   ov.style.display='block';
+  // tell the desktop sticky-header CSS how tall the (sticky) top bar is, so the asset-table header parks just beneath it
+  try{ var _tb=document.querySelector('.topbar'); if(_tb) document.documentElement.style.setProperty('--plat-hdr', _tb.offsetHeight+'px'); }catch(e){}
   if(platTab==='analytics'){ setTimeout(renderPlantCharts,30); }
   window.scrollTo(0,0);
 }
