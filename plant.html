@@ -922,6 +922,7 @@ function openHub(i){
         }
         if(st && (st.state==='overdue'||st.state==='due_soon')) return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>';
         return ''; })() : '')+
+    ((getRole()!=='worker') ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderPartsLedger(\''+a.code+'\')">🔩  Parts fitted ('+_partsHistory(a.code).length+')</button>' : '')+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
   showDetail(html);
@@ -1498,7 +1499,7 @@ function _recOutcome(rec){
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
 }
 /* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
-var DEMO_SEED_VERSION='eoin-v9';
+var DEMO_SEED_VERSION='eoin-v10';
 var DEMO_DAYS=5; // seed a pre-start for each of the last 5 days, per machine
 /* per-machine demo script: ops rotate across days; faultDays = which daysAgo the issue shows (re-flagged each day so it 'carries on'); the WO is raised on the earliest fault day */
 var DEMO_FLEET=[
@@ -1561,7 +1562,7 @@ function seedDemoPlant(){
       }
     });
     // two finished repairs so the Completed tab is never empty in a demo — one IN-HOUSE (Dave Wilkins, signed declaration, feeds spend) + one EXTERNAL (Toyota dealer, warranty $0, no declaration)
-    _saveWO({ wo:'WO-2026-0033', code:'CRN-007', machine:'Franna AT-40', fault:'Slew brake drifting + hydraulic return filter due', priority:'Medium', status:'Returned to service', raised:'2 weeks ago · scheduled service', mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, diagnosis:'Slew brake adjusted and the hydraulic return filter replaced during the scheduled service. Function and load test completed — safe to return to service.', parts:[{desc:'Hydraulic return filter', cost:145},{desc:'Slew brake shim kit', cost:90}], labour_hrs:4, labour_rate:95, warranty_claim:false, invoice_doc:'', repair_date:iso(dOffset(-12)), declared:true, repair_photos:['repair-brake-adjustment.jpg','repair-filter-replaced.jpg'], signoff:{by:'Dave Wilkins', when:new Date(Date.now()-12*86400000).toISOString(), external:false} });
+    _saveWO({ wo:'WO-2026-0033', code:'CRN-007', machine:'Franna AT-40', fault:'Slew brake drifting + hydraulic return filter due', priority:'Medium', status:'Returned to service', raised:'2 weeks ago · scheduled service', mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, diagnosis:'Slew brake adjusted and the hydraulic return filter replaced during the scheduled service. Function and load test completed — safe to return to service.', parts:[{desc:'Hydraulic return filter', cost:145, warranty_months:12},{desc:'Slew brake shim kit', cost:90, warranty_months:0}], labour_hrs:4, labour_rate:95, warranty_claim:false, invoice_doc:'', repair_date:iso(dOffset(-12)), declared:true, repair_photos:['repair-brake-adjustment.jpg','repair-filter-replaced.jpg'], signoff:{by:'Dave Wilkins', when:new Date(Date.now()-12*86400000).toISOString(), external:false} });
     _saveWO({ wo:'WO-2026-0031', code:'UTE-022', machine:'Toyota Hilux SR 4x4', fault:'Engine warning light — fault code on the dash', priority:'Low', status:'Returned to service', raised:'3 weeks ago · Anthony Walsh', mechanic:'Sydney City Toyota', mech_type:'Toyota dealer (warranty)', mech_inhouse:false, diagnosis:'Vehicle sent to the Toyota dealer under the 5-year new-vehicle warranty. Faulty fuel injector diagnosed and replaced, codes cleared, road tested. No charge to the company — see the dealer’s report.', external_cost:760, warranty_claim:true, invoice_doc:'Toyota warranty repair report.pdf', repair_date:iso(dOffset(-20)), repair_photos:[], signoff:{by:'Sydney City Toyota', when:new Date(Date.now()-20*86400000).toISOString(), external:true} });
     // one OPEN in-house repair assigned to the mechanic (Dave Wilkins) so his "My jobs" portal has a repair to complete (Bondi → shows for Eoin too)
     _saveWO({ wo:'WO-2026-0040', code:'LT-013', machine:'Allight ML20 Lighting Tower', fault:'One mast light not striking + RCD trips on start-up — flagged on a pre-start', priority:'Medium', status:'Assigned', raised:'yesterday · Jake Ryan', raised_at:iso(dOffset(-1)), mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, labour_rate:95 });
@@ -2793,9 +2794,10 @@ function renderMechanic(){
   var doneTotal=myDone.length+myDoneSvc.length;
   var doneCard=doneTotal?('<div class="fcard"><div class="fcard-hdr">✅ Completed by you ('+doneTotal+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+doneRows+doneSvcRows+'</div></div>'):'';
   _homeView='mechanic';
-  var linksRow='<div style="display:flex;gap:10px;margin-top:4px">'+
-    '<button class="btn-ghost" style="flex:1" onclick="renderMechHistory()">📋  Repair &amp; service history</button>'+
-    '<button class="btn-ghost" style="flex:1" onclick="renderMechWarranties()">🛡  Warranties</button>'+
+  var linksRow='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">'+
+    '<button class="btn-ghost" style="flex:1 1 45%" onclick="renderMechHistory()">📋  Repair &amp; service history</button>'+
+    '<button class="btn-ghost" style="flex:1 1 45%" onclick="renderMechWarranties()">🛡  Warranties</button>'+
+    '<button class="btn-ghost" style="flex:1 1 100%" onclick="renderPartsLedger()">🔩  Parts fitted (every part &amp; when)</button>'+
   '</div>';
   setHeader('My jobs', 'Dave Wilkins · repairs & services assigned to you');
   var html='<div class="wrap platform-wrap">'+
@@ -2851,6 +2853,45 @@ function renderMechWarranties(){
     '<div class="hub-head"><div class="hub-ic">🛡️</div><div style="flex:1"><div class="hub-code">Warranties</div><div class="hub-mm">'+inCount+' machine'+(inCount===1?'':'s')+' currently in warranty</div></div></div>'+
     '<div style="font-size:11.5px;color:var(--t2);line-height:1.5;margin-bottom:10px">If a machine is <b style="color:#1B6E3A">in warranty</b>, a repair should usually be a no-cost claim with the provider — flag it before paying.</div>'+
     '<div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* Parts ledger — every part fitted (from completed work orders), per machine or fleet-wide, newest first.
+   Like a service shop's "what was replaced and when" — plus each part's own warranty (if recorded at fit time). */
+function _partsHistory(code){
+  var out=[];
+  WORKORDERS.forEach(function(w){
+    if(w.status!=='Returned to service') return;
+    if(code && w.code!==code) return;
+    var when=(w.signoff&&w.signoff.when)?w.signoff.when:(w.repair_date||null);
+    (w.parts||[]).forEach(function(p){ out.push({ code:w.code, machine:w.machine, desc:p.desc, cost:p.cost||0, warranty_months:p.warranty_months||0, when:when, wo:w.wo }); });
+  });
+  out.sort(function(a,b){ return (b.when?new Date(b.when).getTime():0)-(a.when?new Date(a.when).getTime():0); });
+  return out;
+}
+function _partWarrantyText(p){
+  if(!p.warranty_months || !p.when) return '';
+  var exp=new Date(p.when); exp.setMonth(exp.getMonth()+Number(p.warranty_months));
+  return (exp.getTime()>Date.now()) ? ('part warranty to '+fmt(exp)) : ('part warranty expired '+fmt(exp));
+}
+function renderPartsLedger(code){
+  if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); _homeView='mechanic'; }
+  var a = code?ASSETS.find(function(x){return x.code===code;}):null;
+  var items=_partsHistory(code||null);
+  var rows=items.length?items.map(function(p){
+    var dt=p.when?fmtShort(p.when):'—';
+    var wtxt=_partWarrantyText(p); var wlive=wtxt.indexOf(' to ')>-1;
+    var sub=(code?'':(p.code+' · '))+'fitted '+dt+' · '+p.wo+(p.cost?(' · '+money(p.cost)):'');
+    return '<div class="row" style="cursor:default"><div class="row-ic"><span class="dot" style="background:'+(wtxt?(wlive?'#1B6E3A':'#C99A3A'):'#C8CFCA')+'"></span></div><div class="row-main"><div class="row-t">'+_premobEsc(p.desc)+'</div><div class="row-s">'+sub+(wtxt?('<br><span style="color:'+(wlive?'#1B6E3A':'#A06000')+';font-weight:700">'+wtxt+'</span>'):'')+'</div></div></div>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No parts logged yet — parts fitted during repairs will appear here.</div></div></div>';
+  var backBtn = code ? ('openHub('+ASSETS.indexOf(a)+')') : (_mechMode()?'renderMechanic()':'renderOversight()');
+  var backLbl = code ? 'Back to machine' : (_mechMode()?'My jobs':'Work orders');
+  setHeader('Parts fitted', code?(code+' · '+(a?a.make+' '+a.model:'')):'Across the fleet');
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="'+backBtn+'">‹ '+backLbl+'</button>'+
+    '<div class="hub-head"><div class="hub-ic">🔩</div><div style="flex:1"><div class="hub-code">Parts fitted</div><div class="hub-mm">'+(code?(code+' · '+(a?a.make+' '+a.model:'')):'Every part fitted across the fleet')+'</div></div></div>'+
+    '<div class="sec-h">Parts replaced ('+items.length+')</div><div class="tile">'+rows+'</div>'+
+    '<div style="font-size:11px;color:var(--t3);margin-top:8px">Logged automatically from completed repairs. A green dot = the part is still under its own warranty.</div>'+
   '</div>';
   showDetail(html);
 }
@@ -2972,7 +3013,8 @@ function openWO(i){
       '</div>';
     }
     var partsRows=(w.parts||[]).length ? (w.parts||[]).map(function(p,pi){
-      return '<div class="svc-row"><span>'+_premobEsc(p.desc)+'</span><span style="display:flex;align-items:center;gap:8px">'+money(p.cost||0)+' <button onclick="woRemovePart('+i+','+pi+')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;line-height:1;padding:0">✕</button></span></div>';
+      var warrTag = p.warranty_months ? '<span style="color:var(--t3);font-weight:400;font-size:11px"> · '+p.warranty_months+'mo warranty</span>' : '';
+      return '<div class="svc-row"><span>'+_premobEsc(p.desc)+warrTag+'</span><span style="display:flex;align-items:center;gap:8px">'+money(p.cost||0)+' <button onclick="woRemovePart('+i+','+pi+')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;line-height:1;padding:0">✕</button></span></div>';
     }).join('') : '<div class="svc-row" style="color:var(--t3)"><span><i>Parts you add will be listed here.</i></span><span></span></div>';
     var invRow = w.invoice_doc
       ? '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:10px 13px;font-size:12px;color:#1B5E3F;display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="word-break:break-all">📄 '+_premobEsc(w.invoice_doc)+' · on file</span><button onclick="woRemoveInvoice('+i+')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;flex-shrink:0">✕</button></div>'
@@ -2989,11 +3031,12 @@ function openWO(i){
       '<textarea id="wo-diagnosis" placeholder="What was found and what was done…" style="width:100%;box-sizing:border-box;min-height:78px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical">'+_premobEsc(w.diagnosis||'')+'</textarea>'+
       holdSec +
       '<div class="sec-h">Parts &amp; materials</div><div class="svc">'+partsRows+'</div>'+
-      '<div style="font-size:11px;color:var(--t3);margin:9px 0 4px">Type the part name and its cost, then tap <b>Add</b> — it drops into the list above.</div>'+
-      '<div style="display:flex;gap:6px">'+
-        '<input id="wo-part-desc" placeholder="Part / material" style="flex:1;min-width:0;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
-        '<input id="wo-part-cost" type="number" inputmode="decimal" placeholder="$" style="width:84px;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
-        '<button onclick="woAddPart('+i+')" style="padding:9px 14px;border:none;border-radius:9px;background:var(--deep);color:#fff;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit">Add</button>'+
+      '<div style="font-size:11px;color:var(--t3);margin:9px 0 4px">Type the part, its cost and (if it has one) the part&rsquo;s own warranty in months, then tap <b>Add</b>.</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+        '<input id="wo-part-desc" placeholder="Part / material" style="flex:1 1 100%;min-width:0;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
+        '<input id="wo-part-cost" type="number" inputmode="decimal" placeholder="$ cost" style="flex:1;min-width:0;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
+        '<input id="wo-part-warr" type="number" inputmode="numeric" placeholder="warr. mths" style="flex:1;min-width:0;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
+        '<button onclick="woAddPart('+i+')" style="padding:9px 16px;border:none;border-radius:9px;background:var(--deep);color:#fff;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit">Add</button>'+
       '</div>'+
       '<div class="sec-h">Labour</div><div class="svc">'+
         '<div class="svc-row"><span>Hours</span><span><input id="wo-labour-hrs" type="number" inputmode="decimal" value="'+(w.labour_hrs||'')+'" oninput="_woCostPreview()" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div>'+
@@ -3086,7 +3129,7 @@ function woRemoveInvoice(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w);
 function woPhotoPick(i){ _woReadForm(WORKORDERS[i]); _woPhotoRef=i; var el=document.getElementById('wo-photo-input'); if(el) el.click(); }
 function woPhotoOnFile(input){ var i=_woPhotoRef, w=(i!=null)?WORKORDERS[i]:null; if(!w){ if(input) input.value=''; return; } var ph=(w.repair_photos||[]).slice(); if(input&&input.files){ for(var k=0;k<input.files.length;k++) ph.push(input.files[k].name); } if(input) input.value=''; w.repair_photos=ph; if(w.status==='Assigned') w.status='In progress'; _saveWO(w); openWO(i); }
 function woRemovePhoto(i, pi){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); (w.repair_photos||[]).splice(pi,1); _saveWO(w); openWO(i); }
-function woAddPart(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); var dEl=document.getElementById('wo-part-desc'), cEl=document.getElementById('wo-part-cost'); var desc=dEl?(dEl.value||'').trim():'', cost=cEl?(parseFloat(cEl.value)||0):0; if(!desc){ if(dEl){ dEl.style.borderColor='#A32D2D'; dEl.focus(); } return; } w.parts=(w.parts||[]).concat([{desc:desc, cost:cost}]); if(w.status==='Assigned') w.status='In progress'; _saveWO(w); openWO(i); }
+function woAddPart(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); var dEl=document.getElementById('wo-part-desc'), cEl=document.getElementById('wo-part-cost'), wEl=document.getElementById('wo-part-warr'); var desc=dEl?(dEl.value||'').trim():'', cost=cEl?(parseFloat(cEl.value)||0):0, warr=wEl?(parseInt(wEl.value,10)||0):0; if(!desc){ if(dEl){ dEl.style.borderColor='#A32D2D'; dEl.focus(); } return; } w.parts=(w.parts||[]).concat([{desc:desc, cost:cost, warranty_months:warr}]); if(w.status==='Assigned') w.status='In progress'; _saveWO(w); openWO(i); }
 function woRemovePart(i, pi){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); (w.parts||[]).splice(pi,1); _saveWO(w); openWO(i); }
 function woSaveDetails(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); if((w.diagnosis||'').trim() && w.status==='Assigned') w.status='In progress'; _saveWO(w); slanMsg('', '<div style="text-align:center"><div style="font-size:38px">💾</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Repair details saved</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px">'+w.wo+' — diagnosis, parts and labour saved.</div></div>', function(){ openWO(i); }); }
 function woComplete(i){
