@@ -314,11 +314,11 @@ var ASSETS=[
     hours:620, service_last:iso(dOffset(-30)), service_due:iso(dOffset(120)), critical_fault:false, spend12mo:1100 },
   { code:'MAG-009', type:'Magni (Rotating Telehandler)', icon:'🏗️', make:'Magni', model:'RTH 6.46', status:'operational',
     required:['telehandler','crane'], voc_required:true, rego_expiry:null, insurance_expiry:iso(dOffset(170)),
-    hours:2980, service_last:iso(dOffset(-35)), service_due:iso(dOffset(75)), critical_fault:false, spend12mo:11800,
+    hours:2980, service_last:iso(dOffset(-35)), service_due:iso(dOffset(14)), critical_fault:false, spend12mo:11800,
     swl:'6,000 kg', lift_note:'Rotating telehandler · 360° slew · lifts on a hook (crane-class). Refer load chart; slewing lifts on the hook need a crane HRWL' },
   { code:'CRN-007', type:'Slewing Crane', icon:'🏗️', make:'Franna', model:'AT-40', status:'operational',
     required:['crane'], voc_required:true, rego_expiry:iso(dOffset(120)), insurance_expiry:iso(dOffset(200)),
-    hours:6820, service_last:iso(dOffset(-25)), service_due:iso(dOffset(80)), critical_fault:false, spend12mo:14250,
+    hours:6820, service_last:iso(dOffset(-25)), service_due:iso(dOffset(-6)), critical_fault:false, spend12mo:14250,
     swl:'40 t', lift_note:'SWL 40 t @ min radius · De-rates with radius — refer load chart on hook' },
   { code:'GEN-016', type:'Generator', icon:'⚡', make:'Atlas Copco', model:'QAS 60', status:'operational',
     required:[], voc_required:false, rego_expiry:null, insurance_expiry:iso(dOffset(190)),
@@ -614,7 +614,7 @@ var SERVICE_METER={
   'MAG-009':{meter:'hrs',due:3200}, 'CRN-007':{meter:'hrs',due:7000},
   'GEN-016':{meter:'hrs',due:750}, 'CRN-011':{meter:'hrs',due:4500},
   'TLH-012':{meter:'hrs',due:2500}, 'LT-014':{meter:'hrs',due:600},
-  'EWP-018':{meter:'hrs',due:900}, 'EWP-019':{meter:'hrs',due:1500},
+  'EWP-018':{meter:'hrs',due:770}, 'EWP-019':{meter:'hrs',due:1500},
   'BUS-021':{meter:'km',due:95000}, 'UTE-022':{meter:'km',due:50000}
 };
 function svcMeter(a){
@@ -2345,7 +2345,9 @@ function plantComplianceBody(fleet){
   var sched=fleet.slice().sort(function(a,b){return new Date(a.service_due)-new Date(b.service_due);}).map(function(a){
     var sm=svcMeter(a),over=_expired(a.service_due);
     var meterTxt=sm?(sm.toGo<0?('Overdue '+Math.abs(sm.toGo).toLocaleString()+' '+sm.meter):('In '+sm.toGo.toLocaleString()+' '+sm.meter)):'—';
-    return '<tr onclick="openHub('+ASSETS.indexOf(a)+')"><td><b>'+a.code+'</b> <span style="color:var(--t3)">'+a.make+' '+a.model+'</span></td><td>'+assetSite(a.code)+'</td><td style="'+(over?'color:var(--fail);font-weight:700':'')+'">'+fmtShort(a.service_due)+(over?' · OVERDUE':'')+'</td><td>'+meterTxt+'</td></tr>';
+    var st=_svcStatus(a);
+    var statusCell = !st ? '<span style="color:var(--t3)">— supplier</span>' : (st.booked ? '<span style="color:#B8960C;font-weight:700">Booked '+fmtShort(st.bookedDate)+'</span>' : (st.state==='overdue'?'<span style="color:#A32D2D;font-weight:700">Overdue</span>':(st.state==='due_soon'?'<span style="color:#A06000;font-weight:700">Due soon</span>':'<span style="color:#1B6E3A;font-weight:700">OK</span>')));
+    return '<tr onclick="openHub('+ASSETS.indexOf(a)+')"><td><b>'+a.code+'</b> <span style="color:var(--t3)">'+a.make+' '+a.model+'</span></td><td>'+assetSite(a.code)+'</td><td style="'+(over?'color:var(--fail);font-weight:700':'')+'">'+fmtShort(a.service_due)+(over?' · OVERDUE':'')+'</td><td>'+meterTxt+'</td><td>'+statusCell+'</td></tr>';
   }).join('');
   var docs=fleet.map(function(a){
     var dt=plantDetails(a.code);
@@ -2368,7 +2370,7 @@ function plantComplianceBody(fleet){
     var cells=lic.map(function(c){ var t=(w.tickets||[]).find(function(x){return x.cls===c;}); if(!t) return '<td style="text-align:center;color:#D0D0D0">—</td>'; var exp=_expired(t.expiry); var soon=!exp && daysBetween(t.expiry,today)<=30; return '<td style="text-align:center;color:'+(exp?'#A32D2D':(soon?'#A06000':'#1B6E3A'))+';font-weight:700">'+(exp?'✕':'✓')+'</td>'; }).join('');
     return '<tr><td><b>'+w.name+'</b> <span style="color:var(--t3)">'+w.trade+'</span></td>'+cells+'</tr>';
   }).join('');
-  return '<div class="fcard"><div class="fcard-hdr">📅 Service schedule</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Machine</th><th>Site</th><th>Next service</th><th>Interval</th>',sched)+'</div></div>'+
+  return '<div class="fcard"><div class="fcard-hdr">📅 Service schedule</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Machine</th><th>Site</th><th>Next service</th><th>Interval</th><th>Status</th>',sched)+'</div></div>'+
     '<div class="fcard"><div class="fcard-hdr">📄 Certificate register — rego, insurance &amp; inspections</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Machine</th><th>Rego</th><th>Rego exp</th><th>Insurer</th><th>Insurance exp</th><th>Inspection</th><th>Status</th>',docs)+'</div></div>'+
     '<div class="fcard"><div class="fcard-hdr">⏳ Expiry forecast — next 90 days</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Item</th><th>What</th><th>Date</th><th>Status</th>',fcRows)+'</div></div>'+
     '<div class="fcard"><div class="fcard-hdr">🎫 Operator competency matrix</div><div class="fcard-body" style="padding:8px">'+tbl('<th>Operator</th>'+mhead,mrows)+'<div style="font-size:10.5px;color:var(--t3);padding:8px 4px 0">✓ current · <span style="color:#A06000">✓ expiring</span> · <span style="color:#A32D2D">✕ expired</span> · — not held</div></div></div>'+
@@ -2641,6 +2643,7 @@ function renderOversight(){
       apprCard+
       '<div class="fcard" style="border-top-color:#A32D2D"><div style="padding:14px 15px;background:#FCE9E9"><div style="font-size:11px;font-weight:700;color:#A32D2D;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🔒 Due-diligence — operations blocked</div><div style="font-size:12.5px;color:#5E1A1A;line-height:1.5"><b>'+blocked+'</b> attempt'+(blocked===1?'':'s')+' this month to operate a machine without the required licence/ticket '+(blocked===1?'was':'were')+' <b>stopped at the gate</b> before work began.</div></div></div>'+
       '<div class="fcard"><div class="fcard-hdr">⚠ Needs Action ('+need.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+attHtml+'</div></div>'+
+      plantServicesDueCard(fleet)+
       '<div class="fcard"><div class="fcard-hdr">📋 Recent pre-starts ('+savedRecs.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+recFeed+'</div></div>'+
       '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend-hero"><div class="s-l">Last 12 months</div><div class="s-v">'+money(spend12)+'</div><div class="s-tr">▼ 8% vs prior year</div></div><div class="spend-mini"><div class="s-l">Last 6 months</div><div class="s-v">'+money(Math.round(spend12*0.45))+'</div></div></div></div>'+
       plantHireMoneyPanel(fleet.filter(function(a){ return isHired(a.code); }))+
@@ -3073,6 +3076,36 @@ function plantBookServiceSubmit(code){
   slanMsg('', '<div style="text-align:center"><div style="font-size:40px">🗓️</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Service booked</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.5">'+a.code+' — '+noteStr+'booked with '+m.name+' for '+fmt(date)+'.</div></div>');
 }
 function plantCancelService(code){ var a=ASSETS.find(function(x){return x.code===code;}); _svcClear(code); if(a) openHub(ASSETS.indexOf(a)); }
+/* service status — combines the due date AND the meter (hrs/km), plus any booking */
+function _svcStatus(a){
+  if(typeof isHired==='function' && isHired(a.code)) return null; // hired plant is serviced by the supplier
+  var s=_svcState(a.code);
+  if(s && s.status==='done') return { state:'done', booked:false };
+  var today=new Date();
+  var dDays = a.service_due ? daysBetween(a.service_due, today) : null; // + days until, - overdue
+  var sm = svcMeter(a);
+  var over = (a.service_due && _expired(a.service_due)) || (sm && sm.toGo<0);
+  var soon = (dDays!=null && dDays>=0 && dDays<=30) || svcSoon(sm);
+  var booked = !!(s && s.status==='booked');
+  return { state: over?'overdue':(soon?'due_soon':'ok'), booked:booked, bookedDate:booked?s.booked_date:null, workshop:booked?s.workshop:null, dDays:dDays, sm:sm };
+}
+function _svcDueText(st){
+  var bits=[];
+  if(st.dDays!=null){ bits.push(st.dDays<0?('overdue '+Math.abs(st.dDays)+'d'):('in '+st.dDays+'d')); }
+  if(st.sm){ bits.push(st.sm.toGo<0?('overdue '+Math.abs(st.sm.toGo).toLocaleString()+' '+st.sm.meter):(st.sm.toGo.toLocaleString()+' '+st.sm.meter+' to go')); }
+  return bits.join(' · ');
+}
+/* dashboard notification — machines whose service is due/overdue (needs booking) + ones already booked */
+function plantServicesDueCard(fleet){
+  var needs=[], booked=[];
+  fleet.forEach(function(a){ var st=_svcStatus(a); if(!st) return; if(st.booked){ booked.push({a:a,st:st}); } else if(st.state==='overdue'||st.state==='due_soon'){ needs.push({a:a,st:st}); } });
+  if(!needs.length && !booked.length) return '';
+  needs.sort(function(x,y){ return (x.st.state==='overdue'?0:1)-(y.st.state==='overdue'?0:1); });
+  var needRows=needs.map(function(n){ var col=n.st.state==='overdue'?'#A32D2D':'#A06000'; return '<button class="row" onclick="openHub('+ASSETS.indexOf(n.a)+')"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+n.a.code+' · '+n.a.make+' '+n.a.model+'</div><div class="row-s" style="color:'+col+';font-weight:700">'+(n.st.state==='overdue'?'Service overdue':'Service due soon')+' · '+_svcDueText(n.st)+'</div></div><div class="row-s" style="flex-shrink:0;color:var(--gold);font-weight:700">Book ›</div></button>'; }).join('');
+  var bookedRows=booked.map(function(b){ return '<button class="row" onclick="openHub('+ASSETS.indexOf(b.a)+')"><div class="row-ic"><span class="dot" style="background:#1B6E3A"></span></div><div class="row-main"><div class="row-t">'+b.a.code+' · '+b.a.make+' '+b.a.model+'</div><div class="row-s">Booked '+fmtShort(b.st.bookedDate)+' · '+b.st.workshop+'</div></div><div class="chev">›</div></button>'; }).join('');
+  var hot=needs.length>0;
+  return '<div class="fcard"'+(hot?' style="border-top-color:#A06000"':'')+'><div class="fcard-hdr"'+(hot?' style="background:linear-gradient(135deg,#8A5A00,#A06000)"':'')+'>🗓️ Services due ('+needs.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+needRows+bookedRows+'</div></div>';
+}
 var QR_SIZE='M'; var QR_ONE=null;
 function _qrPx(){ return QR_SIZE==='S'?105:(QR_SIZE==='L'?300:175); }
 function _qrCols(){ return QR_SIZE==='S'?3:(QR_SIZE==='L'?1:2); }
