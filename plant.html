@@ -948,14 +948,7 @@ function openHub(i){
         }
         if(st && (st.state==='overdue'||st.state==='due_soon')) return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>';
         return ''; })() : '')+
-    ((getRole()!=='worker' && !isHired(a.code)) ? (function(){
-        var done=WORKORDERS.filter(function(w){ return w.code===a.code && w.status==='Returned to service'; });
-        var repRows=done.length?done.map(function(w){ var when=(w.signoff&&w.signoff.when)?fmtShort(w.signoff.when):(w.repair_date?fmtShort(w.repair_date):''); var c=w.warranty_claim?'$0 · warranty':money(_woClientCost(w)); return '<div class="svc-row"><span>'+w.wo+' · '+_premobEsc((w.fault||'').slice(0,38))+(when?(' · '+when):'')+'</span><span>'+c+'</span></div>'; }).join(''):'<div class="svc-row" style="color:var(--t3)"><span>No completed repairs yet</span><span></span></div>';
-        var svc=_svcState(a.code); var svcRow=(svc&&svc.status==='done')?('<div class="svc-row"><span>Service · '+(svc.workshop||'')+(svc.completed_date?(' · '+fmtShort(svc.completed_date)):'')+'</span><span>'+money(_svcCost(svc))+'</span></div>'):'';
-        return '<div class="sec-h">Maintenance &amp; costs</div><div class="svc">'+
-          '<div class="svc-row"><span><b>Total spend (12 mo)</b></span><span style="font-weight:800">'+money(assetSpend12(a))+'</span></div>'+
-          repRows+svcRow+
-        '</div>'; })() : '')+
+    ((getRole()!=='worker' && !isHired(a.code)) ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineSpend(\''+a.code+'\',\'hub\')">💲  Maintenance &amp; costs ('+money(assetSpend12(a))+') — tap to break down</button>' : '')+
     ((getRole()!=='worker') ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineHistory(\''+a.code+'\')">📜  Machine history ('+_machineTimeline(a.code).length+')</button><button class="btn-ghost" style="margin-top:8px" onclick="renderPartsLedger(\''+a.code+'\')">🔩  Parts fitted ('+_partsHistory(a.code).length+')</button>' : '')+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
@@ -3016,9 +3009,10 @@ function renderMechSpend(){
   showDetail(html);
 }
 /* one machine's spend, opened from the spend list — itemised into the repairs/services/prior spend that make up the total */
-function renderMachineSpend(code){
+function renderMachineSpend(code, from){
   if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a){ renderMechSpend(); return; }
+  var idx=ASSETS.indexOf(a);
   var sp=assetSpend12(a);
   var done=WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; });
   var items=done.map(function(w){ var wi=WORKORDERS.indexOf(w); var c=w.warranty_claim?'$0 · warranty':money(_woClientCost(w)); var when=(w.signoff&&w.signoff.when)?fmtShort(w.signoff.when):(w.repair_date?fmtShort(w.repair_date):''); var inv=w.invoice_doc?' 📄':''; return '<div class="svc-row" onclick="openWO('+wi+')" style="cursor:pointer"><span>🔧 '+w.wo+' · '+_premobEsc((w.fault||'').slice(0,30))+(when?(' · '+when):'')+inv+' <span style="color:var(--gold)">›</span></span><span>'+c+'</span></div>'; });
@@ -3027,7 +3021,7 @@ function renderMachineSpend(code){
   var body=items.length?items.join(''):'<div class="svc-row" style="color:var(--t3)"><span>No recorded spend</span><span></span></div>';
   setHeader('Maintenance spend', code+' · '+a.make+' '+a.model);
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="renderMechSpend()">‹ All machines</button>'+
+    '<button class="back" onclick="'+(from==='hub'?('openHub('+idx+')'):'renderMechSpend()')+'">‹ '+(from==='hub'?'Back to machine':'All machines')+'</button>'+
     '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">'+code+' — spend</div><div class="hub-mm">'+a.make+' '+a.model+' · last 12 months</div></div></div>'+
     '<div class="svc" style="margin-bottom:12px"><div class="svc-row"><span><b>Total (12 mo)</b></span><span style="font-weight:800;font-size:15px">'+money(sp)+'</span></div></div>'+
     '<div class="sec-h">What makes it up</div><div class="svc">'+body+'</div>'+
