@@ -1722,6 +1722,7 @@ var MECHANICS=[
   { name:'OnSite Plant Repairs', type:'Mobile mechanic',    rate:165, inhouse:false }
 ];
 var WO_DECLARATION = "I certify that this repair has been carried out in accordance with the manufacturer's specifications and applicable Australian standards, that all parts and materials used are fit for purpose, that the plant has been function-tested following the repair, and that it is mechanically sound and safe to be returned to service.";
+var SVC_DECLARATION = "I certify that this service has been carried out in accordance with the manufacturer's specifications and applicable Australian standards, that all parts and materials used are fit for purpose, that the plant has been function-tested following the service, and that it is mechanically sound and safe to be returned to service.";
 var _woCur=null;               // index of the WO currently open (for the live cost preview)
 var _asMechWO=null;            // wo id currently being completed "as the mechanic" (demo hand-off; null = supervisor/director view)
 var _woPhotoRef=null;          // wo id awaiting a repair photo / invoice file pick
@@ -3133,7 +3134,7 @@ function plantCompleteService(code){
   var costSec = ext
     ? '<div class="sec-h">Cost</div><div class="svc"><div class="svc-row"><span>Service cost (per invoice)</span><span>$ <input id="svc-extcost" type="number" inputmode="decimal" value="'+(s.cost||'')+'" placeholder="0" style="width:90px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div><div class="sec-h">Workshop invoice / report</div>'+invRow
     : '<div class="sec-h">Parts &amp; materials</div><div class="svc"><div class="svc-row"><span>Parts cost</span><span>$ <input id="svc-parts" type="number" inputmode="decimal" value="'+(s.parts_cost||'')+'" placeholder="0" style="width:90px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div><div class="sec-h">Labour</div><div class="svc"><div class="svc-row"><span>Hours</span><span><input id="svc-lhrs" type="number" inputmode="decimal" value="'+(s.labour_hrs||'')+'" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div><div class="svc-row"><span>Rate ($/hr)</span><span><input id="svc-lrate" type="number" inputmode="decimal" value="'+(s.labour_rate||(s.mech_inhouse?95:140))+'" placeholder="0" style="width:80px;padding:6px 8px;border:1.5px solid #D8D8D8;border-radius:8px;font-family:inherit;font-size:12.5px;text-align:right"></span></div></div>';
-  var declRow = ext ? '' : '<div class="sec-h">Return-to-service declaration</div><label style="display:flex;align-items:flex-start;gap:9px;font-size:12px;font-weight:600;color:var(--deep);cursor:pointer;line-height:1.5;background:#F4F8F5;border:1px solid #D7E5DC;border-radius:10px;padding:12px 13px"><input type="checkbox" id="svc-declare" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:#2D6A45"> '+WO_DECLARATION+'</label>';
+  var declRow = ext ? '' : '<div class="sec-h">Return-to-service declaration</div><label style="display:flex;align-items:flex-start;gap:9px;font-size:12px;font-weight:600;color:var(--deep);cursor:pointer;line-height:1.5;background:#F4F8F5;border:1px solid #D7E5DC;border-radius:10px;padding:12px 13px"><input type="checkbox" id="svc-declare" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:#2D6A45"> '+SVC_DECLARATION+'</label>';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="openHub('+idx+')">‹ Back to machine</button>'+
     '<div class="hub-head"><div class="hub-ic">🔧</div><div style="flex:1"><div class="hub-code">Complete service</div><div class="hub-mm">'+a.code+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+(s.note||'Service')+' · '+(s.workshop||'')+'</div></div></div>'+
@@ -3188,7 +3189,7 @@ function plantViewServiceRecord(code){
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="'+(idx>=0?('openHub('+idx+')'):'showList()')+'">‹ Back to machine</button>'+
     '<div class="hub-head"><div class="hub-ic">🔧</div><div style="flex:1"><div class="hub-code">Service record</div><div class="hub-mm">'+code+' · '+(a?a.make+' '+a.model:'')+'</div></div></div>'+
-    '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:12px;padding:14px 15px;margin:14px 0;font-size:12.5px;color:#1B5E3F">✅ Serviced '+when+(s.workshop?(' · '+s.workshop):'')+(ext?' (external — see attached invoice)':'')+(s.declared?'<div style="font-size:11.5px;font-style:italic;color:#33433C;margin-top:8px">&ldquo;'+WO_DECLARATION+'&rdquo;</div>':'')+'</div>'+
+    '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:12px;padding:14px 15px;margin:14px 0;font-size:12.5px;color:#1B5E3F">✅ Serviced '+when+(s.workshop?(' · '+s.workshop):'')+(ext?' (external — see attached invoice)':'')+(s.declared?'<div style="font-size:11.5px;font-style:italic;color:#33433C;margin-top:8px">&ldquo;'+SVC_DECLARATION+'&rdquo;</div>':'')+'</div>'+
     '<div class="sec-h">Work carried out</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-s" style="white-space:pre-wrap">'+(_premobEsc(s.work_done||'')||'—')+'</div></div></div></div>'+
     (s.invoice_doc?'<div class="sec-h">Workshop invoice / report</div><div class="tile"><div class="row" style="cursor:default"><div class="row-ic">📄</div><div class="row-main"><div class="row-t" style="word-break:break-all">'+_premobEsc(s.invoice_doc)+'</div></div></div></div>':'')+
     '<div class="svc" style="margin-top:10px">'+
@@ -3197,9 +3198,55 @@ function plantViewServiceRecord(code){
       costRows+
       '<div class="svc-row"><span>Next service due</span><span>'+(s.next_due?fmt(s.next_due):'—')+'</span></div>'+
     '</div>'+
+    '<button class="cta" style="margin-top:16px" onclick="plantViewServiceRecordPDF(\''+code+'\')">📄  View / download service record (PDF)</button>'+
   '</div>';
   showDetail(html);
 }
+/* §4 — Service Record PDF (SLS-REG-018), garage-style, mirrors the repair record */
+function plantServiceRecordPDF(code){
+  var doc=new window.jspdf.jsPDF('p','mm','a4');
+  var s=_svcState(code)||{}; var a=ASSETS.find(function(x){return x.code===code;})||{};
+  var W=210, M=14, GOLD=[184,150,12], GREEN=[44,107,94]; var y=16;
+  var dt=(typeof plantDetails==='function')?(plantDetails(code)||{}):{}; var ext=(s.mech_inhouse===false); var sm=svcMeter(a);
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Plant Service Record', M, y);
+  if(SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, 3, 34, 14); }catch(e){} }
+  y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=8;
+  doc.setFontSize(9);
+  function kv(k,v){ doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.text(k, M, y); doc.setFont('helvetica','normal'); doc.setTextColor(35,35,35); doc.text(String(v), M+42, y); y+=5.6; }
+  function bar(t){ if(y>272){doc.addPage();y=16;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=10.5; doc.setTextColor(40,40,40); doc.setFont('helvetica','normal'); }
+  function para(t){ doc.setFontSize(8.8); doc.setTextColor(40,40,40); var lines=doc.splitTextToSize(String(t), W-2*M); if(y+4.8*lines.length>284){doc.addPage();y=16;} doc.text(lines, M, y); y+=4.8*lines.length+2; }
+  function costRow(k,v,bold){ doc.setFont('helvetica',bold?'bold':'normal'); doc.setTextColor(40,40,40); doc.text(k,M,y); doc.text(v,W-M,y,{align:'right'}); doc.setFont('helvetica','normal'); y+=5.4; }
+  kv('Machine:', code+(a.make?(' · '+a.make+' '+a.model):''));
+  kv('Type / site:', (a.type||'—')+' · '+((typeof assetSite==='function')?assetSite(code):'—'));
+  kv('Serial / VIN:', dt.vin||'—');
+  if(dt.rego){ kv('Registration:', dt.rego+(dt.rego_state?(' · '+dt.rego_state):'')); }
+  kv('Service date:', s.completed_date?fmt(s.completed_date):'—');
+  if(s.note){ kv('Service type:', s.note); }
+  kv(ext?'External workshop:':'Mechanic / workshop:', s.workshop||'—');
+  kv('Meter at service:', (s.meter_reading!=null)?(Number(s.meter_reading).toLocaleString()+' '+(sm?sm.meter:'hrs')):'—');
+  kv('Next service due:', s.next_due?fmt(s.next_due):'—');
+  y+=2;
+  bar('Work carried out'); para(s.work_done||'—');
+  bar('Cost summary'); doc.setFontSize(8.8);
+  if(ext){ costRow('Service cost (per workshop invoice)', money(_svcCost(s)), true); if(s.invoice_doc){ doc.setFontSize(8.2); doc.setTextColor(90,90,90); var iv=doc.splitTextToSize('Workshop invoice / report on file: '+s.invoice_doc, W-2*M); doc.text(iv,M,y); y+=4.4*iv.length+1; } }
+  else { costRow('Parts', money(s.parts_cost||0)); costRow('Labour', (s.labour_hrs||0)+' hr  x  '+money(s.labour_rate||0)); costRow('Total service cost', money(_svcCost(s)), true); }
+  y+=2;
+  if(ext){
+    var ctext='This service was carried out by an external workshop ('+(s.workshop||'—')+') and is certified by the workshop’s own invoice/report'+(s.invoice_doc?(' (on file: '+s.invoice_doc+')'):'')+'. Logged in Slán'+(s.completed_date?(' on '+fmt(s.completed_date)):'')+' to confirm the scheduled service was completed.';
+    doc.setFontSize(8.8); var cl=doc.splitTextToSize(ctext, W-2*M); if(y+10.5+4.8*cl.length+4>286){doc.addPage();y=16;}
+    bar('Certification'); doc.setFontSize(8.8); doc.setTextColor(40,40,40); doc.text(cl,M,y); y+=4.8*cl.length+2;
+  } else {
+    doc.setFontSize(8.8); var dl=doc.splitTextToSize(SVC_DECLARATION, W-2*M); var bh=10.5+4.8*dl.length+14+7+10; if(y+bh>286){doc.addPage();y=16;}
+    bar('Return to service — declaration & sign-off'); doc.setFontSize(8.8); doc.setTextColor(40,40,40); doc.text(dl,M,y); y+=4.8*dl.length+12;
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('MECHANIC SIGNATURE', M, y); y+=7;
+    doc.setFont('times','italic'); doc.setFontSize(20); doc.setTextColor(27,58,45); doc.text(s.workshop||'', M, y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,120,120); doc.text('Signed by the attending mechanic'+(s.completed_date?(' · '+fmt(s.completed_date)):''), M, y);
+  }
+  var pages=doc.internal.getNumberOfPages();
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-018 · Plant Service Record · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
+  return doc;
+}
+function plantViewServiceRecordPDF(code){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } var s=_svcState(code); if(!s||s.status!=='done') return; openPdfDoc(plantServiceRecordPDF(code), 'Service-'+code+'.pdf'); }
 var QR_SIZE='M'; var QR_ONE=null;
 function _qrPx(){ return QR_SIZE==='S'?105:(QR_SIZE==='L'?300:175); }
 function _qrCols(){ return QR_SIZE==='S'?3:(QR_SIZE==='L'?1:2); }
