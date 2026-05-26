@@ -955,7 +955,8 @@ function openHub(i){
       '<div class="svc-row"><span>Next due</span><span style="color:'+(svcOverdue?'var(--fail)':'var(--pass)')+'">'+fmt(a.service_due)+(svcOverdue?' · OVERDUE':'')+'</span></div>'+
       svcMeterRow+
       '<div class="svc-row"><span>Hours</span><span>'+(a.hours?a.hours.toLocaleString()+' hrs':'—')+'</span></div>'+
-      (function(){ var s=_svcState(a.code); if(s&&s.status==='booked'){ return '<div class="svc-row"><span>Service booked</span><span style="color:var(--gold);font-weight:700">'+fmt(s.booked_date)+' · '+s.workshop+(s.note?(' · '+_premobEsc(s.note)):'')+'</span></div>'; } if(s&&s.status==='done'){ return '<div class="svc-row"><span>Last serviced</span><span style="color:var(--pass);font-weight:700">'+fmt(s.completed_date)+(s.workshop?(' · '+s.workshop):'')+'</span></div>'; } return ''; })()+
+      (function(){ var s=_svcState(a.code); if(s&&s.status==='booked'){ return '<div class="svc-row"><span>Service booked</span><span style="color:var(--gold);font-weight:700">'+fmt(s.booked_date)+' · '+s.workshop+(s.note?(' · '+_premobEsc(s.note)):'')+'</span></div>'; } if(s&&s.status==='done'){ var ot=_svcOnTime(s); var timing=ot?(ot.late?'<span style="color:#A06000;font-weight:700">'+ot.days+' day'+(ot.days===1?'':'s')+' late</span>':'<span style="color:#1B6E3A;font-weight:700">On time</span>'):''; return '<div class="svc-row"><span>Last serviced</span><span style="color:var(--pass);font-weight:700">'+fmt(s.completed_date)+(s.workshop?(' · '+s.workshop):'')+'</span></div>'+(timing?'<div class="svc-row"><span>Service timing</span><span>'+timing+'</span></div>':''); } return ''; })()+
+      ((getRole()!=='worker' && !isHired(a.code)) ? '<div class="svc-row"><span>Out of service (12 mo)</span><span>'+_machineDowntime(a.code)+' day'+(_machineDowntime(a.code)===1?'':'s')+' · '+_machineAvail(a.code)+'% available</span></div>' : '')+
     '</div>'+
     ((getRole()!=='worker' && !isHired(a.code)) ? (function(){ var s=_svcState(a.code), st=_svcStatus(a);
         if(s&&s.status==='done') return '<button class="btn-ghost" style="margin-top:8px" onclick="plantViewServiceRecord(\''+a.code+'\')">📄  View service record</button>';
@@ -1545,7 +1546,7 @@ function _recOutcome(rec){
   return {label:(rec.faults>1?(rec.faults+' minor issues'):'Minor issue noted')+' — still usable', col:'var(--gold)'};
 }
 /* ---------- DEMO SEED: realistic filled pre-starts across the fleet (Eoin Burke / Bondi Junction demo) ---------- */
-var DEMO_SEED_VERSION='eoin-v11';
+var DEMO_SEED_VERSION='eoin-v12';
 var DEMO_DAYS=5; // seed a pre-start for each of the last 5 days, per machine
 /* per-machine demo script: ops rotate across days; faultDays = which daysAgo the issue shows (re-flagged each day so it 'carries on'); the WO is raised on the earliest fault day */
 var DEMO_FLEET=[
@@ -1608,8 +1609,8 @@ function seedDemoPlant(){
       }
     });
     // two finished repairs so the Completed tab is never empty in a demo — one IN-HOUSE (Dave Wilkins, signed declaration, feeds spend) + one EXTERNAL (Toyota dealer, warranty $0, no declaration)
-    _saveWO({ wo:'WO-2026-0033', code:'CRN-007', machine:'Franna AT-40', fault:'Slew brake drifting + hydraulic return filter due', priority:'Medium', status:'Returned to service', raised:'2 weeks ago · scheduled service', mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, diagnosis:'Slew brake adjusted and the hydraulic return filter replaced during the scheduled service. Function and load test completed — safe to return to service.', parts:[{desc:'Hydraulic return filter', cost:145, warranty_months:12},{desc:'Slew brake shim kit', cost:90, warranty_months:0}], labour_hrs:4, labour_rate:95, warranty_claim:false, invoice_doc:'', repair_date:iso(dOffset(-12)), declared:true, repair_photos:['repair-brake-adjustment.jpg','repair-filter-replaced.jpg'], signoff:{by:'Dave Wilkins', when:new Date(Date.now()-12*86400000).toISOString(), external:false} });
-    _saveWO({ wo:'WO-2026-0031', code:'UTE-022', machine:'Toyota Hilux SR 4x4', fault:'Engine warning light — fault code on the dash', priority:'Low', status:'Returned to service', raised:'3 weeks ago · Anthony Walsh', mechanic:'Sydney City Toyota', mech_type:'Toyota dealer (warranty)', mech_inhouse:false, diagnosis:'Vehicle sent to the Toyota dealer under the 5-year new-vehicle warranty. Faulty fuel injector diagnosed and replaced, codes cleared, road tested. No charge to the company — see the dealer’s report.', external_cost:760, warranty_claim:true, invoice_doc:'Toyota warranty repair report.pdf', repair_date:iso(dOffset(-20)), repair_photos:[], signoff:{by:'Sydney City Toyota', when:new Date(Date.now()-20*86400000).toISOString(), external:true} });
+    _saveWO({ wo:'WO-2026-0033', code:'CRN-007', machine:'Franna AT-40', fault:'Slew brake drifting + hydraulic return filter due', priority:'Medium', status:'Returned to service', raised:'2 weeks ago · scheduled service', mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, diagnosis:'Slew brake adjusted and the hydraulic return filter replaced during the scheduled service. Function and load test completed — safe to return to service.', parts:[{desc:'Hydraulic return filter', cost:145, warranty_months:12},{desc:'Slew brake shim kit', cost:90, warranty_months:0}], labour_hrs:4, labour_rate:95, warranty_claim:false, invoice_doc:'', repair_date:iso(dOffset(-12)), declared:true, down_days:1, repair_photos:['repair-brake-adjustment.jpg','repair-filter-replaced.jpg'], signoff:{by:'Dave Wilkins', when:new Date(Date.now()-12*86400000).toISOString(), external:false} });
+    _saveWO({ wo:'WO-2026-0031', code:'UTE-022', machine:'Toyota Hilux SR 4x4', fault:'Engine warning light — fault code on the dash', priority:'Low', status:'Returned to service', raised:'3 weeks ago · Anthony Walsh', mechanic:'Sydney City Toyota', mech_type:'Toyota dealer (warranty)', mech_inhouse:false, diagnosis:'Vehicle sent to the Toyota dealer under the 5-year new-vehicle warranty. Faulty fuel injector diagnosed and replaced, codes cleared, road tested. No charge to the company — see the dealer’s report.', external_cost:760, warranty_claim:true, invoice_doc:'Toyota warranty repair report.pdf', repair_date:iso(dOffset(-20)), down_days:3, repair_photos:[], signoff:{by:'Sydney City Toyota', when:new Date(Date.now()-20*86400000).toISOString(), external:true} });
     // one OPEN in-house repair assigned to the mechanic (Dave Wilkins) so his "My jobs" portal has a repair to complete (Bondi → shows for Eoin too)
     _saveWO({ wo:'WO-2026-0040', code:'LT-013', machine:'Allight ML20 Lighting Tower', fault:'One mast light not striking + RCD trips on start-up — flagged on a pre-start', priority:'Medium', status:'Assigned', raised:'yesterday · Jake Ryan', raised_at:iso(dOffset(-1)), mechanic:'Dave Wilkins', mech_type:'In-house mechanic', mech_inhouse:true, labour_rate:95 });
     // an OVERDUE repair (open 9 days, assigned to Dave, waiting for parts) — shows the red "open too long" aging + lets the mechanic put it on hold
@@ -1628,6 +1629,7 @@ function seedDemoPlant(){
       var mName=o.mech, mType=mech?mech.type:(o.mech_type||'External workshop'), mIn=mech?mech.inhouse:false;
       var whenIso=iso(dOffset(-o.ago)), whenTs=new Date(Date.now()-o.ago*86400000).toISOString();
       var w={ wo:o.wo, code:o.code, machine:a.make+' '+a.model, fault:o.fault, priority:o.priority||'Medium',
+        down_days:o.down||0,
         status:'Returned to service', raised:_seedAgoTxt(o.ago,o.by), raised_at:whenIso,
         mechanic:mName, mech_type:mType, mech_inhouse:mIn, diagnosis:o.diagnosis,
         warranty_claim:!!o.warranty, repair_date:whenIso, repair_photos:o.photos||[],
@@ -1644,6 +1646,7 @@ function seedDemoPlant(){
       var sm=SERVICE_METER[o.code], meter=(o.meter!=null)?o.meter:(sm&&sm.meter==='km'?(plantDetails(o.code).km||0):(a.hours||0));
       var patch={ status:'done', workshop:mName, mech_type:mType, mech_inhouse:mIn, note:o.note,
         work_done:o.work, completed_date:doneIso, next_due:nextIso, meter_reading:meter,
+        due_at:(o.due!=null?iso(dOffset(-o.due)):null),
         signoff:{ by:mName, when:whenTs, external:!mIn } };
       if(mIn){ patch.parts_cost=o.parts_cost||0; patch.labour_hrs=o.lhrs||0; patch.labour_rate=95; patch.declared=true; }
       else { patch.cost=o.cost||0; patch.invoice_doc=o.inv||''; }
@@ -1652,38 +1655,38 @@ function seedDemoPlant(){
     }
     [
       // TLH-012 · JCB 540-170 telehandler (out of warranty)
-      { wo:'WO-2025-0312', code:'TLH-012', ago:248, mech:'FleetServ Mechanical', by:'Daniel Byrne', fault:'Hydraulic hose burst on the boom extend ram', cost:840, inv:'FleetServ invoice INV-20418.pdf', photos:['hose-failure-before.jpg','hose-replaced.jpg'], diagnosis:'Boom extend hose failed at the swaged fitting. Replaced the hose and fittings, bled the hydraulics and function-tested the boom under load. No further leaks.' },
-      { wo:'WO-2025-0356', code:'TLH-012', ago:150, mech:'Dave Wilkins', by:'Kevin Ryan', fault:'Park brake not holding on a slope', parts:[{desc:'Park brake caliper',cost:310,warranty_months:12}], lhrs:2.5, diagnosis:'Park brake caliper seized. Replaced the caliper, adjusted and confirmed the park brake holds on a graded surface.' },
-      { wo:'WO-2026-0008', code:'TLH-012', ago:60, mech:'Dave Wilkins', by:'Kevin Ryan', fault:'Excessive boom play — wear pads worn', parts:[{desc:'Boom wear pad kit',cost:265,warranty_months:0}], lhrs:4, diagnosis:'Boom wear pads worn beyond limit causing play. Fitted a new wear pad kit, shimmed and greased the boom, rechecked play within spec.' },
+      { wo:'WO-2025-0312', code:'TLH-012', ago:248, down:2, mech:'FleetServ Mechanical', by:'Daniel Byrne', fault:'Hydraulic hose burst on the boom extend ram', cost:840, inv:'FleetServ invoice INV-20418.pdf', photos:['hose-failure-before.jpg','hose-replaced.jpg'], diagnosis:'Boom extend hose failed at the swaged fitting. Replaced the hose and fittings, bled the hydraulics and function-tested the boom under load. No further leaks.' },
+      { wo:'WO-2025-0356', code:'TLH-012', ago:150, down:1, mech:'Dave Wilkins', by:'Kevin Ryan', fault:'Park brake not holding on a slope', parts:[{desc:'Park brake caliper',cost:310,warranty_months:12}], lhrs:2.5, diagnosis:'Park brake caliper seized. Replaced the caliper, adjusted and confirmed the park brake holds on a graded surface.' },
+      { wo:'WO-2026-0008', code:'TLH-012', ago:60, down:1, mech:'Dave Wilkins', by:'Kevin Ryan', fault:'Excessive boom play — wear pads worn', parts:[{desc:'Boom wear pad kit',cost:265,warranty_months:0}], lhrs:4, diagnosis:'Boom wear pads worn beyond limit causing play. Fitted a new wear pad kit, shimmed and greased the boom, rechecked play within spec.' },
       // GEN-016 · Atlas Copco QAS 60 generator (in warranty)
-      { wo:'WO-2025-0341', code:'GEN-016', ago:190, mech:'Atlas Copco Service', mech_type:'Atlas Copco (warranty)', by:'Anthony Walsh', warranty:true, cost:1180, inv:'Atlas Copco warranty report.pdf', fault:'Coolant leak at the water pump', diagnosis:'Water pump weeping at the gasket. Replaced under the Atlas Copco factory warranty at no charge to the company. Pressure-tested the cooling system — no leaks.' },
-      { wo:'WO-2026-0011', code:'GEN-016', ago:35, mech:'Dave Wilkins', by:'Kevin Ryan', fault:'Hard starting — fuel filter blocked', parts:[{desc:'Fuel filter & pre-filter',cost:95,warranty_months:12}], lhrs:1.5, diagnosis:'Blocked primary fuel filter causing hard starting. Replaced the filter and pre-filter, primed and bled the system. Starts and runs cleanly.' },
+      { wo:'WO-2025-0341', code:'GEN-016', ago:190, down:4, mech:'Atlas Copco Service', mech_type:'Atlas Copco (warranty)', by:'Anthony Walsh', warranty:true, cost:1180, inv:'Atlas Copco warranty report.pdf', fault:'Coolant leak at the water pump', diagnosis:'Water pump weeping at the gasket. Replaced under the Atlas Copco factory warranty at no charge to the company. Pressure-tested the cooling system — no leaks.' },
+      { wo:'WO-2026-0011', code:'GEN-016', ago:35, down:0, mech:'Dave Wilkins', by:'Kevin Ryan', fault:'Hard starting — fuel filter blocked', parts:[{desc:'Fuel filter & pre-filter',cost:95,warranty_months:12}], lhrs:1.5, diagnosis:'Blocked primary fuel filter causing hard starting. Replaced the filter and pre-filter, primed and bled the system. Starts and runs cleanly.' },
       // LT-014 · Atlas Copco HiLight V5 lighting tower (in warranty)
-      { wo:'WO-2025-0349', code:'LT-014', ago:175, mech:'Atlas Copco Service', mech_type:'Atlas Copco (warranty)', by:'Aaron Quinn', warranty:true, cost:640, inv:'Atlas Copco warranty report.pdf', fault:'One LED flood head not igniting', diagnosis:'Failed LED head module. Replaced under the Atlas Copco warranty at no charge. All four heads tested working.' },
-      { wo:'WO-2026-0006', code:'LT-014', ago:95, mech:'Dave Wilkins', by:'Aaron Quinn', fault:'Mast winch cable frayed', parts:[{desc:'Mast winch cable',cost:140,warranty_months:0}], lhrs:1.5, diagnosis:'Mast raise/lower winch cable frayed near the drum. Replaced the cable, confirmed the mast raises and locks correctly.' },
+      { wo:'WO-2025-0349', code:'LT-014', ago:175, down:2, mech:'Atlas Copco Service', mech_type:'Atlas Copco (warranty)', by:'Aaron Quinn', warranty:true, cost:640, inv:'Atlas Copco warranty report.pdf', fault:'One LED flood head not igniting', diagnosis:'Failed LED head module. Replaced under the Atlas Copco warranty at no charge. All four heads tested working.' },
+      { wo:'WO-2026-0006', code:'LT-014', ago:95, down:1, mech:'Dave Wilkins', by:'Aaron Quinn', fault:'Mast winch cable frayed', parts:[{desc:'Mast winch cable',cost:140,warranty_months:0}], lhrs:1.5, diagnosis:'Mast raise/lower winch cable frayed near the drum. Replaced the cable, confirmed the mast raises and locks correctly.' },
       // CRN-011 · Tadano GR-250 city crane (out of warranty)
-      { wo:'WO-2025-0288', code:'CRN-011', ago:300, mech:'OnSite Plant Repairs', by:'Liam Walsh', priority:'High', fault:'Boom telescope cylinder seal weeping', cost:2735, inv:'OnSite Plant Repairs invoice 7741.pdf', diagnosis:'Telescope cylinder rod seal weeping. Resealed the cylinder on site, refilled and bled the hydraulics, function and load tested the boom.' },
-      { wo:'WO-2025-0361', code:'CRN-011', ago:120, mech:'FleetServ Mechanical', by:'Jake Ryan', fault:'Hook block sheave bearing noisy', cost:1180, inv:'FleetServ invoice INV-20655.pdf', diagnosis:'Hook block sheave bearing worn and noisy under load. Replaced the bearing, regreased and load tested.' },
-      { wo:'WO-2026-0009', code:'CRN-011', ago:55, mech:'Dave Wilkins', by:'Jake Ryan', fault:'Outrigger beam slow to extend — proximity sensor fault', parts:[{desc:'Outrigger proximity sensor',cost:190,warranty_months:12}], lhrs:3, photos:['outrigger-sensor.jpg'], diagnosis:'Outrigger extend proximity sensor intermittent, holding the interlock. Replaced the sensor, calibrated and tested all four outriggers deploy and lock.' },
+      { wo:'WO-2025-0288', code:'CRN-011', ago:300, down:3, mech:'OnSite Plant Repairs', by:'Liam Walsh', priority:'High', fault:'Boom telescope cylinder seal weeping', cost:2735, inv:'OnSite Plant Repairs invoice 7741.pdf', diagnosis:'Telescope cylinder rod seal weeping. Resealed the cylinder on site, refilled and bled the hydraulics, function and load tested the boom.' },
+      { wo:'WO-2025-0361', code:'CRN-011', ago:120, down:2, mech:'FleetServ Mechanical', by:'Jake Ryan', fault:'Hook block sheave bearing noisy', cost:1180, inv:'FleetServ invoice INV-20655.pdf', diagnosis:'Hook block sheave bearing worn and noisy under load. Replaced the bearing, regreased and load tested.' },
+      { wo:'WO-2026-0009', code:'CRN-011', ago:55, down:1, mech:'Dave Wilkins', by:'Jake Ryan', fault:'Outrigger beam slow to extend — proximity sensor fault', parts:[{desc:'Outrigger proximity sensor',cost:190,warranty_months:12}], lhrs:3, photos:['outrigger-sensor.jpg'], diagnosis:'Outrigger extend proximity sensor intermittent, holding the interlock. Replaced the sensor, calibrated and tested all four outriggers deploy and lock.' },
       // TRK-006 · Hino 500 truck (out of warranty)
-      { wo:'WO-2025-0301', code:'TRK-006', ago:270, mech:'FleetServ Mechanical', by:'Anthony Walsh', fault:'Brake judder — warped front rotors', cost:1280, inv:'FleetServ invoice INV-20180.pdf', diagnosis:'Warped front brake rotors causing judder. Machined the rotors and replaced the pads, road tested — braking smooth and even.' },
-      { wo:'WO-2025-0372', code:'TRK-006', ago:95, mech:'Dave Wilkins', by:'Anthony Walsh', fault:'Air dryer purging continuously', parts:[{desc:'Air dryer cartridge',cost:180,warranty_months:12}], lhrs:2, diagnosis:'Air dryer cartridge saturated, purging non-stop and bleeding air pressure. Replaced the cartridge, governor cut-in/cut-out within spec.' },
+      { wo:'WO-2025-0301', code:'TRK-006', ago:270, down:1, mech:'FleetServ Mechanical', by:'Anthony Walsh', fault:'Brake judder — warped front rotors', cost:1280, inv:'FleetServ invoice INV-20180.pdf', diagnosis:'Warped front brake rotors causing judder. Machined the rotors and replaced the pads, road tested — braking smooth and even.' },
+      { wo:'WO-2025-0372', code:'TRK-006', ago:95, down:0, mech:'Dave Wilkins', by:'Anthony Walsh', fault:'Air dryer purging continuously', parts:[{desc:'Air dryer cartridge',cost:180,warranty_months:12}], lhrs:2, diagnosis:'Air dryer cartridge saturated, purging non-stop and bleeding air pressure. Replaced the cartridge, governor cut-in/cut-out within spec.' },
       // BUS-021 · Toyota Coaster (out of warranty)
-      { wo:'WO-2025-0333', code:'BUS-021', ago:215, mech:'FleetServ Mechanical', by:'Daniel Byrne', fault:'Front brake pads worn to minimum', cost:400, inv:'FleetServ invoice INV-20351.pdf', diagnosis:'Front brake pads at minimum thickness on inspection. Replaced the pads, cleaned and checked the rotors, road tested.' },
-      { wo:'WO-2026-0007', code:'BUS-021', ago:60, mech:'Dave Wilkins', by:'Anthony Walsh', fault:'Passenger door not sealing — wind noise and water ingress', parts:[{desc:'Door seal rubber',cost:120,warranty_months:0}], lhrs:1.5, diagnosis:'Perished passenger door seal letting in wind and water. Replaced the door seal, confirmed the door closes and seals correctly.' },
+      { wo:'WO-2025-0333', code:'BUS-021', ago:215, down:1, mech:'FleetServ Mechanical', by:'Daniel Byrne', fault:'Front brake pads worn to minimum', cost:400, inv:'FleetServ invoice INV-20351.pdf', diagnosis:'Front brake pads at minimum thickness on inspection. Replaced the pads, cleaned and checked the rotors, road tested.' },
+      { wo:'WO-2026-0007', code:'BUS-021', ago:60, down:0, mech:'Dave Wilkins', by:'Anthony Walsh', fault:'Passenger door not sealing — wind noise and water ingress', parts:[{desc:'Door seal rubber',cost:120,warranty_months:0}], lhrs:1.5, diagnosis:'Perished passenger door seal letting in wind and water. Replaced the door seal, confirmed the door closes and seals correctly.' },
       // MAG-009 · Magni RTH 6.46 (in warranty)
-      { wo:'WO-2025-0322', code:'MAG-009', ago:240, mech:'Magni Australia', mech_type:'Magni (warranty)', by:'Jake Ryan', warranty:true, cost:2100, inv:'Magni warranty report.pdf', fault:'Slew drive gearbox oil leak', diagnosis:'Slew drive gearbox seal leaking oil. Replaced under the Magni factory warranty at no charge. Refilled the gearbox and slew tested through 360 degrees.' },
-      { wo:'WO-2025-0368', code:'MAG-009', ago:100, mech:'Dave Wilkins', by:'Jake Ryan', fault:'Stabiliser foot pad cracked', parts:[{desc:'Stabiliser foot pad',cost:260,warranty_months:0}], lhrs:2, diagnosis:'Front stabiliser foot pad cracked. Replaced the pad, confirmed the stabiliser deploys and bears evenly.' },
+      { wo:'WO-2025-0322', code:'MAG-009', ago:240, down:5, mech:'Magni Australia', mech_type:'Magni (warranty)', by:'Jake Ryan', warranty:true, cost:2100, inv:'Magni warranty report.pdf', fault:'Slew drive gearbox oil leak', diagnosis:'Slew drive gearbox seal leaking oil. Replaced under the Magni factory warranty at no charge. Refilled the gearbox and slew tested through 360 degrees.' },
+      { wo:'WO-2025-0368', code:'MAG-009', ago:100, down:1, mech:'Dave Wilkins', by:'Jake Ryan', fault:'Stabiliser foot pad cracked', parts:[{desc:'Stabiliser foot pad',cost:260,warranty_months:0}], lhrs:2, diagnosis:'Front stabiliser foot pad cracked. Replaced the pad, confirmed the stabiliser deploys and bears evenly.' },
       // LT-013 · Allight ML20 lighting tower (out of warranty)
-      { wo:'WO-2025-0345', code:'LT-013', ago:185, mech:'FleetServ Mechanical', by:'Daniel Byrne', fault:'Engine overspeed shutdown intermittent', cost:510, inv:'FleetServ invoice INV-20502.pdf', diagnosis:'Faulty engine speed sensor triggering false overspeed shutdowns. Replaced the sensor, ran the set under load for an hour with no shutdown.' },
-      { wo:'WO-2026-0005', code:'LT-013', ago:110, mech:'Dave Wilkins', by:'Daniel Byrne', fault:'Lamp arm pivot seized', parts:[{desc:'Lamp arm pivot bush kit',cost:85,warranty_months:0}], lhrs:1, diagnosis:'Lamp arm pivot seized with corrosion. Freed and rebushed the pivot, greased and confirmed the lamp aims through full travel.' }
+      { wo:'WO-2025-0345', code:'LT-013', ago:185, down:1, mech:'FleetServ Mechanical', by:'Daniel Byrne', fault:'Engine overspeed shutdown intermittent', cost:510, inv:'FleetServ invoice INV-20502.pdf', diagnosis:'Faulty engine speed sensor triggering false overspeed shutdowns. Replaced the sensor, ran the set under load for an hour with no shutdown.' },
+      { wo:'WO-2026-0005', code:'LT-013', ago:110, down:0, mech:'Dave Wilkins', by:'Daniel Byrne', fault:'Lamp arm pivot seized', parts:[{desc:'Lamp arm pivot bush kit',cost:85,warranty_months:0}], lhrs:1, diagnosis:'Lamp arm pivot seized with corrosion. Freed and rebushed the pivot, greased and confirmed the lamp aims through full travel.' }
     ].forEach(_seedRepair);
     [
-      { code:'TLH-012', ago:70,  mech:'FleetServ Mechanical', note:'500-hour service', cost:1180, inv:'FleetServ service report SR-1182.pdf', work:'500-hour service: engine oil and filters, hydraulic return filter, greased the boom and pivots, checked brakes and tyres, full function test.' },
-      { code:'GEN-016', ago:55,  mech:'Dave Wilkins', note:'250-hour service', parts_cost:180, lhrs:2, work:'250-hour service: engine oil and filters, coolant and fuel system check, load test, test and tag of the output leads.' },
-      { code:'CRN-011', ago:80,  mech:'FleetServ Mechanical', note:'Annual major service', cost:3200, inv:'FleetServ service report SR-1090.pdf', work:'Annual major service: engine and hydraulics serviced, wire ropes inspected, slew and winch brakes checked, structural and load test, 12-monthly major inspection.' },
-      { code:'TRK-006', ago:50,  mech:'FleetServ Mechanical', note:'Logbook service', cost:1450, inv:'FleetServ service report SR-1141.pdf', work:'Logbook service: engine oil and filters, fuel filters, brakes inspected, driveline greased, lights and safety check, roadworthy inspection.' },
-      { code:'BUS-021', ago:65,  mech:'FleetServ Mechanical', note:'Logbook service', cost:620,  inv:'FleetServ service report SR-1118.pdf', work:'Logbook service: engine oil and filters, brakes inspected, air-conditioning check, seatbelts and lights, passenger safety inspection.' }
+      { code:'TLH-012', ago:70,  due:66, mech:'FleetServ Mechanical', note:'500-hour service', cost:1180, inv:'FleetServ service report SR-1182.pdf', work:'500-hour service: engine oil and filters, hydraulic return filter, greased the boom and pivots, checked brakes and tyres, full function test.' },
+      { code:'GEN-016', ago:55,  due:50, mech:'Dave Wilkins', note:'250-hour service', parts_cost:180, lhrs:2, work:'250-hour service: engine oil and filters, coolant and fuel system check, load test, test and tag of the output leads.' },
+      { code:'CRN-011', ago:80,  due:88, mech:'FleetServ Mechanical', note:'Annual major service', cost:3200, inv:'FleetServ service report SR-1090.pdf', work:'Annual major service: engine and hydraulics serviced, wire ropes inspected, slew and winch brakes checked, structural and load test, 12-monthly major inspection.' },
+      { code:'TRK-006', ago:50,  due:46, mech:'FleetServ Mechanical', note:'Logbook service', cost:1450, inv:'FleetServ service report SR-1141.pdf', work:'Logbook service: engine oil and filters, fuel filters, brakes inspected, driveline greased, lights and safety check, roadworthy inspection.' },
+      { code:'BUS-021', ago:65,  due:60, mech:'FleetServ Mechanical', note:'Logbook service', cost:620,  inv:'FleetServ service report SR-1118.pdf', work:'Logbook service: engine oil and filters, brakes inspected, air-conditioning check, seatbelts and lights, passenger safety inspection.' }
     ].forEach(_seedService);
     localStorage.setItem('slan_plant_seed', DEMO_SEED_VERSION);
   }catch(e){}
@@ -1821,7 +1824,7 @@ function plantRiskPDF(a){
     doc.setTextColor(45,45,45); doc.text(cLine, M+4, y); y+=4.4*cLine.length;
     var initR = /Med/.test(hz.res)?'Extreme':(/High/.test(hz.res)?'Extreme':'High');
     var rc = /High/.test(hz.res)?[163,45,45]:(/Med/.test(hz.res)?[160,96,0]:[27,110,58]);
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('Initial risk: '+initR+'  →  ', M+4, y); doc.setTextColor(rc[0],rc[1],rc[2]); doc.text('Residual (with controls): '+hz.res, M+44, y); y+=6.5;
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(110,110,110); doc.text('Initial risk: '+initR+'  »  ', M+4, y); doc.setTextColor(rc[0],rc[1],rc[2]); doc.text('Residual (with controls): '+hz.res, M+44, y); y+=6.5;
   });
   // legislation & standards
   if(y>248){doc.addPage();y=16;}
@@ -2917,6 +2920,8 @@ function renderMechanic(){
       '<button class="row" onclick="renderMechServicesDue()"><div class="row-ic">🗓️</div><div class="row-main"><div class="row-t">Service schedule</div><div class="row-s">What&rsquo;s due, overdue &amp; booked across the fleet</div></div><div class="chev">›</div></button>'+
       '<button class="row" onclick="renderMechWaiting()"><div class="row-ic">⏸️</div><div class="row-main"><div class="row-t">Waiting on parts</div><div class="row-s">Jobs on hold for parts, longest first</div></div><div class="chev">›</div></button>'+
       '<button class="row" onclick="renderMechRecurring()"><div class="row-ic">🔁</div><div class="row-main"><div class="row-t">Recurring faults</div><div class="row-s">The same problem flagged 2+ times on a machine</div></div><div class="chev">›</div></button>'+
+      '<button class="row" onclick="renderMechDowntime()"><div class="row-ic">⏱️</div><div class="row-main"><div class="row-t">Downtime &amp; availability</div><div class="row-s">Days each machine was out of service &amp; how available it was</div></div><div class="chev">›</div></button>'+
+      '<button class="row" onclick="renderMechOnTime()"><div class="row-ic">✅</div><div class="row-main"><div class="row-t">On-time servicing</div><div class="row-s">Were services done on schedule or late</div></div><div class="chev">›</div></button>'+
     '</div>';
   } else {
     var woRows=myOpen.length?myOpen.map(function(w){ var idx=WORKORDERS.indexOf(w); var _ag=_woAgeText(w);
@@ -3234,6 +3239,74 @@ function renderMechRecurring(){
     '<div class="hub-head"><div class="hub-ic">🔁</div><div style="flex:1"><div class="hub-code">Recurring faults</div><div class="hub-mm">Items flagged 2+ times on a machine</div></div></div>'+
     '<div style="font-size:11.5px;color:var(--t2);line-height:1.5;margin-bottom:10px">A fault that keeps coming back usually means the real cause hasn&rsquo;t been fixed — worth a closer look.</div>'+
     '<div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* ---------- downtime / availability + on-time servicing ---------- */
+/* days a machine was out of service over the last 12 months: completed repairs' recorded downtime
+   + (if it is out of service right now) the days since the open fault was raised. */
+function _machineDowntime(code){
+  var days=0;
+  WORKORDERS.forEach(function(w){ if(w.code===code && w.status==='Returned to service'){ days+=Number(w.down_days)||0; } });
+  var a=ASSETS.find(function(x){return x.code===code;});
+  if(a && a.status==='out_of_service'){
+    var opens=WORKORDERS.filter(function(w){ return w.code===code && w.status!=='Returned to service' && w.raised_at; }).map(function(w){ return new Date(w.raised_at).getTime(); });
+    if(opens.length){ days+=Math.max(0, Math.round((Date.now()-Math.min.apply(null,opens))/86400000)); }
+  }
+  return days;
+}
+function _machineAvail(code){ var d=_machineDowntime(code); return Math.max(0, Math.min(100, Math.round((365-d)/365*100))); }
+/* was the last completed service done on/before its due date? returns {late, days} or null */
+function _svcOnTime(s){
+  if(!s || s.status!=='done' || !s.due_at || !s.completed_date) return null;
+  var diff=Math.round((new Date(s.completed_date).getTime()-new Date(s.due_at).getTime())/86400000);
+  return { late:diff>0, days:Math.abs(diff) };
+}
+/* Mechanic/fleet: downtime & availability — days each machine was out of service (12 mo), worst first. */
+function renderMechDowntime(){
+  if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  _view('mechDowntime', function(){ renderMechDowntime(); });
+  var fleet=ASSETS.filter(function(a){ return !isHired(a.code); });
+  var data=fleet.map(function(a){ return {a:a, d:_machineDowntime(a.code), av:_machineAvail(a.code)}; }).sort(function(x,y){ return y.d-x.d; });
+  var totalDown=data.reduce(function(s,r){ return s+r.d; },0);
+  var avgAvail=data.length?Math.round(data.reduce(function(s,r){ return s+r.av; },0)/data.length):100;
+  var rows=data.map(function(r){ var a=r.a, downNow=(a.status==='out_of_service');
+    var col=downNow?'#A32D2D':(r.d>7?'#A06000':'#1B6E3A');
+    return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s"><span style="color:'+col+';font-weight:700">'+r.d+' day'+(r.d===1?'':'s')+' out of service</span> · '+r.av+'% available'+(downNow?' · <span style="color:#A32D2D;font-weight:700">down now</span>':'')+'</div></div><div class="chev">›</div></button>';
+  }).join('');
+  setHeader('Downtime & availability','Days out of service over the last 12 months');
+  var html='<div class="wrap platform-wrap">'+
+    '<button class="back" onclick="if(!_navBack()){mechSetTab(\'reports\')}">‹ Back</button>'+
+    '<div class="hub-head"><div class="hub-ic">⏱️</div><div style="flex:1"><div class="hub-code">Downtime &amp; availability</div><div class="hub-mm">'+fleet.length+' owned machines · '+avgAvail+'% average availability</div></div></div>'+
+    '<div class="fcard"><div class="fcard-hdr">Fleet downtime (12 mo)</div><div style="padding:16px"><div style="font-size:30px;font-weight:800;color:var(--deep)">'+totalDown+' day'+(totalDown===1?'':'s')+'</div><div style="font-size:11.5px;color:var(--t3);margin-top:4px">'+avgAvail+'% average availability across '+fleet.length+' owned machines. Tap a machine to see the repairs behind it.</div></div></div>'+
+    '<div class="sec-h">By machine (most downtime first)</div><div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* Mechanic/fleet: on-time servicing — was each machine's last service on schedule, plus anything overdue/booked now. */
+function renderMechOnTime(){
+  if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  _view('mechOnTime', function(){ renderMechOnTime(); });
+  var fleet=ASSETS.filter(function(a){ return !isHired(a.code); });
+  var done=0, onTime=0;
+  var rows=fleet.map(function(a){
+    var s=_svcState(a.code), st=_svcStatus(a), ot=_svcOnTime(s), dot, main, sub;
+    if(s && s.status==='done' && ot){ done++; if(!ot.late) onTime++;
+      dot=ot.late?'#A06000':'#1B6E3A';
+      main=ot.late?('<span style="color:#A06000;font-weight:700">Serviced '+ot.days+' day'+(ot.days===1?'':'s')+' late</span>'):'<span style="color:#1B6E3A;font-weight:700">Serviced on time</span>';
+      sub='Last service '+fmtShort(s.completed_date)+(s.workshop?(' · '+s.workshop):'');
+    } else if(st && st.state==='overdue'){ dot='#A32D2D'; main='<span style="color:#A32D2D;font-weight:700">Service overdue now</span>'; sub='Was due '+fmtShort(a.service_due);
+    } else if(st && st.booked){ dot='#234E76'; main='<span style="color:#234E76;font-weight:700">Service booked</span>'; sub='Booked '+fmtShort(st.bookedDate)+(st.workshop?(' · '+st.workshop):'');
+    } else { dot='#C8CFCA'; main='<span style="color:var(--t2)">On schedule</span>'; sub='Next due '+fmtShort(a.service_due); }
+    return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic"><span class="dot" style="background:'+dot+'"></span></div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+main+' · <span style="color:var(--t3)">'+sub+'</span></div></div><div class="chev">›</div></button>';
+  }).join('');
+  var rate=done?Math.round(onTime/done*100):100;
+  setHeader('On-time servicing','Were services done on schedule');
+  var html='<div class="wrap platform-wrap">'+
+    '<button class="back" onclick="if(!_navBack()){mechSetTab(\'reports\')}">‹ Back</button>'+
+    '<div class="hub-head"><div class="hub-ic">✅</div><div style="flex:1"><div class="hub-code">On-time servicing</div><div class="hub-mm">'+onTime+' of '+done+' recent services on time</div></div></div>'+
+    '<div class="fcard"><div class="fcard-hdr">On-time rate</div><div style="padding:16px"><div style="font-size:30px;font-weight:800;color:var(--deep)">'+rate+'%</div><div style="font-size:11.5px;color:var(--t3);margin-top:4px">'+onTime+' of '+done+' completed services done on or before the due date. Tap a machine for its service record.</div></div></div>'+
+    '<div class="sec-h">By machine</div><div class="tile">'+rows+'</div>'+
   '</div>';
   showDetail(html);
 }
