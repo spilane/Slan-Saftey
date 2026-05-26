@@ -948,6 +948,14 @@ function openHub(i){
         }
         if(st && (st.state==='overdue'||st.state==='due_soon')) return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>';
         return ''; })() : '')+
+    ((getRole()!=='worker' && !isHired(a.code)) ? (function(){
+        var done=WORKORDERS.filter(function(w){ return w.code===a.code && w.status==='Returned to service'; });
+        var repRows=done.length?done.map(function(w){ var when=(w.signoff&&w.signoff.when)?fmtShort(w.signoff.when):(w.repair_date?fmtShort(w.repair_date):''); var c=w.warranty_claim?'$0 · warranty':money(_woClientCost(w)); return '<div class="svc-row"><span>'+w.wo+' · '+_premobEsc((w.fault||'').slice(0,38))+(when?(' · '+when):'')+'</span><span>'+c+'</span></div>'; }).join(''):'<div class="svc-row" style="color:var(--t3)"><span>No completed repairs yet</span><span></span></div>';
+        var svc=_svcState(a.code); var svcRow=(svc&&svc.status==='done')?('<div class="svc-row"><span>Service · '+(svc.workshop||'')+(svc.completed_date?(' · '+fmtShort(svc.completed_date)):'')+'</span><span>'+money(_svcCost(svc))+'</span></div>'):'';
+        return '<div class="sec-h">Maintenance &amp; costs</div><div class="svc">'+
+          '<div class="svc-row"><span><b>Total spend (12 mo)</b></span><span style="font-weight:800">'+money(assetSpend12(a))+'</span></div>'+
+          repRows+svcRow+
+        '</div>'; })() : '')+
     ((getRole()!=='worker') ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineHistory(\''+a.code+'\')">📜  Machine history ('+_machineTimeline(a.code).length+')</button><button class="btn-ghost" style="margin-top:8px" onclick="renderPartsLedger(\''+a.code+'\')">🔩  Parts fitted ('+_partsHistory(a.code).length+')</button>' : '')+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
@@ -2654,6 +2662,46 @@ function plantWorkOrderPDF(w){
   return doc;
 }
 function plantViewWorkOrderPDF(woId){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } var w=_woFind(woId); if(!w) return; openPdfDoc(plantWorkOrderPDF(w), 'Repair-'+w.code+'-'+w.wo+'.pdf'); }
+/* Shared asset register (the director/supervisor Assets table) — reused for the mechanic so he sees the same full register. */
+function _assetRegisterBody(fleet){
+  var rows=fleet.map(function(a){
+    var dt=plantDetails(a.code);
+    var sm=svcMeter(a), soon=svcSoon(sm);
+    var red = a.status==='out_of_service' || a.status==='retired' || _expired(a.rego_expiry);
+    var amber = !red && (a.status==='fault_reported' || _expired(a.service_due) || soon || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30));
+    var rowCls = red?'attn-red':(amber?'attn-amber':'');
+    var stB = a.status==='operational'?'<span class="a-badge bg-op">Operational</span>':(a.status==='fault_reported'?'<span class="a-badge bg-flt">Fault</span>':'<span class="a-badge bg-out">'+a.status.replace(/_/g,' ')+'</span>');
+    var rd=[]; if(a.hours) rd.push(a.hours.toLocaleString()+' hrs'); if(dt.km) rd.push(dt.km.toLocaleString()+' km');
+    var reading = rd.length ? (rd[0] + (rd[1]?'<div class="cell-sub">'+rd[1]+'</div>':'')) : '—';
+    var svcCell;
+    var svcSt=_svcStatus(a);
+    if(svcSt && svcSt.booked){ svcCell='<span class="svc-go ok">Booked</span><div class="cell-sub">'+fmtShort(svcSt.bookedDate)+'</div>'; }
+    else if(sm){ var cls=svcSt?(svcSt.state==='overdue'?'over':(svcSt.state==='due_soon'?'soon':'ok')):'ok';
+      var meterLbl=(sm.toGo<0?('Overdue '+Math.abs(sm.toGo).toLocaleString()+' '+sm.meter):('In '+sm.toGo.toLocaleString()+' '+sm.meter));
+      var main=(svcSt && svcSt.state==='overdue' && sm.toGo>=0) ? 'Overdue' : meterLbl;
+      svcCell='<span class="svc-go '+cls+'">'+main+'</span><div class="cell-sub" style="'+(_expired(a.service_due)?'color:var(--fail);font-weight:700':'')+'">'+fmtShort(a.service_due)+'</div>';
+    } else { svcCell='<span class="'+(_expired(a.service_due)?'svc-go over':'')+'">'+fmtShort(a.service_due)+'</span>'; }
+    var lp=lastPrestart(a), lpCell = lp?(_loadPlantRecord(a.code)?'<a href="javascript:void(0)" onclick="event.stopPropagation();plantViewSavedPDF(\''+a.code+'\')" style="color:var(--gold);font-weight:700;text-decoration:underline">'+fmtShort(lp)+' 📄</a>':fmtShort(lp)):'<span style="color:var(--fail);font-weight:600">None</span>';
+    var woN=openWoCount(a.code), woCell = woN?('<span class="a-badge bg-flt">'+woN+'</span>'):'<span style="color:var(--t3)">—</span>';
+    return '<tr class="'+rowCls+'" onclick="openHub('+ASSETS.indexOf(a)+')">'+
+      '<td class="t-asset"><div class="reg-asset"><div class="ric">'+a.icon+'</div><div><b>'+a.code+'</b>'+hiredChip(a.code,true)+'<div class="cell-sub">'+a.make+' '+a.model+(isHired(a.code)?' · '+hireInfo(a.code).supplier:'')+'</div></div></div></td>'+
+      '<td>'+assetSite(a.code)+'</td>'+
+      '<td>'+reading+'</td>'+
+      '<td>'+svcCell+'</td>'+
+      '<td style="'+(_expired(a.rego_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?fmtShort(a.rego_expiry):'— (plant)')+'</td>'+
+      '<td style="'+(_expired(a.insurance_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.insurance_expiry?fmtShort(a.insurance_expiry):'—')+'</td>'+
+      '<td>'+(function(){ if(isHired(a.code)) return '<span style="color:var(--t3)">— hired</span>'; var w=warrantyInfo(a.code); if(!w) return '<span style="color:var(--t3)">—</span>'; return inWarranty(a.code)?('<span style="color:#1B6E3A;font-weight:700">In warranty</span><div class="cell-sub">'+fmtShort(warrantyUntil(a.code))+'</div>'):'<span style="color:var(--t3)">Out</span>'; })()+'</td>'+
+      '<td>'+lpCell+'</td>'+
+      '<td style="text-align:center">'+woCell+'</td>'+
+      '<td>'+money(assetSpend12(a))+'</td>'+
+      '<td>'+stB+'</td>'+
+      '<td><button onclick="event.stopPropagation();openHub('+ASSETS.indexOf(a)+')" style="padding:6px 12px;border-radius:7px;border:1.5px solid var(--border);background:#fff;color:var(--deep);font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap">View ›</button></td></tr>';
+  }).join('');
+  return '<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
+      '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
+    '<div class="reg-wrap"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
+}
 function renderOversight(){
   var supLocked = (getRole()==='supervisor');
   if(supLocked){ oversightSite = getSiteParam() || 'Bondi Junction Mixed Use'; }
@@ -2712,43 +2760,7 @@ function renderOversight(){
       plantHireMoneyPanel(fleet.filter(function(a){ return isHired(a.code); }))+
       plantHireReturnsWatchlist(fleet.filter(function(a){ return isHired(a.code); }));
   } else if(platTab==='assets'){
-    var rows=fleet.map(function(a){
-      var dt=plantDetails(a.code);
-      var sm=svcMeter(a), soon=svcSoon(sm);
-      var red = a.status==='out_of_service' || a.status==='retired' || _expired(a.rego_expiry);
-      var amber = !red && (a.status==='fault_reported' || _expired(a.service_due) || soon || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30));
-      var rowCls = red?'attn-red':(amber?'attn-amber':'');
-      var stB = a.status==='operational'?'<span class="a-badge bg-op">Operational</span>':(a.status==='fault_reported'?'<span class="a-badge bg-flt">Fault</span>':'<span class="a-badge bg-out">'+a.status.replace(/_/g,' ')+'</span>');
-      var rd=[]; if(a.hours) rd.push(a.hours.toLocaleString()+' hrs'); if(dt.km) rd.push(dt.km.toLocaleString()+' km');
-      var reading = rd.length ? (rd[0] + (rd[1]?'<div class="cell-sub">'+rd[1]+'</div>':'')) : '—';
-      var svcCell;
-      var svcSt=_svcStatus(a);
-      if(svcSt && svcSt.booked){ svcCell='<span class="svc-go ok">Booked</span><div class="cell-sub">'+fmtShort(svcSt.bookedDate)+'</div>'; }
-      else if(sm){ var cls=svcSt?(svcSt.state==='overdue'?'over':(svcSt.state==='due_soon'?'soon':'ok')):'ok';
-        var meterLbl=(sm.toGo<0?('Overdue '+Math.abs(sm.toGo).toLocaleString()+' '+sm.meter):('In '+sm.toGo.toLocaleString()+' '+sm.meter));
-        var main=(svcSt && svcSt.state==='overdue' && sm.toGo>=0) ? 'Overdue' : meterLbl; // overdue by date even if hrs/km still have headroom
-        svcCell='<span class="svc-go '+cls+'">'+main+'</span><div class="cell-sub" style="'+(_expired(a.service_due)?'color:var(--fail);font-weight:700':'')+'">'+fmtShort(a.service_due)+'</div>';
-      } else { svcCell='<span class="'+(_expired(a.service_due)?'svc-go over':'')+'">'+fmtShort(a.service_due)+'</span>'; }
-      var lp=lastPrestart(a), lpCell = lp?(_loadPlantRecord(a.code)?'<a href="javascript:void(0)" onclick="event.stopPropagation();plantViewSavedPDF(\''+a.code+'\')" style="color:var(--gold);font-weight:700;text-decoration:underline">'+fmtShort(lp)+' 📄</a>':fmtShort(lp)):'<span style="color:var(--fail);font-weight:600">None</span>';
-      var woN=openWoCount(a.code), woCell = woN?('<span class="a-badge bg-flt">'+woN+'</span>'):'<span style="color:var(--t3)">—</span>';
-      return '<tr class="'+rowCls+'" onclick="openHub('+ASSETS.indexOf(a)+')">'+
-        '<td class="t-asset"><div class="reg-asset"><div class="ric">'+a.icon+'</div><div><b>'+a.code+'</b>'+hiredChip(a.code,true)+'<div class="cell-sub">'+a.make+' '+a.model+(isHired(a.code)?' · '+hireInfo(a.code).supplier:'')+'</div></div></div></td>'+
-        '<td>'+assetSite(a.code)+'</td>'+
-        '<td>'+reading+'</td>'+
-        '<td>'+svcCell+'</td>'+
-        '<td style="'+(_expired(a.rego_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.rego_expiry?fmtShort(a.rego_expiry):'— (plant)')+'</td>'+
-        '<td style="'+(_expired(a.insurance_expiry)?'color:var(--fail);font-weight:700':'')+'">'+(a.insurance_expiry?fmtShort(a.insurance_expiry):'—')+'</td>'+
-        '<td>'+(function(){ if(isHired(a.code)) return '<span style="color:var(--t3)">— hired</span>'; var w=warrantyInfo(a.code); if(!w) return '<span style="color:var(--t3)">—</span>'; return inWarranty(a.code)?('<span style="color:#1B6E3A;font-weight:700">In warranty</span><div class="cell-sub">'+fmtShort(warrantyUntil(a.code))+'</div>'):'<span style="color:var(--t3)">Out</span>'; })()+'</td>'+
-        '<td>'+lpCell+'</td>'+
-        '<td style="text-align:center">'+woCell+'</td>'+
-        '<td>'+money(assetSpend12(a))+'</td>'+
-        '<td>'+stB+'</td>'+
-        '<td><button onclick="event.stopPropagation();openHub('+ASSETS.indexOf(a)+')" style="padding:6px 12px;border-radius:7px;border:1.5px solid var(--border);background:#fff;color:var(--deep);font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap">View ›</button></td></tr>';
-    }).join('');
-    body='<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
-        '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
-      '<div class="reg-wrap"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-      '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
+    body=_assetRegisterBody(fleet);
   } else if(platTab==='premob'){
     body=plantPremobBody(fleet);
   } else if(platTab==='analytics'){
@@ -2922,19 +2934,13 @@ function renderPartsLedger(code){
   '</div>';
   showDetail(html);
 }
-/* Mechanic: full asset list — browse every machine, open one to see its details, parts & history. */
+/* Mechanic: full asset register — the same table the director/supervisor see; open any machine for its complete record. */
 function renderMechAssets(){
   setTopRight(_profileAvatar('Dave Wilkins')); _homeView='mechassets';
-  var rows=ASSETS.map(function(a,i){
-    var stB = a.status==='operational'?'<span style="color:#1B6E3A;font-weight:700">Operational</span>':(a.status==='fault_reported'?'<span style="color:#A06000;font-weight:700">Fault</span>':'<span style="color:#A32D2D;font-weight:700">'+a.status.replace(/_/g,' ')+'</span>');
-    var woN=WORKORDERS.filter(function(w){return w.code===a.code && w.status!=='Returned to service';}).length;
-    return '<button class="row" onclick="openHub('+i+')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+assetSite(a.code)+' · '+stB+(woN?(' · <span style="color:#A06000;font-weight:700">'+woN+' open WO</span>'):'')+'</div></div><div class="chev">›</div></button>';
-  }).join('');
-  setHeader('All machines','Open any machine for its history, parts & details');
-  var html='<div class="wrap" style="padding:0;max-width:none">'+
+  setHeader('Asset register','Open any machine for its full record');
+  var html='<div class="wrap platform-wrap">'+
     '<button class="back" onclick="renderMechanic()">‹ My jobs</button>'+
-    '<div class="hub-head"><div class="hub-ic">🚜</div><div style="flex:1"><div class="hub-code">All machines</div><div class="hub-mm">'+ASSETS.length+' in the fleet</div></div></div>'+
-    '<div class="tile">'+rows+'</div>'+
+    _assetRegisterBody(ASSETS)+
   '</div>';
   showDetail(html);
 }
