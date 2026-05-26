@@ -1944,6 +1944,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="badge"><div class="bdot"></div><span id="h-date">Today</span></div>
       <div class="badge" id="h-sitebadge">—</div>
     </div>
+    <!-- WEATHER WIDGET (shown for the mechanic home so it flows like the supervisor portal; populated by loadWeather) -->
+    <div id="h-weather-bar" style="display:none;margin-top:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 13px;align-items:center;justify-content:space-between;cursor:pointer" onclick="loadWeather()">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="h-wx-icon" style="font-size:22px">⛅</div>
+        <div>
+          <div id="h-wx-temp" style="font-size:16px;font-weight:600;color:#fff">--°C</div>
+          <div id="h-wx-desc" style="font-size:10px;color:rgba(255,255,255,.55);margin-top:1px">Loading weather...</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div id="h-wx-wind" style="font-size:10px;color:rgba(255,255,255,.6)">Wind --</div>
+        <div id="h-wx-feel" style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">Feels like --°</div>
+        <div id="h-wx-assess" style="font-size:9px;font-weight:600;margin-top:3px;border-radius:8px;padding:2px 7px;background:rgba(92,219,149,.2);color:#5CDB95">Checking...</div>
+      </div>
+    </div>
   </div>
 
   <!-- SYNC BAR -->
@@ -16643,6 +16658,11 @@ function initHome(p){
     const mc = document.getElementById('mech-home-card');
     const siteContacts = document.querySelector('#screen-home .tiles > .fcard');
     const plantSub = document.getElementById('prestart-tile-sub');
+    const wbar = document.getElementById('h-weather-bar');
+    if (wbar) {
+      if (isMech) { wbar.style.display = 'flex'; try { if (window._lastWx) { updateWeatherUI(window._lastWx); } else if (typeof loadWeather === 'function') { loadWeather(); } } catch(e) {} }
+      else { wbar.style.display = 'none'; }
+    }
     if (isMech) {
       var myWO = (typeof _mechMyWOs === 'function') ? _mechMyWOs() : [];
       var mySvc = (typeof _mechMyServices === 'function') ? _mechMyServices() : [];
@@ -37549,7 +37569,7 @@ function loadWeather() {
     var lon = pos.coords.longitude.toFixed(4);
     fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,apparent_temperature,weathercode,windspeed_10m&timezone=auto')
       .then(function(r){ return r.json(); })
-      .then(function(d){ updateWeatherUI(d.current); wxLoaded = true; })
+      .then(function(d){ window._lastWx = d.current; updateWeatherUI(d.current); wxLoaded = true; })
       .catch(function(){ updateWeatherUI(null); });
   }, function(){ updateWeatherUI(null); });
 }
@@ -37558,8 +37578,8 @@ function updateWeatherUI(wx) {
   var icons = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
   var descs = {0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',51:'Light drizzle',61:'Light rain',63:'Moderate rain',65:'Heavy rain',71:'Light snow',80:'Showers',95:'Thunderstorm'};
   if (!wx) {
-    ['d-wx-temp','d-wx-desc','d-wx-wind','d-wx-feel'].forEach(function(id){
-      var el=document.getElementById(id); if(el) el.textContent = id==='d-wx-desc'?'Location unavailable':'--';
+    ['d-wx-temp','d-wx-desc','d-wx-wind','d-wx-feel','h-wx-temp','h-wx-desc','h-wx-wind','h-wx-feel'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.textContent = /desc/.test(id)?'Location unavailable':'--';
     });
     return;
   }
@@ -37569,18 +37589,23 @@ function updateWeatherUI(wx) {
   var wind = Math.round(wx.windspeed_10m || 0);
   var icon = icons[code] || '🌡️';
   var desc = descs[code] || 'Weather data';
-  document.getElementById('d-wx-icon').textContent = icon;
-  document.getElementById('d-wx-temp').textContent = temp + '°C';
-  document.getElementById('d-wx-desc').textContent = desc;
-  document.getElementById('d-wx-wind').textContent = 'Wind ' + wind + ' km/h';
-  document.getElementById('d-wx-feel').textContent = 'Feels like ' + feel + '°';
-  var assess = document.getElementById('d-wx-assess');
-  if (assess) {
-    var ok = code < 61 && wind < 50;
-    assess.textContent = ok ? 'Suitable — no weather concerns' : 'Review conditions before work';
-    assess.style.background = ok ? 'rgba(92,219,149,.2)' : 'rgba(184,150,12,.2)';
-    assess.style.color = ok ? '#5CDB95' : '#D4AF37';
-  }
+  var ok = code < 61 && wind < 50;
+  // Update both the supervisor dash (d-wx-*) and the home (h-wx-*) widgets — whichever exist.
+  [['d-wx-icon','d-wx-temp','d-wx-desc','d-wx-wind','d-wx-feel','d-wx-assess'],
+   ['h-wx-icon','h-wx-temp','h-wx-desc','h-wx-wind','h-wx-feel','h-wx-assess']].forEach(function(ids){
+    var ic=document.getElementById(ids[0]); if(!ic) return;
+    ic.textContent = icon;
+    document.getElementById(ids[1]).textContent = temp + '°C';
+    document.getElementById(ids[2]).textContent = desc;
+    document.getElementById(ids[3]).textContent = 'Wind ' + wind + ' km/h';
+    document.getElementById(ids[4]).textContent = 'Feels like ' + feel + '°';
+    var assess = document.getElementById(ids[5]);
+    if (assess) {
+      assess.textContent = ok ? 'Suitable — no weather concerns' : 'Review conditions before work';
+      assess.style.background = ok ? 'rgba(92,219,149,.2)' : 'rgba(184,150,12,.2)';
+      assess.style.color = ok ? '#5CDB95' : '#D4AF37';
+    }
+  });
 }
 
 // Auto-load weather when supervisor dashboard opens

@@ -2809,42 +2809,49 @@ function renderOversight(){
 function _mechMode(){ return getRole()==='mechanic'; }
 function _plantHomeAfterJob(){ if(_mechMode()){ renderMechanic(); } else { renderOversight(); } }
 function _svcBackTarget(idx){ if(_mechMode()){ renderMechanic(); } else { openHub(idx); } }
+var _mechTab='jobs';
+function mechSetTab(t){ _mechTab=t; renderMechanic(); }
 function renderMechanic(){
   setTopRight(_profileAvatar('Dave Wilkins'));
+  _homeView='mechanic';
   var myOpen=WORKORDERS.filter(function(w){ return w.mechanic==='Dave Wilkins' && w.mech_inhouse!==false && w.status!=='Returned to service'; });
   var myDone=WORKORDERS.filter(function(w){ return w.mechanic==='Dave Wilkins' && w.mech_inhouse!==false && w.status==='Returned to service'; });
   var svcAll=_svcAll();
   var mySvc=Object.keys(svcAll).filter(function(code){ var s=svcAll[code]; return s && s.status==='booked' && s.workshop==='Dave Wilkins' && s.mech_inhouse!==false; });
-  var woRows=myOpen.length?myOpen.map(function(w){ var idx=WORKORDERS.indexOf(w);
-    var _ag=_woAgeText(w);
-    return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+(_ag?(' · <span style="color:'+_woAgeCol(w)+';font-weight:700">'+_ag+'</span>'):'')+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
-  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No repairs assigned to you right now.</div></div></div>';
-  var svcRows=mySvc.length?mySvc.map(function(code){ var s=svcAll[code]; var a=ASSETS.find(function(x){return x.code===code;}); var mm=a?(a.make+' '+a.model):''; var overdue=_expired(s.booked_date);
-    return '<button class="row" onclick="plantCompleteService(\''+code+'\')"><div class="row-ic"><span class="dot" style="background:'+(overdue?'#A32D2D':'#A06000')+'"></span></div><div class="row-main"><div class="row-t">'+code+' · '+mm+'</div><div class="row-s">'+(s.note||'Service')+' · booked '+fmtShort(s.booked_date)+(overdue?' · overdue':'')+'</div></div><div class="row-s" style="flex-shrink:0;color:var(--gold);font-weight:700">Complete ›</div></button>';
-  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No services booked to you right now.</div></div></div>';
-  var myDoneSvc=Object.keys(svcAll).filter(function(code){ var s=svcAll[code]; return s && s.status==='done' && s.workshop==='Dave Wilkins' && s.mech_inhouse!==false; });
-  var doneRows=myDone.map(function(w){ var idx=WORKORDERS.indexOf(w); var when=w.signoff&&w.signoff.when?new Date(w.signoff.when).toLocaleDateString('en-AU',{day:'numeric',month:'short'}):'';
-    return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">Repair · '+w.fault+(when?(' · '+when):'')+'</div></div><div class="chev">›</div></button>';
-  }).join('');
-  var doneSvcRows=myDoneSvc.map(function(code){ var s=svcAll[code]; var a=ASSETS.find(function(x){return x.code===code;}); var mm=a?(a.make+' '+a.model):'';
-    return '<button class="row" onclick="plantViewServiceRecord(\''+code+'\')"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+code+' · '+mm+'</div><div class="row-s">Service · '+(s.note||'Service')+(s.completed_date?(' · '+fmtShort(s.completed_date)):'')+'</div></div><div class="chev">›</div></button>';
-  }).join('');
-  var doneTotal=myDone.length+myDoneSvc.length;
-  var doneCard=doneTotal?('<div class="fcard"><div class="fcard-hdr">✅ Completed by you ('+doneTotal+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+doneRows+doneSvcRows+'</div></div>'):'';
-  _homeView='mechanic';
-  var linksRow='<div style="display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 18px">'+
-    '<button class="btn-ghost" style="flex:1 1 45%" onclick="renderMechHistory()">📋  Repair &amp; service history</button>'+
-    '<button class="btn-ghost" style="flex:1 1 45%" onclick="renderMechWarranties()">🛡  Warranties</button>'+
-    '<button class="btn-ghost" style="flex:1 1 100%" onclick="renderPartsLedger()">🔩  Parts fitted (every part &amp; when)</button>'+
-  '</div>';
-  setHeader('My jobs', 'Dave Wilkins · repairs & services assigned to you');
-  var html='<div class="wrap platform-wrap">'+
-    '<div class="fcard"><div class="fcard-hdr">🔧 Repairs assigned to me ('+myOpen.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+woRows+'</div></div>'+
-    '<div class="fcard"><div class="fcard-hdr">🗓️ Services booked to me ('+mySvc.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+svcRows+'</div></div>'+
-    doneCard+
-    linksRow+
-    _assetRegisterBody(ASSETS)+
-  '</div>';
+  var tabNav='<div class="plat-tabs">'+[['jobs','My jobs ('+(myOpen.length+mySvc.length)+')'],['machines','Machines'],['reports','Reports']].map(function(tb){
+    return '<button class="plat-tab'+(_mechTab===tb[0]?' on':'')+'" onclick="mechSetTab(\''+tb[0]+'\')">'+tb[1]+'</button>';
+  }).join('')+'</div>';
+  var body;
+  if(_mechTab==='machines'){
+    body=_assetRegisterBody(ASSETS);
+  } else if(_mechTab==='reports'){
+    body='<div class="sec-h">Reports &amp; references</div><div class="tile">'+
+      '<button class="row" onclick="renderMechHistory()"><div class="row-ic">📋</div><div class="row-main"><div class="row-t">Repair &amp; service history</div><div class="row-s">Every completed repair &amp; service across the fleet</div></div><div class="chev">›</div></button>'+
+      '<button class="row" onclick="renderMechWarranties()"><div class="row-ic">🛡️</div><div class="row-main"><div class="row-t">Warranties</div><div class="row-s">Which machines are in / out of warranty</div></div><div class="chev">›</div></button>'+
+      '<button class="row" onclick="renderPartsLedger()"><div class="row-ic">🔩</div><div class="row-main"><div class="row-t">Parts fitted</div><div class="row-s">Every part replaced, when, &amp; its warranty</div></div><div class="chev">›</div></button>'+
+    '</div>';
+  } else {
+    var woRows=myOpen.length?myOpen.map(function(w){ var idx=WORKORDERS.indexOf(w); var _ag=_woAgeText(w);
+      return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:'+_prioCol(w.priority)+'"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">'+assetSite(w.code)+' · '+w.fault+(_ag?(' · <span style="color:'+_woAgeCol(w)+';font-weight:700">'+_ag+'</span>'):'')+'</div></div><span class="a-badge bg-flt" style="flex-shrink:0">'+w.status+'</span></button>';
+    }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No repairs assigned to you right now.</div></div></div>';
+    var svcRows=mySvc.length?mySvc.map(function(code){ var s=svcAll[code]; var a=ASSETS.find(function(x){return x.code===code;}); var mm=a?(a.make+' '+a.model):''; var overdue=_expired(s.booked_date);
+      return '<button class="row" onclick="plantCompleteService(\''+code+'\')"><div class="row-ic"><span class="dot" style="background:'+(overdue?'#A32D2D':'#A06000')+'"></span></div><div class="row-main"><div class="row-t">'+code+' · '+mm+'</div><div class="row-s">'+(s.note||'Service')+' · booked '+fmtShort(s.booked_date)+(overdue?' · overdue':'')+'</div></div><div class="row-s" style="flex-shrink:0;color:var(--gold);font-weight:700">Complete ›</div></button>';
+    }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No services booked to you right now.</div></div></div>';
+    var myDoneSvc=Object.keys(svcAll).filter(function(code){ var s=svcAll[code]; return s && s.status==='done' && s.workshop==='Dave Wilkins' && s.mech_inhouse!==false; });
+    var doneRows=myDone.map(function(w){ var idx=WORKORDERS.indexOf(w); var when=w.signoff&&w.signoff.when?new Date(w.signoff.when).toLocaleDateString('en-AU',{day:'numeric',month:'short'}):'';
+      return '<button class="row" onclick="openWO('+idx+')"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+w.code+' · '+w.machine+'</div><div class="row-s">Repair · '+w.fault+(when?(' · '+when):'')+'</div></div><div class="chev">›</div></button>';
+    }).join('');
+    var doneSvcRows=myDoneSvc.map(function(code){ var s=svcAll[code]; var a=ASSETS.find(function(x){return x.code===code;}); var mm=a?(a.make+' '+a.model):'';
+      return '<button class="row" onclick="plantViewServiceRecord(\''+code+'\')"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+code+' · '+mm+'</div><div class="row-s">Service · '+(s.note||'Service')+(s.completed_date?(' · '+fmtShort(s.completed_date)):'')+'</div></div><div class="chev">›</div></button>';
+    }).join('');
+    var doneTotal=myDone.length+myDoneSvc.length;
+    var doneCard=doneTotal?('<div class="fcard"><div class="fcard-hdr">✅ Completed by you ('+doneTotal+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+doneRows+doneSvcRows+'</div></div>'):'';
+    body='<div class="fcard"><div class="fcard-hdr">🔧 Repairs assigned to me ('+myOpen.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+woRows+'</div></div>'+
+      '<div class="fcard"><div class="fcard-hdr">🗓️ Services booked to me ('+mySvc.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+svcRows+'</div></div>'+
+      doneCard;
+  }
+  setHeader('Plant & Equipment', 'Dave Wilkins · mechanic');
+  var html='<div class="wrap platform-wrap">'+tabNav+body+'</div>';
   var ov=document.getElementById('screen-oversight'); ov.innerHTML=html;
   document.getElementById('screen-list').style.display='none';
   document.getElementById('screen-detail').style.display='none';
