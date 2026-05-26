@@ -1476,6 +1476,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div class="role-option-icon" style="background:rgba(184,150,12,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
               <div class="role-option-text"><h4>Company Director</h4><p>Company-wide analytics dashboard — full overview across all sites</p></div>
             </div>
+            <div class="role-option" id="role-opt-mechanic" onclick="selectRole('mechanic')">
+              <div class="role-option-icon" style="background:rgba(44,107,94,.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#2C6B5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+              <div class="role-option-text"><h4>Mechanic</h4><p>Plant repairs &amp; services assigned to you — complete &amp; sign them off</p></div>
+            </div>
           </div>
           <input type="hidden" id="p-role" value="">
           <div id="p-role-detail-wrap" style="display:none">
@@ -1964,6 +1968,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="status-pill" id="sp-premob" onclick="workerChipTapPremob()" style="display:none">
         <div class="sp-dot sp-pending"></div><span id="sp-premob-lbl">Pre-mob</span>
       </div>
+      <div class="status-pill" id="sp-mech-wo" onclick="workerChipTapMechWO()" style="display:none">
+        <div class="sp-dot sp-pending"></div><span id="sp-mech-wo-lbl">Repairs assigned</span>
+      </div>
+      <div class="status-pill" id="sp-mech-svc" onclick="workerChipTapMechSvc()" style="display:none">
+        <div class="sp-dot sp-pending"></div><span id="sp-mech-svc-lbl">Services booked</span>
+      </div>
     </div>
   </div>
 
@@ -1998,13 +2008,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-name">Daily Pre-Start</div>
         <div class="tile-sub">Site inspection checklist</div>
       </div>
-      <div class="tile" onclick="location.href='plant.html'">
+      <div class="tile" data-mech="1" onclick="workerOpenPlant()">
         <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
         <div class="tile-name">Plant &amp; Equipment</div>
         <div class="tile-sub" id="prestart-tile-sub">Plant &amp; equipment</div>
         <div class="tile-notif" id="prestart-notif" style="display:none"></div>
       </div>
-      <div class="tile" onclick="goToTalk()">
+      <div class="tile" data-mech="1" onclick="goToTalk()">
         <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="tile-name">Toolbox Talk</div>
         <div class="tile-sub" id="talk-tile-sub">Sign today's talk</div>
@@ -2027,7 +2037,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
         <div class="tile-name">Take 5</div><div class="tile-sub">Pre-task safety check</div>
       </div>
-      <div class="tile" onclick="goToSwmsLibrary()">
+      <div class="tile" data-mech="1" onclick="goToSwmsLibrary()">
         <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div>
         <div class="tile-name">SWMS Library</div><div class="tile-sub" id="swms-tile-sub2">Read &amp; sign SWMS</div>
       </div>
@@ -2040,7 +2050,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-name">Safety Stars</div>
         <div class="tile-sub" id="stars-tile-sub">View leaderboard</div>
       </div>
-      <div class="tile" onclick="smartSignFlow()">
+      <div class="tile" data-mech="1" onclick="smartSignFlow()">
         <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
         <div class="tile-name">Sign In / Out</div><div class="tile-sub" id="signin-tile-sub">Not signed in yet</div>
       </div>
@@ -16543,6 +16553,13 @@ const SITE_CONTACTS = {
   safety:     { name: 'Slán Safety',     phone: '0800000000' }
 };
 
+// Plant tile on the worker home — a mechanic opens their own "My jobs" view,
+// everyone else gets the standard plant section.
+function workerOpenPlant(){
+  var r = ''; try { var pr = getProfile(); r = (pr && pr.role) || ''; } catch(e) {}
+  location.href = (r === 'Mechanic') ? 'plant.html?role=mechanic' : 'plant.html';
+}
+
 function initHome(p){
   const h=new Date().getHours();
   const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
@@ -16574,6 +16591,20 @@ function initHome(p){
   const isSupervisor = p.role === 'Site Supervisor';
   const navDash = document.getElementById('nav-dash');
   if (navDash) navDash.style.display = isSupervisor ? 'flex' : 'none';
+
+  // Mechanic reuses the worker home but only needs Sign in/out, Toolbox, SWMS
+  // and Plant. Tiles tagged data-mech stay; the rest are hidden for a mechanic
+  // (and shown again for any other role so a demo role-flip resets cleanly).
+  try {
+    const isMech = p.role === 'Mechanic';
+    const grid = document.querySelector('#screen-home .grid');
+    if (grid) {
+      Array.prototype.forEach.call(grid.children, function(t){
+        if (!t.classList || !t.classList.contains('tile')) return;
+        t.style.display = (isMech && !t.hasAttribute('data-mech')) ? 'none' : '';
+      });
+    }
+  } catch(e) {}
 
   // Show site pre-start banner for everyone
   checkSitePsBannerStatus();
@@ -16710,6 +16741,67 @@ async function updateStatusStrip() {
   try { workerUpdatePlantChip(); } catch(e) {}
   try { workerUpdatePremobChip(); } catch(e) {}
   try { workerUpdatePlantApprovalsChip(); } catch(e) {}
+  try { updateMechanicStrip(); } catch(e) {}
+}
+
+// ───────────────────────────────────────────────
+// MECHANIC HOME PILLS — Dave Wilkins reuses the worker status strip but only
+// needs Sign In / Toolbox / SWMS plus his plant jobs: repairs assigned to him
+// and services booked to him. Both deep-link straight into the mechanic's
+// "My jobs" view in plant.html (same tab), opening the exact item when there's
+// just one. Reads the same localStorage stores plant.html writes.
+function _mechMyWOs() {
+  var wos = [];
+  try { wos = JSON.parse(localStorage.getItem('slan_plant_wos') || '[]'); } catch(e) {}
+  return (wos || []).filter(function(w){
+    return w && w.mechanic === 'Dave Wilkins' && w.mech_inhouse !== false && w.status !== 'Returned to service';
+  });
+}
+function _mechMyServices() {
+  var svc = {};
+  try { svc = JSON.parse(localStorage.getItem('slan_plant_services') || '{}'); } catch(e) {}
+  return Object.keys(svc).filter(function(code){
+    var s = svc[code];
+    return s && s.status === 'booked' && s.workshop === 'Dave Wilkins' && s.mech_inhouse !== false;
+  });
+}
+function updateMechanicStrip() {
+  var me = (typeof getProfile === 'function') ? getProfile() : null;
+  var isMech = !!(me && me.role === 'Mechanic');
+  var woPill  = document.getElementById('sp-mech-wo');
+  var svcPill = document.getElementById('sp-mech-svc');
+  if (!isMech) {
+    if (woPill) woPill.style.display = 'none';
+    if (svcPill) svcPill.style.display = 'none';
+    return;
+  }
+  // A mechanic doesn't do daily pre-starts, SDS reports, incidents or pre-mob —
+  // hide those worker/event pills so the strip only shows what's relevant to him.
+  ['sp-prestart','sp-sds','sp-inc','sp-plant','sp-plant-appr','sp-premob'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  var myWO = _mechMyWOs();
+  if (woPill) {
+    var woLbl = document.getElementById('sp-mech-wo-lbl');
+    woPill.style.display = '';
+    if (myWO.length === 0) { if (woLbl) woLbl.textContent = 'Repairs (none assigned)'; setPillState('sp-mech-wo', 'done'); }
+    else { if (woLbl) woLbl.textContent = 'Repairs (' + myWO.length + ' assigned)'; setPillState('sp-mech-wo', myWO.some(function(w){ return (w.priority||'') === 'High'; }) ? 'fail' : 'warn'); }
+  }
+  var mySvc = _mechMyServices();
+  if (svcPill) {
+    var svcLbl = document.getElementById('sp-mech-svc-lbl');
+    svcPill.style.display = '';
+    if (mySvc.length === 0) { if (svcLbl) svcLbl.textContent = 'Services (none booked)'; setPillState('sp-mech-svc', 'done'); }
+    else { if (svcLbl) svcLbl.textContent = 'Services (' + mySvc.length + ' booked)'; setPillState('sp-mech-svc', 'warn'); }
+  }
+}
+function workerChipTapMechWO() {
+  var my = _mechMyWOs();
+  location.href = (my.length === 1) ? ('plant.html?role=mechanic&wo=' + encodeURIComponent(my[0].wo)) : 'plant.html?role=mechanic';
+}
+function workerChipTapMechSvc() {
+  var my = _mechMyServices();
+  location.href = (my.length === 1) ? ('plant.html?role=mechanic&service=' + encodeURIComponent(my[0])) : 'plant.html?role=mechanic';
 }
 
 function workerUpdatePermitsTileSub() {
@@ -20132,7 +20224,7 @@ function selectRole(role) {
 
 function selectRoleAfterPin(role) {
   // Highlight selected card
-  ['supervisor','worker','director'].forEach(r => {
+  ['supervisor','worker','director','mechanic'].forEach(r => {
     const el = document.getElementById('role-opt-' + r);
     if (el) el.classList.toggle('selected', r === role);
   });
@@ -20148,6 +20240,10 @@ function selectRoleAfterPin(role) {
     if (workStartWrap) workStartWrap.style.display = 'block';
   } else if (role === 'director') {
     if (roleInput) roleInput.value = 'Company Director';
+    if (detailWrap) detailWrap.style.display = 'none';
+    if (workStartWrap) workStartWrap.style.display = 'none';
+  } else if (role === 'mechanic') {
+    if (roleInput) roleInput.value = 'Mechanic';
     if (detailWrap) detailWrap.style.display = 'none';
     if (workStartWrap) workStartWrap.style.display = 'none';
   } else {
@@ -37743,6 +37839,10 @@ function showDemoRoleSheet() {
           '<div style="font-size:14px;font-weight:600;color:var(--text)">Company Director</div>' +
           '<div style="font-size:12px;color:var(--muted);margin-top:2px">Patrick Murphy — Director — Murphy Civil Construction</div>' +
         '</button>' +
+        '<button onclick="startDemoAs(this.dataset.role)" data-role="mechanic" style="padding:16px;border-radius:12px;border:1.5px solid var(--border);background:#fff;text-align:left;cursor:pointer;font-family:inherit;width:100%">' +
+          '<div style="font-size:14px;font-weight:600;color:var(--text)">Mechanic</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">Dave Wilkins — In-house Mechanic — Murphy Civil Construction</div>' +
+        '</button>' +
         '<button onclick="location.href=\'induction.html?demo=1\'" style="padding:16px;border-radius:12px;border:1.5px solid var(--gold);background:#FDF8E8;text-align:left;cursor:pointer;font-family:inherit;width:100%">' +
           '<div style="font-size:14px;font-weight:600;color:var(--text)">New worker — see induction</div>' +
           '<div style="font-size:12px;color:var(--muted);margin-top:2px">Preview the full induction a new starter completes at home</div>' +
@@ -37762,7 +37862,8 @@ function startDemoAs(role) {
   var _currentRoleSlug = _currentProfile ? (
     _currentProfile.role === 'Worker'           ? 'worker' :
     _currentProfile.role === 'Site Supervisor'  ? 'supervisor' :
-    _currentProfile.role === 'Company Director' ? 'director' : ''
+    _currentProfile.role === 'Company Director' ? 'director' :
+    _currentProfile.role === 'Mechanic'         ? 'mechanic' : ''
   ) : '';
 
   DEMO_MODE = true;
@@ -37771,7 +37872,8 @@ function startDemoAs(role) {
   var profiles = {
     worker:     { name:'Jake Ryan',      dob:'1992-06-14', company:'Murphy Civil Construction', role:'Worker',           safetyPoints:912, phone:'0412 345 678', dob:'1992-06-14', state:'NSW', experience:'6-10', licences:{ whitecard:{expiry:'2027-03-10'}, driver:{expiry:'2027-08-22'}, hrwl:{expiry:'2026-07-15'} } },
     supervisor: { name:'Eoin Burke',     company:'Murphy Civil Construction', role:'Site Supervisor',  safetyPoints:0,   phone:'0432 778 901', dob:'1985-11-22', state:'NSW', experience:'10+',  licences:{ whitecard:{expiry:'2027-06-15'}, hrwl:{expiry:'2026-09-20'}, firstaid:{expiry:'2026-11-30'} } },
-    director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   phone:'0419 222 333', dob:'1972-03-08', state:'NSW', experience:'10+',  licences:{} }
+    director:   { name:'Patrick Murphy', company:'Murphy Civil Construction', role:'Company Director', safetyPoints:0,   phone:'0419 222 333', dob:'1972-03-08', state:'NSW', experience:'10+',  licences:{} },
+    mechanic:   { name:'Dave Wilkins',   company:'Murphy Civil Construction', role:'Mechanic',         safetyPoints:0,   phone:'0421 556 998', dob:'1981-09-03', state:'NSW', experience:'10+',  licences:{ whitecard:{expiry:'2027-04-18'}, driver:{expiry:'2028-01-12'} } }
   };
   var p;
   if (_wasAlreadyInDemo && _currentRoleSlug === role && _currentProfile) {
