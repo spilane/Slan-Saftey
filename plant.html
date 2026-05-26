@@ -775,6 +775,7 @@ function renderAssets(){
   }).join('');
 }
 function showList(){
+  _navStack=[]; _navCur=null; _navCurKey=null;   // top-level register — start a fresh back-stack
   document.getElementById('screen-detail').style.display='none';
   var ov=document.getElementById('screen-oversight'); if(ov) ov.style.display='none';
   document.getElementById('screen-list').style.display='block';
@@ -791,10 +792,28 @@ function showDetail(html){
   hideHeaderGreet();
   window.scrollTo(0,0);
 }
+/* ---------- back-stack: a 'back' button returns to the page you actually came from ----------
+   Each detail screen registers a re-render thunk via _view(key, thunk) when it draws. Drilling
+   deeper auto-pushes the previous screen. Back buttons call _navBack(): if there is a previous
+   page it re-renders it and returns true; if the stack is empty it returns false so the button
+   falls back to its old hardcoded target — so this can never navigate to nowhere. */
+var _navStack=[], _navCur=null, _navCurKey=null, _navBacking=false;
+function _view(key, thunk){
+  if(_navBacking){ _navBacking=false; _navCurKey=key; _navCur=thunk; return; }
+  if(_navCurKey===key){ _navCur=thunk; return; }            // same screen re-rendering (e.g. a filter chip) — don't add a history step
+  if(_navCur){ _navStack.push({key:_navCurKey, thunk:_navCur}); }
+  _navCurKey=key; _navCur=thunk;
+}
+function _navBack(){
+  var e=_navStack.pop();
+  if(e && typeof e.thunk==='function'){ _navBacking=true; try{ e.thunk(); return true; }catch(err){ _navBacking=false; } }
+  _navCur=null; _navCurKey=null; return false;
+}
 
 /* ---------- machine hub (QR landing) ---------- */
 function openHub(i){
   curAsset=i; var a=ASSETS[i];
+  _view('hub:'+i, function(){ openHub(i); });
   var hubQr=''; try{ var _q=qrcode(0,'M'); _q.addData(location.origin+location.pathname+'?machine='+a.code); _q.make(); hubQr=_q.createImgTag(5,6); }catch(e){}
   var dt=plantDetails(a.code), t0=new Date();
   var docs=getDocs(a).map(function(d){
@@ -902,7 +921,7 @@ function openHub(i){
     '</div>';
   }
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="showList()">‹ All machines</button>'+
+    '<button class="back" onclick="if(!_navBack()){showList()}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+hiredChip(a.code)+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace(/_/g,' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
     (hired ? '' : '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>')+
     (hired
@@ -2765,6 +2784,7 @@ function _assetRegisterBody(fleet){
     '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
 }
 function renderOversight(){
+  _navStack=[]; _navCur=null; _navCurKey=null;   // top-level home — start a fresh back-stack
   var supLocked = (getRole()==='supervisor');
   if(supLocked){ oversightSite = getSiteParam() || 'Bondi Junction Mixed Use'; }
   setTopRight(_profileAvatar(supLocked ? (PLANT_SUP_NAME[oversightSite]||'Supervisor') : 'Patrick Murphy'));
@@ -2876,6 +2896,8 @@ function mechSetTab(t){ _mechTab=t; renderMechanic(); }
 function renderMechanic(){
   setTopRight(_profileAvatar('Dave Wilkins'));
   _homeView='mechanic';
+  if(!_navBacking){ _navStack=[]; _navCur=null; _navCurKey=null; }   // mechanic home — fresh back-stack (unless we're returning to it)
+  _view('mechHome', function(){ renderMechanic(); });
   var myOpen=WORKORDERS.filter(function(w){ return w.mechanic==='Dave Wilkins' && w.mech_inhouse!==false && w.status!=='Returned to service'; });
   var myDone=WORKORDERS.filter(function(w){ return w.mechanic==='Dave Wilkins' && w.mech_inhouse!==false && w.status==='Returned to service'; });
   var svcAll=_svcAll();
@@ -2927,6 +2949,7 @@ function renderMechanic(){
 /* Mechanic: full repair & service history across the whole fleet (every completed repair + service, newest first → opens the record). */
 function renderMechHistory(){
   setTopRight(_profileAvatar('Dave Wilkins')); _homeView='mechanic';
+  _view('mechHist', function(){ renderMechHistory(); });
   var items=[];
   WORKORDERS.forEach(function(w){ if(w.status==='Returned to service'){ var when=(w.signoff&&w.signoff.when)?new Date(w.signoff.when):(w.repair_date?new Date(w.repair_date):null); items.push({ when:when, kind:'Repair', code:w.code, machine:w.machine, label:w.fault, by:w.mechanic||'', cost:_woClientCost(w), open:'openWO('+WORKORDERS.indexOf(w)+')' }); } });
   var svc=_svcAll(); Object.keys(svc).forEach(function(code){ var s=svc[code]; if(s&&s.status==='done'){ var a=ASSETS.find(function(x){return x.code===code;}); items.push({ when:s.completed_date?new Date(s.completed_date):null, kind:'Service', code:code, machine:a?(a.make+' '+a.model):'', label:s.note||'Service', by:s.workshop||'', cost:_svcCost(s), open:"plantViewServiceRecord('"+code+"')" }); } });
@@ -2937,7 +2960,7 @@ function renderMechHistory(){
   }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No completed repairs or services on record yet.</div></div></div>';
   setHeader('Repair & service history','Everything done across the fleet');
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="renderMechanic()">‹ My jobs</button>'+
+    '<button class="back" onclick="if(!_navBack()){renderMechanic()}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">📋</div><div style="flex:1"><div class="hub-code">Repair &amp; service history</div><div class="hub-mm">All completed work across the fleet</div></div></div>'+
     '<div class="sec-h">Completed repairs &amp; services ('+items.length+')</div><div class="tile">'+rows+'</div>'+
     '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap any line to open its full record / PDF.</div>'+
@@ -2947,6 +2970,7 @@ function renderMechHistory(){
 /* Mechanic: warranty status for every machine in the fleet (in-warranty first) so he knows when a repair should be a no-cost warranty claim. */
 function renderMechWarranties(){
   setTopRight(_profileAvatar('Dave Wilkins')); _homeView='mechanic';
+  _view('mechWarr', function(){ renderMechWarranties(); });
   var sorted=ASSETS.slice().sort(function(a,b){ var ai=(!isHired(a.code)&&inWarranty(a.code))?0:1, bi=(!isHired(b.code)&&inWarranty(b.code))?0:1; return ai-bi; });
   var inCount=ASSETS.filter(function(a){ return !isHired(a.code)&&inWarranty(a.code); }).length;
   var rows=sorted.map(function(a){
@@ -2961,7 +2985,7 @@ function renderMechWarranties(){
   }).join('');
   setHeader('Warranties','Which machines are still under warranty');
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="renderMechanic()">‹ My jobs</button>'+
+    '<button class="back" onclick="if(!_navBack()){renderMechanic()}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">🛡️</div><div style="flex:1"><div class="hub-code">Warranties</div><div class="hub-mm">'+inCount+' machine'+(inCount===1?'':'s')+' currently in warranty</div></div></div>'+
     '<div style="font-size:11.5px;color:var(--t2);line-height:1.5;margin-bottom:10px">If a machine is <b style="color:#1B6E3A">in warranty</b>, a repair should usually be a no-cost claim with the provider — flag it before paying.</div>'+
     '<div class="tile">'+rows+'</div>'+
@@ -2988,6 +3012,7 @@ function _partWarrantyText(p){
 }
 function renderPartsLedger(code){
   if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); _homeView='mechanic'; }
+  _view('parts:'+(code||'fleet'), function(){ renderPartsLedger(code); });
   var a = code?ASSETS.find(function(x){return x.code===code;}):null;
   var items=_partsHistory(code||null);
   var rows=items.length?items.map(function(p){
@@ -3000,7 +3025,7 @@ function renderPartsLedger(code){
   var backLbl = code ? 'Back to machine' : (_mechMode()?'My jobs':'Work orders');
   setHeader('Parts fitted', code?(code+' · '+(a?a.make+' '+a.model:'')):'Across the fleet');
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="'+backBtn+'">‹ '+backLbl+'</button>'+
+    '<button class="back" onclick="if(!_navBack()){'+backBtn+'}">‹ '+backLbl+'</button>'+
     '<div class="hub-head"><div class="hub-ic">🔩</div><div style="flex:1"><div class="hub-code">Parts fitted</div><div class="hub-mm">'+(code?(code+' · '+(a?a.make+' '+a.model:'')):'Every part fitted across the fleet')+'</div></div></div>'+
     '<div class="sec-h">Parts replaced ('+items.length+')</div><div class="tile">'+rows+'</div>'+
     '<div style="font-size:11px;color:var(--t3);margin-top:8px">Logged automatically from completed repairs. A green dot = the part is still under its own warranty.</div>'+
@@ -3031,6 +3056,7 @@ var _mhFilter='all';
 function mhSetFilter(code,f){ _mhFilter=f; renderMachineHistory(code); }
 function renderMachineHistory(code){
   if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
+  _view('machHist:'+code, function(){ renderMachineHistory(code); });
   var a=ASSETS.find(function(x){return x.code===code;}); var idx=a?ASSETS.indexOf(a):-1;
   var ev=_machineTimeline(code);
   // filter chips so a year of daily pre-starts doesn't bury the repairs/services
@@ -3051,7 +3077,7 @@ function renderMachineHistory(code){
   }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">Nothing in this category yet.</div></div></div>';
   setHeader('Machine history', a?(code+' · '+a.make+' '+a.model):code);
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="openHub('+idx+')">‹ Back to machine</button>'+
+    '<button class="back" onclick="if(!_navBack()){openHub('+idx+')}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">📜</div><div style="flex:1"><div class="hub-code">Machine history</div><div class="hub-mm">'+(a?(code+' · '+a.make+' '+a.model):code)+'</div></div></div>'+
     chips+
     '<div class="tile">'+rows+'</div>'+
@@ -3061,6 +3087,7 @@ function renderMachineHistory(code){
 /* Maintenance spend — fleet total broken down per machine, and each machine broken down into the actual repairs + services that make up its cost. */
 function renderMechSpend(){
   if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
+  _view('mechSpend', function(){ renderMechSpend(); });
   var fleet=ASSETS.filter(function(a){ return !isHired(a.code); });
   var total=fleet.reduce(function(s,a){ return s+assetSpend12(a); },0);
   var sorted=fleet.slice().sort(function(a,b){ return assetSpend12(b)-assetSpend12(a); });
@@ -3070,7 +3097,7 @@ function renderMechSpend(){
   }).join('');
   setHeader('Maintenance spend','Across the fleet · tap a machine to break it down');
   var html='<div class="wrap platform-wrap">'+
-    '<button class="back" onclick="mechSetTab(\'reports\')">‹ Reports</button>'+
+    '<button class="back" onclick="if(!_navBack()){mechSetTab(\'reports\')}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">Maintenance spend</div><div class="hub-mm">Last 12 months · '+fleet.length+' owned machines</div></div></div>'+
     '<div class="fcard"><div class="fcard-hdr">Total fleet spend (12 mo)</div><div style="padding:16px"><div style="font-size:30px;font-weight:800;color:var(--deep)">'+money(total)+'</div><div style="font-size:11.5px;color:var(--t3);margin-top:4px">Tap any machine below to open its full breakdown.</div></div></div>'+
     '<div class="sec-h">By machine (highest first)</div><div class="tile">'+rows+'</div>'+
@@ -3081,6 +3108,7 @@ function renderMechSpend(){
 function renderMachineSpend(code, from){
   if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a){ renderMechSpend(); return; }
+  _view('machSpend:'+code, function(){ renderMachineSpend(code, from); });
   var idx=ASSETS.indexOf(a);
   var sp=assetSpend12(a);
   var done=WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; });
@@ -3090,7 +3118,7 @@ function renderMachineSpend(code, from){
   var body=items.length?items.join(''):'<div class="svc-row" style="color:var(--t3)"><span>No recorded spend</span><span></span></div>';
   setHeader('Maintenance spend', code+' · '+a.make+' '+a.model);
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="'+(from==='hub'?('openHub('+idx+')'):'renderMechSpend()')+'">‹ '+(from==='hub'?'Back to machine':'All machines')+'</button>'+
+    '<button class="back" onclick="if(!_navBack()){'+(from==='hub'?('openHub('+idx+')'):'renderMechSpend()')+'}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">'+code+' — spend</div><div class="hub-mm">'+a.make+' '+a.model+' · last 12 months</div></div></div>'+
     '<div class="svc" style="margin-bottom:12px"><div class="svc-row"><span><b>Total (12 mo)</b></span><span style="font-weight:800;font-size:15px">'+money(sp)+'</span></div></div>'+
     '<div class="sec-h">What makes it up</div><div class="svc">'+body+'</div>'+
@@ -3102,6 +3130,7 @@ function renderMachineSpend(code, from){
 /* Mechanic: upcoming service schedule — everything due / overdue / booked across the fleet, soonest/most-urgent first. */
 function renderMechServicesDue(){
   if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  _view('mechSvcDue', function(){ renderMechServicesDue(); });
   var fleet=ASSETS.filter(function(a){ return !isHired(a.code); });
   var items=[]; fleet.forEach(function(a){ var st=_svcStatus(a); if(!st || st.state==='done') return; items.push({a:a,st:st}); });
   var rank={overdue:0,due_soon:1,ok:3};
@@ -3113,7 +3142,7 @@ function renderMechServicesDue(){
   }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No services due or booked.</div></div></div>';
   setHeader('Service schedule','What’s coming due across the fleet');
   var html='<div class="wrap platform-wrap">'+
-    '<button class="back" onclick="mechSetTab(\'reports\')">‹ Reports</button>'+
+    '<button class="back" onclick="if(!_navBack()){mechSetTab(\'reports\')}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">🗓️</div><div style="flex:1"><div class="hub-code">Service schedule</div><div class="hub-mm">Upcoming, overdue &amp; booked services</div></div></div>'+
     '<div class="tile">'+rows+'</div>'+
   '</div>';
@@ -3122,6 +3151,7 @@ function renderMechServicesDue(){
 /* Mechanic: waiting-on-parts — jobs on hold / awaiting parts, longest-waiting first, so parts get chased. */
 function renderMechWaiting(){
   if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  _view('mechWait', function(){ renderMechWaiting(); });
   var list=WORKORDERS.filter(function(w){ return w.status!=='Returned to service' && (_woOnHold(w) || w.status==='Awaiting parts'); });
   list.sort(function(x,y){ return new Date(x.raised_at||0)-new Date(y.raised_at||0); });
   var rows=list.length?list.map(function(w){ var idx=WORKORDERS.indexOf(w);
@@ -3131,7 +3161,7 @@ function renderMechWaiting(){
   }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">Nothing waiting on parts right now.</div></div></div>';
   setHeader('Waiting on parts','Jobs paused for parts');
   var html='<div class="wrap platform-wrap">'+
-    '<button class="back" onclick="mechSetTab(\'reports\')">‹ Reports</button>'+
+    '<button class="back" onclick="if(!_navBack()){mechSetTab(\'reports\')}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">⏸️</div><div style="flex:1"><div class="hub-code">Waiting on parts</div><div class="hub-mm">'+list.length+' job'+(list.length===1?'':'s')+' on hold</div></div></div>'+
     '<div class="tile">'+rows+'</div>'+
   '</div>';
@@ -3145,6 +3175,7 @@ function _recurringFaults(code){
 }
 function renderMechRecurring(){
   if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  _view('mechRecur', function(){ renderMechRecurring(); });
   var flagged=[]; ASSETS.forEach(function(a){ _recurringFaults(a.code).forEach(function(c){ flagged.push({a:a,c:c}); }); });
   flagged.sort(function(x,y){ return y.c.n-x.c.n; });
   var rows=flagged.length?flagged.map(function(o){ var a=o.a, c=o.c;
@@ -3152,7 +3183,7 @@ function renderMechRecurring(){
   }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No recurring faults — nothing has been flagged more than once.</div></div></div>';
   setHeader('Recurring faults','The same problem coming back');
   var html='<div class="wrap platform-wrap">'+
-    '<button class="back" onclick="mechSetTab(\'reports\')">‹ Reports</button>'+
+    '<button class="back" onclick="if(!_navBack()){mechSetTab(\'reports\')}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">🔁</div><div style="flex:1"><div class="hub-code">Recurring faults</div><div class="hub-mm">Items flagged 2+ times on a machine</div></div></div>'+
     '<div style="font-size:11.5px;color:var(--t2);line-height:1.5;margin-bottom:10px">A fault that keeps coming back usually means the real cause hasn&rsquo;t been fixed — worth a closer look.</div>'+
     '<div class="tile">'+rows+'</div>'+
@@ -3197,6 +3228,7 @@ function renderTodayPrestarts(){
 function openWO(i){
   var w=WORKORDERS[i]; if(!w) return;
   _woCur=i;
+  _view('wo:'+i, function(){ openWO(i); });
   var inW=(typeof inWarranty==='function') && inWarranty(w.code) && !(typeof isHired==='function' && isHired(w.code));
   var done=(w.status==='Returned to service');
   var pdfBtn = _loadPlantRecord(w.code) ? '<button class="btn-ghost" style="margin-top:12px" onclick="plantViewSavedPDF(\''+w.code+'\')">📄  View operator&rsquo;s pre-start record (PDF)</button>' : '';
@@ -3416,7 +3448,7 @@ function woComplete(i){
   var recLine = ext ? 'An external repair record (PDF) has been filed — open it from the Completed tab.' : 'A repair record (PDF) has been filed — open it from the Completed tab.';
   slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Returned to service</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+w.wo+' — '+w.code+' '+byLine+'<br>'+costLine+'<br><span style="font-size:11.5px;color:var(--t3)">'+recLine+'</span></div></div>', function(){ if(_mechMode()){ renderMechanic(); } else { platTab='workorders'; woSub='done'; renderOversight(); } });
 }
-function _woBack(){ if(_woCur!=null && WORKORDERS[_woCur]){ _woReadForm(WORKORDERS[_woCur]); _saveWO(WORKORDERS[_woCur]); } _woCur=null; _plantHomeAfterJob(); }
+function _woBack(){ if(_woCur!=null && WORKORDERS[_woCur]){ _woReadForm(WORKORDERS[_woCur]); _saveWO(WORKORDERS[_woCur]); } _woCur=null; if(!_navBack()){ _plantHomeAfterJob(); } }
 /* Mechanic puts a WO on hold (e.g. waiting for parts) for N days — pauses the "open too long" alerts until the hold lapses. */
 function woHold(i, days){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); var rEl=document.getElementById('wo-hold-reason'); var reason=rEl?(rEl.value||'').trim():''; w.hold_until=iso(dOffset(days)); w.hold_reason=reason||'Waiting for parts'; if(w.status!=='Returned to service') w.status='Awaiting parts'; _saveWO(w); openWO(i); slanMsg('', '<div style="text-align:center"><div style="font-size:38px">⏸️</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">On hold for '+days+' days</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px;line-height:1.5">'+w.wo+' won&rsquo;t show as overdue until '+fmt(w.hold_until)+'. Reason: '+_premobEsc(w.hold_reason)+'.</div></div>'); }
 function woResume(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); w.hold_until=null; w.hold_reason=''; if(w.status==='Awaiting parts') w.status='In progress'; _saveWO(w); openWO(i); }
@@ -3483,11 +3515,12 @@ function _loadFaultReport(id){ var a=_faultReports(); for(var i=0;i<a.length;i++
 function _faultReportsFor(code){ return _faultReports().filter(function(r){ return r.code===code; }); }
 function plantViewFaultReport(id){
   var r=_loadFaultReport(id); if(!r){ slanMsg('Report not found','<div style="font-size:13px;color:var(--t2);line-height:1.5">That fault report isn’t on this device.</div>'); return; }
+  _view('fault:'+id, function(){ plantViewFaultReport(id); });
   var when=new Date(r.when).toLocaleString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
   var col=r.critical?'#A32D2D':(r.severity==='med'?'#A06000':'#2D6A45');
   var a=ASSETS.find(function(x){return x.code===r.code;}); var backIdx=a?ASSETS.indexOf(a):-1;
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="'+(backIdx>=0?('openHub('+backIdx+')'):'showList()')+'">‹ Back to machine</button>'+
+    '<button class="back" onclick="if(!_navBack()){'+(backIdx>=0?('openHub('+backIdx+')'):'showList()')+'}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">⚠️</div><div style="flex:1"><div class="hub-code">Fault report</div><div class="hub-mm">'+r.code+' · '+r.machine+'</div><div class="hub-hours" style="color:'+col+';font-weight:700">'+r.severity_label+'</div></div></div>'+
     '<div class="sec-h">Reported by</div><div class="svc">'+
       '<div class="svc-row"><span>'+(r.role==='worker'?'Operator':'Raised by')+'</span><span>'+_premobEsc(r.worker)+'</span></div>'+
@@ -3649,13 +3682,14 @@ function plantCompleteServiceSubmit(code){
 }
 function plantViewServiceRecord(code){
   var s=_svcState(code); if(!s||s.status!=='done'){ slanMsg('No service record','<div style="font-size:13px;color:var(--t2)">This machine has no completed service on this device.</div>'); return; }
+  _view('svcRec:'+code, function(){ plantViewServiceRecord(code); });
   var a=ASSETS.find(function(x){return x.code===code;}); var idx=a?ASSETS.indexOf(a):-1; var ext=(s.mech_inhouse===false);
   var when=s.completed_date?fmt(s.completed_date):'';
   var costRows = ext
     ? '<div class="svc-row"><span>Service cost</span><span>'+money(_svcCost(s))+'</span></div>'
     : '<div class="svc-row"><span>Parts</span><span>'+money(s.parts_cost||0)+'</span></div><div class="svc-row"><span>Labour</span><span>'+(s.labour_hrs||0)+' hr × '+money(s.labour_rate||0)+'</span></div><div class="svc-row"><span>Total</span><span><b>'+money(_svcCost(s))+'</b></span></div>';
   var html='<div class="wrap" style="padding:0;max-width:none">'+
-    '<button class="back" onclick="'+(_mechMode()?('_svcBackTarget('+idx+')'):(idx>=0?('openHub('+idx+')'):'showList()'))+'">‹ '+(_mechMode()?'My jobs':'Back to machine')+'</button>'+
+    '<button class="back" onclick="if(!_navBack()){'+(_mechMode()?('_svcBackTarget('+idx+')'):(idx>=0?('openHub('+idx+')'):'showList()'))+'}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">🔧</div><div style="flex:1"><div class="hub-code">Service record</div><div class="hub-mm">'+code+' · '+(a?a.make+' '+a.model:'')+'</div></div></div>'+
     '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:12px;padding:14px 15px;margin:14px 0;font-size:12.5px;color:#1B5E3F">✅ Serviced '+when+(s.workshop?(' · '+s.workshop):'')+(ext?' (external — see attached invoice)':'')+(s.declared?'<div style="font-size:11.5px;font-style:italic;color:#33433C;margin-top:8px">&ldquo;'+SVC_DECLARATION+'&rdquo;</div>':'')+'</div>'+
     '<div class="sec-h">Work carried out</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-s" style="white-space:pre-wrap">'+(_premobEsc(s.work_done||'')||'—')+'</div></div></div></div>'+
