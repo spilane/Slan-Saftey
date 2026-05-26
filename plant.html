@@ -284,18 +284,18 @@ var LIC={ white_card:'White Card', telehandler:'Telehandler ticket',
 function licName(c){ return LIC[c]||c; }
 
 /* ---------- WORKERS ---------- */
+// ONE identity per role, sourced from the WHS app — plant uses the app's logged-in worker, not its own list.
+// The worker is the WHS demo worker (Jake Ryan), fully authorised so the QR gate stays green.
 var WORKERS=[
-  { id:'w1', name:'Daniel Byrne', trade:'Plant Operator · Byrne Plant Hire', induction_expiry:iso(dOffset(280)),
+  { id:'w1', name:'Jake Ryan', trade:'Plant Operator · Murphy Civil Construction', induction_expiry:iso(dOffset(280)),
     tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
               {cls:'telehandler',expiry:iso(dOffset(360)),verified:true},
-              {cls:'ewp',expiry:iso(dOffset(300)),verified:true} ],
-    voc:[ {cls:'telehandler',make:'Manitou',model:'MT1840'}, {cls:'telehandler',make:'JCB',model:'540-170'} ], swms_signed:iso(dOffset(-5)), ra_signed:iso(dOffset(-5)) },
-  { id:'w2', name:'Jake Sullivan', trade:'Crane Operator · Sullivan Crane Services', induction_expiry:iso(dOffset(240)),
-    tickets:[ {cls:'white_card',expiry:iso(dOffset(900)),verified:true},
-              {cls:'crane',expiry:iso(dOffset(420)),verified:true},
-              {cls:'telehandler',expiry:iso(dOffset(380)),verified:true} ],
-    voc:[ {cls:'crane',make:'Franna',model:'AT-40'}, {cls:'crane',make:'Tadano',model:'GR-250'}, {cls:'telehandler',make:'Magni',model:'RTH 6.46'} ], swms_signed:iso(dOffset(-44)), ra_signed:iso(dOffset(-8)) }
+              {cls:'ewp',expiry:iso(dOffset(300)),verified:true},
+              {cls:'crane',expiry:iso(dOffset(420)),verified:true} ],
+    voc:[ {cls:'telehandler',make:'Manitou',model:'MT1840'}, {cls:'telehandler',make:'JCB',model:'540-170'}, {cls:'crane',make:'Franna',model:'AT-40'}, {cls:'crane',make:'Tadano',model:'GR-250'} ], swms_signed:iso(dOffset(-5)), ra_signed:iso(dOffset(-5)) }
 ];
+// match the name to the WHS app's logged-in worker so the identity is the same across the whole app
+try{ var _wp=JSON.parse(localStorage.getItem('slan_profile')||'null'); if(_wp&&_wp.name&&_wp.role==='Worker'){ WORKERS[0].name=_wp.name; if(_wp.company){ WORKERS[0].trade='Plant Operator · '+_wp.company; } } }catch(e){}
 
 /* ---------- ASSETS ---------- */
 var ASSETS=[
