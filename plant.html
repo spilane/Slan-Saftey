@@ -2254,7 +2254,7 @@ function _ticketedFor(a){
   if(!req.length) return pool.slice(); // no licence required -> any operator
   return pool.filter(function(w){ return req.every(function(cls){ return (w.tickets||[]).some(function(t){ return t.cls===cls && (!t.expiry || new Date(t.expiry)>=today); }); }); });
 }
-function premobAssignOther(code){ var el=document.getElementById('premob-other-op'); var v=el?(el.value||'').trim():''; if(!v){ if(el){ el.style.borderColor='#A32D2D'; el.focus(); } return; } premobAssign(code, v); }
+function premobAssignOther(code){ var el=document.getElementById('premob-other-op'); var v=el?(el.value||'').trim():''; if(!v){ if(el){ el.style.borderColor='#A32D2D'; el.focus(); } slanMsg('Enter a name','<div style="font-size:13px;color:var(--t2);line-height:1.55">Type the operator&rsquo;s name before assigning the pre-mobilisation check.</div>'); return; } premobAssign(code, v); }
 function premobAssign(code, name){
   _premobSaveState(code, { site_assignee:name||'' });
   plantPremobOpen(code);
@@ -3038,10 +3038,10 @@ function openWO(i){
         '<label style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;font-weight:700;color:#1B5E3F;cursor:pointer"><input type="checkbox" id="wo-warranty" '+(w.warranty_claim?'checked':'')+' onchange="woFormChanged('+i+')" style="width:17px;height:17px;accent-color:#1B6E3A"> Claim this repair under warranty ($0 to you)</label>'+
       '</div>';
     }
-    var partsRows=(w.parts||[]).length ? (w.parts||[]).map(function(p,pi){
+    var partsRows=(w.parts||[]).map(function(p,pi){
       var warrTag = p.warranty_months ? '<span style="color:var(--t3);font-weight:400;font-size:11px"> · '+p.warranty_months+'mo warranty</span>' : '';
       return '<div class="svc-row"><span>'+_premobEsc(p.desc)+warrTag+'</span><span style="display:flex;align-items:center;gap:8px">'+money(p.cost||0)+' <button onclick="woRemovePart('+i+','+pi+')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;line-height:1;padding:0">✕</button></span></div>';
-    }).join('') : '<div class="svc-row" style="color:var(--t3)"><span><i>Parts you add will be listed here.</i></span><span></span></div>';
+    }).join('');
     var invRow = w.invoice_doc
       ? '<div style="background:#EAF5EF;border:1px solid #BFE3D0;border-radius:10px;padding:10px 13px;font-size:12px;color:#1B5E3F;display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="word-break:break-all">📄 '+_premobEsc(w.invoice_doc)+' · on file</span><button onclick="woRemoveInvoice('+i+')" style="background:none;border:none;color:#A32D2D;font-size:15px;cursor:pointer;flex-shrink:0">✕</button></div>'
       : '<div id="wo-inv-dz" onclick="woInvoicePick('+i+')" ondragover="woInvDragOver(event)" ondragleave="woInvDragLeave(event)" ondrop="woInvDrop(event,'+i+')" style="border:1.5px dashed #C7CFC9;border-radius:10px;padding:14px;text-align:center;cursor:pointer;color:var(--t2);font-size:12px">📎 Drop the workshop invoice here, or tap to add<div style="font-size:10.5px;color:var(--t3);margin-top:3px">Attaches it to the job &amp; fills the repair cost</div></div>';
@@ -3056,8 +3056,9 @@ function openWO(i){
       '<div class="sec-h">Diagnosis &amp; work carried out</div>'+
       '<textarea id="wo-diagnosis" placeholder="What was found and what was done…" style="width:100%;box-sizing:border-box;min-height:78px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical">'+_premobEsc(w.diagnosis||'')+'</textarea>'+
       holdSec +
-      '<div class="sec-h">Parts &amp; materials</div><div class="svc">'+partsRows+'</div>'+
-      '<div style="font-size:11px;color:var(--t3);margin:9px 0 4px">Type the part, its cost and (if it has one) the part&rsquo;s own warranty in months, then tap <b>Add</b>.</div>'+
+      '<div class="sec-h">Parts &amp; materials</div>'+
+      ((w.parts||[]).length ? ('<div class="svc">'+partsRows+'</div>') : '')+
+      '<div style="font-size:11px;color:var(--t3);margin:9px 0 4px">'+((w.parts||[]).length?'Add another part below':'Add each part below')+' — type the part, its cost and (if it has one) the part&rsquo;s own warranty in months, then tap <b>Add</b>.</div>'+
       '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
         '<input id="wo-part-desc" placeholder="Part / material" style="flex:1 1 100%;min-width:0;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
         '<input id="wo-part-cost" type="number" inputmode="decimal" placeholder="$ cost" style="flex:1;min-width:0;padding:9px 10px;border:1.5px solid #D8D8D8;border-radius:9px;font-family:inherit;font-size:12.5px">'+
@@ -3155,7 +3156,7 @@ function woRemoveInvoice(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w);
 function woPhotoPick(i){ _woReadForm(WORKORDERS[i]); _woPhotoRef=i; var el=document.getElementById('wo-photo-input'); if(el) el.click(); }
 function woPhotoOnFile(input){ var i=_woPhotoRef, w=(i!=null)?WORKORDERS[i]:null; if(!w){ if(input) input.value=''; return; } var ph=(w.repair_photos||[]).slice(); if(input&&input.files){ for(var k=0;k<input.files.length;k++) ph.push(input.files[k].name); } if(input) input.value=''; w.repair_photos=ph; if(w.status==='Assigned') w.status='In progress'; _saveWO(w); openWO(i); }
 function woRemovePhoto(i, pi){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); (w.repair_photos||[]).splice(pi,1); _saveWO(w); openWO(i); }
-function woAddPart(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); var dEl=document.getElementById('wo-part-desc'), cEl=document.getElementById('wo-part-cost'), wEl=document.getElementById('wo-part-warr'); var desc=dEl?(dEl.value||'').trim():'', cost=cEl?(parseFloat(cEl.value)||0):0, warr=wEl?(parseInt(wEl.value,10)||0):0; if(!desc){ if(dEl){ dEl.style.borderColor='#A32D2D'; dEl.focus(); } return; } w.parts=(w.parts||[]).concat([{desc:desc, cost:cost, warranty_months:warr}]); if(w.status==='Assigned') w.status='In progress'; _saveWO(w); openWO(i); }
+function woAddPart(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); var dEl=document.getElementById('wo-part-desc'), cEl=document.getElementById('wo-part-cost'), wEl=document.getElementById('wo-part-warr'); var desc=dEl?(dEl.value||'').trim():'', cost=cEl?(parseFloat(cEl.value)||0):0, warr=wEl?(parseInt(wEl.value,10)||0):0; if(!desc){ if(dEl){ dEl.style.borderColor='#A32D2D'; dEl.focus(); } slanMsg('Name the part first','<div style="font-size:13px;color:var(--t2);line-height:1.55">Type the part or material name in the box before tapping Add.</div>'); return; } w.parts=(w.parts||[]).concat([{desc:desc, cost:cost, warranty_months:warr}]); if(w.status==='Assigned') w.status='In progress'; _saveWO(w); openWO(i); }
 function woRemovePart(i, pi){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); (w.parts||[]).splice(pi,1); _saveWO(w); openWO(i); }
 function woSaveDetails(i){ var w=WORKORDERS[i]; if(!w) return; _woReadForm(w); if((w.diagnosis||'').trim() && w.status==='Assigned') w.status='In progress'; _saveWO(w); slanMsg('', '<div style="text-align:center"><div style="font-size:38px">💾</div><div style="font-size:15px;font-weight:800;color:var(--deep);margin-top:6px">Repair details saved</div><div style="font-size:12.5px;color:var(--t2);margin-top:8px">'+w.wo+' — diagnosis, parts and labour saved.</div></div>', function(){ openWO(i); }); }
 function woComplete(i){
@@ -3210,7 +3211,7 @@ function plantRaiseWO(code){
 function plantRaiseWOSubmit(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
   var dEl=document.getElementById('rwo-desc'), desc=dEl?(dEl.value||'').trim():'';
-  if(!desc){ if(dEl){ dEl.style.borderColor='#A32D2D'; dEl.focus(); } return; }
+  if(!desc){ if(dEl){ dEl.style.borderColor='#A32D2D'; dEl.focus(); } slanMsg('Describe the fault first', '<div style="font-size:13px;color:var(--t2);line-height:1.55">Tell us what&rsquo;s wrong with the machine in the &ldquo;What&rsquo;s wrong?&rdquo; box before raising the work order.</div>'); return; }
   var sevEl=document.querySelector('input[name="rwo-sev"]:checked'), sev=sevEl?sevEl.value:'med';
   var prio=(sev==='crit')?'High':(sev==='med'?'Medium':'Low'), critical=(sev==='crit');
   var who=getRole()==='worker' ? ((currentWorker&&currentWorker.name)?currentWorker.name:'Operator') : (getRole()==='director'?'Patrick Murphy':((typeof PLANT_SUP_NAME!=='undefined'&&PLANT_SUP_NAME[oversightSite])?PLANT_SUP_NAME[oversightSite]:'Supervisor'));
@@ -3291,7 +3292,7 @@ function plantBookService(code){
 function plantBookServiceSubmit(code){
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var idx=ASSETS.indexOf(a);
   var dEl=document.getElementById('svc-date'), date=dEl?dEl.value:'';
-  if(!date){ if(dEl){ dEl.style.borderColor='#A32D2D'; } return; }
+  if(!date){ if(dEl){ dEl.style.borderColor='#A32D2D'; } slanMsg('Pick a service date','<div style="font-size:13px;color:var(--t2);line-height:1.55">Choose the date you want the service booked for before saving.</div>'); return; }
   if(date < iso(new Date())){ if(dEl){ dEl.style.borderColor='#A32D2D'; } slanMsg('Pick a future date','<div style="font-size:13px;color:var(--t2);line-height:1.55">A service can only be booked for today or a later date — you can’t schedule one in the past.</div>'); return; }
   var mEl=document.querySelector('input[name="svc-ws"]:checked'), mi=mEl?(+mEl.value):0, m=MECHANICS[mi]||MECHANICS[0];
   var note=(document.getElementById('svc-note')||{}).value||'';
