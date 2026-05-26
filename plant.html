@@ -2781,17 +2781,66 @@ function renderMechanic(){
   var doneTotal=myDone.length+myDoneSvc.length;
   var doneCard=doneTotal?('<div class="fcard"><div class="fcard-hdr">✅ Completed by you ('+doneTotal+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+doneRows+doneSvcRows+'</div></div>'):'';
   _homeView='mechanic';
+  var linksRow='<div style="display:flex;gap:10px;margin-top:4px">'+
+    '<button class="btn-ghost" style="flex:1" onclick="renderMechHistory()">📋  Repair &amp; service history</button>'+
+    '<button class="btn-ghost" style="flex:1" onclick="renderMechWarranties()">🛡  Warranties</button>'+
+  '</div>';
   setHeader('My jobs', 'Dave Wilkins · repairs & services assigned to you');
   var html='<div class="wrap platform-wrap">'+
     '<div class="fcard"><div class="fcard-hdr">🔧 Repairs assigned to me ('+myOpen.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+woRows+'</div></div>'+
     '<div class="fcard"><div class="fcard-hdr">🗓️ Services booked to me ('+mySvc.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+svcRows+'</div></div>'+
     doneCard+
+    linksRow+
   '</div>';
   var ov=document.getElementById('screen-oversight'); ov.innerHTML=html;
   document.getElementById('screen-list').style.display='none';
   document.getElementById('screen-detail').style.display='none';
   ov.style.display='block';
   window.scrollTo(0,0);
+}
+/* Mechanic: full repair & service history across the whole fleet (every completed repair + service, newest first → opens the record). */
+function renderMechHistory(){
+  setTopRight(_profileAvatar('Dave Wilkins')); _homeView='mechanic';
+  var items=[];
+  WORKORDERS.forEach(function(w){ if(w.status==='Returned to service'){ var when=(w.signoff&&w.signoff.when)?new Date(w.signoff.when):(w.repair_date?new Date(w.repair_date):null); items.push({ when:when, kind:'Repair', code:w.code, machine:w.machine, label:w.fault, by:w.mechanic||'', cost:_woClientCost(w), open:'openWO('+WORKORDERS.indexOf(w)+')' }); } });
+  var svc=_svcAll(); Object.keys(svc).forEach(function(code){ var s=svc[code]; if(s&&s.status==='done'){ var a=ASSETS.find(function(x){return x.code===code;}); items.push({ when:s.completed_date?new Date(s.completed_date):null, kind:'Service', code:code, machine:a?(a.make+' '+a.model):'', label:s.note||'Service', by:s.workshop||'', cost:_svcCost(s), open:"plantViewServiceRecord('"+code+"')" }); } });
+  items.sort(function(a,b){ return (b.when?b.when.getTime():0)-(a.when?a.when.getTime():0); });
+  var rows=items.length?items.map(function(it){
+    var dt=it.when?fmtShort(iso(it.when)):'—'; var costTxt=it.cost?money(it.cost):'';
+    return '<button class="row" onclick="'+it.open+'"><div class="row-ic"><span class="dot" style="background:var(--pass)"></span></div><div class="row-main"><div class="row-t">'+it.code+' · '+it.machine+'</div><div class="row-s">'+it.kind+' · '+_premobEsc(it.label)+' · '+dt+(it.by?(' · '+it.by):'')+'</div></div>'+(costTxt?'<span class="row-s" style="flex-shrink:0;color:var(--deep);font-weight:700">'+costTxt+'</span>':'')+'<div class="chev">›</div></button>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">No completed repairs or services on record yet.</div></div></div>';
+  setHeader('Repair & service history','Everything done across the fleet');
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="renderMechanic()">‹ My jobs</button>'+
+    '<div class="hub-head"><div class="hub-ic">📋</div><div style="flex:1"><div class="hub-code">Repair &amp; service history</div><div class="hub-mm">All completed work across the fleet</div></div></div>'+
+    '<div class="sec-h">Completed repairs &amp; services ('+items.length+')</div><div class="tile">'+rows+'</div>'+
+    '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap any line to open its full record / PDF.</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* Mechanic: warranty status for every machine in the fleet (in-warranty first) so he knows when a repair should be a no-cost warranty claim. */
+function renderMechWarranties(){
+  setTopRight(_profileAvatar('Dave Wilkins')); _homeView='mechanic';
+  var sorted=ASSETS.slice().sort(function(a,b){ var ai=(!isHired(a.code)&&inWarranty(a.code))?0:1, bi=(!isHired(b.code)&&inWarranty(b.code))?0:1; return ai-bi; });
+  var inCount=ASSETS.filter(function(a){ return !isHired(a.code)&&inWarranty(a.code); }).length;
+  var rows=sorted.map(function(a){
+    var dotCol, statusHtml, sub;
+    if(isHired(a.code)){ dotCol='#C8CFCA'; statusHtml='<span style="color:var(--t3)">Hire — supplier&rsquo;s cover</span>'; sub=(typeof hireInfo==='function'&&hireInfo(a.code))?hireInfo(a.code).supplier:assetSite(a.code); }
+    else { var wi=warrantyInfo(a.code);
+      if(!wi){ dotCol='#C8CFCA'; statusHtml='<span style="color:var(--t3)">No warranty on file</span>'; sub=assetSite(a.code); }
+      else if(inWarranty(a.code)){ dotCol='#1B6E3A'; statusHtml='<span style="color:#1B6E3A;font-weight:700">In warranty · until '+fmt(warrantyUntil(a.code))+'</span>'; sub=wi.provider+' · '+wi.terms; }
+      else { dotCol='#C99A3A'; statusHtml='<span style="color:#A06000;font-weight:700">Out of warranty</span> <span style="color:var(--t3)">· expired '+fmt(warrantyUntil(a.code))+'</span>'; sub=wi.provider+' · '+wi.terms; }
+    }
+    return '<div class="row" style="cursor:default"><div class="row-ic"><span class="dot" style="background:'+dotCol+'"></span></div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+statusHtml+'<br><span style="color:var(--t3)">'+sub+'</span></div></div></div>';
+  }).join('');
+  setHeader('Warranties','Which machines are still under warranty');
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="renderMechanic()">‹ My jobs</button>'+
+    '<div class="hub-head"><div class="hub-ic">🛡️</div><div style="flex:1"><div class="hub-code">Warranties</div><div class="hub-mm">'+inCount+' machine'+(inCount===1?'':'s')+' currently in warranty</div></div></div>'+
+    '<div style="font-size:11.5px;color:var(--t2);line-height:1.5;margin-bottom:10px">If a machine is <b style="color:#1B6E3A">in warranty</b>, a repair should usually be a no-cost claim with the provider — flag it before paying.</div>'+
+    '<div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
 }
 /* ---------- Today's pre-starts (supervisor) — every pre-start completed today, opened from the "N pre-starts done" pill. Date-filtered to today, so it naturally resets each day. ---------- */
 function renderTodayPrestarts(){
