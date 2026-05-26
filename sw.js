@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slan-safety-v5';
+const CACHE_NAME = 'slan-safety-v6';
 const ASSETS = ['/', '/index.html', '/manifest.json'];
 
 // Install — cache app shell
@@ -17,13 +17,31 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch — serve from cache, fall back to network
+// Fetch strategy:
+//  - HTML / page navigations → NETWORK-FIRST so the app always loads the latest
+//    build when online (falling back to cache only when offline). This stops the
+//    installed PWA from serving a stale index.html / plant.html after a deploy.
+//  - everything else (icons, manifest, libs) → cache-first for speed/offline.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  const req = e.request;
+  const isHTML = req.mode === 'navigate'
+    || (req.headers.get('accept') || '').includes('text/html')
+    || /\.html(\?|$)/.test(req.url);
+  if (isHTML) {
+    e.respondWith(
+      fetch(req).then(resp => {
+        const clone = resp.clone();
+        caches.open(CACHE_NAME).then(c => c.put(req, clone));
+        return resp;
+      }).catch(() => caches.match(req).then(c => c || caches.match('/index.html')))
+    );
+    return;
+  }
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).then(resp => {
+    caches.match(req).then(cached => cached || fetch(req).then(resp => {
       const clone = resp.clone();
-      caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+      caches.open(CACHE_NAME).then(c => c.put(req, clone));
       return resp;
     }))
   );
