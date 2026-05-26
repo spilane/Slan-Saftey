@@ -2998,22 +2998,36 @@ function renderMechSpend(){
   var fleet=ASSETS.filter(function(a){ return !isHired(a.code); });
   var total=fleet.reduce(function(s,a){ return s+assetSpend12(a); },0);
   var sorted=fleet.slice().sort(function(a,b){ return assetSpend12(b)-assetSpend12(a); });
-  var cards=sorted.map(function(a){
-    var sp=assetSpend12(a);
-    var done=WORKORDERS.filter(function(w){ return w.code===a.code && w.status==='Returned to service'; });
-    var items=done.map(function(w){ var c=w.warranty_claim?'$0 · warranty':money(_woClientCost(w)); var when=(w.signoff&&w.signoff.when)?fmtShort(w.signoff.when):(w.repair_date?fmtShort(w.repair_date):''); return '<div class="svc-row"><span>🔧 '+w.wo+' · '+_premobEsc((w.fault||'').slice(0,32))+(when?(' · '+when):'')+'</span><span>'+c+'</span></div>'; });
-    var svc=_svcState(a.code); if(svc&&svc.status==='done') items.push('<div class="svc-row"><span>🛠 Service · '+(svc.workshop||'')+(svc.completed_date?(' · '+fmtShort(svc.completed_date)):'')+'</span><span>'+money(_svcCost(svc))+'</span></div>');
-    if(a.spend12mo) items.push('<div class="svc-row" style="color:var(--t3)"><span>Earlier maintenance (prior 12 mo)</span><span>'+money(a.spend12mo)+'</span></div>');
-    var body=items.length?items.join(''):'<div class="svc-row" style="color:var(--t3)"><span>No recorded spend</span><span></span></div>';
-    return '<div class="fcard"><div class="fcard-hdr" style="display:flex;justify-content:space-between;align-items:center"><span>'+a.code+' · '+a.make+' '+a.model+'</span><span style="font-weight:800">'+money(sp)+'</span></div><div class="svc">'+body+'</div></div>';
+  var rows=sorted.map(function(a){ var sp=assetSpend12(a);
+    var woN=WORKORDERS.filter(function(w){return w.code===a.code&&w.status==='Returned to service';}).length;
+    return '<button class="row" onclick="renderMachineSpend(\''+a.code+'\')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+(woN?(woN+' repair'+(woN>1?'s':'')+' · '):'')+'tap to break it down</div></div><span class="row-s" style="flex-shrink:0;color:var(--deep);font-weight:800">'+money(sp)+'</span><div class="chev">›</div></button>';
   }).join('');
-  setHeader('Maintenance spend','Across the fleet, broken down');
+  setHeader('Maintenance spend','Across the fleet · tap a machine to break it down');
   var html='<div class="wrap platform-wrap">'+
     '<button class="back" onclick="mechSetTab(\'reports\')">‹ Reports</button>'+
     '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">Maintenance spend</div><div class="hub-mm">Last 12 months · '+fleet.length+' owned machines</div></div></div>'+
-    '<div class="fcard"><div class="fcard-hdr">Total fleet spend (12 mo)</div><div style="padding:16px"><div style="font-size:30px;font-weight:800;color:var(--deep)">'+money(total)+'</div><div style="font-size:11.5px;color:var(--t3);margin-top:4px">Sum of every machine below — tap nothing, it&rsquo;s all shown.</div></div></div>'+
-    '<div class="sec-h">By machine (highest first)</div>'+
-    cards+
+    '<div class="fcard"><div class="fcard-hdr">Total fleet spend (12 mo)</div><div style="padding:16px"><div style="font-size:30px;font-weight:800;color:var(--deep)">'+money(total)+'</div><div style="font-size:11.5px;color:var(--t3);margin-top:4px">Tap any machine below to open its full breakdown.</div></div></div>'+
+    '<div class="sec-h">By machine (highest first)</div><div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* one machine's spend, opened from the spend list — itemised into the repairs/services/prior spend that make up the total */
+function renderMachineSpend(code){
+  if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a){ renderMechSpend(); return; }
+  var sp=assetSpend12(a);
+  var done=WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; });
+  var items=done.map(function(w){ var c=w.warranty_claim?'$0 · warranty':money(_woClientCost(w)); var when=(w.signoff&&w.signoff.when)?fmtShort(w.signoff.when):(w.repair_date?fmtShort(w.repair_date):''); return '<div class="svc-row"><span>🔧 '+w.wo+' · '+_premobEsc((w.fault||'').slice(0,34))+(when?(' · '+when):'')+'</span><span>'+c+'</span></div>'; });
+  var svc=_svcState(code); if(svc&&svc.status==='done') items.push('<div class="svc-row"><span>🛠 Service · '+(svc.workshop||'')+(svc.completed_date?(' · '+fmtShort(svc.completed_date)):'')+'</span><span>'+money(_svcCost(svc))+'</span></div>');
+  if(a.spend12mo) items.push('<div class="svc-row" style="color:var(--t3)"><span>Earlier maintenance (prior 12 mo)</span><span>'+money(a.spend12mo)+'</span></div>');
+  var body=items.length?items.join(''):'<div class="svc-row" style="color:var(--t3)"><span>No recorded spend</span><span></span></div>';
+  setHeader('Maintenance spend', code+' · '+a.make+' '+a.model);
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="renderMechSpend()">‹ All machines</button>'+
+    '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">'+code+' — spend</div><div class="hub-mm">'+a.make+' '+a.model+' · last 12 months</div></div></div>'+
+    '<div class="svc" style="margin-bottom:12px"><div class="svc-row"><span><b>Total (12 mo)</b></span><span style="font-weight:800;font-size:15px">'+money(sp)+'</span></div></div>'+
+    '<div class="sec-h">What makes it up</div><div class="svc">'+body+'</div>'+
+    '<button class="btn-ghost" style="margin-top:12px" onclick="renderMachineHistory(\''+code+'\')">📜  Open full machine history</button>'+
   '</div>';
   showDetail(html);
 }
