@@ -10239,20 +10239,36 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="badge"><div class="bdot"></div><span id="an-date">Today</span></div>
       <div id="an-role-badge" class="badge" style="background:rgba(184,150,12,.15);border-color:rgba(184,150,12,.3);color:rgba(184,150,12,.9)">Director</div>
     </div>
+    <!-- WEATHER WIDGET (matches supervisor header) -->
+    <div id="an-weather-bar" style="margin-top:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="loadWeather()">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="an-wx-icon" style="font-size:22px">⛅</div>
+        <div>
+          <div id="an-wx-temp" style="font-size:16px;font-weight:600;color:#fff">--°C</div>
+          <div id="an-wx-desc" style="font-size:10px;color:rgba(255,255,255,.55);margin-top:1px">Loading weather...</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div id="an-wx-wind" style="font-size:10px;color:rgba(255,255,255,.6)">Wind --</div>
+        <div id="an-wx-feel" style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">Feels like --°</div>
+        <div id="an-wx-assess" style="font-size:9px;font-weight:600;margin-top:3px;border-radius:8px;padding:2px 7px;background:rgba(92,219,149,.2);color:#5CDB95">Checking...</div>
+      </div>
+    </div>
   </div>
-  <!-- DIRECTOR ACTIVITY STRIP (mirrors worker/supervisor pills) -->
+  <!-- ONLINE BAR (matches supervisor: online first, then today's activity) -->
+  <div class="syncbar">
+    <div class="sync-l"><div class="bdot g"></div><span>Online</span></div>
+    <div class="sync-r" id="an-last-sync">Updated just now</div>
+  </div>
+  <!-- DIRECTOR TODAY'S ACTIVITY STRIP (mirrors worker/supervisor pills) -->
   <div id="an-status-strip" style="background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px;display:none">
-    <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Needs your attention</div>
+    <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Today's activity</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <div class="status-pill" id="an-pill-inc" onclick="dirChipTapIncidents()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-inc-lbl">Incidents</span></div>
       <div class="status-pill" id="an-pill-plant" onclick="dirChipTapPlant()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-plant-lbl">Plant</span></div>
       <div class="status-pill" id="an-pill-hirereq" onclick="dirChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-hirereq-lbl">Hire requests</span></div>
       <div class="status-pill" id="an-pill-gate" onclick="dirChipTapGate()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-gate-lbl">Gate stops</span></div>
     </div>
-  </div>
-  <div class="syncbar">
-    <div class="sync-l"><div class="bdot g"></div><span>Live data</span></div>
-    <div class="sync-r" id="an-last-sync">Updated just now</div>
   </div>
 
   <!-- ── Scrollable content ─────────────────── -->
@@ -37181,6 +37197,8 @@ function goToAnalytics(fromRole) {
   anIsDirector = (fromRole === 'director');
   console.log('✅ Navigating to screen-analytics, isDirector:', anIsDirector);
   goTo('screen-analytics');
+  // Weather in the header (matches supervisor) — repaint if already loaded, else fetch
+  try { if(window._lastWx) updateWeatherUI(window._lastWx); else if(typeof loadWeather==='function') loadWeather(); } catch(e) {}
   // Director activity-pill strip (hire requests to approve, etc.) — directors only
   try { if (anIsDirector) { dirUpdateActivityStrip(); } else { var _anStrip=document.getElementById('an-status-strip'); if(_anStrip) _anStrip.style.display='none'; } } catch(e) {}
   const p = getProfile();
@@ -37578,7 +37596,7 @@ function updateWeatherUI(wx) {
   var icons = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
   var descs = {0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',51:'Light drizzle',61:'Light rain',63:'Moderate rain',65:'Heavy rain',71:'Light snow',80:'Showers',95:'Thunderstorm'};
   if (!wx) {
-    ['d-wx-temp','d-wx-desc','d-wx-wind','d-wx-feel','h-wx-temp','h-wx-desc','h-wx-wind','h-wx-feel'].forEach(function(id){
+    ['d-wx-temp','d-wx-desc','d-wx-wind','d-wx-feel','h-wx-temp','h-wx-desc','h-wx-wind','h-wx-feel','an-wx-temp','an-wx-desc','an-wx-wind','an-wx-feel'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.textContent = /desc/.test(id)?'Location unavailable':'--';
     });
     return;
@@ -37592,7 +37610,8 @@ function updateWeatherUI(wx) {
   var ok = code < 61 && wind < 50;
   // Update both the supervisor dash (d-wx-*) and the home (h-wx-*) widgets — whichever exist.
   [['d-wx-icon','d-wx-temp','d-wx-desc','d-wx-wind','d-wx-feel','d-wx-assess'],
-   ['h-wx-icon','h-wx-temp','h-wx-desc','h-wx-wind','h-wx-feel','h-wx-assess']].forEach(function(ids){
+   ['h-wx-icon','h-wx-temp','h-wx-desc','h-wx-wind','h-wx-feel','h-wx-assess'],
+   ['an-wx-icon','an-wx-temp','an-wx-desc','an-wx-wind','an-wx-feel','an-wx-assess']].forEach(function(ids){
     var ic=document.getElementById(ids[0]); if(!ic) return;
     ic.textContent = icon;
     document.getElementById(ids[1]).textContent = temp + '°C';
