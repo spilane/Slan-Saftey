@@ -984,6 +984,7 @@ function openHub(i){
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="if(!_navBack()){showList()}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+hiredChip(a.code)+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace(/_/g,' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
+    _healthBadge(a)+
     (hired ? '' : '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>')+
     (hired
       ? (premCleared ? '' : '<button class="cta" style="background:var(--warn)" onclick="plantPremobOpen(\''+a.code+'\')">⚠ Not cleared for site — complete pre-mobilisation first</button>')
@@ -3061,13 +3062,48 @@ function plantWorkOrderPDF(w){
 }
 function plantViewWorkOrderPDF(woId){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } var w=_woFind(woId); if(!w) return; openPdfDoc(plantWorkOrderPDF(w), 'Repair-'+w.code+'-'+w.wo+'.pdf'); }
 /* Shared asset register (the director/supervisor Assets table) — reused for the mechanic so he sees the same full register. */
+/* ── Machine health badge ──────────────────────────────────────────────
+   One 🟢/🟠/🔴 per machine summarising service, statutory inspection, rego,
+   insurance and open faults. Single source of truth so the register row tint,
+   the register dot and the profile badge always agree. */
+function _machineHealth(a){
+  if(!a) return { level:'green', label:'All current', col:'#1B7A3D', bg:'#E6F5ED', dot:'🟢', reasons:[] };
+  var today=new Date(), red=[], amber=[];
+  // RED — must not / cannot operate right now
+  if(a.status==='out_of_service') red.push('Out of service');
+  if(a.status==='retired') red.push('Retired');
+  if(_expired(a.rego_expiry)) red.push('Registration expired');
+  if(!isHired(a.code) && _expired(a.insurance_expiry)) red.push('Insurance expired');
+  var insp=(typeof _inspStatus==='function')?_inspStatus(a.code):null;
+  if(insp && insp.state==='overdue') red.push('Statutory inspection overdue');
+  // AMBER — attention soon
+  if(a.status==='fault_reported') amber.push('Fault reported');
+  var woN=(typeof openWoCount==='function')?openWoCount(a.code):0;
+  if(woN>0) amber.push(woN+' open work order'+(woN>1?'s':''));
+  var svcSt=(typeof _svcStatus==='function')?_svcStatus(a):null;
+  if(!(svcSt && svcSt.booked)){
+    if(_expired(a.service_due)) amber.push('Service overdue');
+    else if(svcSoon(svcMeter(a))) amber.push('Service due soon');
+  }
+  if(insp && insp.state==='due_soon') amber.push('Inspection due soon');
+  if(a.rego_expiry && !_expired(a.rego_expiry) && daysBetween(a.rego_expiry,today)<=30) amber.push('Registration expiring');
+  if(!isHired(a.code) && a.insurance_expiry && !_expired(a.insurance_expiry) && daysBetween(a.insurance_expiry,today)<=30) amber.push('Insurance expiring');
+  var level = red.length?'red':(amber.length?'amber':'green');
+  var m={ green:{label:'All current',col:'#1B7A3D',bg:'#E6F5ED',dot:'🟢'},
+          amber:{label:'Attention soon',col:'#A06000',bg:'#FEF3E2',dot:'🟠'},
+          red:{label:'Action required',col:'#A32D2D',bg:'#FCE9E9',dot:'🔴'} }[level];
+  return { level:level, label:m.label, col:m.col, bg:m.bg, dot:m.dot, reasons:red.concat(amber) };
+}
+/* small coloured dot for the register rows (CSS circle + native tooltip) */
+function _healthDot(a){ var h=_machineHealth(a); var tip=h.label+(h.reasons.length?(' — '+h.reasons.join(', ')):' — service, rego, insurance & inspections all current'); return '<span title="'+tip.replace(/"/g,'&quot;')+'" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+h.col+';margin-right:6px;vertical-align:middle;flex-shrink:0"></span>'; }
+/* full badge pill for the machine profile (openHub) */
+function _healthBadge(a){ var h=_machineHealth(a); var detail=h.reasons.length?h.reasons.join(' · '):'Service, registration, insurance &amp; inspections all current'; return '<div style="display:flex;align-items:center;gap:10px;background:'+h.bg+';border:1px solid '+h.col+'33;border-radius:10px;padding:10px 13px;margin:10px 0"><span style="font-size:16px;line-height:1">'+h.dot+'</span><div style="min-width:0"><div style="font-size:12.5px;font-weight:800;color:'+h.col+'">Machine health · '+h.label+'</div><div style="font-size:11.5px;color:var(--t2);line-height:1.45;margin-top:2px">'+detail+'</div></div></div>'; }
 function _assetRegisterBody(fleet){
   var rows=fleet.map(function(a){
     var dt=plantDetails(a.code);
-    var sm=svcMeter(a), soon=svcSoon(sm);
-    var red = a.status==='out_of_service' || a.status==='retired' || _expired(a.rego_expiry);
-    var amber = !red && (a.status==='fault_reported' || _expired(a.service_due) || soon || (a.insurance_expiry && daysBetween(a.insurance_expiry,new Date())<=30));
-    var rowCls = red?'attn-red':(amber?'attn-amber':'');
+    var sm=svcMeter(a);
+    var mh=_machineHealth(a);
+    var rowCls = mh.level==='red'?'attn-red':(mh.level==='amber'?'attn-amber':'');
     var stB = a.status==='operational'?'<span class="a-badge bg-op">Operational</span>':(a.status==='fault_reported'?'<span class="a-badge bg-flt">Fault</span>':'<span class="a-badge bg-out">'+a.status.replace(/_/g,' ')+'</span>');
     var rd=[]; if(a.hours) rd.push(a.hours.toLocaleString()+' hrs'); if(dt.km) rd.push(dt.km.toLocaleString()+' km');
     var reading = rd.length ? (rd[0] + (rd[1]?'<div class="cell-sub">'+rd[1]+'</div>':'')) : '—';
@@ -3082,7 +3118,7 @@ function _assetRegisterBody(fleet){
     var lp=lastPrestart(a), lpCell = lp?(_loadPlantRecord(a.code)?'<a href="javascript:void(0)" onclick="event.stopPropagation();plantViewSavedPDF(\''+a.code+'\')" style="color:var(--gold);font-weight:700;text-decoration:underline">'+fmtShort(lp)+' 📄</a>':fmtShort(lp)):'<span style="color:var(--fail);font-weight:600">None</span>';
     var woN=openWoCount(a.code), woCell = woN?('<span class="a-badge bg-flt">'+woN+'</span>'):'<span style="color:var(--t3)">—</span>';
     return '<tr class="'+rowCls+'" onclick="openHub('+ASSETS.indexOf(a)+')">'+
-      '<td class="t-asset"><div class="reg-asset"><div class="ric">'+a.icon+'</div><div><b>'+a.code+'</b>'+hiredChip(a.code,true)+'<div class="cell-sub">'+a.make+' '+a.model+(isHired(a.code)?' · '+hireInfo(a.code).supplier:'')+'</div><span style="display:none">'+a.type+'</span></div></div></td>'+
+      '<td class="t-asset"><div class="reg-asset"><div class="ric">'+a.icon+'</div><div>'+_healthDot(a)+'<b>'+a.code+'</b>'+hiredChip(a.code,true)+'<div class="cell-sub">'+a.make+' '+a.model+(isHired(a.code)?' · '+hireInfo(a.code).supplier:'')+'</div><span style="display:none">'+a.type+'</span></div></div></td>'+
       '<td>'+assetSite(a.code)+'</td>'+
       '<td>'+reading+'</td>'+
       '<td>'+svcCell+'</td>'+
