@@ -50,6 +50,10 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .tbar-logo{flex:1;display:flex;justify-content:center}
 .tbar-logo img{height:74px;object-fit:contain;display:block;image-rendering:auto}
 .back-btn{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+#plant-bell{position:relative;width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.1);border:none;cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0;padding:0;margin-right:8px}
+#plant-bell:hover{background:rgba(255,255,255,.18)}
+#plant-bell svg{width:19px;height:19px}
+#plant-bell-badge{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#A32D2D;color:#fff;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;line-height:1}
 .back-btn:hover{background:rgba(255,255,255,.18)}
 .back-btn svg{width:20px;height:20px}
 .tb-spacer{width:36px;flex-shrink:0}
@@ -249,6 +253,7 @@ table.reg tr.attn-amber td:first-child{box-shadow:inset 3px 0 0 #E08A1E}
   <div class="topbar-row">
     <button class="back-btn" onclick="plantGoBack()" aria-label="Back to app"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="tbar-logo"><img src="Slan_Safety_No_Border_1.png" alt="Slán Safety"></div>
+    <button id="plant-bell" onclick="plantOpenBell()" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span id="plant-bell-badge"></span></button>
     <div id="tb-right"><button class="who" onclick="openWorkerSheet()"><span id="who-name">—</span></button></div>
   </div>
   <div class="hdr-bottom">
@@ -670,7 +675,53 @@ var SITE_OPERATORS=[
 var currentWorker=WORKERS[0];
 try{ var _wi=parseInt(localStorage.getItem('slan_plant_worker'),10); if(!isNaN(_wi)&&WORKERS[_wi]) currentWorker=WORKERS[_wi]; }catch(e){}
 var curAsset=0;
-function setTopRight(html){ var el=document.getElementById('tb-right'); if(el) el.innerHTML=html; }
+function setTopRight(html){ var el=document.getElementById('tb-right'); if(el) el.innerHTML=html; try{ updatePlantBell(); }catch(e){} }
+/* ---------- notifications bell — one feed of everything needing attention (role + site aware) ---------- */
+function _plantAlertFeed(){
+  var role=getRole();
+  var site=(role==='supervisor')?(getSiteParam()||'Bondi Junction Mixed Use'):'All';
+  var inSite=function(code){ return site==='All' || assetSite(code)===site; };
+  var feed=[];
+  if(role==='mechanic'){
+    WORKORDERS.forEach(function(w){ if(w.mechanic==='Dave Wilkins' && w.mech_inhouse!==false && w.status!=='Returned to service'){
+      var hold=(typeof _woOnHold==='function' && _woOnHold(w));
+      feed.push({u:hold?1:(w.priority==='High'?2:1), title:w.code+' — repair assigned to you', sub:w.fault+(hold?' · on hold (parts)':(_woAgeText(w)?(' · '+_woAgeText(w)):'')), tap:'openWO('+WORKORDERS.indexOf(w)+')'}); } });
+    var msvc=_svcAll(); Object.keys(msvc).forEach(function(c){ var s=msvc[c]; if(s&&s.status==='booked'&&s.workshop==='Dave Wilkins'&&s.mech_inhouse!==false){ feed.push({u:_expired(s.booked_date)?2:1, title:c+' — service booked to you', sub:(s.note||'Service')+' · '+fmtShort(s.booked_date), tap:"plantCompleteService('"+c+"')"}); } });
+    return feed;
+  }
+  _plantAlerts().forEach(function(al){ if(!inSite(al.code)) return; var a=ASSETS.find(function(x){return x.code===al.code;}); var idx=a?ASSETS.indexOf(a):-1; feed.push({u:al.critical?2:1, title:al.code+(al.critical?' — out of service':' — fault flagged'), sub:al.fault||'', tap:idx>=0?('openHub('+idx+')'):''}); });
+  _pendingApprovals().forEach(function(x){ if(!inSite(x.code)) return; feed.push({u:2, title:x.code+' — approval needed', sub:(x.worker||'')+' wants to operate it', tap:"openApproval('"+x.id+"')"}); });
+  ASSETS.forEach(function(a){ if(isHired(a.code)||!inSite(a.code)) return; var st=_svcStatus(a); if(st && !st.booked && (st.state==='overdue'||st.state==='due_soon')){ feed.push({u:st.state==='overdue'?2:1, title:a.code+' — service '+(st.state==='overdue'?'overdue':'due soon'), sub:a.make+' '+a.model+(st.sm?(' · '+_svcDueText(st)):''), tap:'openHub('+ASSETS.indexOf(a)+')'}); } });
+  WORKORDERS.forEach(function(w){ if(w.status==='Returned to service'||!inSite(w.code)) return; if(typeof _woAged==='function' && _woAged(w)){ feed.push({u:1, title:w.code+' — work order '+_woAgeText(w), sub:w.fault, tap:'openWO('+WORKORDERS.indexOf(w)+')'}); } });
+  ASSETS.forEach(function(a){ if(!isHired(a.code)||!inSite(a.code)) return; var d=hireDueInDays(a.code); if(d!=null && d<=7){ feed.push({u:d<0?2:1, title:a.code+' — hire '+(d<0?'overdue back':'due back'), sub:(hireInfo(a.code)?hireInfo(a.code).supplier+' · ':'')+(d<0?('overdue '+Math.abs(d)+'d'):('in '+d+'d')), tap:'openHub('+ASSETS.indexOf(a)+')'}); } });
+  if(role==='director'){ _hireReqAll().forEach(function(r){ if(r.status==='pending'){ feed.push({u:2, title:'Hire request to approve', sub:r.type+(r.supplier?(' · '+r.supplier):''), tap:"hireReqOpenDetail('"+r.id+"')"}); } }); }
+  return feed;
+}
+function updatePlantBell(){
+  var b=document.getElementById('plant-bell'); if(!b) return;
+  var role=getRole();
+  if(role!=='supervisor' && role!=='director' && role!=='mechanic'){ b.style.display='none'; return; }
+  b.style.display='flex';
+  var n=0; try{ n=_plantAlertFeed().length; }catch(e){}
+  var badge=document.getElementById('plant-bell-badge');
+  if(badge){ badge.textContent=n>9?'9+':String(n); badge.style.display=n>0?'flex':'none'; }
+}
+function plantOpenBell(){ renderPlantNotifications(); }
+function renderPlantNotifications(){
+  if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  _view('plantNotifs', function(){ renderPlantNotifications(); });
+  var feed=_plantAlertFeed().sort(function(a,b){ return b.u-a.u; });
+  var rows=feed.length?feed.map(function(it){
+    var col=it.u>=2?'#A32D2D':(it.u===1?'#A06000':'#1B6E3A');
+    return '<button class="row"'+(it.tap?(' onclick="'+it.tap+'"'):' style="cursor:default"')+'><div class="row-ic"><span class="dot" style="background:'+col+'"></span></div><div class="row-main"><div class="row-t">'+_premobEsc(it.title)+'</div><div class="row-s">'+_premobEsc(it.sub||'')+'</div></div>'+(it.tap?'<div class="chev">›</div>':'')+'</button>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">All clear — nothing needs your attention right now.</div></div></div>';
+  setHeader('Notifications', feed.length?(feed.length+' item'+(feed.length===1?'':'s')+' need attention'):'All clear');
+  var html='<div class="wrap platform-wrap">'+
+    '<div class="hub-head"><div class="hub-ic">🔔</div><div style="flex:1"><div class="hub-code">Notifications</div><div class="hub-mm">'+(feed.length?(feed.length+' need attention'):'All clear')+'</div></div></div>'+
+    '<div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
+}
 function _initials(n){ return (n||'').split(/\s+/).filter(Boolean).map(function(w){return w.charAt(0);}).join('').slice(0,2).toUpperCase()||'?'; }
 function _profileAvatar(name){ return '<div onclick="plantOpenWhsProfile()" title="'+name+'" style="width:38px;height:38px;border-radius:50%;background:rgba(184,150,12,.2);border:2px solid rgba(184,150,12,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(184,150,12,.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>'; }
 // Open the SAME My Profile page the WHS app uses (index.html), remembering this plant page so Back returns here.
@@ -2143,6 +2194,55 @@ function plantHireSummaryPDF(){
   for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-015 · Hired Plant Report · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
   return doc;
 }
+/* Owned-fleet summary report (PDF) — status, service due, year spend, availability per machine. */
+function plantFleetReport(){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(plantFleetSummaryPDF(), 'Fleet-Summary-Report.pdf'); }
+function plantFleetSummaryPDF(){
+  var site=(getRole()==='supervisor')?(getSiteParam()||'Bondi Junction Mixed Use'):((typeof oversightSite!=='undefined'&&oversightSite)?oversightSite:'All');
+  var fleet=ASSETS.filter(function(a){ return !isHired(a.code) && (site==='All' || assetSite(a.code)===site); });
+  var doc=new window.jspdf.jsPDF('p','mm','a4');
+  var W=210,M=14,GOLD=[184,150,12],GREEN=[44,107,94]; var y=16;
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Fleet Summary Report', M, y);
+  if(typeof SLAN_LOGO_B64!=='undefined' && SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, 3, 34, 14); }catch(e){} }
+  y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=7;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90);
+  doc.text((site==='All'?'All sites — Murphy Civil Construction':site)+'  ·  '+fmt(new Date().toISOString()), M, y); y+=8;
+  var op=fleet.filter(function(a){return a.status==='operational';}).length;
+  var out=fleet.filter(function(a){return a.status==='out_of_service';}).length;
+  var attn=fleet.length-op-out;
+  var svcDue=fleet.filter(function(a){ var st=_svcStatus(a); return st && !st.booked && (st.state==='overdue'||st.state==='due_soon'); }).length;
+  var spendYr=fleet.reduce(function(s,a){ return s+assetSpendYear(a,CUR_YEAR); },0);
+  var avgAvail=fleet.length?Math.round(fleet.reduce(function(s,a){ return s+_machineAvail(a.code); },0)/fleet.length):100;
+  function kv(k,v){ doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.setFontSize(9.5); doc.text(k, M, y); doc.setFont('helvetica','normal'); doc.setTextColor(35,35,35); doc.text(String(v), M+66, y); y+=5.8; }
+  kv('Owned machines:', fleet.length);
+  kv('Operational / attention / out of service:', op+' / '+attn+' / '+out);
+  kv('Services due or overdue:', svcDue);
+  kv('Maintenance spend ('+CUR_YEAR+'):', money(spendYr));
+  kv('Average availability (12 mo):', avgAvail+'%');
+  y+=3;
+  function bar(t){ if(y>270){doc.addPage();y=16;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=10; doc.setTextColor(40,40,40); doc.setFont('helvetica','normal'); }
+  bar('Owned fleet ('+fleet.length+')');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(110,110,110);
+  doc.text('ASSET', M, y); doc.text('SITE', M+44, y); doc.text('SERVICE DUE', M+82, y); doc.text(CUR_YEAR+' SPEND', M+136, y, {align:'right'}); doc.text('AVAIL', M+158, y, {align:'right'}); doc.text('STATUS', W-M, y, {align:'right'}); y+=2.5;
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.2); doc.line(M, y, W-M, y); y+=4;
+  fleet.forEach(function(a){
+    if(y>280){ doc.addPage(); y=16; }
+    var st=_svcStatus(a); var over=(a.service_due && _expired(a.service_due));
+    var statusTxt = a.status==='out_of_service'?'Out of service':(a.status==='fault_reported'?'Fault flagged':'Operational');
+    var sc = a.status==='out_of_service'?[163,45,45]:(a.status==='fault_reported'?[160,96,0]:[27,110,58]);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(35,35,35); doc.text(a.code, M, y);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(120,120,120); doc.text((a.make+' '+a.model).slice(0,26), M, y+3.3);
+    doc.setFontSize(8); doc.setTextColor(45,45,45);
+    doc.text((assetSite(a.code)||'').slice(0,20), M+44, y);
+    doc.setTextColor(over?163:45, over?45:45, 45); doc.text(fmtShort(a.service_due)+(over?' (overdue)':''), M+82, y);
+    doc.setTextColor(45,45,45); doc.text(money(assetSpendYear(a,CUR_YEAR)), M+136, y, {align:'right'});
+    doc.text(_machineAvail(a.code)+'%', M+158, y, {align:'right'});
+    doc.setTextColor(sc[0],sc[1],sc[2]); doc.setFont('helvetica','bold'); doc.text(statusTxt, W-M, y, {align:'right'}); doc.setFont('helvetica','normal');
+    y+=7; doc.setDrawColor(232,232,232); doc.line(M, y-2.5, W-M, y-2.5);
+  });
+  var pages=doc.internal.getNumberOfPages();
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-019 · Fleet Summary Report · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
+  return doc;
+}
 /* ----- Hire request → director approval (front-end). Supervisor raises a request; director approves/rejects. ----- */
 function _hireReqAll(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_hire_requests')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function _hireReqSave(arr){ try{ localStorage.setItem('slan_plant_hire_requests', JSON.stringify(arr)); }catch(e){} }
@@ -2781,7 +2881,7 @@ function _assetRegisterBody(fleet){
     var lp=lastPrestart(a), lpCell = lp?(_loadPlantRecord(a.code)?'<a href="javascript:void(0)" onclick="event.stopPropagation();plantViewSavedPDF(\''+a.code+'\')" style="color:var(--gold);font-weight:700;text-decoration:underline">'+fmtShort(lp)+' 📄</a>':fmtShort(lp)):'<span style="color:var(--fail);font-weight:600">None</span>';
     var woN=openWoCount(a.code), woCell = woN?('<span class="a-badge bg-flt">'+woN+'</span>'):'<span style="color:var(--t3)">—</span>';
     return '<tr class="'+rowCls+'" onclick="openHub('+ASSETS.indexOf(a)+')">'+
-      '<td class="t-asset"><div class="reg-asset"><div class="ric">'+a.icon+'</div><div><b>'+a.code+'</b>'+hiredChip(a.code,true)+'<div class="cell-sub">'+a.make+' '+a.model+(isHired(a.code)?' · '+hireInfo(a.code).supplier:'')+'</div></div></div></td>'+
+      '<td class="t-asset"><div class="reg-asset"><div class="ric">'+a.icon+'</div><div><b>'+a.code+'</b>'+hiredChip(a.code,true)+'<div class="cell-sub">'+a.make+' '+a.model+(isHired(a.code)?' · '+hireInfo(a.code).supplier:'')+'</div><span style="display:none">'+a.type+'</span></div></div></td>'+
       '<td>'+assetSite(a.code)+'</td>'+
       '<td>'+reading+'</td>'+
       '<td>'+svcCell+'</td>'+
@@ -2796,9 +2896,13 @@ function _assetRegisterBody(fleet){
   }).join('');
   return '<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
       '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
+    '<input type="search" placeholder="🔍  Search machines — code, make or site…" oninput="_machSearch(this.value,\'table.reg tbody tr\')" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:13px;margin-bottom:10px;outline:none;box-sizing:border-box">'+
+    '<button class="btn-ghost" onclick="plantFleetReport()" style="margin-bottom:12px">📄  Fleet summary report (PDF)</button>'+
     '<div class="reg-wrap"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>Spend ('+CUR_YEAR+')</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
     '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
 }
+/* filter rows/cards live by typed text (asset register + mechanic machines list) */
+function _machSearch(v, sel){ v=(v||'').trim().toLowerCase(); var rows=document.querySelectorAll(sel); for(var i=0;i<rows.length;i++){ rows[i].style.display=(!v || rows[i].textContent.toLowerCase().indexOf(v)>-1)?'':'none'; } }
 function renderOversight(){
   _navStack=[]; _navCur=null; _navCurKey=null;   // top-level home — start a fresh back-stack
   var supLocked = (getRole()==='supervisor');
