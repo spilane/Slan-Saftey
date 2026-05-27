@@ -44,8 +44,8 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;font-size:15px;line-height:1.5;padding-bottom:44px}
-.sb{height:calc(env(safe-area-inset-top,0px) + 10px);background:var(--deep)}
-.topbar{background:var(--deep);padding:8px 16px 12px;position:sticky;top:0;z-index:50}
+.sb{height:calc(env(safe-area-inset-top,0px) + 10px);background:#1C382A}
+.topbar{background:#1C382A;padding:8px 16px 12px;position:sticky;top:0;z-index:50}
 .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .tbar-logo{flex:1;display:flex;justify-content:center}
 .tbar-logo img{height:74px;object-fit:contain;display:block;image-rendering:auto}
@@ -249,11 +249,10 @@ table.reg tr.attn-amber td:first-child{box-shadow:inset 3px 0 0 #E08A1E}
   <div class="topbar-row">
     <button class="back-btn" onclick="plantGoBack()" aria-label="Back to app"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="tbar-logo"><img src="Slan_Safety_No_Border_1.png" alt="Slán Safety"></div>
-    <span class="tb-spacer"></span>
+    <div id="tb-right"><button class="who" onclick="openWorkerSheet()"><span id="who-name">—</span></button></div>
   </div>
   <div class="hdr-bottom">
     <div class="form-greeting" id="tb-greet"><h1 id="tb-title">Plant &amp; Equipment</h1><p id="tb-sub">Scan a machine's QR — or tap one below — to open its records.</p></div>
-    <div id="tb-right"><button class="who" onclick="openWorkerSheet()"><span id="who-name">—</span></button></div>
   </div>
 </div>
 
@@ -800,7 +799,6 @@ function showDetail(html){
   document.getElementById('screen-list').style.display='none';
   var ov=document.getElementById('screen-oversight'); if(ov) ov.style.display='none';
   el.style.display='block';
-  hideHeaderGreet();
   window.scrollTo(0,0);
 }
 /* ---------- back-stack: a 'back' button returns to the page you actually came from ----------
@@ -984,6 +982,7 @@ function openHub(i){
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
   showDetail(html);
+  setHeader(a.code+' · '+a.type, a.make+' '+a.model);
 }
 
 /* ===== Smart document import — drop a file on the machine page; it's recognised, filed, and the machine's record auto-fills (front-end demo; real extraction = backend + Claude API) ===== */
