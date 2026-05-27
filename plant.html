@@ -762,7 +762,7 @@ function openDemoSheet(){
 }
 function closeDemoSheet(){ document.getElementById('demo-sheet').classList.remove('on'); }
 function demoSwitchWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catch(e){} currentWorker=WORKERS[i]; closeDemoSheet(); if(getRole()!=='worker'){ location.href='plant.html'; } else { var el=document.getElementById('who-name'); if(el) el.textContent=currentWorker.name; showList(); } }
-function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides','slan_plant_premob','slan_plant_fault_reports','slan_plant_services','slan_plant_completions'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
+function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides','slan_plant_premob','slan_plant_fault_reports','slan_plant_services','slan_plant_completions','slan_plant_siteoverrides','slan_plant_inspections'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -1029,6 +1029,8 @@ function openHub(i){
         if(st && (st.state==='overdue'||st.state==='due_soon')) return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>';
         return ''; })() : '')+
     ((getRole()!=='worker' && !isHired(a.code)) ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineSpend(\''+a.code+'\',\'hub\')">💲  Maintenance &amp; costs ('+CUR_YEAR+': '+money(assetSpendYear(a,CUR_YEAR))+') — tap to break down</button>' : '')+
+    (getRole()!=='worker' ? '<button class="btn-ghost" style="margin-top:8px" onclick="plantMoveSite(\''+a.code+'\')">🚚  Move to another site</button>'+
+      '<button class="btn-ghost" style="margin-top:8px" onclick="plantHandoverPack(\''+a.code+'\')">📄  Handover / mobilisation pack (PDF)</button>' : '')+
     ((getRole()!=='worker') ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineHistory(\''+a.code+'\')">📜  Machine history ('+_machineTimeline(a.code).length+')</button><button class="btn-ghost" style="margin-top:8px" onclick="renderPartsLedger(\''+a.code+'\')">🔩  Parts fitted ('+_partsHistory(a.code).length+')</button>' : '')+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
@@ -1553,7 +1555,9 @@ function pickWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catc
 function getRole(){ var m=/[?&]role=([a-z]+)/.exec(location.search); return m?m[1]:'worker'; }
 function getSiteParam(){ var m=/[?&]site=([^&]+)/.exec(location.search); return m?decodeURIComponent(m[1]):null; }
 var PLANT_SITE_BY_CODE={ 'TRK-006':'Bondi Junction Mixed Use','TLH-003':'Bondi Junction Mixed Use','GEN-005':'Bondi Junction Mixed Use','LT-013':'Bondi Junction Mixed Use','MAG-009':'Bondi Junction Mixed Use','CRN-007':'Bondi Junction Mixed Use','BUS-021':'Bondi Junction Mixed Use','UTE-022':'Bondi Junction Mixed Use','EWP-018':'Bondi Junction Mixed Use','EWP-019':'Bondi Junction Mixed Use','CRN-011':'Parramatta Metro Stage 2','TLH-012':'Parramatta Metro Stage 2','GEN-016':'Parramatta Metro Stage 2','LT-014':'Sydney Olympic Park' };
-function assetSite(code){ return PLANT_SITE_BY_CODE[code]||'Bondi Junction Mixed Use'; }
+var PLANT_SITE_OVERRIDE={}; try{ var _so=JSON.parse(localStorage.getItem('slan_plant_siteoverrides')||'{}'); if(_so&&typeof _so==='object') PLANT_SITE_OVERRIDE=_so; }catch(e){}
+function assetSite(code){ return PLANT_SITE_OVERRIDE[code] || PLANT_SITE_BY_CODE[code] || 'Bondi Junction Mixed Use'; }
+function _assetSetSite(code, site){ PLANT_SITE_OVERRIDE[code]=site; try{ localStorage.setItem('slan_plant_siteoverrides', JSON.stringify(PLANT_SITE_OVERRIDE)); }catch(e){} }
 var PLANT_SITES=['Bondi Junction Mixed Use','Parramatta Metro Stage 2','Sydney Olympic Park'];
 var oversightSite='All';
 function plantSetSite(s){ oversightSite=s; renderOversight(); }
@@ -2241,6 +2245,60 @@ function plantFleetSummaryPDF(){
   });
   var pages=doc.internal.getNumberOfPages();
   for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-019 · Fleet Summary Report · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
+  return doc;
+}
+/* ----- Move a machine to another site; the new site's onboarding needs its documents (handover pack). ----- */
+function plantMoveSite(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
+  _view('moveSite:'+code, function(){ plantMoveSite(code); });
+  var cur=assetSite(code);
+  var opts=PLANT_SITES.map(function(s,i){ return '<label class="row" style="cursor:pointer"><div class="row-ic"><input type="radio" name="move-site" value="'+i+'"'+(s===cur?' checked':'')+' style="width:18px;height:18px;accent-color:#2D6A45"></div><div class="row-main"><div class="row-t">'+s+'</div>'+(s===cur?'<div class="row-s">Current site</div>':'')+'</div></label>'; }).join('');
+  setHeader('Move machine', code+' · '+a.make+' '+a.model);
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<div class="hub-head"><div class="hub-ic">🚚</div><div style="flex:1"><div class="hub-code">Move '+code+'</div><div class="hub-mm">Currently at '+cur+'</div></div></div>'+
+    '<div class="sec-h">Move to</div><div class="tile">'+opts+'</div>'+
+    '<div style="background:#FBF1E6;border:1px solid #E6CFA8;border-radius:10px;padding:11px 13px;margin:12px 0;font-size:12px;color:#7A4F00;line-height:1.5">📑 The new site&rsquo;s onboarding will need this machine&rsquo;s documents — service reports, green sticker, rego &amp; insurance. Export the handover pack to send with it.</div>'+
+    '<button class="cta" style="background:var(--mid)" onclick="plantMoveSiteSubmit(\''+code+'\')">Move machine</button>'+
+    '<button class="btn-ghost" onclick="plantHandoverPack(\''+code+'\')">📄  Export handover pack (PDF)</button>'+
+  '</div>';
+  showDetail(html);
+}
+function plantMoveSiteSubmit(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
+  var sel=document.querySelector('input[name="move-site"]:checked');
+  var site=sel?PLANT_SITES[+sel.value]:assetSite(code);
+  if(site===assetSite(code)){ slanMsg('Pick a different site','<div style="font-size:13px;color:var(--t2);line-height:1.55">'+code+' is already at '+site+'. Choose a different site to move it.</div>'); return; }
+  _assetSetSite(code, site);
+  var idx=ASSETS.indexOf(a);
+  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">🚚</div><div style="font-size:16px;font-weight:800;color:var(--deep);margin-top:6px">Machine moved</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' is now at <b>'+site+'</b>. Export the handover pack from the machine page to send its documents to the new site&rsquo;s onboarding.</div></div>', function(){ openHub(idx); });
+}
+function plantHandoverPack(code){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(plantHandoverPDF(code), 'Handover-'+code+'.pdf'); }
+function plantHandoverPDF(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); var dt=plantDetails(code);
+  var doc=new window.jspdf.jsPDF('p','mm','a4');
+  var W=210,M=14,GOLD=[184,150,12],GREEN=[44,107,94]; var y=16;
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Plant Handover / Mobilisation Pack', M, y);
+  if(typeof SLAN_LOGO_B64!=='undefined' && SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, 3, 34, 14); }catch(e){} }
+  y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=7;
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(27,58,45); doc.text(code+' — '+a.make+' '+a.model, M, y); y+=6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90); doc.text(a.type+'  ·  Mobilising to: '+assetSite(code)+'  ·  '+fmt(new Date().toISOString()), M, y); y+=8;
+  function bar(t){ if(y>270){doc.addPage();y=16;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=10; doc.setTextColor(40,40,40); doc.setFont('helvetica','normal'); }
+  function kv(k,v){ if(y>282){doc.addPage();y=16;} doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.setFontSize(9); doc.text(k, M, y); doc.setFont('helvetica','normal'); doc.setTextColor(35,35,35); doc.text(String(v), M+60, y); y+=5.6; }
+  bar('Identification'); kv('Asset / code:', code); kv('Make & model:', a.make+' '+a.model); kv('Type:', a.type); kv('Serial / VIN:', dt.vin||'—'); if(dt.rego) kv('Registration:', dt.rego+' · '+(dt.rego_state||'')); kv('Year:', dt.year||'—');
+  bar('Compliance & currency');
+  kv('Service — last:', a.service_last?fmt(a.service_last):'—'); kv('Service — next due:', a.service_due?fmt(a.service_due):'—');
+  if(a.swl) kv('Periodic inspection:', 'Green sticker · next '+fmt(a.service_due));
+  kv('Rego expiry:', a.rego_expiry?fmt(a.rego_expiry):'— (plant)');
+  kv('Insurance:', isHired(code)?'Supplier cover (hire)':((dt.insurer||'—')+(a.insurance_expiry?(' · exp '+fmt(a.insurance_expiry)):'')));
+  if(typeof warrantyInfo==='function' && warrantyInfo(code) && !isHired(code)) kv('Warranty:', (inWarranty(code)?('In warranty · until '+fmt(warrantyUntil(code))):'Out of warranty'));
+  if(a.swl) kv('SWL / capacity:', a.swl);
+  bar('Documents on file');
+  doc.setFontSize(8.6); doc.setTextColor(45,45,45);
+  getDocs(a).forEach(function(d){ if(y>284){doc.addPage();y=16;} doc.text('· '+d.t+' — '+d.s, M+2, y); y+=5; });
+  var done=WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; });
+  if(done.length){ bar('Recent repairs & services'); doc.setFontSize(8.6); doc.setTextColor(45,45,45); done.slice(0,6).forEach(function(w){ if(y>284){doc.addPage();y=16;} var when=(w.signoff&&w.signoff.when)?fmtShort(w.signoff.when):''; doc.text('· '+w.wo+' — '+(w.fault||'').slice(0,58)+(when?(' ('+when+')'):''), M+2, y); y+=5; }); }
+  var pages=doc.internal.getNumberOfPages();
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-020 · Plant Handover Pack · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
   return doc;
 }
 /* ----- Hire request → director approval (front-end). Supervisor raises a request; director approves/rejects. ----- */
