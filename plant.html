@@ -3173,7 +3173,7 @@ function _assetRegisterBody(fleet){
       '<td>'+(function(){ if(isHired(a.code)) return '<span style="color:var(--t3)">— hired</span>'; var w=warrantyInfo(a.code); if(!w) return '<span style="color:var(--t3)">—</span>'; return inWarranty(a.code)?('<span style="color:#1B6E3A;font-weight:700">In warranty</span><div class="cell-sub">'+fmtShort(warrantyUntil(a.code))+'</div>'):'<span style="color:var(--t3)">Out</span>'; })()+'</td>'+
       '<td>'+lpCell+'</td>'+
       '<td style="text-align:center">'+woCell+'</td>'+
-      '<td>'+money(assetSpendYear(a,CUR_YEAR))+'</td>'+
+      '<td>'+(!isHired(a.code)?('<a href="javascript:void(0)" onclick="event.stopPropagation();renderMachineSpend(\''+a.code+'\',\'hub\')" style="color:var(--gold);font-weight:700;text-decoration:underline" title="See every repair &amp; service cost + cost of ownership">'+money(assetSpendYear(a,CUR_YEAR))+' ›</a>'):('<span style="color:var(--t3)">'+money(assetSpendYear(a,CUR_YEAR))+'</span>'))+'</td>'+
       '<td>'+stB+'</td>'+
       '<td><button onclick="event.stopPropagation();openHub('+ASSETS.indexOf(a)+')" style="padding:6px 12px;border-radius:7px;border:1.5px solid var(--border);background:#fff;color:var(--deep);font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap">View ›</button></td></tr>';
   }).join('');
