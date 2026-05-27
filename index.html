@@ -2092,11 +2092,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-name">Report Incident</div><div class="tile-sub" id="worker-inc-tile-sub">Injury or near miss</div>
         <div class="tile-notif" id="worker-inc-notif" style="display:none"></div>
       </div>
-      <div class="tile wide" style="background:#F8F7FF;border-color:rgba(85,53,173,.08)" onclick="goToPsychosocial()">
-        <div style="display:flex;align-items:center;gap:11px">
-          <div class="tile-icon ic-purple" style="margin-bottom:0;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
-          <div><div class="tile-name" style="color:#5535AD">Psychosocial / Concern</div><div class="tile-sub">Confidential — direct to provider</div></div>
-        </div>
+      <div class="tile" onclick="goToPsychosocial()">
+        <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+        <div class="tile-name">Wellbeing</div>
+        <div class="tile-sub">Confidential — direct to provider</div>
       </div>
       <div class="tile" onclick="goToTake5()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
@@ -13869,6 +13868,32 @@ function getInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+// Paint the round header avatar on every home (worker/supervisor/director) with
+// the signed-in person's initials (or their photo if set) — instead of the
+// generic person figure. Keeps all three portals consistent.
+function paintHomeAvatars() {
+  try {
+    var p = (typeof getProfile === 'function') ? getProfile() : null;
+    if (!p || !p.name) return;
+    var initials = getInitials(p.name);
+    // Worker avatar keeps its img + icon children (initHome toggles them) —
+    // render the initials as SVG <text> inside the icon so nothing else breaks.
+    var hIcon = document.getElementById('h-avatar-icon');
+    if (hIcon) {
+      hIcon.removeAttribute('stroke');
+      hIcon.innerHTML = '<text x="12" y="15.5" text-anchor="middle" font-size="11" font-weight="700" fill="#D4AF37" font-family="DM Sans, sans-serif">' + initials + '</text>';
+    }
+    // Supervisor + director avatars are single-child — set directly (initials, or photo).
+    var span = '<span style="font-size:14px;font-weight:700;color:#D4AF37;letter-spacing:.3px">' + initials + '</span>';
+    ['d-avatar', 'an-avatar'].forEach(function(id){
+      var el = document.getElementById(id); if (!el) return;
+      el.innerHTML = p.photo
+        ? '<img src="' + p.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+        : span;
+    });
+  } catch(e) {}
+}
+
 function populateMyProfile() {
   // Refresh TFB demo toggle highlight on profile open
   try { if (typeof myProfRefreshTfbToggle === 'function') myProfRefreshTfbToggle(); } catch(e) {}
@@ -16630,10 +16655,12 @@ function initHome(p){
   // Profile photo in header
   const avatarImg  = document.getElementById('h-avatar-img');
   const avatarIcon = document.getElementById('h-avatar-icon');
-  if (p.photo) {
-    avatarImg.src=p.photo; avatarImg.style.display='block'; avatarIcon.style.display='none';
-  } else {
-    avatarImg.style.display='none'; avatarIcon.style.display='block';
+  if (avatarImg && avatarIcon) {
+    if (p.photo) {
+      avatarImg.src=p.photo; avatarImg.style.display='block'; avatarIcon.style.display='none';
+    } else {
+      avatarImg.style.display='none'; avatarIcon.style.display='block';
+    }
   }
 
   // Supervisor name
@@ -20529,6 +20556,8 @@ function goTo(id){
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  // Keep the header avatars showing initials (consistent across all portals)
+  if (id === 'screen-home' || id === 'screen-dash' || id === 'screen-analytics') { try { paintHomeAvatars(); } catch(e) {} }
   window.scrollTo(0,0);
   // Auto-refresh chip strip when landing on worker home or supervisor dash
   if (id === 'screen-home') {
