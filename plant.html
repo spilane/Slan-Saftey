@@ -47,8 +47,9 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .sb{height:calc(env(safe-area-inset-top,0px) + 10px);background:var(--deep)}
 .topbar{background:var(--deep);padding:8px 16px 12px;position:sticky;top:0;z-index:50}
 .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.tbar-logo{flex:1;display:flex;justify-content:center}
-.tbar-logo img{height:74px;object-fit:contain;display:block;image-rendering:auto}
+.tbar-logo{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.tbar-logo .lg-name{font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:700;color:#D4AF37;letter-spacing:.005em;line-height:1}
+.tbar-logo .lg-sub{font-size:9.5px;font-weight:600;letter-spacing:.36em;color:#C9A227;margin-top:5px;padding-left:.36em;text-transform:uppercase}
 .back-btn{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
 .back-btn:hover{background:rgba(255,255,255,.18)}
 .back-btn svg{width:20px;height:20px}
@@ -64,7 +65,8 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .wrap{max-width:560px;margin:0 auto;padding:18px 16px}
 .h1{font-size:21px;font-weight:700;color:var(--deep);margin-bottom:3px}
 .sub{font-size:13px;color:var(--t2);margin-bottom:18px}
-.back{background:#fff;color:var(--deep);border:1.5px solid var(--border);border-radius:var(--rs);width:auto;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:14px}
+/* in-content back buttons are hidden — the single back control lives in the header (.back-btn), like the rest of the app */
+.back{display:none!important}
 /* machine list */
 .asset{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:11px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:box-shadow .15s,border-color .15s;text-align:left;width:100%;font-family:inherit}
 .asset:hover{box-shadow:0 4px 14px rgba(0,0,0,.08);border-color:var(--gold)}
@@ -194,7 +196,7 @@ body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,san
 .spend-mini .s-l{font-size:9px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;opacity:.8;margin-bottom:6px}
 .spend-mini .s-v{font-size:26px;font-weight:800;line-height:1}
 table.reg{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px;background:#fff;border:1px solid var(--border);border-radius:10px}
-table.reg th{text-align:left;padding:9px 11px;background:#EAF1ED;color:var(--t2);font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;position:sticky;top:0;z-index:2}
+table.reg th{text-align:left;padding:10px 11px;background:linear-gradient(135deg,#1B3A2D 0%,#0F2419 100%);color:#D4AF37;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;position:sticky;top:0;z-index:2}
 table.reg td{padding:10px 11px;border-top:1px solid #EEF2F0;white-space:nowrap;vertical-align:top}
 table.reg tbody tr{cursor:pointer}
 table.reg tbody tr:hover{background:#F6FAF7}
@@ -247,7 +249,7 @@ table.reg tr.attn-amber td:first-child{box-shadow:inset 3px 0 0 #E08A1E}
 <div class="topbar">
   <div class="topbar-row">
     <button class="back-btn" onclick="plantGoBack()" aria-label="Back to app"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    <div class="tbar-logo"><img src="Slan_Safety_No_Border_1.png" alt="Slán Safety"></div>
+    <div class="tbar-logo"><div class="lg-name">Slán</div><div class="lg-sub">Safety</div></div>
     <span class="tb-spacer"></span>
   </div>
   <div class="hdr-bottom">
@@ -678,6 +680,10 @@ function plantOpenWhsProfile(){ try{ sessionStorage.setItem('slan_whs_profile_re
 function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><span id="who-name">'+currentWorker.name+'</span></button>'; }
 var _homeView='list';
 function plantGoBack(){
+  // if a work-order worksheet is open, save it before leaving (the old in-content back button used to do this)
+  try{ if(typeof _woCur!=='undefined' && _woCur!=null && WORKORDERS[_woCur] && document.getElementById('wo-diagnosis')){ _woReadForm(WORKORDERS[_woCur]); _saveWO(WORKORDERS[_woCur]); } }catch(e){}
+  // step back to the actual previous page first (the one back control, in the header)
+  if(typeof _navBack==='function' && _navBack()) return;
   var det=document.getElementById('screen-detail');
   if(det && det.style.display!=='none'){ if(_homeView==='mechanic'){ renderMechanic(); } else if(_homeView==='oversight'){ renderOversight(); } else { showList(); } return; }
   // top level of the plant page → return to the WHS app (plant is a section of it)
@@ -968,7 +974,7 @@ function openHub(i){
         }
         if(st && (st.state==='overdue'||st.state==='due_soon')) return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>';
         return ''; })() : '')+
-    ((getRole()!=='worker' && !isHired(a.code)) ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineSpend(\''+a.code+'\',\'hub\')">💲  Maintenance &amp; costs ('+money(assetSpend12(a))+') — tap to break down</button>' : '')+
+    ((getRole()!=='worker' && !isHired(a.code)) ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineSpend(\''+a.code+'\',\'hub\')">💲  Maintenance &amp; costs ('+CUR_YEAR+': '+money(assetSpendYear(a,CUR_YEAR))+') — tap to break down</button>' : '')+
     ((getRole()!=='worker') ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineHistory(\''+a.code+'\')">📜  Machine history ('+_machineTimeline(a.code).length+')</button><button class="btn-ghost" style="margin-top:8px" onclick="renderPartsLedger(\''+a.code+'\')">🔩  Parts fitted ('+_partsHistory(a.code).length+')</button>' : '')+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
@@ -1885,6 +1891,9 @@ function _woAgeCol(w){ if(_woOnHold(w)) return '#234E76'; var d=_woAge(w); retur
 /* completed repair costs the client paid for this machine — added on top of the historical seed spend */
 function _woSpendFor(code){ return WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; }).reduce(function(s,w){ return s+_woClientCost(w); }, 0); }
 function assetSpend12(a){ return (a.spend12mo||0)+_woSpendFor(a.code)+(typeof _svcSpendFor==='function'?_svcSpendFor(a.code):0); }
+var CUR_YEAR=new Date().getFullYear();
+/* calendar-year maintenance spend for a machine — completed repairs + services dated in that year (Jan 1 turnover) */
+function assetSpendYear(a, year){ return _spendEntries(a.code).filter(function(e){ return e.year===year; }).reduce(function(s,e){ return s+(e.cost||0); }, 0); }
 /* read the editable worksheet fields back into the WO object (no storage write) */
 function _woReadForm(w){
   if(!w) return;
@@ -1952,8 +1961,8 @@ function renderPlantCharts(){
   var fault=fleet.filter(function(a){return a.status!=='operational';}).length;
   var attn=Math.max(0, fleet.length-op-fault);
   _mkChart('ch-avail',{type:'doughnut',data:{labels:['Ready','Attention','Fault / blocked'],datasets:[{data:[op,attn,fault],backgroundColor:['#1B6E3A','#A06000','#A32D2D'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom'}}}});
-  var sB=fleet.slice().sort(function(a,b){return assetSpend12(b)-assetSpend12(a);});
-  _mkChart('ch-spend',{type:'bar',data:{labels:sB.map(function(a){return a.code;}),datasets:[{data:sB.map(function(a){return assetSpend12(a);}),backgroundColor:'#2D6A45',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return '$'+(v/1000)+'k';}}}}}});
+  var sB=fleet.slice().sort(function(a,b){return assetSpendYear(b,CUR_YEAR)-assetSpendYear(a,CUR_YEAR);});
+  _mkChart('ch-spend',{type:'bar',data:{labels:sB.map(function(a){return a.code;}),datasets:[{data:sB.map(function(a){return assetSpendYear(a,CUR_YEAR);}),backgroundColor:'#2D6A45',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return '$'+(v/1000)+'k';}}}}}});
   renderUtilChart();
   var d7=[]; for(var i=6;i>=0;i--){ d7.push(fmtShort(dOffset(-i))); }
   _mkChart('ch-prestart',{type:'line',data:{labels:d7,datasets:[{data:[88,92,85,90,87,93,91],borderColor:'#1B6E3A',backgroundColor:'rgba(27,110,58,.12)',fill:true,tension:.35,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:function(v){return v+'%';}}}}}});
@@ -2777,13 +2786,13 @@ function _assetRegisterBody(fleet){
       '<td>'+(function(){ if(isHired(a.code)) return '<span style="color:var(--t3)">— hired</span>'; var w=warrantyInfo(a.code); if(!w) return '<span style="color:var(--t3)">—</span>'; return inWarranty(a.code)?('<span style="color:#1B6E3A;font-weight:700">In warranty</span><div class="cell-sub">'+fmtShort(warrantyUntil(a.code))+'</div>'):'<span style="color:var(--t3)">Out</span>'; })()+'</td>'+
       '<td>'+lpCell+'</td>'+
       '<td style="text-align:center">'+woCell+'</td>'+
-      '<td>'+money(assetSpend12(a))+'</td>'+
+      '<td>'+money(assetSpendYear(a,CUR_YEAR))+'</td>'+
       '<td>'+stB+'</td>'+
       '<td><button onclick="event.stopPropagation();openHub('+ASSETS.indexOf(a)+')" style="padding:6px 12px;border-radius:7px;border:1.5px solid var(--border);background:#fff;color:var(--deep);font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit;white-space:nowrap">View ›</button></td></tr>';
   }).join('');
   return '<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
       '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
-    '<div class="reg-wrap"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>12-mo spend</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<div class="reg-wrap"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>Spend ('+CUR_YEAR+')</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
     '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
 }
 function renderOversight(){
@@ -2797,7 +2806,8 @@ function renderOversight(){
   var done=WORKORDERS.filter(function(w){ return w.status==='Returned to service' && siteMatch(w.code); });
   var opCount=fleet.filter(function(a){return a.status==='operational';}).length;
   var attnCount=fleet.filter(function(a){ return a.status!=='operational' || _expired(a.service_due) || _expired(a.rego_expiry); }).length;
-  var spend12=fleet.reduce(function(s,a){ return s+assetSpend12(a); },0);
+  var spendThisYr=fleet.reduce(function(s,a){ return s+assetSpendYear(a,CUR_YEAR); },0);
+  var spendLastYr=fleet.reduce(function(s,a){ return s+assetSpendYear(a,CUR_YEAR-1); },0);
 
   var chipRow='';
   if(!supLocked){
@@ -2841,7 +2851,7 @@ function renderOversight(){
       '<div class="fcard"><div class="fcard-hdr">⚠ Machines needing attention ('+need.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+attHtml+'</div></div>'+
       plantServicesDueCard(fleet)+
       '<div class="fcard"><div class="fcard-hdr">📋 Recent pre-starts ('+savedRecs.length+')</div><div class="tile" style="border:none;border-radius:0;box-shadow:none">'+recFeed+'</div></div>'+
-      '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend-hero"><div class="s-l">Last 12 months</div><div class="s-v">'+money(spend12)+'</div><div class="s-tr">▼ 8% vs prior year</div></div><div class="spend-mini"><div class="s-l">Last 6 months</div><div class="s-v">'+money(Math.round(spend12*0.45))+'</div></div></div></div>'+
+      '<div class="fcard"><div class="fcard-hdr">💲 Maintenance Spend</div><div class="fcard-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="spend-hero"><div class="s-l">This year ('+CUR_YEAR+')</div><div class="s-v">'+money(spendThisYr)+'</div><div class="s-tr">Year to date</div></div><div class="spend-mini"><div class="s-l">Last year ('+(CUR_YEAR-1)+')</div><div class="s-v">'+money(spendLastYr)+'</div></div></div></div>'+
       plantHireMoneyPanel(fleet.filter(function(a){ return isHired(a.code); }))+
       plantHireReturnsWatchlist(fleet.filter(function(a){ return isHired(a.code); }));
   } else if(platTab==='assets'){
@@ -2896,6 +2906,22 @@ function _plantHomeAfterJob(){ if(_mechMode()){ renderMechanic(); } else { rende
 function _svcBackTarget(idx){ if(_mechMode()){ renderMechanic(); } else { openHub(idx); } }
 var _mechTab='jobs';
 function mechSetTab(t){ _mechTab=t; renderMechanic(); }
+/* Mechanic Machines tab — a clean, phone-friendly fleet list (the full wide register is the director's desktop view). */
+function _mechMachinesList(){
+  var fleet=ASSETS.slice();
+  function rank(a){ if(a.status==='out_of_service')return 0; if(a.status==='fault_reported')return 1; var st=_svcStatus(a); if(st&&st.state==='overdue')return 2; if(st&&st.state==='due_soon')return 3; return 5; }
+  fleet.sort(function(x,y){ var rx=rank(x), ry=rank(y); if(rx!==ry) return rx-ry; return x.code<y.code?-1:1; });
+  var rows=fleet.map(function(a){
+    var dot=a.status==='out_of_service'?'#A32D2D':(a.status==='fault_reported'?'#A06000':'#1B6E3A');
+    var woN=openWoCount(a.code), st=_svcStatus(a);
+    var svcTxt=isHired(a.code)?'Hired — supplier maintained':(st&&st.booked?('Service booked '+fmtShort(st.bookedDate)):(st&&st.state==='overdue'?'Service overdue':(st&&st.state==='due_soon'?'Service due soon':'Next service '+fmtShort(a.service_due))));
+    var svcCol=(st&&st.state==='overdue')?'#A32D2D':((st&&st.state==='due_soon')?'#A06000':'var(--t2)');
+    var bits='<span style="color:'+svcCol+'">'+svcTxt+'</span>'+(woN?(' · <span style="color:#A06000;font-weight:700">'+woN+' open WO'+(woN>1?'s':'')+'</span>'):'');
+    return '<button class="row" onclick="openHub('+ASSETS.indexOf(a)+')"><div class="row-ic"><span class="dot" style="background:'+dot+'"></span></div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+assetSite(a.code)+' · '+bits+'</div></div><div class="chev">›</div></button>';
+  }).join('');
+  return '<div class="sec-h">Fleet — '+fleet.length+' machines</div><div class="tile">'+rows+'</div>'+
+    '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a machine to open its full record — history, parts &amp; costs.</div>';
+}
 function renderMechanic(){
   setTopRight(_profileAvatar('Dave Wilkins'));
   _homeView='mechanic';
@@ -2910,7 +2936,7 @@ function renderMechanic(){
   }).join('')+'</div>';
   var body;
   if(_mechTab==='machines'){
-    body=_assetRegisterBody(ASSETS);
+    body=_mechMachinesList();
   } else if(_mechTab==='reports'){
     body='<div class="sec-h">Reports &amp; references</div><div class="tile">'+
       '<button class="row" onclick="renderMechHistory()"><div class="row-ic">📋</div><div class="row-main"><div class="row-t">Repair &amp; service history</div><div class="row-s">Every completed repair &amp; service across the fleet</div></div><div class="chev">›</div></button>'+
@@ -3090,8 +3116,8 @@ function renderMachineHistory(code){
   showDetail(html);
 }
 /* Maintenance spend — fleet total broken down per machine, and each machine broken down into the actual repairs + services that make up its cost. */
-/* ---- maintenance spend by period: "Last 12 months" + a tab per calendar year ---- */
-var _spendPer='12mo';   // selected spend period: '12mo' (rolling) or a calendar year string e.g. '2025'
+/* ---- maintenance spend by calendar year (a tab per year, current year first) ---- */
+var _spendPer=String(new Date().getFullYear());   // selected spend year, e.g. '2026'
 function spendSetPer(p){ _spendPer=p; }
 /* dated maintenance entries for one machine — completed repairs + completed service, newest first */
 function _spendEntries(code){
@@ -3104,11 +3130,12 @@ function _spendEntries(code){
   out.sort(function(a,b){ return (b.when?b.when.getTime():0)-(a.when?a.when.getTime():0); });
   return out;
 }
-/* the period tabs for a set of entries: "Last 12 months" + each calendar year present (newest first) */
+/* the period tabs for a set of entries: one per calendar year present (newest first); current year always shown */
 function _spendPeriods(entries){
   var years={}; entries.forEach(function(e){ if(e.year) years[e.year]=1; });
+  years[new Date().getFullYear()]=1;
   var ys=Object.keys(years).map(Number).sort(function(a,b){ return b-a; });
-  return [{key:'12mo',label:'Last 12 months'}].concat(ys.map(function(y){ return {key:String(y), label:String(y)}; }));
+  return ys.map(function(y){ return {key:String(y), label:String(y)}; });
 }
 function _spendTabStrip(periods, onclickFor){
   return '<div style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px;padding-bottom:4px">'+periods.map(function(p){
@@ -3122,23 +3149,22 @@ function renderMechSpend(){
   var fleet=ASSETS.filter(function(a){ return !isHired(a.code); });
   var allEntries=[]; fleet.forEach(function(a){ _spendEntries(a.code).forEach(function(e){ allEntries.push(e); }); });
   var periods=_spendPeriods(allEntries);
-  if(!periods.some(function(p){ return p.key===_spendPer; })) _spendPer='12mo';
-  var per=_spendPer, yr=Number(per);
-  function machSpend(a){ if(per==='12mo') return assetSpend12(a); return _spendEntries(a.code).filter(function(e){ return e.year===yr; }).reduce(function(s,e){ return s+e.cost; },0); }
-  function machItems(a){ if(per==='12mo') return WORKORDERS.filter(function(w){ return w.code===a.code&&w.status==='Returned to service'; }).length; return _spendEntries(a.code).filter(function(e){ return e.year===yr; }).length; }
+  if(!periods.some(function(p){ return p.key===_spendPer; })) _spendPer=periods[0].key;
+  var yr=Number(_spendPer);
+  function machSpend(a){ return assetSpendYear(a, yr); }
+  function machItems(a){ return _spendEntries(a.code).filter(function(e){ return e.year===yr; }).length; }
   var total=fleet.reduce(function(s,a){ return s+machSpend(a); },0);
   var sorted=fleet.slice().sort(function(x,y){ return machSpend(y)-machSpend(x); });
   var rows=sorted.map(function(a){ var sp=machSpend(a); var n=machItems(a);
     return '<button class="row" onclick="renderMachineSpend(\''+a.code+'\')"><div class="row-ic">'+a.icon+'</div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s">'+(n?(n+' item'+(n>1?'s':'')+' · '):'')+'tap to break it down</div></div><span class="row-s" style="flex-shrink:0;color:var(--deep);font-weight:800">'+money(sp)+'</span><div class="chev">›</div></button>';
   }).join('');
-  var perLabel=(per==='12mo')?'Last 12 months':per;
   var tabStrip=_spendTabStrip(periods, function(k){ return "spendSetPer('"+k+"');renderMechSpend()"; });
   setHeader('Maintenance spend','Across the fleet · tap a machine to break it down');
   var html='<div class="wrap platform-wrap">'+
     '<button class="back" onclick="if(!_navBack()){mechSetTab(\'reports\')}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">Maintenance spend</div><div class="hub-mm">'+fleet.length+' owned machines</div></div></div>'+
     tabStrip+
-    '<div class="fcard"><div class="fcard-hdr">Total fleet spend · '+perLabel+'</div><div style="padding:16px"><div style="font-size:30px;font-weight:800;color:var(--deep)">'+money(total)+'</div><div style="font-size:11.5px;color:var(--t3);margin-top:4px">Tap any machine below to open its full breakdown'+(per==='12mo'?', or a year above to see that year.':'.')+'</div></div></div>'+
+    '<div class="fcard"><div class="fcard-hdr">Total fleet spend · '+_spendPer+'</div><div style="padding:16px"><div style="font-size:30px;font-weight:800;color:var(--deep)">'+money(total)+'</div><div style="font-size:11.5px;color:var(--t3);margin-top:4px">Tap a machine to open its breakdown, or a year above to switch.</div></div></div>'+
     '<div class="sec-h">By machine (highest first)</div><div class="tile">'+rows+'</div>'+
   '</div>';
   showDetail(html);
@@ -3151,30 +3177,22 @@ function renderMachineSpend(code, from){
   var idx=ASSETS.indexOf(a);
   var entries=_spendEntries(code);
   var periods=_spendPeriods(entries);
-  if(!periods.some(function(p){ return p.key===_spendPer; })) _spendPer='12mo';
-  var per=_spendPer, yr=Number(per);
+  if(!periods.some(function(p){ return p.key===_spendPer; })) _spendPer=periods[0].key;
+  var yr=Number(_spendPer);
   function woRow(e){ var w=e.w; var c=w.warranty_claim?'$0 · warranty':money(e.cost); var when=e.when?fmtShort(iso(e.when)):''; var inv=w.invoice_doc?' 📄':''; return '<div class="svc-row" onclick="openWO('+e.wi+')" style="cursor:pointer"><span>🔧 '+w.wo+' · '+_premobEsc((w.fault||'').slice(0,30))+(when?(' · '+when):'')+inv+' <span style="color:var(--gold)">›</span></span><span>'+c+'</span></div>'; }
   function svcRow(e){ var s=e.s; return '<div class="svc-row" onclick="plantViewServiceRecord(\''+code+'\')" style="cursor:pointer"><span>🛠 Service · '+(s.workshop||'')+(s.completed_date?(' · '+fmtShort(s.completed_date)):'')+(s.invoice_doc?' 📄':'')+' <span style="color:var(--gold)">›</span></span><span>'+money(e.cost)+'</span></div>'; }
   var rowsHtml='', total=0;
-  if(per==='12mo'){
-    entries.forEach(function(e){ rowsHtml+=(e.kind==='wo'?woRow(e):svcRow(e)); });
-    if(a.spend12mo){ rowsHtml+='<div class="svc-row" style="color:var(--t3)"><span>Earlier maintenance (prior 12 mo)</span><span>'+money(a.spend12mo)+'</span></div>'; }
-    total=assetSpend12(a);
-  } else {
-    entries.filter(function(e){ return e.year===yr; }).forEach(function(e){ rowsHtml+=(e.kind==='wo'?woRow(e):svcRow(e)); total+=e.cost; });
-    if(!rowsHtml) rowsHtml='<div class="svc-row" style="color:var(--t3)"><span>No recorded spend in '+per+'</span><span></span></div>';
-  }
-  if(!rowsHtml) rowsHtml='<div class="svc-row" style="color:var(--t3)"><span>No recorded spend</span><span></span></div>';
-  var perLabel=(per==='12mo')?'Last 12 months':per;
+  entries.filter(function(e){ return e.year===yr; }).forEach(function(e){ rowsHtml+=(e.kind==='wo'?woRow(e):svcRow(e)); total+=e.cost; });
+  if(!rowsHtml) rowsHtml='<div class="svc-row" style="color:var(--t3)"><span>No recorded spend in '+_spendPer+'</span><span></span></div>';
   var tabStrip=_spendTabStrip(periods, function(k){ return "spendSetPer('"+k+"');renderMachineSpend('"+code+"','"+(from||'')+"')"; });
   setHeader('Maintenance spend', code+' · '+a.make+' '+a.model);
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="if(!_navBack()){'+(from==='hub'?('openHub('+idx+')'):'renderMechSpend()')+'}">‹ Back</button>'+
     '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">'+code+' — spend</div><div class="hub-mm">'+a.make+' '+a.model+'</div></div></div>'+
     tabStrip+
-    '<div class="svc" style="margin-bottom:12px"><div class="svc-row"><span><b>Total · '+perLabel+'</b></span><span style="font-weight:800;font-size:15px">'+money(total)+'</span></div></div>'+
+    '<div class="svc" style="margin-bottom:12px"><div class="svc-row"><span><b>Total · '+_spendPer+'</b></span><span style="font-weight:800;font-size:15px">'+money(total)+'</span></div></div>'+
     '<div class="sec-h">What makes it up</div><div class="svc">'+rowsHtml+'</div>'+
-    (per==='12mo'?'<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap any repair or service to open its full record &amp; invoice — or tap a year above to see that year&rsquo;s spend.</div>':'<div style="font-size:11px;color:var(--t3);margin-top:8px">Completed repairs &amp; services dated in '+per+'.</div>')+
+    '<div style="font-size:11px;color:var(--t3);margin-top:8px">Completed repairs &amp; services dated in '+_spendPer+'. Tap any line for its full record &amp; invoice, or a year above to switch.</div>'+
     '<button class="btn-ghost" style="margin-top:12px" onclick="renderMachineHistory(\''+code+'\')">📜  Open full machine history</button>'+
   '</div>';
   showDetail(html);
