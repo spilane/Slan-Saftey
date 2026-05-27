@@ -1043,6 +1043,7 @@ function openHub(i){
       '<button class="btn-ghost" style="margin-top:8px" onclick="plantHandoverPack(\''+a.code+'\')">📄  Handover / mobilisation pack (PDF)</button>'+
       '<button class="btn-ghost" style="margin-top:8px" onclick="plantMachineAudit(\''+a.code+'\')">📋  Machine audit pack (PDF)</button>' : '')+
     ((getRole()!=='worker') ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineHistory(\''+a.code+'\')">📜  Machine history ('+_machineTimeline(a.code).length+')</button><button class="btn-ghost" style="margin-top:8px" onclick="renderPartsLedger(\''+a.code+'\')">🔩  Parts fitted ('+_partsHistory(a.code).length+')</button>' : '')+
+    '<button class="btn-ghost" style="margin-top:8px" onclick="renderTelematics(\''+a.code+'\')">📡  Live tracking &amp; telematics</button>'+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
   showDetail(html);
@@ -3138,6 +3139,7 @@ function _assetRegisterBody(fleet){
     '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">'+
       ((getRole()==='director'||getRole()==='supervisor')?'<button class="cta" onclick="plantAddAsset()" style="flex:1;min-width:170px;margin:0;background:var(--mid)">➕  Add plant / equipment</button>':'')+
+      '<button class="btn-ghost" onclick="renderFleetMap()" style="flex:1;min-width:170px;margin:0">📡  Live fleet map</button>'+
       '<button class="btn-ghost" onclick="plantFleetReport()" style="flex:1;min-width:170px;margin:0">📄  Fleet summary report (PDF)</button>'+
       '<button class="btn-ghost" onclick="renderPlantCalendar()" style="flex:1;min-width:170px;margin:0">📅  Upcoming &amp; due</button>'+
     '</div>';
@@ -3445,6 +3447,141 @@ function renderMachineHistory(code){
     '<div class="hub-head"><div class="hub-ic">📜</div><div style="flex:1"><div class="hub-code">Machine history</div><div class="hub-mm">'+(a?(code+' · '+a.make+' '+a.model):code)+'</div></div></div>'+
     chips+
     '<div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* ── Live tracking & telematics (SIMULATED for the demo) ──────────────────
+   In the full system a tracking unit on the machine syncs live GPS + engine
+   data (Phase-2 telematics). Here figures are derived deterministically from
+   the machine code + its utilisation so they're stable and believable, and
+   the map is drawn in-page (no external tiles — works offline on the phone). */
+var SITE_GEO={
+  'Bondi Junction Mixed Use':{ lat:-33.8915, lng:151.2477, addr:'Oxford St, Bondi Junction NSW 2022' },
+  'Parramatta Metro Stage 2':{ lat:-33.8150, lng:151.0000, addr:'Macquarie St, Parramatta NSW 2150' },
+  'Sydney Olympic Park':{ lat:-33.8470, lng:151.0670, addr:'Olympic Blvd, Sydney Olympic Park NSW 2127' }
+};
+function _telemHash(s){ var h=0; for(var i=0;i<(s||'').length;i++){ h=((h<<5)-h+s.charCodeAt(i))|0; } return Math.abs(h); }
+function _telemData(a){
+  var code=a.code, seed=_telemHash(code);
+  var sm=(typeof svcMeter==='function')?svcMeter(a):null, meter=sm?sm.meter:'hrs';
+  var hrsMo=(typeof UTIL_MONTHLY!=='undefined')?(UTIL_MONTHLY[code]||0):0;
+  var weeklyAvg = hrsMo? hrsMo/4.33 : (24 + seed%16);
+  var dayF=[1.05,1.0,1.1,0.95,1.05,0.4,0.12];                 // Mon..Sun activity shape
+  var fSum=dayF.reduce(function(x,y){return x+y;},0), base=weeklyAvg/fSum;
+  var days=dayF.map(function(f,i){ var jit=(((seed>>(i+1))%9)/100)-0.04; return Math.max(0, +(base*f*(1+jit)).toFixed(1)); });
+  var weekTotal=+days.reduce(function(x,y){return x+y;},0).toFixed(1);
+  var st;
+  if(a.status==='out_of_service'||a.status==='retired') st={k:'off',label:'Engine off · out of service',col:'#A32D2D'};
+  else if(typeof hireIdleDays==='function' && isHired(code) && hireIdleDays(code)>=3) st={k:'idle',label:'Idle on site',col:'#A06000'};
+  else st = ((seed%10)<7) ? {k:'work',label:'Working',col:'#1B6E3A'} : {k:'idle',label:'Idle on site',col:'#A06000'};
+  var dow=(new Date().getDay()+6)%7;                          // 0=Mon
+  var today = st.k==='off'?0:days[dow];
+  var workingPct = 58 + (seed%28);                            // 58-85%
+  var ago = 1 + (seed%9);                                     // minutes since last ping
+  var geo=SITE_GEO[assetSite(code)]||{lat:-33.87,lng:151.0,addr:assetSite(code)};
+  var jLat=(((seed%200)/200)-0.5)*0.01, jLng=((((seed>>3)%200)/200)-0.5)*0.01;
+  return { meter:meter, weekly:weekTotal, days:days, status:st, today:today, workingPct:workingPct, idlePct:100-workingPct, agoMin:ago,
+    site:assetSite(code), addr:geo.addr, lat:(geo.lat+jLat), lng:(geo.lng+jLng), accuracy:3+(seed%6) };
+}
+function _telemMapPanel(d, h){
+  h=h||190;
+  return '<div style="position:relative;height:'+h+'px;border-radius:12px;overflow:hidden;border:1px solid #D5DED8;'+
+    'background:repeating-linear-gradient(0deg,rgba(255,255,255,.45) 0 1px,transparent 1px 26px),repeating-linear-gradient(90deg,rgba(255,255,255,.45) 0 1px,transparent 1px 26px),linear-gradient(135deg,#E9F0EA,#DAE6DF)">'+
+    '<div style="position:absolute;left:-10%;top:44%;width:120%;height:9px;background:#fff;transform:rotate(-7deg);opacity:.85"></div>'+
+    '<div style="position:absolute;left:32%;top:-10%;width:7px;height:120%;background:#fff;opacity:.85"></div>'+
+    '<div style="position:absolute;right:9%;top:11%;width:88px;height:64px;background:#C7E0C7;border-radius:45% 55% 50% 50%;opacity:.85"></div>'+
+    '<div style="position:absolute;left:50%;top:53%;transform:translate(-50%,-50%)">'+
+      '<div style="width:48px;height:48px;border-radius:50%;background:'+d.status.col+'22;display:flex;align-items:center;justify-content:center">'+
+        '<div style="width:16px;height:16px;border-radius:50%;background:'+d.status.col+';border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35)"></div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="position:absolute;left:10px;bottom:10px;background:rgba(255,255,255,.92);border-radius:8px;padding:5px 9px;font-size:10.5px;color:var(--deep);font-weight:700">📍 '+d.lat.toFixed(4)+', '+d.lng.toFixed(4)+'</div>'+
+    '<div style="position:absolute;right:10px;top:10px;background:rgba(255,255,255,.92);border-radius:8px;padding:4px 8px;font-size:10px;color:var(--t2)">±'+d.accuracy+' m</div>'+
+  '</div>';
+}
+function renderTelematics(code){
+  if(typeof _mechMode==='function' && _mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
+  _view('telem:'+code, function(){ renderTelematics(code); });
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a){ showList(); return; }
+  var idx=ASSETS.indexOf(a), d=_telemData(a);
+  var dayLbl=['M','T','W','T','F','S','S'], dow=(new Date().getDay()+6)%7;
+  var maxD=Math.max.apply(null, d.days.concat([0.1]));
+  var chart=d.days.map(function(v,i){
+    var bh=Math.max(3, Math.round(v/maxD*64)), isToday=(dow===i);
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'+
+      '<div style="font-size:9px;color:var(--t3)">'+(v>0?v:'')+'</div>'+
+      '<div style="width:60%;max-width:18px;height:'+bh+'px;border-radius:3px;background:'+(isToday?'#1B6E3A':'#9CC3AC')+'"></div>'+
+      '<div style="font-size:10px;color:'+(isToday?'#1B6E3A':'var(--t3)')+';font-weight:'+(isToday?'700':'400')+'">'+dayLbl[i]+'</div>'+
+    '</div>';
+  }).join('');
+  setHeader('Live tracking & telematics', code+' · '+a.make+' '+a.model);
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="if(!_navBack()){openHub('+idx+')}">‹ Back</button>'+
+    '<div class="hub-head"><div class="hub-ic">📡</div><div style="flex:1"><div class="hub-code">Live tracking &amp; telematics</div><div class="hub-mm">'+code+' · '+a.make+' '+a.model+'</div></div></div>'+
+    _telemMapPanel(d)+
+    '<div style="display:flex;align-items:center;gap:8px;margin:10px 0 2px"><span style="width:10px;height:10px;border-radius:50%;background:'+d.status.col+'"></span><span style="font-size:13px;font-weight:800;color:'+d.status.col+'">'+d.status.label+'</span><span style="font-size:11px;color:var(--t3);margin-left:auto">updated '+d.agoMin+' min ago</span></div>'+
+    '<div class="svc">'+
+      '<div class="svc-row"><span>Last known location</span><span style="text-align:right;max-width:60%">'+d.site+'</span></div>'+
+      '<div class="svc-row"><span>Address</span><span style="text-align:right;max-width:60%">'+d.addr+'</span></div>'+
+      '<div class="svc-row"><span>Today&rsquo;s runtime</span><span>'+(d.status.k==='off'?'—':(d.today+' hrs'))+'</span></div>'+
+      '<div class="svc-row"><span>Engine hours this week</span><span>'+d.weekly+' hrs</span></div>'+
+    '</div>'+
+    '<div class="sec-h">Engine hours · this week</div><div class="tile" style="padding:14px"><div style="display:flex;align-items:flex-end;gap:6px;height:84px">'+chart+'</div></div>'+
+    '<div class="sec-h">Working vs idle (this week)</div><div class="tile" style="padding:14px">'+
+      '<div style="display:flex;height:16px;border-radius:8px;overflow:hidden;background:#EEE">'+
+        '<div style="width:'+d.workingPct+'%;background:#1B6E3A"></div><div style="width:'+d.idlePct+'%;background:#E0C089"></div>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:6px"><span style="color:#1B6E3A;font-weight:700">Working '+d.workingPct+'%</span><span style="color:#A06000;font-weight:700">Idle '+d.idlePct+'%</span></div>'+
+    '</div>'+
+    '<button class="btn-ghost" style="margin-top:12px" onclick="renderFleetMap()">🗺  See the whole fleet on the map</button>'+
+    '<div style="font-size:10.5px;color:var(--t3);margin-top:10px;line-height:1.5">📡 Indicative telematics for the demo. In the full system a tracking unit on the machine syncs live GPS, engine hours and idle time automatically (Phase 2).</div>'+
+  '</div>';
+  showDetail(html);
+}
+/* Fleet live map — every machine as a pin, grouped into its site zone, coloured
+   by live status (working / idle / off). Same simulated telematics + in-page map
+   as the per-machine view. Supervisor sees only their site. */
+function renderFleetMap(){
+  _view('fleetMap', function(){ renderFleetMap(); });
+  if(typeof _mechMode==='function' && _mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
+  var zones={ 'Bondi Junction Mixed Use':{x:26,y:30}, 'Parramatta Metro Stage 2':{x:72,y:26}, 'Sydney Olympic Park':{x:50,y:72} };
+  var role=getRole();
+  var siteFilter = (role==='supervisor') ? (getSiteParam()||'Bondi Junction Mixed Use') : null;
+  var fleet=ASSETS.filter(function(a){ return !siteFilter || assetSite(a.code)===siteFilter; });
+  var pins=fleet.map(function(a){
+    var d=_telemData(a), z=zones[assetSite(a.code)]||{x:50,y:50}, seed=_telemHash(a.code);
+    var ox=(((seed%100)/100)-0.5)*22, oy=((((seed>>4)%100)/100)-0.5)*20;
+    var x=Math.max(6,Math.min(94, z.x+ox)), y=Math.max(12,Math.min(90, z.y+oy));
+    var idx=ASSETS.indexOf(a);
+    return '<button onclick="openHub('+idx+')" title="'+a.code+' · '+d.status.label+'" style="position:absolute;left:'+x+'%;top:'+y+'%;transform:translate(-50%,-50%);border:none;background:transparent;cursor:pointer;padding:0;z-index:2">'+
+      '<span style="display:block;width:14px;height:14px;border-radius:50%;background:'+d.status.col+';border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></span></button>';
+  }).join('');
+  var zoneLabels=Object.keys(zones).filter(function(s){ return (!siteFilter || s===siteFilter) && fleet.some(function(a){return assetSite(a.code)===s;}); }).map(function(s){
+    var z=zones[s]; return '<div style="position:absolute;left:'+z.x+'%;top:'+(z.y-14)+'%;transform:translateX(-50%);font-size:9.5px;font-weight:700;color:var(--deep);background:rgba(255,255,255,.88);border-radius:6px;padding:2px 7px;white-space:nowrap;z-index:1">'+s.split(' ').slice(0,2).join(' ')+'</div>';
+  }).join('');
+  var map='<div style="position:relative;height:320px;border-radius:14px;overflow:hidden;border:1px solid #D5DED8;background:repeating-linear-gradient(0deg,rgba(255,255,255,.4) 0 1px,transparent 1px 30px),repeating-linear-gradient(90deg,rgba(255,255,255,.4) 0 1px,transparent 1px 30px),linear-gradient(135deg,#E9F0EA,#D8E5DE)">'+
+    '<div style="position:absolute;left:-10%;top:38%;width:120%;height:10px;background:#fff;transform:rotate(-6deg);opacity:.8"></div>'+
+    '<div style="position:absolute;left:55%;top:-10%;width:8px;height:120%;background:#fff;opacity:.8;transform:rotate(5deg)"></div>'+
+    zoneLabels+pins+'</div>';
+  var legend='<div style="display:flex;gap:14px;justify-content:center;margin:10px 0 4px;font-size:11px;color:var(--t2)">'+
+    '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#1B6E3A;margin-right:4px"></span>Working</span>'+
+    '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#A06000;margin-right:4px"></span>Idle</span>'+
+    '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#A32D2D;margin-right:4px"></span>Off / out of service</span></div>';
+  // list grouped by site
+  var sitesShown=Object.keys(zones).filter(function(s){ return fleet.some(function(a){return assetSite(a.code)===s;}); });
+  var list=sitesShown.map(function(s){
+    var rows=fleet.filter(function(a){return assetSite(a.code)===s;}).map(function(a){
+      var d=_telemData(a), idx=ASSETS.indexOf(a);
+      return '<button class="row" onclick="openHub('+idx+')"><div class="row-ic"><span class="dot" style="background:'+d.status.col+'"></span></div><div class="row-main"><div class="row-t">'+a.code+' · '+a.make+' '+a.model+'</div><div class="row-s" style="color:'+d.status.col+';font-weight:700">'+d.status.label+' <span style="color:var(--t3);font-weight:400">· '+d.weekly+' hrs this week · updated '+d.agoMin+'m ago</span></div></div><div class="chev">›</div></button>';
+    }).join('');
+    return '<div class="sec-h">'+s+' ('+fleet.filter(function(a){return assetSite(a.code)===s;}).length+')</div><div class="tile">'+rows+'</div>';
+  }).join('');
+  setHeader('Live fleet map','Last-known location & status');
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="if(!_navBack()){showList()}">‹ Back</button>'+
+    '<div class="hub-head"><div class="hub-ic">📡</div><div style="flex:1"><div class="hub-code">Live fleet map</div><div class="hub-mm">'+fleet.length+' machine'+(fleet.length===1?'':'s')+' · last-known location &amp; status</div></div></div>'+
+    map+legend+list+
+    '<div style="font-size:10.5px;color:var(--t3);margin-top:10px;line-height:1.5">📡 Indicative telematics for the demo. In the full system each tracking unit syncs live GPS &amp; engine data automatically (Phase 2). Tap any pin or row to open the machine.</div>'+
   '</div>';
   showDetail(html);
 }
