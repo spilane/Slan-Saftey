@@ -1038,7 +1038,7 @@ function openHub(i){
         (ins.last?'<div class="svc-row"><span>Last inspected</span><span>'+fmt(ins.last)+(ins.result?(' · '+ins.result):'')+'</span></div>':'')+
       '</div>'+
       (getRole()!=='worker' ? ('<button class="btn-ghost" style="margin-top:8px" onclick="'+(ins.last?'plantViewInspection':'plantLogInspection')+'(\''+a.code+'\')">🔎  '+(ins.last?'View / log inspection':'Log statutory inspection')+'</button>') : ''); })() : '')+
-    ((getRole()!=='worker' && !isHired(a.code)) ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineSpend(\''+a.code+'\',\'hub\')">💲  Maintenance &amp; costs ('+CUR_YEAR+': '+money(assetSpendYear(a,CUR_YEAR))+') — tap to break down</button>' : '')+
+    ((getRole()!=='worker' && !isHired(a.code)) ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineSpend(\''+a.code+'\',\'hub\')">💲  Cost of ownership &amp; maintenance ('+CUR_YEAR+': '+money(assetSpendYear(a,CUR_YEAR))+')</button>' : '')+
     (getRole()!=='worker' ? '<button class="btn-ghost" style="margin-top:8px" onclick="plantMoveSite(\''+a.code+'\')">🚚  Move to another site</button>'+
       '<button class="btn-ghost" style="margin-top:8px" onclick="plantHandoverPack(\''+a.code+'\')">📄  Handover / mobilisation pack (PDF)</button>'+
       '<button class="btn-ghost" style="margin-top:8px" onclick="plantMachineAudit(\''+a.code+'\')">📋  Machine audit pack (PDF)</button>' : '')+
@@ -3503,6 +3503,53 @@ function renderMechSpend(){
   showDetail(html);
 }
 /* one machine's spend, opened from the spend list — itemised into the repairs/services/prior spend that make up the total */
+/* Total cost of ownership — the number a fleet manager judges a machine by:
+   purchase + depreciation + maintenance, expressed per run-hour (or per
+   1,000 km for road vehicles). Reuses the existing purchase/value, spend and
+   downtime helpers. Owned plant only (hired = supplier's asset). */
+function _machineTCO(a){
+  var code=a.code, p=purchaseInfo(code);
+  var maintYr=assetSpendYear(a,CUR_YEAR), maintPrev=assetSpendYear(a,CUR_YEAR-1);
+  var annualDep = p ? Math.round(p.price*0.9/p.life) : 0;   // straight-line over life, 10% residual
+  var annualCost = annualDep + maintYr;
+  var sm=(typeof svcMeter==='function')?svcMeter(a):null;
+  var meter = sm?sm.meter:'hrs';
+  var perUnit=null, unitLabel='', usageYr=null, totalUse=null;
+  if(meter==='km'){
+    totalUse = sm?sm.cur:((plantDetails(code)||{}).km||0);
+    usageYr = (p&&p.purchased_yrs)? Math.round(totalUse/p.purchased_yrs) : null;
+    if(usageYr){ perUnit=Math.round(annualCost/usageYr*1000); unitLabel='1,000 km'; }
+  } else {
+    var hrsMo=(typeof UTIL_MONTHLY!=='undefined')?(UTIL_MONTHLY[code]||0):0;
+    totalUse = a.hours||0;
+    usageYr = hrsMo>0 ? hrsMo*12 : ((p&&p.purchased_yrs&&totalUse)?Math.round(totalUse/p.purchased_yrs):null);
+    if(usageYr){ perUnit=Math.round(annualCost/usageYr); unitLabel='hr'; }
+  }
+  return { p:p, cv:assetCurrentValue(code), depPct:assetDepPct(code), maintYr:maintYr, maintPrev:maintPrev,
+    annualDep:annualDep, annualCost:annualCost, meter:meter, perUnit:perUnit, unitLabel:unitLabel,
+    usageYr:usageYr, totalUse:totalUse, avail:_machineAvail(code), downDays:_machineDowntime(code) };
+}
+function _machineTCOHtml(a){
+  if(isHired(a.code)) return '';
+  var t=_machineTCO(a); if(!t.p) return '';
+  var unit=t.unitLabel||(t.meter==='km'?'1,000 km':'hr');
+  var perTxt = t.perUnit!=null ? money(t.perUnit) : '—';
+  return '<div class="sec-h">Cost of ownership</div>'+
+    '<div style="background:linear-gradient(135deg,#1C382A,#2D5A43);border-radius:12px;padding:14px 16px;color:#fff;margin-bottom:8px">'+
+      '<div style="font-size:10.5px;color:#CBE3D4;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Operating cost</div>'+
+      '<div style="font-size:26px;font-weight:800;color:#fff;margin-top:2px;line-height:1">'+perTxt+'<span style="font-size:13px;font-weight:600;color:#CBE3D4"> / '+unit+'</span></div>'+
+      '<div style="font-size:11px;color:#CBE3D4;margin-top:4px;line-height:1.4">Depreciation + maintenance'+(t.usageYr?(', at ~'+t.usageYr.toLocaleString()+' '+(t.meter==='km'?'km':'hrs')+'/yr'):'')+'</div>'+
+    '</div>'+
+    '<div class="svc" style="margin-bottom:12px">'+
+      '<div class="svc-row"><span>Purchase price</span><span>'+money(t.p.price)+'</span></div>'+
+      '<div class="svc-row"><span>Current value (est.)</span><span>'+money(t.cv)+' · '+t.depPct+'% depreciated</span></div>'+
+      '<div class="svc-row"><span>Depreciation / yr</span><span>'+money(Math.round(t.annualDep))+'</span></div>'+
+      '<div class="svc-row"><span>Maintenance ('+CUR_YEAR+')</span><span>'+money(Math.round(t.maintYr))+'</span></div>'+
+      '<div class="svc-row"><span>Maintenance ('+(CUR_YEAR-1)+')</span><span>'+money(Math.round(t.maintPrev))+'</span></div>'+
+      '<div class="svc-row"><span>Total annual running cost</span><span style="font-weight:800">'+money(Math.round(t.annualCost))+'</span></div>'+
+      '<div class="svc-row"><span>Availability (12 mo)</span><span>'+t.avail+'% · '+t.downDays+' day'+(t.downDays===1?'':'s')+' down</span></div>'+
+    '</div>';
+}
 function renderMachineSpend(code, from){
   if(_mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
   var a=ASSETS.find(function(x){return x.code===code;}); if(!a){ renderMechSpend(); return; }
@@ -3521,7 +3568,9 @@ function renderMachineSpend(code, from){
   setHeader('Maintenance spend', code+' · '+a.make+' '+a.model);
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="if(!_navBack()){'+(from==='hub'?('openHub('+idx+')'):'renderMechSpend()')+'}">‹ Back</button>'+
-    '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">'+code+' — spend</div><div class="hub-mm">'+a.make+' '+a.model+'</div></div></div>'+
+    '<div class="hub-head"><div class="hub-ic">💲</div><div style="flex:1"><div class="hub-code">'+code+' — costs</div><div class="hub-mm">'+a.make+' '+a.model+'</div></div></div>'+
+    _machineTCOHtml(a)+
+    '<div class="sec-h">Maintenance spend by year</div>'+
     tabStrip+
     '<div class="svc" style="margin-bottom:12px"><div class="svc-row"><span><b>Total · '+_spendPer+'</b></span><span style="font-weight:800;font-size:15px">'+money(total)+'</span></div></div>'+
     '<div class="sec-h">What makes it up</div><div class="svc">'+rowsHtml+'</div>'+
