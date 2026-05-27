@@ -2048,12 +2048,30 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <!-- ACTION TILES -->
+    <!-- ACTION TILES (ordered by daily significance) -->
     <div class="grid">
+      <div class="tile" data-mech="1" onclick="smartSignFlow()">
+        <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="tile-name">Sign In / Out</div><div class="tile-sub" id="signin-tile-sub">Not signed in yet</div>
+      </div>
       <div class="tile" onclick="goToSitePreStart()">
         <div class="tile-icon ic-green"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg></div>
         <div class="tile-name">Daily Pre-Start</div>
         <div class="tile-sub">Site inspection checklist</div>
+      </div>
+      <div class="tile" data-mech="1" onclick="goToSwmsLibrary()">
+        <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div>
+        <div class="tile-name">SWMS Library</div><div class="tile-sub" id="swms-tile-sub2">Read &amp; sign SWMS</div>
+      </div>
+      <div class="tile" data-mech="1" onclick="goToTalk()">
+        <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="tile-name">Toolbox Talk</div>
+        <div class="tile-sub" id="talk-tile-sub">Sign today's talk</div>
+        <div class="tile-notif" id="talk-notif" style="display:none"></div>
+      </div>
+      <div class="tile" onclick="goToPermitsToWork()">
+        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
+        <div class="tile-name">Permits to Work</div><div class="tile-sub" id="worker-ptw-tile-sub">Hot Works, WAH &amp; more</div>
       </div>
       <div class="tile" data-mech="1" onclick="workerOpenPlant()">
         <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
@@ -2061,11 +2079,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-sub" id="prestart-tile-sub">Plant &amp; equipment</div>
         <div class="tile-notif" id="prestart-notif" style="display:none"></div>
       </div>
-      <div class="tile" data-mech="1" onclick="goToTalk()">
-        <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <div class="tile-name">Toolbox Talk</div>
-        <div class="tile-sub" id="talk-tile-sub">Sign today's talk</div>
-        <div class="tile-notif" id="talk-notif" style="display:none"></div>
+      <div class="tile" onclick="goToSdsLookup()">
+        <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/><path d="M12 15v3"/></svg></div>
+        <div class="tile-name">SDS Lookup</div><div class="tile-sub" id="worker-sds-tile-sub">Search safety data sheets</div>
       </div>
       <div class="tile" onclick="goToHazard()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
@@ -2076,47 +2092,25 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-name">Report Incident</div><div class="tile-sub" id="worker-inc-tile-sub">Injury or near miss</div>
         <div class="tile-notif" id="worker-inc-notif" style="display:none"></div>
       </div>
-      <div class="tile" onclick="goToPermitsToWork()">
-        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
-        <div class="tile-name">Permits to Work</div><div class="tile-sub" id="worker-ptw-tile-sub">Hot Works, WAH &amp; more</div>
+      <div class="tile wide" style="background:#F8F7FF;border-color:rgba(85,53,173,.08)" onclick="goToPsychosocial()">
+        <div style="display:flex;align-items:center;gap:11px">
+          <div class="tile-icon ic-purple" style="margin-bottom:0;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+          <div><div class="tile-name" style="color:#5535AD">Psychosocial / Concern</div><div class="tile-sub">Confidential — direct to provider</div></div>
+        </div>
       </div>
       <div class="tile" onclick="goToTake5()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
         <div class="tile-name">Take 5</div><div class="tile-sub">Pre-task safety check</div>
-      </div>
-      <div class="tile" data-mech="1" onclick="goToSwmsLibrary()">
-        <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div>
-        <div class="tile-name">SWMS Library</div><div class="tile-sub" id="swms-tile-sub2">Read &amp; sign SWMS</div>
-      </div>
-      <div class="tile" onclick="goToSdsLookup()">
-        <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/><path d="M12 15v3"/></svg></div>
-        <div class="tile-name">SDS Lookup</div><div class="tile-sub" id="worker-sds-tile-sub">Search safety data sheets</div>
       </div>
       <div class="tile" onclick="goToStars()">
         <div class="tile-icon" style="background:#FFF5D6"><svg viewBox="0 0 24 24" fill="none" stroke="#7A6020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         <div class="tile-name">Safety Stars</div>
         <div class="tile-sub" id="stars-tile-sub">View leaderboard</div>
       </div>
-      <div class="tile" data-mech="1" onclick="smartSignFlow()">
-        <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <div class="tile-name">Sign In / Out</div><div class="tile-sub" id="signin-tile-sub">Not signed in yet</div>
-      </div>
       <div class="tile" onclick="goToEmergencyContacts()" style="background:#FFF5F5;border-color:rgba(184,50,50,.15)">
         <div class="tile-icon" style="background:#FAEBEB"><svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.6 19.79 19.79 0 0 1 1.61 3 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
         <div class="tile-name" style="color:#B83232">Emergency</div>
         <div class="tile-sub">Contacts &amp; services</div>
-      </div>
-
-      <div class="tile" onclick="goToSwmsLibrary()">
-        <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="#5535AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-        <div class="tile-name">SWMS Library</div>
-        <div class="tile-sub" id="swms-tile-sub">Read &amp; sign SWMS</div>
-      </div>
-      <div class="tile wide" style="background:#F8F7FF;border-color:rgba(85,53,173,.08)" onclick="goToPsychosocial()">
-        <div style="display:flex;align-items:center;gap:11px">
-          <div class="tile-icon ic-purple" style="margin-bottom:0;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
-          <div><div class="tile-name" style="color:#5535AD">Psychosocial / Concern</div><div class="tile-sub">Confidential — direct to provider</div></div>
-        </div>
       </div>
     </div>
   </div>
