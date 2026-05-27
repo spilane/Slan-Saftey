@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slán Safety · Premium design preview</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ONE deep green, one mid, refined gold used as a thin accent */
+  --ink:#0E1A14; --deep:#143A2B; --deep-2:#0E2A1F; --mid:#2D6A45;
+  --gold:#C8A02C; --gold-soft:#F4ECCF;
+  --bg:#F5F7F4; --card:#FFFFFF; --muted:#66756C; --muted-2:#94A099;
+  --line:rgba(16,40,30,.09); --line-soft:rgba(16,40,30,.06);
+  --ok:#1B7A3D; --okbg:#E8F4ED; --warn:#A06A00; --warnbg:#FBF1DC; --bad:#B23636; --badbg:#FBEBEB;
+  /* one tight scale */
+  --r-lg:22px; --r:16px; --r-sm:12px; --pill:999px;
+  --sh-sm:0 1px 2px rgba(16,40,30,.05);
+  --sh:0 12px 30px -14px rgba(16,40,30,.20);
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--ink);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;min-height:100dvh}
+.app{width:100%;max-width:432px;background:var(--bg);min-height:100dvh;position:relative;overflow:hidden;box-shadow:0 40px 80px -30px rgba(16,40,30,.4)}
+@media(min-width:480px){ body{align-items:flex-start;padding:24px 0} .app{border-radius:30px;min-height:auto;max-height:calc(100dvh - 48px);overflow-y:auto} }
+
+/* preview ribbon */
+.preview{position:sticky;top:0;z-index:50;background:var(--gold);color:#3a2e05;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:center;padding:5px}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(165deg,var(--deep) 0%,var(--deep-2) 100%);padding:calc(var(--st) + 16px) 22px 26px;position:relative}
+.hdr::after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,160,44,.55),transparent)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;flex-direction:column;gap:3px}
+.logo .mark{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.24em;color:var(--gold);text-transform:uppercase}
+.logo .name{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.hdr-actions{display:flex;align-items:center;gap:10px}
+.icon-btn{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-btn svg{width:20px;height:20px;stroke:#fff;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.bell-dot{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--gold);border:2px solid var(--deep)}
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#3a8a5c,#246a44);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;border:1.5px solid rgba(200,160,44,.5)}
+.greet{margin-top:22px}
+.greet h1{font-size:25px;font-weight:700;color:#fff;letter-spacing:-.03em;line-height:1.1}
+.greet p{font-size:13px;color:rgba(255,255,255,.6);margin-top:6px;font-weight:500}
+.chips{display:flex;gap:7px;margin-top:14px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--pill);padding:6px 12px;font-size:11.5px;color:rgba(255,255,255,.85);font-weight:500}
+.chip .dot{width:6px;height:6px;border-radius:50%;background:#5CDB95}
+.chip .dot.gold{background:var(--gold)}
+
+/* ── BODY ── */
+.body{padding:20px 18px 110px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin:6px 4px 12px}
+.section-head .lbl{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.13em;text-transform:uppercase}
+.section-head .link{font-size:12px;font-weight:600;color:var(--mid)}
+
+/* status / today card */
+.today{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r-lg);box-shadow:var(--sh);padding:18px 18px 16px;margin-bottom:24px;position:relative;overflow:hidden}
+.today::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--gold),#9a7c1c)}
+.today-top{display:flex;align-items:center;gap:12px}
+.today-ring{width:46px;height:46px;border-radius:50%;background:var(--okbg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.today-ring svg{width:24px;height:24px;stroke:var(--ok);stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.today-top h2{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.today-top p{font-size:12.5px;color:var(--muted);margin-top:2px}
+.today-stats{display:flex;gap:10px;margin-top:16px}
+.stat{flex:1;text-align:center;background:#FAFBFA;border:1px solid var(--line-soft);border-radius:var(--r-sm);padding:11px 6px}
+.stat .v{font-size:19px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat .v.gold{color:var(--gold)}
+.stat .k{font-size:10.5px;color:var(--muted);font-weight:500;margin-top:3px;letter-spacing:.02em}
+
+/* tiles */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.tile{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);box-shadow:var(--sh-sm);padding:16px;cursor:pointer;transition:transform .14s ease, box-shadow .14s ease;position:relative}
+.tile:active{transform:scale(.975)}
+.tile.feat{grid-column:span 2;background:linear-gradient(150deg,var(--deep),var(--deep-2));border-color:transparent;display:flex;align-items:center;gap:14px;box-shadow:var(--sh)}
+.tile.feat .ic{background:rgba(200,160,44,.16)}
+.tile.feat .ic svg{stroke:var(--gold)}
+.tile.feat .t-name{color:#fff;font-size:15px}
+.tile.feat .t-sub{color:rgba(255,255,255,.6)}
+.tile.feat .feat-text{flex:1}
+.tile.feat .arrow{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tile.feat .arrow svg{width:16px;height:16px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ic{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:13px}
+.tile.feat .ic{margin-bottom:0}
+.ic svg{width:21px;height:21px;stroke-width:1.85;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ic.green{background:var(--okbg)} .ic.green svg{stroke:var(--ok)}
+.ic.gold{background:#FaF3DD} .ic.gold svg{stroke:#9a7c1c}
+.ic.blue{background:#E9F0FA} .ic.blue svg{stroke:#2B5FA6}
+.ic.amber{background:var(--warnbg)} .ic.amber svg{stroke:var(--warn)}
+.ic.red{background:var(--badbg)} .ic.red svg{stroke:var(--bad)}
+.ic.teal{background:#E2F3F1} .ic.teal svg{stroke:#147A70}
+.ic.slate{background:#EDF0EE} .ic.slate svg{stroke:#4A574F}
+.t-name{font-size:13.5px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.t-sub{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.t-badge{position:absolute;top:13px;right:13px;min-width:18px;height:18px;padding:0 5px;border-radius:var(--pill);background:var(--bad);color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* recent list */
+.list{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);box-shadow:var(--sh-sm);overflow:hidden;margin-top:6px}
+.row{display:flex;align-items:center;gap:13px;padding:14px 16px;border-bottom:1px solid var(--line-soft);cursor:pointer}
+.row:last-child{border-bottom:none}
+.row .rdot{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.row .rdot svg{width:17px;height:17px;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.row .rmain{flex:1;min-width:0}
+.row .rt{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.row .rs{font-size:11.5px;color:var(--muted);margin-top:2px}
+.row .rmeta{font-size:11px;color:var(--muted-2);font-variant-numeric:tabular-nums;flex-shrink:0}
+.chev{stroke:var(--muted-2);width:16px;height:16px;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* bottom nav */
+.nav{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;padding:8px 0 calc(8px + var(--sb))}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--muted-2);cursor:pointer}
+.ni svg{width:23px;height:23px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ni.on{color:var(--deep)}
+.ni.on .ni-ic{position:relative}
+.ni.on .ni-ic::after{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:-7px;width:4px;height:4px;border-radius:50%;background:var(--gold)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="preview">Design preview · not the live app</div>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="logo">
+        <span class="mark">Slán</span>
+        <span class="name">Safety</span>
+      </div>
+      <div class="hdr-actions">
+        <div class="icon-btn" style="position:relative">
+          <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="bell-dot"></span>
+        </div>
+        <div class="avatar">JR</div>
+      </div>
+    </div>
+    <div class="greet">
+      <h1>Good morning, Jake</h1>
+      <p>Wednesday 28 May · Bondi Junction Mixed Use</p>
+    </div>
+    <div class="chips">
+      <span class="chip"><span class="dot"></span>Signed in · 6:58am</span>
+      <span class="chip"><span class="dot gold"></span>White Card · Crane · EWP</span>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- Today / status card -->
+    <div class="today">
+      <div class="today-top">
+        <div class="today-ring">
+          <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <div>
+          <h2>You're all set for today</h2>
+          <p>Licences current · induction valid · no open actions</p>
+        </div>
+      </div>
+      <div class="today-stats">
+        <div class="stat"><div class="v">3</div><div class="k">Tickets current</div></div>
+        <div class="stat"><div class="v gold">1</div><div class="k">Pre-start due</div></div>
+        <div class="stat"><div class="v">142</div><div class="k">Days since LTI</div></div>
+      </div>
+    </div>
+
+    <!-- Featured action -->
+    <div class="section-head"><span class="lbl">Today</span></div>
+    <div class="grid" style="margin-bottom:24px">
+      <div class="tile feat">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div class="feat-text">
+          <div class="t-name">Daily pre-start</div>
+          <div class="t-sub">CRN-007 Franna · scan or tap to begin</div>
+        </div>
+        <div class="arrow"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+      </div>
+    </div>
+
+    <!-- Tools grid -->
+    <div class="section-head"><span class="lbl">Your tools</span><span class="link">All</span></div>
+    <div class="grid">
+      <div class="tile">
+        <div class="ic green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <div class="t-name">Sign in / out</div>
+        <div class="t-sub">On site since 6:58am</div>
+      </div>
+      <div class="tile">
+        <div class="ic gold"><svg viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13l2 2 4-4"/></svg></div>
+        <div class="t-name">SWMS</div>
+        <div class="t-sub">2 to sign off</div>
+        <span class="t-badge">2</span>
+      </div>
+      <div class="tile">
+        <div class="ic blue"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="t-name">Toolbox talks</div>
+        <div class="t-sub">Today: working at heights</div>
+      </div>
+      <div class="tile">
+        <div class="ic teal"><svg viewBox="0 0 24 24"><path d="M9 3h6"/><path d="M10 3v5l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/></svg></div>
+        <div class="t-name">SDS register</div>
+        <div class="t-sub">All current</div>
+      </div>
+      <div class="tile">
+        <div class="ic red"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+        <div class="t-name">Report incident</div>
+        <div class="t-sub">Hazard, injury or near miss</div>
+      </div>
+      <div class="tile">
+        <div class="ic amber"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 4.5-3 7.6-8 9-5-1.4-8-4.5-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div class="t-name">Permits to work</div>
+        <div class="t-sub">1 active</div>
+      </div>
+      <div class="tile">
+        <div class="ic slate"><svg viewBox="0 0 24 24"><path d="M3 17h2l1-5h11l3 4h1"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/><path d="M6 12V7h7l3 5"/></svg></div>
+        <div class="t-name">Plant &amp; Equipment</div>
+        <div class="t-sub">14 machines · 1 flagged</div>
+      </div>
+      <div class="tile">
+        <div class="ic gold"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 6h11l-1.5 4L15 14H4"/></svg></div>
+        <div class="t-name">My profile</div>
+        <div class="t-sub">Tickets &amp; inductions</div>
+      </div>
+    </div>
+
+    <!-- Recent activity -->
+    <div class="section-head" style="margin-top:26px"><span class="lbl">Recent activity</span></div>
+    <div class="list">
+      <div class="row">
+        <div class="rdot" style="background:var(--okbg)"><svg viewBox="0 0 24 24" stroke="var(--ok)"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="rmain"><div class="rt">Pre-start completed · LT-013</div><div class="rs">Lighting tower · all clear</div></div>
+        <div class="rmeta">6:41am</div>
+      </div>
+      <div class="row">
+        <div class="rdot" style="background:var(--warnbg)"><svg viewBox="0 0 24 24" stroke="var(--warn)"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+        <div class="rmain"><div class="rt">Fault flagged · MAG-009</div><div class="rs">Hydraulic leak · work order raised</div></div>
+        <div class="rmeta">Yesterday</div>
+      </div>
+      <div class="row">
+        <div class="rdot" style="background:#E9F0FA"><svg viewBox="0 0 24 24" stroke="#2B5FA6"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/></svg></div>
+        <div class="rmain"><div class="rt">SWMS signed · Concrete pour</div><div class="rs">Eoin Burke counter-signed</div></div>
+        <div class="rmeta">Mon</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="nav">
+    <div class="ni on"><span class="ni-ic"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>Home</div>
+    <div class="ni"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Tasks</div>
+    <div class="ni"><svg viewBox="0 0 24 24"><path d="M4 19V9l5-4 6 4 5-3v13"/><path d="M4 19h16"/></svg>Reports</div>
+    <div class="ni"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profile</div>
+  </div>
+</div>
+</body>
+</html>
