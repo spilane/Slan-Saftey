@@ -1038,7 +1038,8 @@ function openHub(i){
       (getRole()!=='worker' ? ('<button class="btn-ghost" style="margin-top:8px" onclick="'+(ins.last?'plantViewInspection':'plantLogInspection')+'(\''+a.code+'\')">🔎  '+(ins.last?'View / log inspection':'Log statutory inspection')+'</button>') : ''); })() : '')+
     ((getRole()!=='worker' && !isHired(a.code)) ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineSpend(\''+a.code+'\',\'hub\')">💲  Maintenance &amp; costs ('+CUR_YEAR+': '+money(assetSpendYear(a,CUR_YEAR))+') — tap to break down</button>' : '')+
     (getRole()!=='worker' ? '<button class="btn-ghost" style="margin-top:8px" onclick="plantMoveSite(\''+a.code+'\')">🚚  Move to another site</button>'+
-      '<button class="btn-ghost" style="margin-top:8px" onclick="plantHandoverPack(\''+a.code+'\')">📄  Handover / mobilisation pack (PDF)</button>' : '')+
+      '<button class="btn-ghost" style="margin-top:8px" onclick="plantHandoverPack(\''+a.code+'\')">📄  Handover / mobilisation pack (PDF)</button>'+
+      '<button class="btn-ghost" style="margin-top:8px" onclick="plantMachineAudit(\''+a.code+'\')">📋  Machine audit pack (PDF)</button>' : '')+
     ((getRole()!=='worker') ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineHistory(\''+a.code+'\')">📜  Machine history ('+_machineTimeline(a.code).length+')</button><button class="btn-ghost" style="margin-top:8px" onclick="renderPartsLedger(\''+a.code+'\')">🔩  Parts fitted ('+_partsHistory(a.code).length+')</button>' : '')+
     '<div class="sec-h">Machine QR / sticker</div><div class="tile" style="padding:16px;text-align:center"><div class="qr-imgwrap" style="--qs:130px">'+hubQr+'</div><div style="font-size:11px;color:var(--t3);margin:6px 0 12px">This machine\'s code — scanning it opens this page.</div><button class="btn-ghost qr-noprint" onclick="renderQR(\''+a.code+'\')">🖨  Print this sticker</button></div>'+
     '</div>';
@@ -1051,6 +1052,8 @@ var DOC_TYPES={
   rego:{label:'Registration certificate', ic:'🚗'},
   insurance:{label:'Insurance certificate', ic:'🛡️'},
   service:{label:'Service report', ic:'🛠️'},
+  repair:{label:'Repair report', ic:'🔧'},
+  external:{label:'External provider report', ic:'📑'},
   invoice:{label:'Tax invoice', ic:'🧾'},
   inspection:{label:'Inspection report', ic:'🟢'},
   hire_agreement:{label:'Signed hire agreement', ic:'📑'},
@@ -1065,9 +1068,11 @@ function _inferDocType(name){
   if(/hire.?agreement|hire.?contract|rental.?agreement|on.?hire/.test(n)) return 'hire_agreement';
   if(/delivery.?docket|delivery.?note|proof.?of.?deliver|goods.?received|despatch/.test(n)) return 'delivery_docket';
   if(/warranty|guarantee/.test(n)) return 'warranty';
+  if(/external|third.?party|\bprovider\b|workshop.?report/.test(n)) return 'external';
   if(/rego|registration|\brms\b|\brta\b|transport/.test(n)) return 'rego';
   if(/insur|policy|currency|\bcoc\b/.test(n)) return 'insurance';
-  if(/service|maintenance|logbook|repair/.test(n)) return 'service';
+  if(/repair|breakdown/.test(n)) return 'repair';
+  if(/service|maintenance|logbook/.test(n)) return 'service';
   if(/invoice|receipt|\btax\b|quote/.test(n)) return 'invoice';
   if(/inspect|green.?sticker|periodic|annual|\btest\b/.test(n)) return 'inspection';
   if(/swms|safe.?work|\bjsa\b/.test(n)) return 'swms';
@@ -2306,6 +2311,43 @@ function plantHandoverPDF(code){
   if(done.length){ bar('Recent repairs & services'); doc.setFontSize(8.6); doc.setTextColor(45,45,45); done.slice(0,6).forEach(function(w){ if(y>284){doc.addPage();y=16;} var when=(w.signoff&&w.signoff.when)?fmtShort(w.signoff.when):''; doc.text('· '+w.wo+' — '+(w.fault||'').slice(0,58)+(when?(' ('+when+')'):''), M+2, y); y+=5; }); }
   var pages=doc.internal.getNumberOfPages();
   for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-020 · Plant Handover Pack · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
+  return doc;
+}
+/* ----- Per-machine audit pack — everything about one asset in one PDF ----- */
+function plantMachineAudit(code){ if(!window.jspdf){ slanMsg('One moment','<div style="font-size:13.5px;color:var(--t2);line-height:1.5">The PDF is still loading — try again in a second.</div>'); return; } openPdfDoc(plantMachineAuditPDF(code),'Audit-'+code+'.pdf'); }
+function plantMachineAuditPDF(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); var dt=plantDetails(code);
+  var doc=new window.jspdf.jsPDF('p','mm','a4'); var W=210,M=14,GOLD=[184,150,12],GREEN=[44,107,94]; var y=16;
+  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(27,58,45); doc.text('Machine Audit Pack', M, y);
+  if(typeof SLAN_LOGO_B64!=='undefined' && SLAN_LOGO_B64){ try{ doc.addImage(SLAN_LOGO_B64,'PNG', W-M-34, 3, 34, 14); }catch(e){} }
+  y+=5; doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.6); doc.line(M,y,W-M,y); y+=7;
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(27,58,45); doc.text(code+' — '+a.make+' '+a.model, M, y); y+=6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90); doc.text(a.type+'  ·  '+assetSite(code)+'  ·  Generated '+fmt(new Date().toISOString()), M, y); y+=8;
+  function bar(t){ if(y>272){doc.addPage();y=16;} doc.setFillColor(GREEN[0],GREEN[1],GREEN[2]); doc.rect(M,y,W-2*M,7,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(t.toUpperCase(),M+2,y+4.8); y+=10; doc.setTextColor(40,40,40); doc.setFont('helvetica','normal'); }
+  function kv(k,v){ if(y>284){doc.addPage();y=16;} doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); doc.setFontSize(9); doc.text(k,M,y); doc.setFont('helvetica','normal'); doc.setTextColor(35,35,35); doc.text(String(v),M+58,y); y+=5.5; }
+  function ln(t){ if(y>286){doc.addPage();y=16;} doc.setFontSize(8.4); doc.setTextColor(45,45,45); doc.text(t,M+2,y); y+=5; }
+  bar('Asset record');
+  kv('Code:',code); kv('Type:',a.type); kv('Make & model:',a.make+' '+a.model); kv('Serial / VIN:',dt.vin||'—'); if(dt.rego) kv('Registration:',dt.rego+' · '+(dt.rego_state||'')); kv('Year:',dt.year||'—'); kv('Reading:',(a.hours?a.hours.toLocaleString()+' hrs':(dt.km?dt.km.toLocaleString()+' km':'—'))); kv('Status:',(a.status||'').replace(/_/g,' '));
+  bar('Compliance & currency');
+  kv('Service — last:',a.service_last?fmt(a.service_last):'—'); kv('Service — next:',a.service_due?fmt(a.service_due):'—');
+  if(typeof _inspStatus==='function'&&_inspStatus(code)){ var ins=_inspStatus(code); kv('Statutory inspection:',fmt(ins.due)+' ('+ins.state.replace('_',' ')+')'); }
+  kv('Rego expiry:',a.rego_expiry?fmt(a.rego_expiry):'— (plant)');
+  kv('Insurance:',isHired(code)?'Supplier cover (hire)':((dt.insurer||'—')+(a.insurance_expiry?(' · exp '+fmt(a.insurance_expiry)):'')));
+  if(typeof warrantyInfo==='function'&&warrantyInfo(code)&&!isHired(code)) kv('Warranty:',inWarranty(code)?('In warranty · '+fmt(warrantyUntil(code))):'Out of warranty');
+  var recs=(typeof _recordsFor==='function')?_recordsFor(code):[];
+  bar('Operator history');
+  if(recs.length){ var byOp={}; recs.forEach(function(r){ var w=r.worker||'Operator'; if(!byOp[w]) byOp[w]={n:0,last:null}; byOp[w].n++; var d=new Date(r.when); if(!byOp[w].last||d>byOp[w].last) byOp[w].last=d; }); Object.keys(byOp).forEach(function(w){ ln('· '+w+' — '+byOp[w].n+' pre-start'+(byOp[w].n>1?'s':'')+', last '+fmtShort(iso(byOp[w].last))); }); } else ln('No pre-start records yet.');
+  bar('Pre-start log (recent)');
+  if(recs.length){ recs.slice(0,15).forEach(function(r){ ln('· '+fmtShort(iso(new Date(r.when)))+' — '+(r.worker||'')+' — '+(r.faults?(r.faults+' fault'+(r.faults>1?'s':'')+(r.critical?' (critical)':'')):'all clear')); }); } else ln('No pre-starts recorded.');
+  bar('Work orders');
+  var wos=WORKORDERS.filter(function(w){return w.code===code;}); if(wos.length){ wos.forEach(function(w){ var c=(w.status==='Returned to service')?(w.warranty_claim?'$0 warranty':money(_woClientCost(w))):w.status; ln('· '+w.wo+' — '+(w.fault||'').slice(0,52)+' — '+(w.mechanic||'unassigned')+' — '+c); }); } else ln('No work orders.');
+  bar('Services');
+  var s=_svcState(code); if(s&&s.status==='done'){ ln('· '+fmt(s.completed_date)+' — '+(s.workshop||'')+' — '+(s.note||'Service')+' — '+money(_svcCost(s))); } else ln('No completed service on record (next due '+(a.service_due?fmt(a.service_due):'—')+').');
+  bar('Documents on file');
+  getDocs(a).forEach(function(d){ ln('· '+d.t+' — '+d.s); });
+  (typeof _plantDocsFor==='function'?_plantDocsFor(code):[]).forEach(function(d){ var m=DOC_TYPES[d.type]||DOC_TYPES.other; ln('· '+m.label+' — '+(d.name||'')); });
+  var pages=doc.internal.getNumberOfPages();
+  for(var p=1;p<=pages;p++){ doc.setPage(p); doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]); doc.setLineWidth(0.4); doc.line(M,288,W-M,288); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.text('SLS-REG-021 · Machine Audit Pack · Slán Safety', W/2, 292, {align:'center'}); doc.text('Page '+p+' of '+pages, W-M, 292, {align:'right'}); }
   return doc;
 }
 /* ----- Add a new machine / equipment (sup/dir); persists so it survives reload ----- */
