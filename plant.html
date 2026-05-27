@@ -692,6 +692,7 @@ function _plantAlertFeed(){
   _plantAlerts().forEach(function(al){ if(!inSite(al.code)) return; var a=ASSETS.find(function(x){return x.code===al.code;}); var idx=a?ASSETS.indexOf(a):-1; feed.push({u:al.critical?2:1, title:al.code+(al.critical?' — out of service':' — fault flagged'), sub:al.fault||'', tap:idx>=0?('openHub('+idx+')'):''}); });
   _pendingApprovals().forEach(function(x){ if(!inSite(x.code)) return; feed.push({u:2, title:x.code+' — approval needed', sub:(x.worker||'')+' wants to operate it', tap:"openApproval('"+x.id+"')"}); });
   ASSETS.forEach(function(a){ if(isHired(a.code)||!inSite(a.code)) return; var st=_svcStatus(a); if(st && !st.booked && (st.state==='overdue'||st.state==='due_soon')){ feed.push({u:st.state==='overdue'?2:1, title:a.code+' — service '+(st.state==='overdue'?'overdue':'due soon'), sub:a.make+' '+a.model+(st.sm?(' · '+_svcDueText(st)):''), tap:'openHub('+ASSETS.indexOf(a)+')'}); } });
+  ASSETS.forEach(function(a){ if(!inSite(a.code)) return; var ins=(typeof _inspStatus==='function')?_inspStatus(a.code):null; if(ins && (ins.state==='overdue'||ins.state==='due_soon')){ feed.push({u:ins.state==='overdue'?2:1, title:a.code+' — statutory inspection '+(ins.state==='overdue'?'overdue':'due soon'), sub:inspInfo(a.code).type+' · due '+fmtShort(ins.due), tap:'openHub('+ASSETS.indexOf(a)+')'}); } });
   WORKORDERS.forEach(function(w){ if(w.status==='Returned to service'||!inSite(w.code)) return; if(typeof _woAged==='function' && _woAged(w)){ feed.push({u:1, title:w.code+' — work order '+_woAgeText(w), sub:w.fault, tap:'openWO('+WORKORDERS.indexOf(w)+')'}); } });
   ASSETS.forEach(function(a){ if(!isHired(a.code)||!inSite(a.code)) return; var d=hireDueInDays(a.code); if(d!=null && d<=7){ feed.push({u:d<0?2:1, title:a.code+' — hire '+(d<0?'overdue back':'due back'), sub:(hireInfo(a.code)?hireInfo(a.code).supplier+' · ':'')+(d<0?('overdue '+Math.abs(d)+'d'):('in '+d+'d')), tap:'openHub('+ASSETS.indexOf(a)+')'}); } });
   if(role==='director'){ _hireReqAll().forEach(function(r){ if(r.status==='pending'){ feed.push({u:2, title:'Hire request to approve', sub:r.type+(r.supplier?(' · '+r.supplier):''), tap:"hireReqOpenDetail('"+r.id+"')"}); } }); }
@@ -1028,6 +1029,13 @@ function openHub(i){
         }
         if(st && (st.state==='overdue'||st.state==='due_soon')) return '<button class="btn-ghost" style="margin-top:8px" onclick="plantBookService(\''+a.code+'\')">🗓️  Book a service</button>';
         return ''; })() : '')+
+    (inspInfo(a.code) ? (function(){ var ins=_inspStatus(a.code); var col=ins.state==='overdue'?'var(--fail)':(ins.state==='due_soon'?'#A06000':'var(--pass)'); var lbl=ins.state==='overdue'?('OVERDUE '+Math.abs(ins.dDays)+'d'):(ins.dDays<=30?('due in '+ins.dDays+'d'):('in '+ins.dDays+'d'));
+      return '<div class="sec-h">Statutory inspection</div><div class="svc">'+
+        '<div class="svc-row"><span>'+inspInfo(a.code).type+'</span><span style="color:'+col+';font-weight:700">'+lbl+'</span></div>'+
+        '<div class="svc-row"><span>Next due</span><span style="color:'+col+'">'+fmt(ins.due)+'</span></div>'+
+        (ins.last?'<div class="svc-row"><span>Last inspected</span><span>'+fmt(ins.last)+(ins.result?(' · '+ins.result):'')+'</span></div>':'')+
+      '</div>'+
+      (getRole()!=='worker' ? ('<button class="btn-ghost" style="margin-top:8px" onclick="'+(ins.last?'plantViewInspection':'plantLogInspection')+'(\''+a.code+'\')">🔎  '+(ins.last?'View / log inspection':'Log statutory inspection')+'</button>') : ''); })() : '')+
     ((getRole()!=='worker' && !isHired(a.code)) ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderMachineSpend(\''+a.code+'\',\'hub\')">💲  Maintenance &amp; costs ('+CUR_YEAR+': '+money(assetSpendYear(a,CUR_YEAR))+') — tap to break down</button>' : '')+
     (getRole()!=='worker' ? '<button class="btn-ghost" style="margin-top:8px" onclick="plantMoveSite(\''+a.code+'\')">🚚  Move to another site</button>'+
       '<button class="btn-ghost" style="margin-top:8px" onclick="plantHandoverPack(\''+a.code+'\')">📄  Handover / mobilisation pack (PDF)</button>' : '')+
@@ -2955,7 +2963,8 @@ function _assetRegisterBody(fleet){
   return '<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
       '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
     '<input type="search" placeholder="🔍  Search machines — code, make or site…" oninput="_machSearch(this.value,\'table.reg tbody tr\')" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:13px;margin-bottom:10px;outline:none;box-sizing:border-box">'+
-    '<button class="btn-ghost" onclick="plantFleetReport()" style="margin-bottom:12px">📄  Fleet summary report (PDF)</button>'+
+    '<button class="btn-ghost" onclick="plantFleetReport()" style="margin-bottom:8px">📄  Fleet summary report (PDF)</button>'+
+    '<button class="btn-ghost" onclick="renderPlantCalendar()" style="margin-bottom:12px">📅  Upcoming &amp; due (services, inspections, rego, insurance)</button>'+
     '<div class="reg-wrap"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>Spend ('+CUR_YEAR+')</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
     '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
 }
@@ -3879,6 +3888,99 @@ function _svcDueText(st){
   if(st.dDays!=null){ bits.push(st.dDays<0?('overdue '+Math.abs(st.dDays)+'d'):('in '+st.dDays+'d')); }
   if(st.sm){ bits.push(st.sm.toGo<0?('overdue '+Math.abs(st.sm.toGo).toLocaleString()+' '+st.sm.meter):(st.sm.toGo.toLocaleString()+' '+st.sm.meter+' to go')); }
   return bits.join(' · ');
+}
+/* ---------- statutory periodic inspections (lifting plant) — tracked & logged like services ---------- */
+var PLANT_INSPECTION={
+  'CRN-007':{ type:'Crane — annual + 10-yearly major', due_days:-12 },
+  'CRN-011':{ type:'Crane — annual statutory inspection', due_days:38 },
+  'MAG-009':{ type:'Rotating telehandler — annual inspection', due_days:74 },
+  'TLH-003':{ type:'Telehandler — annual inspection', due_days:128 },
+  'TLH-012':{ type:'Telehandler — annual inspection', due_days:18 },
+  'EWP-018':{ type:'EWP — annual inspection', due_days:96 },
+  'EWP-019':{ type:'EWP — annual inspection', due_days:152 }
+};
+function inspInfo(code){ return PLANT_INSPECTION[code]||null; }
+function _inspAll(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_inspections')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function _inspState(code){ return _inspAll()[code]||null; }
+function _inspSave(code,patch){ try{ var o=_inspAll(); o[code]=Object.assign({}, o[code]||{}, patch); localStorage.setItem('slan_plant_inspections', JSON.stringify(o)); }catch(e){} }
+function _inspDueDate(code){ var s=_inspState(code); if(s&&s.next_due) return s.next_due; var i=PLANT_INSPECTION[code]; return i?iso(dOffset(i.due_days)):null; }
+function _inspStatus(code){ if(!PLANT_INSPECTION[code]) return null; var due=_inspDueDate(code); var dd=daysBetween(due,new Date()); var s=_inspState(code)||{}; return { due:due, dDays:dd, state: dd<0?'overdue':(dd<=30?'due_soon':'ok'), last:s.last_done||null, by:s.inspector||null, result:s.result||null }; }
+function plantLogInspection(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return;
+  _view('logInsp:'+code, function(){ plantLogInspection(code); });
+  var info=PLANT_INSPECTION[code];
+  setHeader('Log inspection', code+' · '+a.make+' '+a.model);
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<div class="hub-head"><div class="hub-ic">🔎</div><div style="flex:1"><div class="hub-code">Statutory inspection</div><div class="hub-mm">'+code+' · '+(info?info.type:'')+'</div></div></div>'+
+    '<div class="sec-h">Inspector</div><input id="insp-by" placeholder="Inspector / competent person" style="width:100%;box-sizing:border-box;padding:10px 11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px">'+
+    '<div class="sec-h">Date inspected</div><input id="insp-date" type="date" value="'+iso(new Date())+'" max="'+iso(new Date())+'" style="padding:9px 11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px">'+
+    '<div class="sec-h">Result</div><div class="tile"><label class="row" style="cursor:pointer"><div class="row-ic"><input type="radio" name="insp-res" value="Pass" checked style="width:17px;height:17px;accent-color:#1B6E3A"></div><div class="row-main"><div class="row-t">Pass — fit for service</div></div></label><label class="row" style="cursor:pointer"><div class="row-ic"><input type="radio" name="insp-res" value="Pass with conditions" style="width:17px;height:17px;accent-color:#A06000"></div><div class="row-main"><div class="row-t">Pass with conditions</div></div></label><label class="row" style="cursor:pointer"><div class="row-ic"><input type="radio" name="insp-res" value="Fail — out of service" style="width:17px;height:17px;accent-color:#A32D2D"></div><div class="row-main"><div class="row-t">Fail — out of service</div></div></label></div>'+
+    '<div class="sec-h">Notes (optional)</div><textarea id="insp-notes" placeholder="Findings, conditions, defects…" style="width:100%;box-sizing:border-box;min-height:64px;padding:11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical"></textarea>'+
+    '<div class="sec-h">Next inspection due</div><input id="insp-next" type="date" min="'+iso(new Date())+'" value="'+iso(dOffset(365))+'" style="padding:9px 11px;border:1.5px solid #D8D8D8;border-radius:10px;font-family:inherit;font-size:13px">'+
+    '<button class="cta" style="background:var(--pass);margin-top:16px" onclick="plantLogInspectionSubmit(\''+code+'\')">Save inspection</button>'+
+  '</div>';
+  showDetail(html);
+}
+function plantLogInspectionSubmit(code){
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a) return; var idx=ASSETS.indexOf(a);
+  var by=(document.getElementById('insp-by')||{}).value||''; by=by.trim();
+  if(!by){ slanMsg('Who inspected it?','<div style="font-size:13px;color:var(--t2);line-height:1.55">Enter the inspector / competent person before saving.</div>'); return; }
+  var res=(document.querySelector('input[name="insp-res"]:checked')||{}).value||'Pass';
+  var date=(document.getElementById('insp-date')||{}).value||iso(new Date());
+  var next=(document.getElementById('insp-next')||{}).value||iso(dOffset(365));
+  var notes=(document.getElementById('insp-notes')||{}).value||'';
+  _inspSave(code,{ last_done:date, inspector:by, result:res, notes:notes, next_due:next });
+  if(/Fail/.test(res)){ a.status='out_of_service'; try{ _setPlantAlert(a,'Failed statutory inspection',true); }catch(e){} }
+  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">'+(/Fail/.test(res)?'⛔':'✅')+'</div><div style="font-size:16px;font-weight:800;color:'+(/Fail/.test(res)?'#A32D2D':'var(--pass)')+';margin-top:6px">Inspection logged</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' · '+res+'. Next inspection due '+fmt(next)+'.</div></div>', function(){ openHub(idx); });
+}
+function plantViewInspection(code){
+  var s=_inspState(code); var a=ASSETS.find(function(x){return x.code===code;});
+  if(!s||!s.last_done){ plantLogInspection(code); return; }
+  _view('viewInsp:'+code, function(){ plantViewInspection(code); });
+  setHeader('Inspection record', code+' · '+(a?a.make+' '+a.model:''));
+  var col=/Fail/.test(s.result||'')?'#A32D2D':(/conditions/.test(s.result||'')?'#A06000':'#1B6E3A');
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<div class="hub-head"><div class="hub-ic">🔎</div><div style="flex:1"><div class="hub-code">Inspection record</div><div class="hub-mm">'+code+' · '+(inspInfo(code)?inspInfo(code).type:'')+'</div></div></div>'+
+    '<div class="svc">'+
+      '<div class="svc-row"><span>Inspected</span><span>'+fmt(s.last_done)+'</span></div>'+
+      '<div class="svc-row"><span>By</span><span>'+_premobEsc(s.inspector||'')+'</span></div>'+
+      '<div class="svc-row"><span>Result</span><span style="color:'+col+';font-weight:700">'+_premobEsc(s.result||'')+'</span></div>'+
+      '<div class="svc-row"><span>Next due</span><span>'+(s.next_due?fmt(s.next_due):'—')+'</span></div>'+
+    '</div>'+
+    (s.notes?'<div class="sec-h">Notes</div><div class="tile"><div class="row" style="cursor:default"><div class="row-main"><div class="row-s" style="white-space:pre-wrap">'+_premobEsc(s.notes)+'</div></div></div></div>':'')+
+    ((getRole()!=='worker')?'<button class="btn-ghost" style="margin-top:14px" onclick="plantLogInspection(\''+code+'\')">🔎  Log a new inspection</button>':'')+
+  '</div>';
+  showDetail(html);
+}
+/* ---------- upcoming due calendar — services, inspections, rego, insurance, hire returns; soonest first ---------- */
+function renderPlantCalendar(){
+  if(_mechMode()) setTopRight(_profileAvatar('Dave Wilkins'));
+  _view('plantCalendar', function(){ renderPlantCalendar(); });
+  var role=getRole(); var site=(role==='supervisor')?(getSiteParam()||'Bondi Junction Mixed Use'):((typeof oversightSite!=='undefined'&&oversightSite)?oversightSite:'All');
+  var inSite=function(code){ return site==='All' || assetSite(code)===site; };
+  var items=[];
+  ASSETS.forEach(function(a){ if(!inSite(a.code)) return; var idx=ASSETS.indexOf(a);
+    if(!isHired(a.code)){
+      var st=_svcStatus(a); if(st && st.state!=='done'){ items.push({ d:a.service_due, idx:idx, icon:'🛠️', label:a.code+' — service'+(st.booked?' (booked)':''), kind:'Service' }); }
+      var ins=_inspStatus(a.code); if(ins){ items.push({ d:ins.due, idx:idx, icon:'🔎', label:a.code+' — statutory inspection', kind:'Inspection' }); }
+      if(a.rego_expiry){ items.push({ d:a.rego_expiry, idx:idx, icon:'🚗', label:a.code+' — rego expiry', kind:'Registration' }); }
+      if(a.insurance_expiry){ items.push({ d:a.insurance_expiry, idx:idx, icon:'🛡️', label:a.code+' — insurance expiry', kind:'Insurance' }); }
+    } else {
+      var dd=hireDueInDays(a.code); if(dd!=null){ items.push({ d:hireDueDate(a.code), idx:idx, icon:'📦', label:a.code+' — off-hire due', kind:'Hire return' }); }
+    }
+  });
+  items=items.filter(function(i){return i.d;}).sort(function(x,y){ return new Date(x.d)-new Date(y.d); });
+  var rows=items.length?items.map(function(it){
+    var dd=daysBetween(it.d,new Date()); var col=dd<0?'#A32D2D':(dd<=30?'#A06000':'var(--t2)');
+    var when=dd<0?('overdue '+Math.abs(dd)+'d'):(dd===0?'today':('in '+dd+'d'));
+    return '<button class="row" onclick="openHub('+it.idx+')"><div class="row-ic">'+it.icon+'</div><div class="row-main"><div class="row-t">'+_premobEsc(it.label)+'</div><div class="row-s">'+it.kind+' · '+fmtShort(it.d)+'</div></div><span class="row-s" style="flex-shrink:0;color:'+col+';font-weight:700;margin-right:4px">'+when+'</span><div class="chev">›</div></button>';
+  }).join(''):'<div class="row" style="cursor:default"><div class="row-main"><div class="row-s">Nothing coming due.</div></div></div>';
+  setHeader('Upcoming','Everything coming due — soonest first');
+  var html='<div class="wrap platform-wrap">'+
+    '<div class="hub-head"><div class="hub-ic">📅</div><div style="flex:1"><div class="hub-code">Upcoming &amp; due</div><div class="hub-mm">'+items.length+' item'+(items.length===1?'':'s')+' · '+(site==='All'?'all sites':site)+'</div></div></div>'+
+    '<div class="tile">'+rows+'</div>'+
+  '</div>';
+  showDetail(html);
 }
 /* dashboard notification — machines whose service is due/overdue (needs booking) + ones already booked */
 function plantServicesDueCard(fleet){
