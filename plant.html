@@ -2298,11 +2298,10 @@ function plantHandoverPDF(code){
   if(a.swl) kv('Periodic inspection:', 'Green sticker · next '+fmt(a.service_due));
   kv('Rego expiry:', a.rego_expiry?fmt(a.rego_expiry):'— (plant)');
   kv('Insurance:', isHired(code)?'Supplier cover (hire)':((dt.insurer||'—')+(a.insurance_expiry?(' · exp '+fmt(a.insurance_expiry)):'')));
-  if(typeof warrantyInfo==='function' && warrantyInfo(code) && !isHired(code)) kv('Warranty:', (inWarranty(code)?('In warranty · until '+fmt(warrantyUntil(code))):'Out of warranty'));
   if(a.swl) kv('SWL / capacity:', a.swl);
   bar('Documents on file');
   doc.setFontSize(8.6); doc.setTextColor(45,45,45);
-  getDocs(a).forEach(function(d){ if(y>284){doc.addPage();y=16;} doc.text('· '+d.t+' — '+d.s, M+2, y); y+=5; });
+  getDocs(a).filter(function(d){ return !/SWMS|Warranty/i.test(d.t); }).forEach(function(d){ if(y>284){doc.addPage();y=16;} doc.text('· '+d.t+' — '+d.s, M+2, y); y+=5; });
   var done=WORKORDERS.filter(function(w){ return w.code===code && w.status==='Returned to service'; });
   if(done.length){ bar('Recent repairs & services'); doc.setFontSize(8.6); doc.setTextColor(45,45,45); done.slice(0,6).forEach(function(w){ if(y>284){doc.addPage();y=16;} var when=(w.signoff&&w.signoff.when)?fmtShort(w.signoff.when):''; doc.text('· '+w.wo+' — '+(w.fault||'').slice(0,58)+(when?(' ('+when+')'):''), M+2, y); y+=5; }); }
   var pages=doc.internal.getNumberOfPages();
@@ -2962,11 +2961,12 @@ function _assetRegisterBody(fleet){
   }).join('');
   return '<div class="reg-toolbar"><div class="sec-h" style="margin:0">Asset register · '+fleet.length+' machines</div>'+
       '<div class="reg-legend"><span><span class="lg-dot" style="background:#C0392B"></span>Action required</span><span><span class="lg-dot" style="background:#E08A1E"></span>Attention soon</span></div></div>'+
-    '<input type="search" placeholder="🔍  Search machines — code, make or site…" oninput="_machSearch(this.value,\'table.reg tbody tr\')" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:13px;margin-bottom:10px;outline:none;box-sizing:border-box">'+
-    '<button class="btn-ghost" onclick="plantFleetReport()" style="margin-bottom:8px">📄  Fleet summary report (PDF)</button>'+
-    '<button class="btn-ghost" onclick="renderPlantCalendar()" style="margin-bottom:12px">📅  Upcoming &amp; due (services, inspections, rego, insurance)</button>'+
     '<div class="reg-wrap"><table class="reg"><thead><tr><th>Asset</th><th>Site</th><th>Reading</th><th>Service due</th><th>Rego exp</th><th>Insurance exp</th><th>Warranty</th><th>Last pre-start</th><th>Open work orders</th><th>Spend ('+CUR_YEAR+')</th><th>Status</th><th>Record</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-    '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>';
+    '<div style="font-size:11px;color:var(--t3);margin-top:8px">Tap a row — or the <b>View</b> button — to open the full machine record.</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">'+
+      '<button class="btn-ghost" onclick="plantFleetReport()" style="flex:1;min-width:170px;margin:0">📄  Fleet summary report (PDF)</button>'+
+      '<button class="btn-ghost" onclick="renderPlantCalendar()" style="flex:1;min-width:170px;margin:0">📅  Upcoming &amp; due</button>'+
+    '</div>';
 }
 /* filter rows/cards live by typed text (asset register + mechanic machines list) */
 function _machSearch(v, sel){ v=(v||'').trim().toLowerCase(); var rows=document.querySelectorAll(sel); for(var i=0;i<rows.length;i++){ rows[i].style.display=(!v || rows[i].textContent.toLowerCase().indexOf(v)>-1)?'':'none'; } }
