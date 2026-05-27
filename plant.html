@@ -1020,6 +1020,7 @@ function openHub(i){
       (function(){ var s=_svcState(a.code); if(s&&s.status==='booked'){ return '<div class="svc-row"><span>Service booked</span><span style="color:var(--gold);font-weight:700">'+fmt(s.booked_date)+' · '+s.workshop+(s.note?(' · '+_premobEsc(s.note)):'')+'</span></div>'; } if(s&&s.status==='done'){ var ot=_svcOnTime(s); var timing=ot?(ot.late?'<span style="color:#A06000;font-weight:700">'+ot.days+' day'+(ot.days===1?'':'s')+' late</span>':'<span style="color:#1B6E3A;font-weight:700">On time</span>'):''; return '<div class="svc-row"><span>Last serviced</span><span style="color:var(--pass);font-weight:700">'+fmt(s.completed_date)+(s.workshop?(' · '+s.workshop):'')+'</span></div>'+(timing?'<div class="svc-row"><span>Service timing</span><span>'+timing+'</span></div>':''); } return ''; })()+
       ((getRole()!=='worker' && !isHired(a.code)) ? '<div class="svc-row"><span>Out of service (12 mo)</span><span>'+_machineDowntime(a.code)+' day'+(_machineDowntime(a.code)===1?'':'s')+' · '+_machineAvail(a.code)+'% available</span></div>' : '')+
     '</div>'+
+    (!isHired(a.code) ? '<button class="btn-ghost" style="margin-top:8px" onclick="renderServicePlan(\''+a.code+'\')">🛠️  Service &amp; inspection logbook</button>' : '')+
     ((getRole()!=='worker' && !isHired(a.code)) ? (function(){ var s=_svcState(a.code), st=_svcStatus(a);
         if(s&&s.status==='done') return '<button class="btn-ghost" style="margin-top:8px" onclick="plantViewServiceRecord(\''+a.code+'\')">📄  View service record</button>';
         if(s&&s.status==='booked'){
@@ -4061,6 +4062,87 @@ function _svcDueText(st){
   if(st.dDays!=null){ bits.push(st.dDays<0?('overdue '+Math.abs(st.dDays)+'d'):('in '+st.dDays+'d')); }
   if(st.sm){ bits.push(st.sm.toGo<0?('overdue '+Math.abs(st.sm.toGo).toLocaleString()+' '+st.sm.meter):(st.sm.toGo.toLocaleString()+' '+st.sm.meter+' to go')); }
   return bits.join(' · ');
+}
+/* ---------- service & inspection logbook — the full recommended maintenance plan per machine (like a manufacturer's logbook), not just the next due ---------- */
+function _servicePlan(a){
+  var sm=svcMeter(a); if(!sm) return null;
+  var meter=sm.meter, cur=sm.cur;
+  var tiers = meter==='km'
+    ? [ {every:10000, label:'Logbook service',       desc:'Engine oil & filter, brakes, tyres, lights, all safety checks'},
+        {every:20000, label:'Intermediate service',  desc:'Logbook items plus transmission & diff fluids, fuel/air filters, fluid sampling'},
+        {every:40000, label:'Major service',         desc:'Intermediate plus driveline, cooling system, suspension & full inspection'} ]
+    : [ {every:250,  label:'A — routine service',     desc:'Engine oil & filter, lubrication, fluid levels, visual safety checks'},
+        {every:500,  label:'B — intermediate service', desc:'A-service plus hydraulic & fuel filters, fluid sampling, function tests'},
+        {every:1000, label:'C — major service',       desc:'B-service plus driveline, brakes, structural & wear inspection'},
+        {every:2000, label:'D — overhaul service',    desc:'C-service plus major components, full inspection & re-certification'} ];
+  tiers.forEach(function(t){ t.nextDue=(Math.floor(cur/t.every)+1)*t.every; t.toGo=t.nextDue-cur; });
+  // When several tiers fall due together (their readings coincide), the most
+  // comprehensive one (largest interval) supersedes — mark only that as NEXT.
+  var minToGo=Math.min.apply(null, tiers.map(function(t){ return t.toGo; }));
+  var imm=tiers.filter(function(t){ return t.toGo===minToGo; }).reduce(function(x,y){ return y.every>x.every?y:x; });
+  tiers.forEach(function(t){ t.imminent=(t===imm); });
+  return { meter:meter, cur:cur, tiers:tiers };
+}
+function renderServicePlan(code){
+  if(typeof _mechMode==='function' && _mechMode()){ setTopRight(_profileAvatar('Dave Wilkins')); }
+  _view('svcPlan:'+code, function(){ renderServicePlan(code); });
+  var a=ASSETS.find(function(x){return x.code===code;}); if(!a){ showList(); return; }
+  var idx=ASSETS.indexOf(a);
+  var plan=_servicePlan(a), st=_svcStatus(a), sState=_svcState(code);
+  var stCol=function(s){ return s&&s.state==='overdue'?'#A32D2D':(s&&s.state==='due_soon'?'#A06000':'#1B6E3A'); };
+  // Current status
+  var summary='<div class="sec-h">Current status</div><div class="svc">'+
+    '<div class="svc-row"><span>Current reading</span><span>'+(plan?(plan.cur.toLocaleString()+' '+plan.meter):(a.hours?a.hours.toLocaleString()+' hrs':'—'))+'</span></div>'+
+    '<div class="svc-row"><span>Last service</span><span>'+((sState&&sState.status==='done')?(fmt(sState.completed_date)+(sState.workshop?(' · '+sState.workshop):'')):fmt(a.service_last))+'</span></div>'+
+    '<div class="svc-row"><span>Next service due</span><span style="color:'+stCol(st)+';font-weight:700">'+fmt(a.service_due)+(st?(' · '+(st.state==='overdue'?'overdue':(st.state==='due_soon'?'due soon':'on schedule'))):'')+'</span></div>'+
+    ((sState&&sState.status==='booked')?'<div class="svc-row"><span>Booked</span><span style="color:var(--gold);font-weight:700">'+fmt(sState.booked_date)+' · '+_premobEsc(sState.workshop||'')+'</span></div>':'')+
+  '</div>';
+  // Scheduled service plan (tiers)
+  var planHtml;
+  if(plan){
+    planHtml='<div class="sec-h">Scheduled service plan</div><div class="tile" style="padding:4px 14px">'+plan.tiers.map(function(t){
+      var col=t.imminent?stCol(st):'var(--t3)';
+      var pct=Math.max(4, Math.min(100, Math.round((1 - t.toGo/t.every)*100)));
+      return '<div style="padding:11px 0;border-bottom:1px solid #EEE">'+
+        '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">'+
+          '<div style="font-size:12.5px;font-weight:800;color:var(--deep)">'+t.label+(t.imminent?' <span style="font-size:9.5px;font-weight:700;color:'+col+';border:1px solid '+col+';border-radius:8px;padding:1px 6px;vertical-align:middle">NEXT</span>':'')+'</div>'+
+          '<div style="font-size:11.5px;color:var(--t2);white-space:nowrap">every '+t.every.toLocaleString()+' '+plan.meter+'</div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--t2);line-height:1.45;margin:3px 0 7px">'+t.desc+'</div>'+
+        '<div style="height:7px;border-radius:4px;background:#EEE;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+(t.imminent?col:'#CBD5CB')+'"></div></div>'+
+        '<div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t3);margin-top:4px"><span>next at '+t.nextDue.toLocaleString()+' '+plan.meter+'</span><span style="color:'+(t.imminent?col:'var(--t3)')+';font-weight:700">in '+t.toGo.toLocaleString()+' '+plan.meter+'</span></div>'+
+      '</div>';
+    }).join('')+'</div><div style="font-size:10.5px;color:var(--t3);margin-top:6px">Recommended manufacturer cycle — calculated from the current '+plan.meter+' reading.</div>';
+  } else {
+    planHtml='<div class="sec-h">Scheduled service plan</div><div class="tile" style="padding:12px 14px;font-size:12px;color:var(--t2);line-height:1.5">This machine is serviced on a date schedule rather than a meter — see the next-due date above.</div>';
+  }
+  // Statutory inspection schedule
+  var insp=inspInfo(code), inspHtml;
+  if(insp){
+    var ins=_inspStatus(code), icol=stCol(ins), ilbl=ins.state==='overdue'?('overdue '+Math.abs(ins.dDays)+' days'):('due in '+ins.dDays+' days');
+    inspHtml='<div class="sec-h">Statutory inspection schedule</div><div class="svc">'+
+      '<div class="svc-row"><span>Inspection</span><span style="text-align:right;max-width:62%">'+insp.type+'</span></div>'+
+      '<div class="svc-row"><span>Interval</span><span>Annual (WHS lifting-plant)</span></div>'+
+      '<div class="svc-row"><span>Next due</span><span style="color:'+icol+';font-weight:700">'+fmt(ins.due)+' · '+ilbl+'</span></div>'+
+      (ins.last?('<div class="svc-row"><span>Last inspected</span><span>'+fmt(ins.last)+(ins.by?(' · '+_premobEsc(ins.by)):'')+'</span></div>'+(ins.result?'<div class="svc-row"><span>Result</span><span>'+_premobEsc(ins.result)+'</span></div>':'')):'<div class="svc-row"><span>Last inspected</span><span style="color:var(--t3)">No record on this device</span></div>')+
+    '</div>'+
+    (getRole()!=='worker'?('<button class="btn-ghost" style="margin-top:8px" onclick="'+(ins.last?'plantViewInspection':'plantLogInspection')+'(\''+code+'\')">🔎  '+(ins.last?'View / log inspection':'Log statutory inspection')+'</button>'):'');
+  } else {
+    inspHtml='<div class="sec-h">Statutory inspection</div><div class="tile" style="padding:12px 14px;font-size:12px;color:var(--t2);line-height:1.5">No statutory periodic inspection applies to this machine type. (Annual inspections are required for lifting plant — cranes, EWPs and telehandlers.)</div>';
+  }
+  // Actions
+  var actions='';
+  if(getRole()!=='worker' && !isHired(code) && !(sState&&sState.status==='booked') && st && (st.state==='overdue'||st.state==='due_soon')){
+    actions+='<button class="cta" style="margin-top:14px" onclick="plantBookService(\''+code+'\')">🗓️  Book the next service</button>';
+  }
+  actions+='<button class="btn-ghost" style="margin-top:10px" onclick="renderMachineHistory(\''+code+'\')">📜  Full machine history</button>';
+  setHeader('Service & inspection logbook', code+' · '+a.make+' '+a.model);
+  var html='<div class="wrap" style="padding:0;max-width:none">'+
+    '<button class="back" onclick="if(!_navBack()){openHub('+idx+')}">‹ Back</button>'+
+    '<div class="hub-head"><div class="hub-ic">🛠️</div><div style="flex:1"><div class="hub-code">Service &amp; inspection logbook</div><div class="hub-mm">'+code+' · '+a.type+' · '+a.make+' '+a.model+'</div></div></div>'+
+    summary+planHtml+inspHtml+actions+
+  '</div>';
+  showDetail(html);
 }
 /* ---------- statutory periodic inspections (lifting plant) — tracked & logged like services ---------- */
 var PLANT_INSPECTION={
