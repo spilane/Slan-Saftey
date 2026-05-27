@@ -763,7 +763,7 @@ function openDemoSheet(){
 }
 function closeDemoSheet(){ document.getElementById('demo-sheet').classList.remove('on'); }
 function demoSwitchWorker(i){ try{ localStorage.setItem('slan_plant_worker', i); }catch(e){} currentWorker=WORKERS[i]; closeDemoSheet(); if(getRole()!=='worker'){ location.href='plant.html'; } else { var el=document.getElementById('who-name'); if(el) el.textContent=currentWorker.name; showList(); } }
-function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides','slan_plant_premob','slan_plant_fault_reports','slan_plant_services','slan_plant_completions','slan_plant_siteoverrides','slan_plant_inspections','slan_plant_addedassets'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
+function plantResetDemo(){ try{ ['slan_plant_seed','slan_plant_alerts','slan_plant_wos','slan_plant_records','slan_plant_iteminfo','slan_plant_worker','slan_plant_approvals','slan_plant_docs','slan_plant_fieldoverrides','slan_plant_premob','slan_plant_fault_reports','slan_plant_services','slan_plant_completions','slan_plant_siteoverrides','slan_plant_inspections','slan_plant_addedassets','slan_plant_photos'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){} location.href='plant.html'; }
 function setHeader(title, sub){ var g=document.getElementById('tb-greet'); if(g) g.style.display=''; var t=document.getElementById('tb-title'); if(t) t.textContent=title; var s=document.getElementById('tb-sub'); if(s) s.textContent=sub||''; }
 function hideHeaderGreet(){ var g=document.getElementById('tb-greet'); if(g) g.style.display='none'; }
 function kpiTrend(cur, prev, higherIsBetter){
@@ -872,6 +872,49 @@ function _navBack(){
 }
 
 /* ---------- machine hub (QR landing) ---------- */
+/* ── Machine photos ───────────────────────────────────────────────────────
+   A real photo on the profile + register (instead of just the type emoji).
+   Tap/drop an image — it's downscaled on the device and stored locally so it
+   survives reloads without blowing past the storage limit. No photo = a tidy
+   branded placeholder. */
+function _plantPhotoAll(){ try{ var o=JSON.parse(localStorage.getItem('slan_plant_photos')||'{}'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function _plantPhoto(code){ return _plantPhotoAll()[code]||null; }
+function _savePlantPhoto(code,url){ try{ var o=_plantPhotoAll(); o[code]=url; localStorage.setItem('slan_plant_photos', JSON.stringify(o)); return true; }catch(e){ if(typeof slanMsg==='function') slanMsg('Storage full','<div style="font-size:13px;color:var(--t2);line-height:1.5">There isn&rsquo;t room to store another photo on this device. Remove a photo and try again.</div>'); return false; } }
+function _clearPlantPhoto(code){ try{ var o=_plantPhotoAll(); delete o[code]; localStorage.setItem('slan_plant_photos', JSON.stringify(o)); }catch(e){} }
+var _plantPhotoCode=null;
+function _plantPhotoFromFile(code, file, cb){
+  if(!file || !/^image\//.test(file.type)){ if(typeof slanMsg==='function') slanMsg('Photo only','<div style="font-size:13px;color:var(--t2);line-height:1.5">Please choose an image file (a photo of the machine).</div>'); return; }
+  var rd=new FileReader();
+  rd.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var max=760, w=img.width, h=img.height;
+      if(w>=h && w>max){ h=Math.round(h*max/w); w=max; } else if(h>w && h>max){ w=Math.round(w*max/h); h=max; }
+      try{ var cv=document.createElement('canvas'); cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h);
+        var url=cv.toDataURL('image/jpeg',0.72); if(_savePlantPhoto(code,url) && cb) cb();
+      }catch(err){ if(typeof slanMsg==='function') slanMsg('Could not save that photo','<div style="font-size:13px;color:var(--t2);line-height:1.5">Try a different image.</div>'); }
+    };
+    img.onerror=function(){ if(typeof slanMsg==='function') slanMsg('Could not read that image','<div style="font-size:13px;color:var(--t2);line-height:1.5">Try a different photo.</div>'); };
+    img.src=e.target.result;
+  };
+  rd.readAsDataURL(file);
+}
+function _reopenHub(code){ var idx=ASSETS.map(function(a){return a.code;}).indexOf(code); if(idx>-1) openHub(idx); }
+function plantPhotoPick(code){ _plantPhotoCode=code; var i=document.getElementById('plant-photo-input'); if(i) i.click(); }
+function plantPhotoOnFile(input){ if(input&&input.files&&input.files[0]) _plantPhotoFromFile(_plantPhotoCode, input.files[0], function(){ _reopenHub(_plantPhotoCode); }); if(input) input.value=''; }
+function plantPhotoDragOver(ev){ ev.preventDefault(); var b=document.getElementById('plant-photo-banner'); if(b) b.style.outline='3px solid var(--gold)'; }
+function plantPhotoDragLeave(ev){ var b=document.getElementById('plant-photo-banner'); if(b) b.style.outline=''; }
+function plantPhotoDrop(ev,code){ ev.preventDefault(); var b=document.getElementById('plant-photo-banner'); if(b) b.style.outline=''; var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0]; if(f) _plantPhotoFromFile(code, f, function(){ _reopenHub(code); }); }
+function plantPhotoRemove(code){ if(typeof slanConfirm==='function'){ slanConfirm({title:'Remove photo?', body:'Remove the photo for '+code+'? The branded placeholder will show instead.', okText:'Remove', cancelText:'Keep', variant:'danger'}).then(function(ok){ if(ok){ _clearPlantPhoto(code); _reopenHub(code); } }); } else { _clearPlantPhoto(code); _reopenHub(code); } }
+function _plantPhotoBanner(a){
+  var photo=_plantPhoto(a.code);
+  return '<div id="plant-photo-banner" onclick="plantPhotoPick(\''+a.code+'\')" ondragover="plantPhotoDragOver(event)" ondragleave="plantPhotoDragLeave(event)" ondrop="plantPhotoDrop(event,\''+a.code+'\')" style="position:relative;height:168px;border-radius:14px;overflow:hidden;cursor:pointer;margin-bottom:10px;'+(photo?('background:#10241B url('+photo+') center/cover no-repeat'):'background:linear-gradient(135deg,#1C382A,#356048)')+'">'+
+    (photo?'':'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:0 16px"><div style="font-size:54px;opacity:.32;line-height:1">'+a.icon+'</div><div style="font-size:12.5px;font-weight:700;margin-top:8px;opacity:.95">📷 Add a photo of this machine</div><div style="font-size:10.5px;opacity:.7;margin-top:2px">Tap to choose, or drop an image here</div></div>')+
+    '<div style="position:absolute;left:0;right:0;bottom:0;padding:10px 13px;background:linear-gradient(transparent,rgba(0,0,0,.6));color:#fff"><div style="font-size:13.5px;font-weight:800">'+a.code+hiredChip(a.code)+'</div><div style="font-size:11px;opacity:.92">'+a.type+' · '+a.make+' '+a.model+'</div></div>'+
+    (photo?'<div style="position:absolute;top:8px;right:8px;display:flex;gap:6px"><span style="background:rgba(0,0,0,.55);color:#fff;border-radius:7px;padding:4px 9px;font-size:10.5px;font-weight:700">📷 Change</span><span onclick="event.stopPropagation();plantPhotoRemove(\''+a.code+'\')" style="background:rgba(0,0,0,.55);color:#fff;border-radius:7px;padding:4px 9px;font-size:10.5px;font-weight:700">✕</span></div>':'')+
+  '</div>'+
+  '<input id="plant-photo-input" type="file" accept="image/*" style="display:none" onchange="plantPhotoOnFile(this)">';
+}
 function openHub(i){
   curAsset=i; var a=ASSETS[i];
   _view('hub:'+i, function(){ openHub(i); });
@@ -983,6 +1026,7 @@ function openHub(i){
   }
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<button class="back" onclick="if(!_navBack()){showList()}">‹ Back</button>'+
+    _plantPhotoBanner(a)+
     '<div class="hub-head"><div class="hub-ic">'+a.icon+'</div><div style="flex:1"><div class="hub-code">'+a.code+hiredChip(a.code)+'</div><div class="hub-mm">'+a.type+' · '+a.make+' '+a.model+'</div><div class="hub-hours">'+[(a.hours?a.hours.toLocaleString()+' hrs':null),(dt.km?dt.km.toLocaleString()+' km':null),a.status.replace(/_/g,' ')].filter(Boolean).join(' · ')+'</div></div></div>'+
     _healthBadge(a)+
     (hired ? '' : '<div class="scan-note">📷 Opened by scanning the QR on this machine</div>')+
@@ -3120,7 +3164,7 @@ function _assetRegisterBody(fleet){
     var lp=lastPrestart(a), lpCell = lp?(_loadPlantRecord(a.code)?'<a href="javascript:void(0)" onclick="event.stopPropagation();plantViewSavedPDF(\''+a.code+'\')" style="color:var(--gold);font-weight:700;text-decoration:underline">'+fmtShort(lp)+' 📄</a>':fmtShort(lp)):'<span style="color:var(--fail);font-weight:600">None</span>';
     var woN=openWoCount(a.code), woCell = woN?('<span class="a-badge bg-flt">'+woN+'</span>'):'<span style="color:var(--t3)">—</span>';
     return '<tr class="'+rowCls+'" onclick="openHub('+ASSETS.indexOf(a)+')">'+
-      '<td class="t-asset"><div class="reg-asset"><div class="ric">'+a.icon+'</div><div>'+_healthDot(a)+'<b>'+a.code+'</b>'+hiredChip(a.code,true)+'<div class="cell-sub">'+a.make+' '+a.model+(isHired(a.code)?' · '+hireInfo(a.code).supplier:'')+'</div><span style="display:none">'+a.type+'</span></div></div></td>'+
+      '<td class="t-asset"><div class="reg-asset">'+(function(){ var ph=_plantPhoto(a.code); return ph?('<div class="ric" style="background:#10241B url('+ph+') center/cover;font-size:0"></div>'):('<div class="ric">'+a.icon+'</div>'); })()+'<div>'+_healthDot(a)+'<b>'+a.code+'</b>'+hiredChip(a.code,true)+'<div class="cell-sub">'+a.make+' '+a.model+(isHired(a.code)?' · '+hireInfo(a.code).supplier:'')+'</div><span style="display:none">'+a.type+'</span></div></div></td>'+
       '<td>'+assetSite(a.code)+'</td>'+
       '<td>'+reading+'</td>'+
       '<td>'+svcCell+'</td>'+
