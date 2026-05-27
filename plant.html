@@ -2318,7 +2318,12 @@ var ADD_TYPES=[
 var ADD_TICKETS=[['white_card','White Card'],['telehandler','Telehandler'],['crane','Crane'],['ewp','EWP'],['truck_hr','Truck (HR)']];
 function _addedAssets(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_addedassets')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function _saveAddedAsset(rec){ try{ var a=_addedAssets(); a.push(rec); localStorage.setItem('slan_plant_addedassets', JSON.stringify(a)); }catch(e){} }
-function _mergeAddedAssets(){ _addedAssets().forEach(function(rec){ if(!rec||!rec.asset||!rec.asset.code) return; if(ASSETS.some(function(x){return x.code===rec.asset.code;})) return; ASSETS.push(rec.asset); if(rec.details) PLANT_DETAILS[rec.asset.code]=rec.details; if(rec.site) PLANT_SITE_OVERRIDE[rec.asset.code]=rec.site; }); }
+function _mergeAddedAssets(){ _addedAssets().forEach(function(rec){ if(!rec||!rec.asset||!rec.asset.code) return; if(ASSETS.some(function(x){return x.code===rec.asset.code;})) return; ASSETS.push(rec.asset); if(rec.details) PLANT_DETAILS[rec.asset.code]=rec.details; if(rec.site) PLANT_SITE_OVERRIDE[rec.asset.code]=rec.site; if(rec.hire) PLANT_HIRE[rec.asset.code]=rec.hire; }); }
+var _addDocs=[];
+var _addTypeReqMap={ 'Telehandler':['telehandler'],'EWP':['ewp'],'Slewing Crane':['crane'],'City Crane':['crane'],'Magni (Rotating Telehandler)':['telehandler','crane'],'Truck':['truck_hr'] };
+function _addHireToggle(){ var h=document.querySelector('input[name="add-own"]:checked'); var box=document.getElementById('add-hire-fields'); if(box) box.style.display=(h&&h.value==='hired')?'block':'none'; }
+function _addTypeReq(){ var t=(document.getElementById('add-type')||{}).value||''; var def=_addTypeReqMap[t]||[]; ADD_TICKETS.forEach(function(tk){ var el=document.querySelector('input[name="add-req"][value="'+tk[0]+'"]'); if(el) el.checked=def.indexOf(tk[0])>-1; }); }
+function _addDocsPick(input){ if(input&&input.files){ for(var i=0;i<input.files.length;i++){ _addDocs.push(input.files[i].name); } input.value=''; } var box=document.getElementById('add-docs-list'); if(box){ box.innerHTML=_addDocs.length?('<div class="tile" style="margin-top:8px">'+_addDocs.map(function(n){ var m=DOC_TYPES[_inferDocType(n)]||DOC_TYPES.other; return '<div class="row" style="cursor:default"><div class="row-ic">'+m.ic+'</div><div class="row-main"><div class="row-t" style="word-break:break-all">'+_premobEsc(n)+'</div><div class="row-s">recognised as: '+m.label+'</div></div></div>'; }).join('')+'</div>'):''; } }
 function plantAddAsset(){
   _view('addAsset', function(){ plantAddAsset(); });
   var typeOpts=ADD_TYPES.map(function(t){ return '<option value="'+t.v+'">'+t.v+'</option>'; }).join('');
@@ -2328,9 +2333,17 @@ function plantAddAsset(){
   setHeader('Add machine','New plant / equipment');
   var html='<div class="wrap" style="padding:0;max-width:none">'+
     '<div class="hub-head"><div class="hub-ic">➕</div><div style="flex:1"><div class="hub-code">Add plant / equipment</div><div class="hub-mm">Register a new machine to the fleet</div></div></div>'+
+    '<div class="sec-h">Owned or hired</div><div class="tile" style="display:flex;padding:4px"><label style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;cursor:pointer;font-size:13px;font-weight:600"><input type="radio" name="add-own" value="owned" checked onchange="_addHireToggle()" style="accent-color:#2D6A45">Owned</label><label style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;cursor:pointer;font-size:13px;font-weight:600"><input type="radio" name="add-own" value="hired" onchange="_addHireToggle()" style="accent-color:#2D6A45">Hired</label></div>'+
+    '<div id="add-hire-fields" style="display:none">'+
+      '<div class="sec-h">Hire details</div>'+
+      '<input id="add-supplier" placeholder="Hire supplier — e.g. Coates Hire" style="'+inp+'">'+
+      '<input id="add-rate" type="number" placeholder="Weekly rate ($)" style="'+inp+'">'+
+      '<input id="add-po" placeholder="PO number (optional)" style="'+inp+'">'+
+      '<div style="display:flex;gap:8px"><div style="flex:1"><div style="font-size:11px;color:var(--t3);margin:2px 2px 3px">On-hire date</div><input id="add-onhire" type="date" max="'+iso(new Date())+'" value="'+iso(new Date())+'" style="'+inp+'"></div><div style="flex:1"><div style="font-size:11px;color:var(--t3);margin:2px 2px 3px">Expected off-hire</div><input id="add-offhire" type="date" min="'+iso(new Date())+'" value="'+iso(dOffset(28))+'" style="'+inp+'"></div></div>'+
+    '</div>'+
     '<div class="sec-h">Identification</div>'+
     '<input id="add-code" placeholder="Asset code — e.g. EXC-024" style="'+inp+'">'+
-    '<select id="add-type" style="'+inp+'">'+typeOpts+'</select>'+
+    '<select id="add-type" onchange="_addTypeReq()" style="'+inp+'">'+typeOpts+'</select>'+
     '<input id="add-make" placeholder="Make — e.g. Caterpillar" style="'+inp+'">'+
     '<input id="add-model" placeholder="Model — e.g. 320D" style="'+inp+'">'+
     '<input id="add-serial" placeholder="Serial / VIN (optional)" style="'+inp+'">'+
@@ -2340,12 +2353,16 @@ function plantAddAsset(){
     '<input id="add-hours" type="number" placeholder="Current hours / reading" style="'+inp+'">'+
     '<input id="add-rego" placeholder="Registration (vehicles, optional)" style="'+inp+'">'+
     '<div class="sec-h">Next service due</div><input id="add-svc" type="date" min="'+iso(new Date())+'" value="'+iso(dOffset(90))+'" style="'+inp+'">'+
-    '<div class="sec-h">Required tickets to operate</div><div style="padding:2px 2px 6px">'+tickOpts+'</div>'+
+    '<div class="sec-h">Required tickets to operate</div><div style="padding:2px 2px 2px">'+tickOpts+'</div><div style="font-size:11px;color:var(--t3);margin:0 2px 6px">Set automatically from the machine type — these are the licences the QR gate checks before anyone can operate it. Adjust if needed.</div>'+
     '<input id="add-swl" placeholder="SWL / capacity (lifting plant, optional)" style="'+inp+'">'+
+    '<div class="sec-h">Attach documents (optional)</div>'+
+    '<div onclick="document.getElementById(\'add-doc-input\').click()" style="border:1.5px dashed #C7CFC9;border-radius:10px;padding:16px;text-align:center;cursor:pointer;color:var(--t2);font-size:12.5px">📎 Add rego, insurance, manuals, SWMS, reports…<div style="font-size:11px;color:var(--t3);margin-top:3px">Recognised by name &amp; filed to the machine</div></div>'+
+    '<input type="file" id="add-doc-input" multiple accept="application/pdf,image/*" style="display:none" onchange="_addDocsPick(this)">'+
+    '<div id="add-docs-list"></div>'+
     '<button class="cta" style="background:var(--mid);margin-top:14px" onclick="plantAddAssetSubmit()">Add machine</button>'+
-    '<div style="font-size:11px;color:var(--t3);margin-top:8px">After adding, drop the machine&rsquo;s documents (rego, insurance, manuals) onto its page to complete the record.</div>'+
   '</div>';
   showDetail(html);
+  setTimeout(_addTypeReq,0);
 }
 function plantAddAssetSubmit(){
   var code=((document.getElementById('add-code')||{}).value||'').trim().toUpperCase();
@@ -2363,15 +2380,27 @@ function plantAddAssetSubmit(){
   var svc=(document.getElementById('add-svc')||{}).value||iso(dOffset(90));
   var req=Array.prototype.map.call(document.querySelectorAll('input[name="add-req"]:checked'),function(c){return c.value;});
   var tdef=ADD_TYPES.find(function(t){return t.v===type;})||ADD_TYPES[ADD_TYPES.length-1];
+  var hired=((document.querySelector('input[name="add-own"]:checked')||{}).value==='hired');
   var asset={ code:code, type:type, icon:tdef.ic, make:make, model:model, status:'operational',
-    required:req, voc_required:req.indexOf('crane')>-1, rego_expiry:rego?iso(dOffset(365)):null, insurance_expiry:iso(dOffset(365)),
+    required:req, voc_required:req.indexOf('crane')>-1, rego_expiry:rego?iso(dOffset(365)):null, insurance_expiry:hired?null:iso(dOffset(365)),
     hours:hours, service_last:iso(new Date()), service_due:svc, critical_fault:false, spend12mo:0 };
   if(swl) asset.swl=swl;
-  var details={ year:year, vin:serial||null, rego:rego||null, rego_state:rego?'NSW':null, insurer:'—', policy:'—', km:0 };
+  var details={ year:year, vin:serial||null, rego:rego||null, rego_state:rego?'NSW':null, insurer:hired?'Supplier cover (hire company)':'—', policy:'—', km:0 };
+  var rec={ asset:asset, details:details, site:site };
+  if(hired){
+    var sup=((document.getElementById('add-supplier')||{}).value||'').trim()||'Hire supplier';
+    var rate=parseFloat((document.getElementById('add-rate')||{}).value)||0;
+    var po=((document.getElementById('add-po')||{}).value||'').trim();
+    var onh=(document.getElementById('add-onhire')||{}).value, offh=(document.getElementById('add-offhire')||{}).value;
+    var hire={ supplier:sup, rate:rate, po:po||null, on_hire_days:(onh?Math.max(0,daysBetween(new Date(),onh)):0), idle_days:0, off_hire_due_days:(offh?daysBetween(offh,new Date()):18) };
+    PLANT_HIRE[code]=hire; rec.hire=hire;
+  }
   ASSETS.push(asset); PLANT_DETAILS[code]=details; _assetSetSite(code, site);
-  _saveAddedAsset({asset:asset, details:details, site:site});
+  _addDocs.forEach(function(nm){ var ty=_inferDocType(nm); var ex=_docExtract(ty, asset)||{}; _savePlantDoc(code, { name:nm, type:ty, when:new Date().toISOString(), display:ex._display||[] }); if(ex.apply && Object.keys(ex.apply).length){ _savePlantOverride(code, ex.apply); Object.keys(ex.apply).forEach(function(k){ asset[k]=ex.apply[k]; }); } });
+  var ndocs=_addDocs.length; _addDocs=[];
+  _saveAddedAsset(rec);
   var idx=ASSETS.indexOf(asset);
-  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">Machine added</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' · '+make+' '+model+' added to '+site+'. Drop its documents onto its page to complete the record.</div></div>', function(){ openHub(idx); });
+  slanMsg('', '<div style="text-align:center"><div style="font-size:42px">✅</div><div style="font-size:16px;font-weight:800;color:var(--pass);margin-top:6px">'+(hired?'Hired machine added':'Machine added')+'</div><div style="font-size:13px;color:var(--t2);margin-top:8px;line-height:1.55">'+code+' · '+make+' '+model+(hired?(' — hired from '+PLANT_HIRE[code].supplier):'')+', added to '+site+'.'+(ndocs?(' '+ndocs+' document'+(ndocs>1?'s':'')+' attached.'):' Drop documents onto its page anytime to complete the record.')+'</div></div>', function(){ openHub(idx); });
 }
 /* ----- Hire request → director approval (front-end). Supervisor raises a request; director approves/rejects. ----- */
 function _hireReqAll(){ try{ var a=JSON.parse(localStorage.getItem('slan_plant_hire_requests')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
