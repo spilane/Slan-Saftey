@@ -10241,6 +10241,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="badge-row">
       <div class="badge"><div class="bdot"></div><span id="an-date">Today</span></div>
       <div id="an-role-badge" class="badge" style="background:rgba(184,150,12,.15);border-color:rgba(184,150,12,.3);color:rgba(184,150,12,.9)">Director</div>
+      <div id="an-site-filter-wrap" style="display:none;margin-left:auto">
+        <select id="an-site-select" onchange="anSiteChanged()" style="background:rgba(255,255,255,.12);border:1px solid rgba(184,150,12,.45);border-radius:8px;color:#fff;font-size:11px;padding:5px 10px;font-family:inherit;outline:none">
+          <option value="all">All sites</option>
+          <option value="site-a">Parramatta</option>
+          <option value="site-b">Blacktown</option>
+          <option value="site-c">Liverpool</option>
+        </select>
+      </div>
     </div>
     <!-- WEATHER WIDGET (matches supervisor header) -->
     <div id="an-weather-bar" style="margin-top:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="loadWeather()">
@@ -10296,21 +10304,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="badge an-period" data-days="30" onclick="anSetPeriod(this)" style="cursor:pointer;background:var(--gold);color:var(--deep);border-color:var(--gold)">30 days</div>
       <div class="badge an-period" data-days="90" onclick="anSetPeriod(this)" style="cursor:pointer">3 months</div>
       <div class="badge an-period" data-days="365" onclick="anSetPeriod(this)" style="cursor:pointer">Year</div>
-      <div id="an-site-filter-wrap" style="display:none;margin-left:auto">
-        <select id="an-site-select" onchange="anSiteChanged()" style="background:var(--deep);border:1px solid rgba(184,150,12,.4);border-radius:8px;color:var(--gold);font-size:11px;padding:5px 10px;font-family:inherit;outline:none">
-          <option value="all">All sites</option>
-          <option value="site-a">Parramatta</option>
-          <option value="site-b">Blacktown</option>
-          <option value="site-c">Liverpool</option>
-        </select>
-      </div>
     </div>
 
-    <!-- Director alerts (hidden unless there are alerts) -->
-    <div id="an-dir-alerts" class="fcard" style="display:none;flex-direction:column;padding:0;overflow:hidden;margin-bottom:12px">
-      <div class="fcard-hdr" id="an-dir-alerts-hdr">Requires Attention</div>
-      <div id="an-dir-alerts-list"></div>
-    </div>
+    <!-- (Director "Requires Attention" feed removed per request) -->
 
     <!-- ── DIRECTOR FEATURE TILES (same .tile grid format as worker/supervisor) ── -->
     <div class="grid">
