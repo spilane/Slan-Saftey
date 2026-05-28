@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Header mockup · Slán Safety</title>
+<title>Premium mockup · Slán Safety</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 :root{--deep:#1C382A;--deep2:#102619;--mid:#2D6A45;--gold:#C8A02C;--gold-l:#D4AF37;--bg:#F4F6F4;--ink:#0E1A14;--muted:#66756C;--line:rgba(16,40,30,.08)}
@@ -11,13 +11,14 @@
 body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--ink);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;min-height:100dvh}
 .app{width:100%;max-width:432px;background:var(--bg);min-height:100dvh;position:relative;box-shadow:0 30px 70px -30px rgba(16,40,30,.4)}
 @media(min-width:480px){body{padding:20px 0;align-items:flex-start}.app{border-radius:26px;overflow:hidden}}
+.view{display:none}.view.on{display:block}
 
 /* toggle */
 .toggle{display:flex;gap:6px;padding:10px;background:#15241c}
-.toggle button{flex:1;padding:9px;border:none;border-radius:9px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+.toggle button{flex:1;padding:9px 4px;border:none;border-radius:9px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
 .toggle button.on{background:var(--gold);color:#3a2e05}
 
-/* HEADER */
+/* HOME HEADER */
 .hdr{background:linear-gradient(165deg,var(--deep),var(--deep2));padding:16px 18px 20px;position:relative}
 .hdr::after{content:"";position:absolute;left:18px;right:18px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,160,44,.5),transparent)}
 .hrow{display:flex;align-items:center;justify-content:space-between}
@@ -38,36 +39,22 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .wx{margin-top:11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between}
 .wx .l{display:flex;align-items:center;gap:10px}.wx .ic{font-size:21px}.wx .t{font-size:15px;font-weight:600;color:#fff}.wx .s{font-size:10px;color:rgba(255,255,255,.55)}
 .wx .r{text-align:right;font-size:10px;color:rgba(255,255,255,.6)}
-
-/* METRIC CARDS — switch style by mode */
-.metrics{margin-top:12px}
-.metrics .row{display:grid;gap:6px}
-.metrics .row.r3{grid-template-columns:1fr 1fr 1fr}
-.metrics .row.r2{grid-template-columns:1fr 1fr;margin-top:6px}
+.metrics{margin-top:11px}
+.metrics .row{display:grid;gap:6px}.metrics .row.r3{grid-template-columns:1fr 1fr 1fr}.metrics .row.r2{grid-template-columns:1fr 1fr;margin-top:6px}
 .m{border-radius:10px;padding:10px 6px;text-align:center}
 .m .v{font-size:22px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
 .m .k{font-size:9.5px;margin-top:3px;font-weight:600}
-/* default = GREEN mode */
-.m{background:rgba(255,255,255,.1)}
-.m .v{color:#fff}.m .v.gold{color:var(--gold-l)}.m .v.grn{color:#5CDB95}
-.m .k{color:rgba(200,160,44,.85)}
-/* white cards — shared by "White cards" and "All white boxes" modes */
+.m{background:rgba(255,255,255,.1)}.m .v{color:#fff}.m .v.gold{color:var(--gold-l)}.m .v.grn{color:#5CDB95}.m .k{color:rgba(200,160,44,.85)}
 .app.light .m,.app.white .m{background:#fff;box-shadow:0 6px 14px -8px rgba(0,0,0,.4)}
 .app.light .m .v,.app.white .m .v{color:var(--deep)}
 .app.light .m .v.gold,.app.white .m .v.gold{color:#A9831A}
 .app.light .m .v.grn,.app.white .m .v.grn{color:#1B7A3D}
 .app.light .m .k,.app.white .m .k{color:var(--muted)}
-/* ALL-WHITE mode → every box in the header goes white too */
-.app.white .badge{background:#fff;color:var(--deep);border-color:rgba(16,40,30,.1)}
-.app.white .badge .d{background:var(--gold)}
+.app.white .badge{background:#fff;color:var(--deep);border-color:rgba(16,40,30,.1)}.app.white .badge .d{background:var(--gold)}
 .app.white .badge.role{background:#fff;color:#A9831A;border-color:rgba(200,160,44,.4)}
 .app.white .sitesel{background:#fff;color:var(--deep);border-color:rgba(16,40,30,.14)}
-.app.white .wx{background:#fff;border-color:rgba(16,40,30,.08)}
-.app.white .wx .t{color:var(--deep)}
-.app.white .wx .s{color:var(--muted)}
-.app.white .wx .r{color:var(--muted)}
+.app.white .wx{background:#fff;border-color:rgba(16,40,30,.08)}.app.white .wx .t{color:var(--deep)}.app.white .wx .s{color:var(--muted)}.app.white .wx .r{color:var(--muted)}
 
-/* ONLINE bar — switch style by mode */
 .online{background:var(--mid);color:#fff;padding:10px 18px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600}
 .online .dot{width:7px;height:7px;border-radius:50%;background:#5CDB95}
 .online .upd{margin-left:auto;font-size:11px;color:rgba(255,255,255,.6);font-weight:400}
@@ -75,7 +62,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .app.light .online .dot,.app.white .online .dot{background:#1B7A3D}
 .app.light .online .upd,.app.white .online .upd{color:#9aa69e}
 
-/* Today's activity */
 .act{background:#fff;border-bottom:1px solid var(--line);padding:11px 16px}
 .act .lbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
 .pills{display:flex;gap:8px;flex-wrap:wrap}
@@ -83,11 +69,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .pill.red{background:#FBEBEB;color:#B23636}.pill.amb{background:#FBF1DC;color:#9A6A00}
 .pill .pd{width:6px;height:6px;border-radius:50%;background:currentColor}
 
-/* body context */
+/* HOME tiles */
 .body{padding:16px}
 .seclbl{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:0 2px 10px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(16,40,30,.05);padding:15px;position:relative;transition:transform .14s}
+.tile{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(16,40,30,.05);padding:15px;position:relative;transition:transform .14s;cursor:pointer}
 .tile:active{transform:scale(.97)}
 .tile .ti{width:40px;height:40px;border-radius:12px;background:#EAF1ED;display:flex;align-items:center;justify-content:center;margin-bottom:11px}
 .tile .ti svg{width:20px;height:20px;stroke:#1B7A3D;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -97,82 +83,169 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .tile .tn{font-size:13.5px;font-weight:600;letter-spacing:-.01em}.tile .ts{font-size:11px;color:var(--muted);margin-top:3px}
 .tile .chip{position:absolute;top:13px;right:13px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
 .chip.g{background:#E8F4ED;color:#1B7A3D}.chip.a{background:#FBF1DC;color:#9A6A00}.chip.r{background:#FBEBEB;color:#B23636}
-.note{font-size:11px;color:var(--muted);text-align:center;padding:14px 16px 4px;line-height:1.5}
+.note{font-size:11px;color:var(--muted);padding:6px 18px 18px;line-height:1.6}
+
+/* INTERIOR screens */
+.ihdr{background:linear-gradient(165deg,var(--deep),var(--deep2));padding:14px 16px;display:flex;align-items:center;gap:12px;position:relative}
+.ihdr::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,160,44,.5),transparent)}
+.bk{width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.1);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.bk svg{width:18px;height:18px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ihdr h2{font-size:16px;font-weight:700;color:#fff;letter-spacing:-.02em}.ihdr p{font-size:11px;color:rgba(255,255,255,.55);margin-top:1px;font-family:'DM Mono',monospace}
+.scr{padding:16px;padding-bottom:96px}
+.titlerow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.titlerow h1{font-size:19px;font-weight:700;letter-spacing:-.02em;flex:1;min-width:130px}
+.sev{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em}
+.sev.mod{background:#FBF1DC;color:#9A6A00}.sev.closed{background:#E8F4ED;color:#1B7A3D}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(16,40,30,.05);overflow:hidden;margin-bottom:14px}
+.card-h{padding:13px 16px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;font-size:13.5px;border-bottom:1px solid var(--line)}.kv:last-child{border-bottom:none}
+.kv .k{color:var(--muted)}.kv .v{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}.kv .v.bad{color:#B23636}
+.docrow{display:flex;align-items:center;gap:11px;padding:12px 16px}
+.docrow .di{width:34px;height:34px;border-radius:10px;background:#EAF1ED;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.docrow .dt{font-size:13px;font-weight:600}.docrow .ds{font-size:11px;color:var(--muted);margin-top:1px}
+/* form */
+.flabel{font-size:12px;font-weight:600;color:var(--ink);display:block;margin:0 2px 7px}
+.finput,.fsel,.ftext{width:100%;padding:12px 13px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;font-size:14px;color:var(--ink);background:#fff;outline:none}
+.ftext{min-height:84px;resize:vertical}
+.finput:focus,.fsel:focus,.ftext:focus{border-color:var(--mid);box-shadow:0 0 0 3px rgba(45,106,69,.12)}
+.fgroup{margin-bottom:16px}
+.pillsel{display:flex;gap:8px;flex-wrap:wrap}
+.psel{flex:1;min-width:64px;text-align:center;padding:10px 6px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
+.psel.on{border-color:var(--mid);background:#EAF4EE;color:var(--mid)}
+.cta{position:sticky;bottom:0;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--bg) 24%)}
+.cta .pri{width:100%;padding:15px;border-radius:14px;background:var(--deep);color:#fff;border:none;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.btn-ghost{width:100%;padding:14px;border-radius:14px;background:#fff;border:1px solid var(--line);color:var(--deep);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;box-shadow:0 1px 2px rgba(16,40,30,.05)}
+.empty{text-align:center;padding:30px 20px;color:var(--muted)}.empty .ei{font-size:30px;opacity:.5}.empty p{font-size:12.5px;margin-top:8px;line-height:1.5}
 </style>
 </head>
 <body>
 <div class="app light" id="app">
 
-  <div class="toggle">
-    <button id="b-green" onclick="setMode('green')">More green</button>
-    <button id="b-light" class="on" onclick="setMode('light')">★ White cards</button>
-    <button id="b-white" onclick="setMode('white')">All white boxes</button>
-  </div>
-
-  <!-- HEADER -->
-  <div class="hdr">
-    <div class="hrow">
-      <div class="logo"><div class="mark">Slán</div><div class="name">Safety</div></div>
-      <div class="hact">
-        <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
-        <div class="av">PM</div>
+  <!-- ════ HOME ════ -->
+  <section class="view on" id="v-home">
+    <div class="toggle">
+      <button id="b-green" onclick="setMode('green')">More green</button>
+      <button id="b-light" class="on" onclick="setMode('light')">★ White cards</button>
+      <button id="b-white" onclick="setMode('white')">All white boxes</button>
+    </div>
+    <div class="hdr">
+      <div class="hrow">
+        <div class="logo"><div class="mark">Slán</div><div class="name">Safety</div></div>
+        <div class="hact">
+          <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+          <div class="av">PM</div>
+        </div>
+      </div>
+      <div class="greet"><h1>Good morning, Patrick</h1><p>Murphy Civil Construction</p></div>
+      <div class="badges">
+        <span class="badge"><span class="d"></span>Thu, 28 May</span>
+        <span class="badge role">Director</span>
+        <select class="sitesel"><option>All sites</option><option>Parramatta</option><option>Liverpool</option></select>
+      </div>
+      <div class="wx">
+        <div class="l"><div class="ic">⛅</div><div><div class="t">19°C</div><div class="s">Partly cloudy · Bondi Junction</div></div></div>
+        <div class="r">Wind 14 km/h<br>Feels like 18° · UV moderate</div>
+      </div>
+      <div class="metrics">
+        <div class="row r3">
+          <div class="m"><div class="v">20</div><div class="k">Signed in</div></div>
+          <div class="m"><div class="v">8</div><div class="k">Pre-starts</div></div>
+          <div class="m"><div class="v gold">2</div><div class="k">Open hazards</div></div>
+        </div>
+        <div class="row r2">
+          <div class="m"><div class="v grn">47</div><div class="k">LTI-free days</div></div>
+          <div class="m"><div class="v">3</div><div class="k">Incidents</div></div>
+        </div>
       </div>
     </div>
-    <div class="greet"><h1>Good morning, Patrick</h1><p>Murphy Civil Construction</p></div>
-    <div class="badges">
-      <span class="badge"><span class="d"></span>Thu, 28 May</span>
-      <span class="badge role">Director</span>
-      <select class="sitesel"><option>All sites</option><option>Parramatta</option><option>Liverpool</option></select>
-    </div>
-    <div class="wx">
-      <div class="l"><div class="ic">⛅</div><div><div class="t">19°C</div><div class="s">Partly cloudy · Bondi Junction</div></div></div>
-      <div class="r">Wind 14 km/h<br>Feels like 18° · UV moderate</div>
-    </div>
-    <div class="metrics">
-      <div class="row r3">
-        <div class="m"><div class="v">20</div><div class="k">Signed in</div></div>
-        <div class="m"><div class="v">8</div><div class="k">Pre-starts</div></div>
-        <div class="m"><div class="v gold">2</div><div class="k">Open hazards</div></div>
-      </div>
-      <div class="row r2">
-        <div class="m"><div class="v grn">47</div><div class="k">LTI-free days</div></div>
-        <div class="m"><div class="v">3</div><div class="k">Incidents</div></div>
+    <div class="online"><span class="dot"></span>Online<span class="upd">Updated just now</span></div>
+    <div class="act">
+      <div class="lbl">Today's activity</div>
+      <div class="pills">
+        <span class="pill red"><span class="pd"></span>1 machine out of service</span>
+        <span class="pill amb"><span class="pd"></span>3 stopped at the gate</span>
       </div>
     </div>
-  </div>
-
-  <!-- ONLINE -->
-  <div class="online"><span class="dot"></span>Online<span class="upd">Updated just now</span></div>
-
-  <!-- TODAY'S ACTIVITY -->
-  <div class="act">
-    <div class="lbl">Today's activity</div>
-    <div class="pills">
-      <span class="pill red"><span class="pd"></span>1 machine out of service</span>
-      <span class="pill amb"><span class="pd"></span>3 stopped at the gate</span>
+    <div class="body">
+      <div class="seclbl">Your areas · tap a tile to see inside</div>
+      <div class="grid">
+        <div class="tile red" onclick="go('v-detail')"><span class="chip r">2 open</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="tn">Incidents</div><div class="ts">1 this week</div></div>
+        <div class="tile pur" onclick="go('v-detail')"><span class="chip g">87%</span><div class="ti"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M8.2 13.9 7 23l5-3 5 3-1.2-9.1"/></svg></div><div class="tn">Compliance</div><div class="ts">Green · on track</div></div>
+        <div class="tile amb" onclick="go('v-detail')"><span class="chip a">3 open</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="tn">Hazards</div><div class="ts">2 due this week</div></div>
+        <div class="tile" onclick="go('v-detail')"><span class="chip a">1 flagged</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M3 17h2l1-5h11l3 4h1"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/><path d="M6 12V7h7l3 5"/></svg></div><div class="tn">Plant &amp; Equipment</div><div class="ts">14 machines</div></div>
+      </div>
+      <div class="note"><b>Header:</b> ★ White cards is my pick (toggle to compare). <b>Tiles:</b> note the status chip top-right of each. <b>Tap any tile</b> to see the premium "inside the tile" screens (a record page + a form).</div>
     </div>
-  </div>
+  </section>
 
-  <!-- body context -->
-  <div class="body">
-    <div class="seclbl">Your areas</div>
-    <div class="grid">
-      <div class="tile red"><span class="chip r">2 open</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="tn">Incidents</div><div class="ts">1 this week</div></div>
-      <div class="tile pur"><span class="chip g">87%</span><div class="ti"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M8.2 13.9 7 23l5-3 5 3-1.2-9.1"/></svg></div><div class="tn">Compliance</div><div class="ts">Green · on track</div></div>
-      <div class="tile amb"><span class="chip a">3 open</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="tn">Hazards</div><div class="ts">2 due this week</div></div>
-      <div class="tile"><span class="chip a">1 flagged</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M3 17h2l1-5h11l3 4h1"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/><path d="M6 12V7h7l3 5"/></svg></div><div class="tn">Plant &amp; Equipment</div><div class="ts">14 machines</div></div>
+  <!-- ════ INSIDE: RECORD / DETAIL ════ -->
+  <section class="view" id="v-detail">
+    <div class="ihdr"><button class="bk" onclick="go('v-home')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div><h2>Incident report</h2><p>INC-2026-0042</p></div></div>
+    <div class="scr">
+      <div class="titlerow"><h1>Laceration — left forearm</h1><span class="sev mod">Moderate</span><span class="sev closed">Closed</span></div>
+      <div class="card"><div class="card-h">Details</div>
+        <div class="kv"><span class="k">Type</span><span class="v">Actual injury</span></div>
+        <div class="kv"><span class="k">Location</span><span class="v">Bondi Junction · Level 3</span></div>
+        <div class="kv"><span class="k">Reported by</span><span class="v">Jake Ryan</span></div>
+        <div class="kv"><span class="k">Date &amp; time</span><span class="v">26 May · 2:14pm</span></div>
+        <div class="kv"><span class="k">First aid given</span><span class="v">Yes</span></div>
+      </div>
+      <div class="card"><div class="card-h">Injury &amp; return to work</div>
+        <div class="kv"><span class="k">Days lost</span><span class="v bad">2</span></div>
+        <div class="kv"><span class="k">Status</span><span class="v">Light duties on return</span></div>
+        <div class="kv"><span class="k">Return-to-work date</span><span class="v">30 May 2026</span></div>
+      </div>
+      <div class="card"><div class="card-h">Supporting documents</div>
+        <div class="docrow"><div class="di">📄</div><div><div class="dt">Medical certificate</div><div class="ds">HLTAID — Dr S. Patel · on file</div></div></div>
+      </div>
+      <div class="cta"><button class="pri">View / download report (PDF)</button><button class="btn-ghost" onclick="go('v-form')">See the report form</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="note"><b>Header:</b> <b>★ White cards</b> is my pick. Toggle to compare. <br><b>Tiles (below the header):</b> these show the premium tile idea — a small <b>status chip</b> top-right (red/amber/green) so each area's state reads at a glance, rounder corners, and one consistent icon style. That at-a-glance status is the biggest "premium" upgrade for the tiles.</div>
+  <!-- ════ INSIDE: FORM ════ -->
+  <section class="view" id="v-form">
+    <div class="ihdr"><button class="bk" onclick="go('v-detail')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div><h2>New incident report</h2><p>Step 1 of 3</p></div></div>
+    <div class="scr">
+      <div class="card" style="overflow:visible"><div class="card-h">What happened</div>
+        <div style="padding:16px">
+          <div class="fgroup"><label class="flabel">Description</label><textarea class="ftext" placeholder="Describe what happened…"></textarea></div>
+          <div class="fgroup" style="margin-bottom:0"><label class="flabel">Incident type</label>
+            <select class="fsel"><option>Actual injury</option><option>Near miss</option><option>Property damage</option><option>Environmental</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="overflow:visible"><div class="card-h">Severity</div>
+        <div style="padding:16px">
+          <div class="pillsel">
+            <div class="psel" onclick="psel(this)">Minor</div>
+            <div class="psel on" onclick="psel(this)">Moderate</div>
+            <div class="psel" onclick="psel(this)">Major</div>
+            <div class="psel" onclick="psel(this)">Critical</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="overflow:visible"><div class="card-h">Where &amp; when</div>
+        <div style="padding:16px">
+          <div class="fgroup"><label class="flabel">Location</label><input class="finput" value="Bondi Junction · Level 3"></div>
+          <div class="fgroup" style="margin-bottom:0"><label class="flabel">Date &amp; time</label><input class="finput" type="datetime-local"></div>
+        </div>
+      </div>
+      <div class="cta"><button class="pri">Continue</button></div>
+    </div>
+  </section>
+
 </div>
 <script>
-function setMode(m){
-  document.getElementById('app').className = 'app' + (m==='light' ? ' light' : (m==='white' ? ' white' : ''));
-  ['green','light','white'].forEach(function(x){
-    var b=document.getElementById('b-'+x); if(b) b.className = (m===x ? 'on' : '');
-  });
+function go(id){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on');});
+  var el=document.getElementById(id); if(el) el.classList.add('on');
+  window.scrollTo(0,0); var a=document.getElementById('app'); if(a) a.scrollTop=0;
 }
+function setMode(m){
+  document.getElementById('app').className='app'+(m==='light'?' light':(m==='white'?' white':''));
+  ['green','light','white'].forEach(function(x){var b=document.getElementById('b-'+x); if(b) b.className=(m===x?'on':'');});
+}
+function psel(el){ el.parentElement.querySelectorAll('.psel').forEach(function(p){p.classList.remove('on');}); el.classList.add('on'); }
 </script>
 </body>
 </html>
