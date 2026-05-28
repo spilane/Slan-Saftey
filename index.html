@@ -2341,22 +2341,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- SITE PRE-START ALERT (removed - chip handles this signal now) -->
     <div id="d-sps-alert" style="display:none"></div>
 
-    <!-- ACTION TILES — same grid style as worker -->
+    <!-- ACTION TILES — same grid style as worker (ordered by daily significance) -->
     <div class="grid">
-
-      <!-- Daily Site Pre-Start -->
-      <div class="tile" onclick="goToSitePreStart()">
-        <div class="tile-icon ic-green"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg></div>
-        <div class="tile-name">Daily Pre-Start</div>
-        <div class="tile-sub" id="sps-tile-sub">Site inspection</div>
-      </div>
-
-      <!-- Plant & Equipment (opens the full asset platform in a new tab) -->
-      <div class="tile" id="stile-plant" onclick="location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use'">
-        <div class="tile-icon" style="background:#E6F5ED"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l2 2 4-4"/></svg></div>
-        <div class="tile-name">Plant &amp; Equipment</div>
-        <div class="tile-sub" id="d-plant-tile-sub">Machines, pre-starts &amp; service</div>
-      </div>
 
       <!-- Sign In/Out -->
       <div>
@@ -2371,28 +2357,49 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
       </div>
 
+      <!-- Daily Site Pre-Start -->
+      <div class="tile" onclick="goToSitePreStart()">
+        <div class="tile-icon ic-green"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div class="tile-name">Daily Pre-Start</div>
+        <div class="tile-sub" id="sps-tile-sub">Site inspection</div>
+      </div>
+
+      <div class="tile" onclick="goToSwmsLibrary()">
+        <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="#5535AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div>
+        <div class="tile-name">SWMS Library</div>
+        <div class="tile-sub">Read &amp; sign SWMS</div>
+      </div>
+
       <div class="tile" onclick="goToTalk()">
         <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="tile-name">Toolbox Talk</div>
         <div class="tile-sub" id="d-talk-status">Sign today's talk</div>
       </div>
 
+      <div class="tile" onclick="goToPermitsToWork()">
+        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg></div>
+        <div class="tile-name">Permits to Work</div>
+        <div class="tile-sub" id="ptw-tile-sub">Log &amp; track permits</div>
+      </div>
+
+      <!-- Plant & Equipment (opens the full asset platform in a new tab) -->
+      <div class="tile" id="stile-plant" onclick="location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use'">
+        <div class="tile-icon" style="background:#E6F5ED"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l2 2 4-4"/></svg></div>
+        <div class="tile-name">Plant &amp; Equipment</div>
+        <div class="tile-sub" id="d-plant-tile-sub">Machines, pre-starts &amp; service</div>
+      </div>
+
+      <div class="tile" onclick="goToSdsLookup()">
+        <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="#136D65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/><path d="M12 15v3"/></svg></div>
+        <div class="tile-name">SDS Lookup</div>
+        <div class="tile-sub" id="sup-sds-tile-sub">Search safety data sheets</div>
+        <div class="tile-notif" id="sds-notif" style="display:none"></div>
+      </div>
+
       <div class="tile" onclick="goToHazard()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
         <div class="tile-name">Report Hazard</div>
         <div class="tile-sub">Log &amp; escalate</div>
-      </div>
-
-      <div class="tile" onclick="goToVisitorSignIn()">
-        <div class="tile-icon" style="background:#EDE9FE"><svg viewBox="0 0 24 24" fill="none" stroke="#5B21B6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-        <div class="tile-name">Visitor Sign-In</div>
-        <div class="tile-sub">Sign in visitors</div>
-      </div>
-
-      <div class="tile" onclick="goToAwardStars()">
-        <div class="tile-icon" style="background:#FFF5D6"><svg viewBox="0 0 24 24" fill="none" stroke="#7A6020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-        <div class="tile-name">Award Stars</div>
-        <div class="tile-sub">Give points</div>
       </div>
 
       <div class="tile" onclick="goToIncident()">
@@ -2408,6 +2415,68 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-sub">Confidential — to Slán Safety</div>
       </div>
 
+      <div class="tile" onclick="goToVisitorSignIn()">
+        <div class="tile-icon" style="background:#EDE9FE"><svg viewBox="0 0 24 24" fill="none" stroke="#5B21B6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="tile-name">Visitor Sign-In</div>
+        <div class="tile-sub">Sign in visitors</div>
+      </div>
+
+      <div class="tile" onclick="goToWorkerContacts()">
+        <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="#136D65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="tile-name">Workers</div>
+        <div class="tile-sub">Call anyone on site</div>
+      </div>
+
+      <div class="tile" onclick="goToBroadcast()">
+        <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="#1C5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg></div>
+        <div class="tile-name">Broadcast</div>
+        <div class="tile-sub">Message all on site</div>
+      </div>
+
+      <div class="tile" onclick="goToAwardStars()">
+        <div class="tile-icon" style="background:#FFF5D6"><svg viewBox="0 0 24 24" fill="none" stroke="#7A6020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="tile-name">Award Stars</div>
+        <div class="tile-sub">Give points</div>
+      </div>
+
+      <div class="tile" onclick="goToCorrectiveActions()">
+        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div class="tile-name">Actions</div>
+        <div class="tile-sub">Corrective actions</div>
+        <div class="tile-notif" id="ca-notif" style="display:none"></div>
+      </div>
+
+      <div class="tile" onclick="goToRiggingType('rigging')">
+        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+        <div class="tile-name">Rigging Register</div>
+        <div class="tile-sub">Inspections &amp; gear status</div>
+      </div>
+
+      <div class="tile" onclick="goToRiggingType('electrical')">
+        <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="#1C5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="tile-name">Electrical Register</div>
+        <div class="tile-sub">Test &amp; tag status</div>
+      </div>
+
+      <div class="tile" onclick="goToCompanyDocs()">
+        <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="#5535AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="17" x2="12" y2="11"/><line x1="9" y1="14" x2="15" y2="14"/></svg></div>
+        <div class="tile-name">Company Docs</div>
+        <div class="tile-sub">Insurance &amp; certificates</div>
+      </div>
+
+      <div class="tile" onclick="goToContactSlan()" style="background:#E6EEF9;border-color:rgba(28,90,173,.2)">
+        <div class="tile-icon" style="background:rgba(28,90,173,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="#1C5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="tile-name" style="color:#1C5AAD">Contact Slán Safety</div>
+        <div class="tile-sub">Message your WHS provider</div>
+      </div>
+
+      <div class="tile dim" style="cursor:default">
+        <div class="tile-icon" style="background:#F2F3F2"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8l5 3-5 3"/></svg></div>
+        <div class="tile-name">Pre-Mobilisation</div>
+        <div class="tile-sub">New site setup checklist</div>
+        <div class="tile-sub">Coming soon</div>
+      </div>
+
       <div class="tile" onclick="goToEmergencyContacts()" style="background:#FFF5F5;border-color:rgba(184,50,50,.15)">
         <div class="tile-icon" style="background:#FAEBEB"><svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.6 19.79 19.79 0 0 1 1.61 3 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
         <div class="tile-name" style="color:#B83232">Emergency</div>
@@ -2417,65 +2486,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="tile-icon" style="background:#FAEBEB"><svg viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="tile-name" style="color:#B83232">Emergency Muster</div>
         <div class="tile-sub">Account for all workers</div>
-      </div>
-      <div class="tile" onclick="goToCompanyDocs()">
-        <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="#5535AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="17" x2="12" y2="11"/><line x1="9" y1="14" x2="15" y2="14"/></svg></div>
-        <div class="tile-name">Company Docs</div>
-        <div class="tile-sub">Insurance &amp; certificates</div>
-      </div>
-      <div class="tile" onclick="goToContactSlan()" style="background:#E6EEF9;border-color:rgba(28,90,173,.2)">
-        <div class="tile-icon" style="background:rgba(28,90,173,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="#1C5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <div class="tile-name" style="color:#1C5AAD">Contact Slán Safety</div>
-        <div class="tile-sub">Message your WHS provider</div>
-      </div>
-      <div class="tile" onclick="goToSwmsLibrary()">
-        <div class="tile-icon ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="#5535AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div>
-        <div class="tile-name">SWMS Library</div>
-        <div class="tile-sub">Read &amp; sign SWMS</div>
-      </div>
-      <div class="tile" onclick="goToSdsLookup()">
-        <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="#136D65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/><path d="M12 15v3"/></svg></div>
-        <div class="tile-name">SDS Lookup</div>
-        <div class="tile-sub" id="sup-sds-tile-sub">Search safety data sheets</div>
-        <div class="tile-notif" id="sds-notif" style="display:none"></div>
-      </div>
-      <div class="tile" onclick="goToRiggingType('rigging')">
-        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
-        <div class="tile-name">Rigging Register</div>
-        <div class="tile-sub">Inspections &amp; gear status</div>
-      </div>
-      <div class="tile" onclick="goToRiggingType('electrical')">
-        <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="#1C5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-        <div class="tile-name">Electrical Register</div>
-        <div class="tile-sub">Test &amp; tag status</div>
-      </div>
-      <div class="tile" onclick="goToCorrectiveActions()">
-        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-        <div class="tile-name">Actions</div>
-        <div class="tile-sub">Corrective actions</div>
-        <div class="tile-notif" id="ca-notif" style="display:none"></div>
-      </div>
-      <div class="tile" onclick="goToBroadcast()">
-        <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="#1C5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg></div>
-        <div class="tile-name">Broadcast</div>
-        <div class="tile-sub">Message all on site</div>
-      </div>
-      <div class="tile" onclick="goToPermitsToWork()">
-        <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg></div>
-        <div class="tile-name">Permits to Work</div>
-        <div class="tile-sub" id="ptw-tile-sub">Log &amp; track permits</div>
-      </div>
-
-      <div class="tile" onclick="goToWorkerContacts()">
-        <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke="#136D65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <div class="tile-name">Workers</div>
-        <div class="tile-sub">Call anyone on site</div>
-      </div>
-      <div class="tile dim" style="cursor:default">
-        <div class="tile-icon" style="background:#F2F3F2"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8l5 3-5 3"/></svg></div>
-        <div class="tile-name">Pre-Mobilisation</div>
-        <div class="tile-sub">New site setup checklist</div>
-        <div class="tile-sub">Coming soon</div>
       </div>
 
     </div>
