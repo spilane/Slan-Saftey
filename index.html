@@ -1042,6 +1042,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 /* DASHBOARD TABS */
 .dash-tab{background:none;border:none;border-bottom:2.5px solid transparent;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:rgba(255,255,255,.5);cursor:pointer;white-space:nowrap;transition:all .15s}
 .dash-tab.active{color:#fff;border-bottom-color:var(--gold)}
+.body-tabbar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px}
+.body-tabbar .dash-tab{color:var(--muted)}
+.body-tabbar .dash-tab.active{color:var(--deep);border-bottom-color:var(--gold)}
 
 /* HISTORY */
 .hist-day{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;padding:14px 0 6px;border-bottom:.5px solid var(--border);margin-bottom:8px}
@@ -2546,13 +2549,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="tbar-logo" style="padding:2px 0"><img id="hist-logo" src="" alt="Slán Safety" style="height:60px;object-fit:contain;display:block"></div>
       <div style="width:36px"></div>
     </div>
-    <div style="display:flex;gap:0;padding:0 18px">
-      <button class="dash-tab active" id="htab-activity" onclick="switchHistTab('activity')">Activity</button>
-      <button class="dash-tab" id="htab-attendance" onclick="switchHistTab('attendance')">Attendance</button>
-    </div>
   </div>
 
   <div class="fbody" style="padding-top:14px">
+
+    <!-- Tabs — moved out of the green header into the screen -->
+    <div class="body-tabbar">
+      <button class="dash-tab active" id="htab-activity" onclick="switchHistTab('activity')">Activity</button>
+      <button class="dash-tab" id="htab-attendance" onclick="switchHistTab('attendance')">Attendance</button>
+    </div>
 
     <!-- Activity tab -->
     <div id="htab-content-activity">
@@ -3490,15 +3495,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div style="width:36px"></div>
     </div>
-    <!-- Worker tabs -->
-    <div style="display:flex;gap:0;padding:0 18px">
+  </div>
+
+  <div class="fbody" style="padding-top:14px">
+
+    <!-- Worker tabs — moved out of the green header into the screen -->
+    <div class="body-tabbar">
       <button class="dash-tab active" id="stab-board"   onclick="switchStarsTab('board')">Leaderboard</button>
       <button class="dash-tab"        id="stab-mine"    onclick="switchStarsTab('mine')">My Stars</button>
       <button class="dash-tab"        id="stab-howearn" onclick="switchStarsTab('howearn')">How to Earn</button>
     </div>
-  </div>
-
-  <div class="fbody" style="padding-top:14px">
 
     <!-- LEADERBOARD TAB -->
     <div id="stab-content-board">
@@ -10035,7 +10041,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="width:34px"></div>
     </div>
     <div class="talk-hero">
-      <div class="talk-meta" style="margin-top:14px">
+      <div class="talk-meta" style="margin-top:14px;display:none">
         <div class="talk-chip" id="tk-date">Today</div>
         <div class="talk-chip" id="tk-site">Site</div>
         <div class="talk-chip" id="tk-duration">5 min read</div>
