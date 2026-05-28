@@ -13981,7 +13981,10 @@ function ensureInteriorAvatar() {
     var hasAction = Array.prototype.some.call(row.children, function(c){
       return c.tagName === 'BUTTON' && !c.classList.contains('back-btn');
     });
-    if (hasAction) return;                     // leave screens with a real right-side control
+    if (hasAction) {                           // screens with a real right-side control: keep it,
+      hdr.querySelectorAll(':scope > .form-greeting').forEach(function(fg){ _recolorFg(fg); });  // but white-out the bar title
+      return;
+    }
     var back = row.querySelector(':scope > .back-btn');
     var logo = row.querySelector(':scope > .tbar-logo');
     var av = row.querySelector(':scope > .hdr-av');
