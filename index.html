@@ -13883,6 +13883,113 @@ function paintHomeAvatars() {
   } catch(e) {}
 }
 
+// Round initials-avatar element used in every interior header (class .hdr-av so
+// paintHomeAvatars() fills it with the signed-in person's initials each nav).
+function _interiorAvatarEl() {
+  var av = document.createElement('div');
+  av.className = 'hdr-av';
+  av.setAttribute('onclick', 'avatarTap()');
+  av.setAttribute('title', 'My profile');
+  av.style.cssText = "width:38px;height:38px;border-radius:50%;background:rgba(184,150,12,.2);border:2px solid rgba(184,150,12,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#D4AF37";
+  return av;
+}
+// The Slán logo lives as a base64 <img> on several headers; grab the first one
+// that's actually loaded (same approach the director/analytics screens use).
+function _canonicalLogoSrc() {
+  var imgs = document.querySelectorAll('.tbar-logo img, img[alt="Slán Safety"]');
+  for (var i = 0; i < imgs.length; i++) { if (imgs[i].src && imgs[i].src.length > 10) return imgs[i].src; }
+  return '';
+}
+
+// Make every worker/supervisor interior screen use the SAME header as the
+// director screens. Two cases handled on each navigation:
+//  • CASE B — an old flat ".tbar" header (back + small icon/title + empty
+//    spacer): rebuilt into the director header = ".sb" notch + green ".topbar"
+//    with a row of [back · centred 60px logo · initials avatar], and the title
+//    moved into the green bar (unless a .form-greeting already follows).
+//  • CASE A — a header already on the new ".topbar" (logo present, e.g. Hazard/
+//    Incident/Toolbox): just swap its balancing spacer for the avatar.
+// Reuses the director's own CSS classes, so the result renders identically.
+// paintHomeAvatars() (called right after on every nav) fills in the initials.
+function ensureInteriorAvatar() {
+  try {
+    var p = (typeof getProfile === 'function') ? getProfile() : null;
+    if (!p || !p.name) return;                 // no header avatar before profile setup (onboarding)
+    var scr = document.querySelector('.screen.active');
+    if (!scr) return;
+    var SKIP = {'screen-profile':1,'screen-permissions':1,'screen-privacy':1,'screen-my-profile':1};
+    if (SKIP[scr.id]) return;
+    var hdr = scr.querySelector('.tbar, .topbar');
+    if (!hdr) return;
+    var back = hdr.querySelector('.back-btn');
+
+    // CASE B — rebuild an old flat ".tbar" into the director-style header.
+    if (hdr.classList.contains('tbar') && back) {
+      var lastB = hdr.lastElementChild;
+      var okSpacer = lastB && lastB.tagName === 'DIV' && !lastB.children.length
+        && !(lastB.textContent || '').trim()
+        && /^width:\d+px;?$/i.test((lastB.getAttribute('style') || '').replace(/\s/g, ''));
+      if (okSpacer) {                          // only rebuild the known [back · title · spacer] pattern
+        var titleSpan = hdr.querySelector('span');
+        var titleTxt = titleSpan ? (titleSpan.textContent || '').trim() : '';
+        // keep a genuinely custom bg (e.g. red emergency muster); standard greens
+        // fall through to the .topbar class default (#1C382A) so it matches the director.
+        var bgRaw = ((hdr.style && hdr.style.background) || '').trim();
+        var STD = {'var(--deep)':1, '#1b3a2d':1, '#1c382a':1};
+        var customBg = (bgRaw && !STD[bgRaw.toLowerCase().replace(/\s/g, '')]) ? bgRaw : '';
+        // .sb notch above the bar (match a custom bg if any)
+        var prev = hdr.previousElementSibling;
+        if (!(prev && prev.classList && prev.classList.contains('sb'))) {
+          var sb = document.createElement('div'); sb.className = 'sb';
+          if (customBg) sb.style.background = customBg;
+          hdr.parentNode.insertBefore(sb, hdr);
+        }
+        var logoWrap = document.createElement('div');
+        logoWrap.className = 'tbar-logo'; logoWrap.style.padding = '2px 0';
+        var img = document.createElement('img');
+        img.src = _canonicalLogoSrc(); img.alt = 'Slán Safety';
+        img.style.cssText = 'height:60px;object-fit:contain;display:block';
+        logoWrap.appendChild(img);
+        var row = document.createElement('div'); row.className = 'topbar-row';
+        row.appendChild(back); row.appendChild(logoWrap); row.appendChild(_interiorAvatarEl());
+        hdr.className = 'topbar';
+        hdr.setAttribute('style', (customBg ? ('background:' + customBg + ';') : '') + 'padding-bottom:14px');
+        hdr.innerHTML = '';
+        hdr.appendChild(row);
+        // Put the title INSIDE the green bar, like the director screens.
+        var next = hdr.nextElementSibling;
+        var hasFG = next && next.classList && next.classList.contains('form-greeting');
+        if (hasFG) {
+          // existing title block sits below on the light page — if it's a plain
+          // title+subtitle, move it up into the green bar and recolour for contrast.
+          var simple = Array.prototype.every.call(next.children, function(c){ return c.tagName === 'H1' || c.tagName === 'P'; });
+          if (simple) {
+            next.querySelectorAll('h1').forEach(function(h){ h.style.color = '#fff'; });
+            next.querySelectorAll('p').forEach(function(pp){ pp.style.color = 'rgba(255,255,255,.8)'; });
+            hdr.appendChild(next);
+          }
+        } else if (titleTxt) {
+          var fg = document.createElement('div'); fg.className = 'form-greeting';
+          var h1 = document.createElement('h1'); h1.style.color = '#fff'; h1.textContent = titleTxt;
+          fg.appendChild(h1); hdr.appendChild(fg);
+        }
+        return;                                // rebuilt header already carries the avatar
+      }
+    }
+
+    // CASE A — header already on the new ".topbar": just add the avatar.
+    if (hdr.querySelector('.hdr-av')) return;
+    if (!back) return;
+    var arow = back.parentNode;
+    var last = arow.lastElementChild;
+    if (!last || last.tagName !== 'DIV' || last === back) return;
+    if (last.children.length || (last.textContent || '').trim()) return;
+    var st = (last.getAttribute('style') || '').replace(/\s/g, '');
+    if (!/^width:\d+px;?$/i.test(st)) return;
+    arow.replaceChild(_interiorAvatarEl(), last);
+  } catch(e) {}
+}
+
 function populateMyProfile() {
   // Refresh TFB demo toggle highlight on profile open
   try { if (typeof myProfRefreshTfbToggle === 'function') myProfRefreshTfbToggle(); } catch(e) {}
@@ -20546,7 +20653,9 @@ function goTo(id){
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  // Keep the header avatars showing initials (consistent across all portals)
+  // Give worker/supervisor interior screens the same header avatar as the
+  // director screens, then paint everyone's initials (consistent across portals)
+  try { ensureInteriorAvatar(); } catch(e) {}
   try { paintHomeAvatars(); } catch(e) {}
   window.scrollTo(0,0);
   // Auto-refresh chip strip when landing on worker home or supervisor dash
