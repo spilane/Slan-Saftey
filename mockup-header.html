@@ -90,7 +90,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .note{font-size:11px;color:var(--muted);padding:6px 18px 18px;line-height:1.6}
 
 /* INTERIOR screens */
-.ihdr{background:linear-gradient(165deg,var(--deep),var(--deep2));padding:14px 16px;display:flex;align-items:center;gap:12px;position:relative}
+.ihdr{background:linear-gradient(165deg,var(--deep),var(--deep2));padding:11px 14px 13px;position:relative}
+.ihdr-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ilogo{text-align:center;line-height:1.02}
+.ilogo .m{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--gold);display:block}
+.ilogo .n{font-size:13px;font-weight:700;color:#fff;letter-spacing:.05em;display:block}
+.av-sm{width:36px;height:36px;border-radius:50%;background:rgba(200,160,44,.2);border:2px solid rgba(200,160,44,.5);display:flex;align-items:center;justify-content:center;color:var(--gold-l);font-weight:700;font-size:13px;flex-shrink:0;cursor:pointer}
+.ihdr-ttl{margin-top:9px}
+.ihdr-ttl h2{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.ihdr-ttl p{font-size:11.5px;color:rgba(255,255,255,.6);margin-top:2px}
 .ihdr::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,160,44,.5),transparent)}
 .bk{width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.1);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .bk svg{width:18px;height:18px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -177,16 +185,19 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
         <div class="tile amb" onclick="go('v-detail')"><span class="chip a">3 open</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="tn">Hazards</div><div class="ts">2 due this week</div></div>
         <div class="tile" onclick="go('v-detail')"><span class="chip a">1 flagged</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M3 17h2l1-5h11l3 4h1"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/><path d="M6 12V7h7l3 5"/></svg></div><div class="tn">Plant &amp; Equipment</div><div class="ts">14 machines</div></div>
       </div>
-      <div class="note"><b>This is the white-cards look (locked in).</b> New: an upgraded <b>logo</b> top-left (shield mark + wordmark) to stand out more. <b>Tap any tile</b> to see the interior screens — note the improved <b>record header</b> (title + reference + export, with status chips on a strip beneath) and the <b>form</b> (progress bar + sticky button).</div>
+      <div class="note"><b>This is the white-cards look (locked in).</b> <b>Tap any tile</b> to see the tidied interior header — it keeps the logo but is smaller and tighter: one compact row (back · logo · your initials avatar), then the page title beneath. Much less empty space than now.</div>
     </div>
   </section>
 
   <!-- ════ INSIDE: RECORD / DETAIL ════ -->
   <section class="view" id="v-detail">
     <div class="ihdr">
-      <button class="bk" onclick="go('v-home')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
-      <div style="flex:1;min-width:0"><h2>Laceration — left forearm</h2><p>INC-2026-0042 · 26 May</p></div>
-      <button class="hact-btn" title="Export"><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M5 21h14"/></svg></button>
+      <div class="ihdr-top">
+        <button class="bk" onclick="go('v-home')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="ilogo"><span class="m">SLÁN</span><span class="n">SAFETY</span></div>
+        <div class="av-sm">PM</div>
+      </div>
+      <div class="ihdr-ttl"><h2>Laceration — left forearm</h2><p>INC-2026-0042 · 26 May</p></div>
     </div>
     <div class="rec-chips"><span class="sev mod">Moderate</span><span class="sev closed">Closed</span></div>
     <div class="scr">
@@ -211,7 +222,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
   <!-- ════ INSIDE: FORM ════ -->
   <section class="view" id="v-form">
-    <div class="ihdr"><button class="bk" onclick="go('v-detail')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div style="flex:1"><h2>New incident report</h2><p>Step 1 of 3</p></div></div>
+    <div class="ihdr">
+      <div class="ihdr-top">
+        <button class="bk" onclick="go('v-detail')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="ilogo"><span class="m">SLÁN</span><span class="n">SAFETY</span></div>
+        <div class="av-sm">PM</div>
+      </div>
+      <div class="ihdr-ttl"><h2>New incident report</h2><p>Step 1 of 3</p></div>
+    </div>
     <div class="prog"><div class="prog-bar" style="width:33%"></div></div>
     <div class="scr">
       <div class="card" style="overflow:visible"><div class="card-h">What happened</div>
