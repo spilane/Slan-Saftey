@@ -22,8 +22,12 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .hdr{background:linear-gradient(165deg,var(--deep),var(--deep2));padding:16px 18px 20px;position:relative}
 .hdr::after{content:"";position:absolute;left:18px;right:18px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,160,44,.5),transparent)}
 .hrow{display:flex;align-items:center;justify-content:space-between}
-.logo .mark{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase}
-.logo .name{font-size:16px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.logo{display:flex;align-items:center;gap:10px}
+.logomark{width:36px;height:36px;border-radius:10px;background:rgba(200,160,44,.16);border:1px solid rgba(200,160,44,.45);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logomark svg{width:20px;height:20px;stroke:var(--gold-l);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.logotext{line-height:1.04}
+.logotext .lt-mark{display:block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.22em;color:var(--gold);font-weight:500}
+.logotext .lt-name{display:block;font-size:15px;font-weight:700;color:#fff;letter-spacing:.05em}
 .hact{display:flex;align-items:center;gap:10px}
 .bell{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center}
 .bell svg{width:19px;height:19px;stroke:#fff;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -91,6 +95,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .bk{width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.1);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .bk svg{width:18px;height:18px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .ihdr h2{font-size:16px;font-weight:700;color:#fff;letter-spacing:-.02em}.ihdr p{font-size:11px;color:rgba(255,255,255,.55);margin-top:1px;font-family:'DM Mono',monospace}
+.hact-btn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.1);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.hact-btn svg{width:17px;height:17px;stroke:#fff;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.rec-chips{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:8px}
+.prog{height:3px;background:rgba(16,40,30,.08)}.prog-bar{height:100%;background:var(--gold)}
 .scr{padding:16px;padding-bottom:96px}
 .titlerow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .titlerow h1{font-size:19px;font-weight:700;letter-spacing:-.02em;flex:1;min-width:130px}
@@ -123,14 +131,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
   <!-- ════ HOME ════ -->
   <section class="view on" id="v-home">
-    <div class="toggle">
-      <button id="b-green" onclick="setMode('green')">More green</button>
-      <button id="b-light" class="on" onclick="setMode('light')">★ White cards</button>
-      <button id="b-white" onclick="setMode('white')">All white boxes</button>
-    </div>
     <div class="hdr">
       <div class="hrow">
-        <div class="logo"><div class="mark">Slán</div><div class="name">Safety</div></div>
+        <div class="logo"><div class="logomark"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 4.5-3 7.6-8 9-5-1.4-8-4.5-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="logotext"><span class="lt-mark">SLÁN</span><span class="lt-name">SAFETY</span></div></div>
         <div class="hact">
           <div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
           <div class="av">PM</div>
@@ -174,15 +177,19 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
         <div class="tile amb" onclick="go('v-detail')"><span class="chip a">3 open</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="tn">Hazards</div><div class="ts">2 due this week</div></div>
         <div class="tile" onclick="go('v-detail')"><span class="chip a">1 flagged</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M3 17h2l1-5h11l3 4h1"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/><path d="M6 12V7h7l3 5"/></svg></div><div class="tn">Plant &amp; Equipment</div><div class="ts">14 machines</div></div>
       </div>
-      <div class="note"><b>Header:</b> ★ White cards is my pick (toggle to compare). <b>Tiles:</b> note the status chip top-right of each. <b>Tap any tile</b> to see the premium "inside the tile" screens (a record page + a form).</div>
+      <div class="note"><b>This is the white-cards look (locked in).</b> New: an upgraded <b>logo</b> top-left (shield mark + wordmark) to stand out more. <b>Tap any tile</b> to see the interior screens — note the improved <b>record header</b> (title + reference + export, with status chips on a strip beneath) and the <b>form</b> (progress bar + sticky button).</div>
     </div>
   </section>
 
   <!-- ════ INSIDE: RECORD / DETAIL ════ -->
   <section class="view" id="v-detail">
-    <div class="ihdr"><button class="bk" onclick="go('v-home')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div><h2>Incident report</h2><p>INC-2026-0042</p></div></div>
+    <div class="ihdr">
+      <button class="bk" onclick="go('v-home')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div style="flex:1;min-width:0"><h2>Laceration — left forearm</h2><p>INC-2026-0042 · 26 May</p></div>
+      <button class="hact-btn" title="Export"><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M5 21h14"/></svg></button>
+    </div>
+    <div class="rec-chips"><span class="sev mod">Moderate</span><span class="sev closed">Closed</span></div>
     <div class="scr">
-      <div class="titlerow"><h1>Laceration — left forearm</h1><span class="sev mod">Moderate</span><span class="sev closed">Closed</span></div>
       <div class="card"><div class="card-h">Details</div>
         <div class="kv"><span class="k">Type</span><span class="v">Actual injury</span></div>
         <div class="kv"><span class="k">Location</span><span class="v">Bondi Junction · Level 3</span></div>
@@ -204,7 +211,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
   <!-- ════ INSIDE: FORM ════ -->
   <section class="view" id="v-form">
-    <div class="ihdr"><button class="bk" onclick="go('v-detail')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div><h2>New incident report</h2><p>Step 1 of 3</p></div></div>
+    <div class="ihdr"><button class="bk" onclick="go('v-detail')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div style="flex:1"><h2>New incident report</h2><p>Step 1 of 3</p></div></div>
+    <div class="prog"><div class="prog-bar" style="width:33%"></div></div>
     <div class="scr">
       <div class="card" style="overflow:visible"><div class="card-h">What happened</div>
         <div style="padding:16px">
