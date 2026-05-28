@@ -13978,6 +13978,14 @@ function ensureInteriorAvatar() {
     // ---- already ".topbar": ensure row = [back/spacer · logo · avatar] ----
     var row = hdr.querySelector('.topbar-row');
     if (!row) return;
+    // Bring every already-built .topbar into line with the director header:
+    // a 60px logo and a 14px green-bar bottom padding. A few screens shipped a
+    // 28px logo (Toolbox, sign-in confirm) or 0 padding (Toolbox/History/Stars).
+    if (hdr.style.paddingBottom && hdr.style.paddingBottom !== '14px') hdr.style.paddingBottom = '14px';
+    var _exLogo = row.querySelector(':scope > .tbar-logo img');
+    if (_exLogo && _exLogo.style.height !== '60px') {
+      _exLogo.style.height = '60px'; _exLogo.style.objectFit = 'contain'; _exLogo.style.display = 'block';
+    }
     var hasAction = Array.prototype.some.call(row.children, function(c){
       return c.tagName === 'BUTTON' && !c.classList.contains('back-btn');
     });
