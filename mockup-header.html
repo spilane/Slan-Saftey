@@ -85,11 +85,18 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
 /* body context */
 .body{padding:16px}
+.seclbl{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:0 2px 10px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(16,40,30,.05);padding:14px}
-.tile .ti{width:38px;height:38px;border-radius:11px;background:#EAF1ED;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
-.tile .ti svg{width:19px;height:19px;stroke:#1B7A3D;stroke-width:1.85;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.tile .tn{font-size:13px;font-weight:600}.tile .ts{font-size:11px;color:var(--muted);margin-top:2px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(16,40,30,.05);padding:15px;position:relative;transition:transform .14s}
+.tile:active{transform:scale(.97)}
+.tile .ti{width:40px;height:40px;border-radius:12px;background:#EAF1ED;display:flex;align-items:center;justify-content:center;margin-bottom:11px}
+.tile .ti svg{width:20px;height:20px;stroke:#1B7A3D;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.tile.red .ti{background:#FBEBEB}.tile.red .ti svg{stroke:#B23636}
+.tile.amb .ti{background:#FBF1DC}.tile.amb .ti svg{stroke:#9A6A00}
+.tile.pur .ti{background:#EEEAF8}.tile.pur .ti svg{stroke:#5A45A6}
+.tile .tn{font-size:13.5px;font-weight:600;letter-spacing:-.01em}.tile .ts{font-size:11px;color:var(--muted);margin-top:3px}
+.tile .chip{position:absolute;top:13px;right:13px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
+.chip.g{background:#E8F4ED;color:#1B7A3D}.chip.a{background:#FBF1DC;color:#9A6A00}.chip.r{background:#FBEBEB;color:#B23636}
 .note{font-size:11px;color:var(--muted);text-align:center;padding:14px 16px 4px;line-height:1.5}
 </style>
 </head>
@@ -118,7 +125,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
       <select class="sitesel"><option>All sites</option><option>Parramatta</option><option>Liverpool</option></select>
     </div>
     <div class="wx">
-      <div class="l"><div class="ic">⛅</div><div><div class="t">19°C</div><div class="s">Partly cloudy</div></div></div>
+      <div class="l"><div class="ic">⛅</div><div><div class="t">19°C</div><div class="s">Partly cloudy · Bondi Junction</div></div></div>
+      <div class="r">Wind 14 km/h<br>Feels like 18° · UV moderate</div>
     </div>
     <div class="metrics">
       <div class="row r3">
@@ -147,13 +155,16 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
   <!-- body context -->
   <div class="body">
+    <div class="seclbl">Your areas</div>
     <div class="grid">
-      <div class="tile"><div class="ti"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="tn">Incidents</div><div class="ts">2 open · 1 this week</div></div>
-      <div class="tile"><div class="ti"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M8.2 13.9 7 23l5-3 5 3-1.2-9.1"/></svg></div><div class="tn">Compliance</div><div class="ts">87% · Green</div></div>
+      <div class="tile red"><span class="chip r">2 open</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="tn">Incidents</div><div class="ts">1 this week</div></div>
+      <div class="tile pur"><span class="chip g">87%</span><div class="ti"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M8.2 13.9 7 23l5-3 5 3-1.2-9.1"/></svg></div><div class="tn">Compliance</div><div class="ts">Green · on track</div></div>
+      <div class="tile amb"><span class="chip a">3 open</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div class="tn">Hazards</div><div class="ts">2 due this week</div></div>
+      <div class="tile"><span class="chip a">1 flagged</span><div class="ti"><svg viewBox="0 0 24 24"><path d="M3 17h2l1-5h11l3 4h1"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/><path d="M6 12V7h7l3 5"/></svg></div><div class="tn">Plant &amp; Equipment</div><div class="ts">14 machines</div></div>
     </div>
   </div>
 
-  <div class="note"><b>★ White cards</b> is my recommendation (now with the refinements: tighter spacing, one corner radius, trimmed weather). <b>All white boxes</b> turns the badges/filter/weather white too. <b>More green</b> is the current look. Tap to compare.</div>
+  <div class="note"><b>Header:</b> <b>★ White cards</b> is my pick. Toggle to compare. <br><b>Tiles (below the header):</b> these show the premium tile idea — a small <b>status chip</b> top-right (red/amber/green) so each area's state reads at a glance, rounder corners, and one consistent icon style. That at-a-glance status is the biggest "premium" upgrade for the tiles.</div>
 </div>
 <script>
 function setMode(m){
