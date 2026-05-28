@@ -13901,92 +13901,114 @@ function _canonicalLogoSrc() {
   return '';
 }
 
-// Make every worker/supervisor interior screen use the SAME header as the
-// director screens. Two cases handled on each navigation:
-//  • CASE B — an old flat ".tbar" header (back + small icon/title + empty
-//    spacer): rebuilt into the director header = ".sb" notch + green ".topbar"
-//    with a row of [back · centred 60px logo · initials avatar], and the title
-//    moved into the green bar (unless a .form-greeting already follows).
-//  • CASE A — a header already on the new ".topbar" (logo present, e.g. Hazard/
-//    Incident/Toolbox): just swap its balancing spacer for the avatar.
-// Reuses the director's own CSS classes, so the result renders identically.
-// paintHomeAvatars() (called right after on every nav) fills in the initials.
+// Small building blocks of the director-style header.
+function _hdrSpacer() { var d = document.createElement('div'); d.style.width = '36px'; return d; }
+function _hdrLogo() {
+  var w = document.createElement('div'); w.className = 'tbar-logo'; w.style.padding = '2px 0';
+  var img = document.createElement('img'); img.src = _canonicalLogoSrc(); img.alt = 'Slán Safety';
+  img.style.cssText = 'height:60px;object-fit:contain;display:block'; w.appendChild(img); return w;
+}
+function _hdrGreeting(title) {
+  var fg = document.createElement('div'); fg.className = 'form-greeting';
+  var h1 = document.createElement('h1'); h1.style.color = '#fff'; h1.textContent = title;
+  fg.appendChild(h1); return fg;
+}
+// White-out a plain title+subtitle block so it reads on the green bar. Returns
+// true if the block was simple enough (only h1/p) to safely treat this way.
+function _recolorFg(fg) {
+  var simple = Array.prototype.every.call(fg.children, function(c){ return c.tagName === 'H1' || c.tagName === 'P'; });
+  if (simple) {
+    fg.querySelectorAll('h1').forEach(function(h){ h.style.color = '#fff'; });
+    fg.querySelectorAll('p').forEach(function(pp){ pp.style.color = 'rgba(255,255,255,.8)'; });
+  }
+  return simple;
+}
+
+// Normalise the active interior screen's header to the director header:
+//   .sb notch + green .topbar with a row of [back (or spacer) · centred 60px
+//   logo · initials avatar], and the screen title (white) inside the green bar.
+// Handles old flat ".tbar" headers (with or without a back button) and
+// partially-built ".topbar" headers (missing a logo and/or avatar, or with a
+// dark title). Screens with a genuine right-side action button (Alerts
+// "Clear all", Corrective Actions "+ New") are left untouched so the control
+// survives. Reuses the director's own CSS classes so it renders identically.
+// paintHomeAvatars() (run right after, every nav) fills in the initials.
 function ensureInteriorAvatar() {
   try {
     var p = (typeof getProfile === 'function') ? getProfile() : null;
-    if (!p || !p.name) return;                 // no header avatar before profile setup (onboarding)
+    if (!p || !p.name) return;                 // no header avatar before profile setup
     var scr = document.querySelector('.screen.active');
     if (!scr) return;
-    var SKIP = {'screen-profile':1,'screen-permissions':1,'screen-privacy':1,'screen-my-profile':1};
+    var SKIP = {'screen-profile':1,'screen-permissions':1,'screen-privacy':1,'screen-my-profile':1,
+                'screen-home':1,'screen-dash':1,'screen-analytics':1,
+                'screen-onboarding':1,'screen-pin':1,'screen-success':1};
     if (SKIP[scr.id]) return;
-    var hdr = scr.querySelector('.tbar, .topbar');
-    if (!hdr) return;
-    var back = hdr.querySelector('.back-btn');
+    var hdr = scr.querySelector('.topbar, .tbar');
+    if (!hdr) return;                          // headerless splash screens — nothing to do
 
-    // CASE B — rebuild an old flat ".tbar" into the director-style header.
-    if (hdr.classList.contains('tbar') && back) {
-      var lastB = hdr.lastElementChild;
-      var okSpacer = lastB && lastB.tagName === 'DIV' && !lastB.children.length
-        && !(lastB.textContent || '').trim()
-        && /^width:\d+px;?$/i.test((lastB.getAttribute('style') || '').replace(/\s/g, ''));
-      if (okSpacer) {                          // only rebuild the known [back · title · spacer] pattern
-        var titleSpan = hdr.querySelector('span');
-        var titleTxt = titleSpan ? (titleSpan.textContent || '').trim() : '';
-        // keep a genuinely custom bg (e.g. red emergency muster); standard greens
-        // fall through to the .topbar class default (#1C382A) so it matches the director.
-        var bgRaw = ((hdr.style && hdr.style.background) || '').trim();
-        var STD = {'var(--deep)':1, '#1b3a2d':1, '#1c382a':1};
-        var customBg = (bgRaw && !STD[bgRaw.toLowerCase().replace(/\s/g, '')]) ? bgRaw : '';
-        // .sb notch above the bar (match a custom bg if any)
-        var prev = hdr.previousElementSibling;
-        if (!(prev && prev.classList && prev.classList.contains('sb'))) {
-          var sb = document.createElement('div'); sb.className = 'sb';
-          if (customBg) sb.style.background = customBg;
-          hdr.parentNode.insertBefore(sb, hdr);
-        }
-        var logoWrap = document.createElement('div');
-        logoWrap.className = 'tbar-logo'; logoWrap.style.padding = '2px 0';
-        var img = document.createElement('img');
-        img.src = _canonicalLogoSrc(); img.alt = 'Slán Safety';
-        img.style.cssText = 'height:60px;object-fit:contain;display:block';
-        logoWrap.appendChild(img);
-        var row = document.createElement('div'); row.className = 'topbar-row';
-        row.appendChild(back); row.appendChild(logoWrap); row.appendChild(_interiorAvatarEl());
-        hdr.className = 'topbar';
-        hdr.setAttribute('style', (customBg ? ('background:' + customBg + ';') : '') + 'padding-bottom:14px');
-        hdr.innerHTML = '';
-        hdr.appendChild(row);
-        // Put the title INSIDE the green bar, like the director screens.
-        var next = hdr.nextElementSibling;
-        var hasFG = next && next.classList && next.classList.contains('form-greeting');
-        if (hasFG) {
-          // existing title block sits below on the light page — if it's a plain
-          // title+subtitle, move it up into the green bar and recolour for contrast.
-          var simple = Array.prototype.every.call(next.children, function(c){ return c.tagName === 'H1' || c.tagName === 'P'; });
-          if (simple) {
-            next.querySelectorAll('h1').forEach(function(h){ h.style.color = '#fff'; });
-            next.querySelectorAll('p').forEach(function(pp){ pp.style.color = 'rgba(255,255,255,.8)'; });
-            hdr.appendChild(next);
-          }
-        } else if (titleTxt) {
-          var fg = document.createElement('div'); fg.className = 'form-greeting';
-          var h1 = document.createElement('h1'); h1.style.color = '#fff'; h1.textContent = titleTxt;
-          fg.appendChild(h1); hdr.appendChild(fg);
-        }
-        return;                                // rebuilt header already carries the avatar
+    // ---- OLD flat ".tbar" → rebuild into the .topbar director header ----
+    if (hdr.classList.contains('tbar')) {
+      var tSpan = hdr.querySelector('span');
+      var tTitle = tSpan ? (tSpan.textContent || '').trim() : '';
+      var bgRaw = ((hdr.style && hdr.style.background) || '').trim();
+      var STD = {'var(--deep)':1, '#1b3a2d':1, '#1c382a':1};
+      var customBg = (bgRaw && !STD[bgRaw.toLowerCase().replace(/\s/g, '')]) ? bgRaw : '';
+      var tBack = hdr.querySelector('.back-btn');   // null on success / "waiting" screens
+      var tPrev = hdr.previousElementSibling;
+      if (!(tPrev && tPrev.classList && tPrev.classList.contains('sb'))) {
+        var sb = document.createElement('div'); sb.className = 'sb';
+        if (customBg) sb.style.background = customBg;
+        hdr.parentNode.insertBefore(sb, hdr);
       }
+      var tNext = hdr.nextElementSibling;
+      var extFg = (tNext && tNext.classList && tNext.classList.contains('form-greeting')) ? tNext : null;
+      var tRow = document.createElement('div'); tRow.className = 'topbar-row';
+      tRow.appendChild(tBack || _hdrSpacer());   // keep the back button, or a spacer to centre the logo
+      tRow.appendChild(_hdrLogo());
+      tRow.appendChild(_interiorAvatarEl());
+      hdr.className = 'topbar';
+      hdr.setAttribute('style', (customBg ? ('background:' + customBg + ';') : '') + 'padding-bottom:14px');
+      hdr.innerHTML = '';
+      hdr.appendChild(tRow);
+      if (extFg && _recolorFg(extFg)) hdr.appendChild(extFg);        // move an existing title block into the bar
+      else if (!extFg && tTitle) hdr.appendChild(_hdrGreeting(tTitle));
+      return;
     }
 
-    // CASE A — header already on the new ".topbar": just add the avatar.
-    if (hdr.querySelector('.hdr-av')) return;
-    if (!back) return;
-    var arow = back.parentNode;
-    var last = arow.lastElementChild;
-    if (!last || last.tagName !== 'DIV' || last === back) return;
-    if (last.children.length || (last.textContent || '').trim()) return;
-    var st = (last.getAttribute('style') || '').replace(/\s/g, '');
-    if (!/^width:\d+px;?$/i.test(st)) return;
-    arow.replaceChild(_interiorAvatarEl(), last);
+    // ---- already ".topbar": ensure row = [back/spacer · logo · avatar] ----
+    var row = hdr.querySelector('.topbar-row');
+    if (!row) return;
+    var hasAction = Array.prototype.some.call(row.children, function(c){
+      return c.tagName === 'BUTTON' && !c.classList.contains('back-btn');
+    });
+    if (hasAction) return;                     // leave screens with a real right-side control
+    var back = row.querySelector(':scope > .back-btn');
+    var logo = row.querySelector(':scope > .tbar-logo');
+    var av = row.querySelector(':scope > .hdr-av');
+    if (!(logo && av)) {                        // needs a logo and/or the avatar
+      var capTitle = '';
+      Array.prototype.forEach.call(row.children, function(c){
+        if (c === back || c === logo || c === av || c.tagName === 'BUTTON') return;
+        if (!capTitle) {
+          var sp = c.querySelector && c.querySelector('span');
+          var t = ((sp ? sp.textContent : c.textContent) || '').trim();
+          if (t) capTitle = t;
+        }
+      });
+      var left = back || _hdrSpacer();
+      logo = logo || _hdrLogo();
+      var _limg = logo.querySelector('img');     // fill an empty id'd logo so it never shows blank
+      if (_limg && (!_limg.getAttribute('src') || _limg.getAttribute('src').length < 10)) _limg.src = _canonicalLogoSrc();
+      av = av || _interiorAvatarEl();
+      row.innerHTML = '';
+      row.appendChild(left); row.appendChild(logo); row.appendChild(av);
+      if (capTitle && !hdr.querySelector('.form-greeting')) {
+        var g = _hdrGreeting(capTitle);
+        if (row.nextSibling) hdr.insertBefore(g, row.nextSibling); else hdr.appendChild(g);
+      }
+    }
+    // make sure any title already in the green bar reads white (not dark)
+    hdr.querySelectorAll(':scope > .form-greeting').forEach(function(fg){ _recolorFg(fg); });
   } catch(e) {}
 }
 
