@@ -2035,7 +2035,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="fcard-hdr">Site contacts</div>
       <div style="padding:0">
         <div class="contact-row" onclick="callContact('supervisor')">
-          <div class="contact-icon" style="background:#E6F5ED"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="contact-icon" id="sup-contact-av" style="background:#E6F5ED;color:var(--mid);font-family:'DM Mono',monospace;font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center">SS</div>
           <div class="contact-info">
             <div class="contact-name" id="sup-name">Site Supervisor</div>
             <div class="contact-role">Site Supervisor</div>
@@ -16670,6 +16670,7 @@ function initHome(p){
   const supEl = document.getElementById('sup-name');
   if (sosEl) sosEl.textContent='Call '+SITE_CONTACTS.supervisor.name;
   if (supEl) supEl.textContent=SITE_CONTACTS.supervisor.name;
+  var supAv=document.getElementById('sup-contact-av'); if(supAv && typeof getInitials==='function') supAv.textContent=getInitials(SITE_CONTACTS.supervisor.name);
 
   updateStatusStrip();
   updateAllTileSubs();
