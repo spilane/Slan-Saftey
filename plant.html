@@ -724,7 +724,7 @@ function renderPlantNotifications(){
   showDetail(html);
 }
 function _initials(n){ return (n||'').split(/\s+/).filter(Boolean).map(function(w){return w.charAt(0);}).join('').slice(0,2).toUpperCase()||'?'; }
-function _profileAvatar(name){ return '<div onclick="plantOpenWhsProfile()" title="'+name+'" style="width:38px;height:38px;border-radius:50%;background:rgba(184,150,12,.2);border:2px solid rgba(184,150,12,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(184,150,12,.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>'; }
+function _profileAvatar(name){ var n=(name||'').trim(); var ini=n?n.split(/\s+/).map(function(p){return p[0]||'';}).join('').slice(0,2).toUpperCase():'?'; return '<div onclick="plantOpenWhsProfile()" title="'+name+'" style="width:38px;height:38px;border-radius:50%;background:rgba(184,150,12,.2);border:2px solid rgba(184,150,12,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;font-family:\'DM Sans\',sans-serif;font-weight:700;font-size:14px;color:#D4AF37">'+ini+'</div>'; }
 // Open the SAME My Profile page the WHS app uses (index.html), remembering this plant page so Back returns here.
 function plantOpenWhsProfile(){ try{ sessionStorage.setItem('slan_whs_profile_return', location.href); }catch(e){} location.href='index.html?profile=1'; }
 function workerPill(){ return '<button class="who" onclick="openWorkerSheet()"><span id="who-name">'+currentWorker.name+'</span></button>'; }
