@@ -17699,13 +17699,9 @@ function showProfileSummaryThenLand() {
 }
 
 function myProfContinueToApp() {
-  const p = (typeof getProfile === 'function') ? getProfile() : null;
-  if (p && p.role === 'Company Director') {
-    if (typeof goToAnalytics === 'function') { goToAnalytics('director'); return; }
-  }
-  if (p && p.role === 'Site Supervisor') {
-    if (typeof _doOpenSuperDash === 'function') { _doOpenSuperDash(); return; }
-  }
+  // Land on the new app home / launcher (the front door above the divisions),
+  // for every role. Their WHS division opens from its tile.
+  if (typeof ahOpenHome === 'function') { ahOpenHome(); return; }
   goTo('screen-home');
   if (typeof updateStatusStrip === 'function') updateStatusStrip();
 }
@@ -18050,10 +18046,14 @@ function dirChipTapIncidents(){
   if(typeof goToIncidentList==='function'){ goToIncidentList(); }
 }
 function dirChipTapPlant(){
-  // shortcut → open the exact flagged machine if there's one, else the plant dashboard
+  // shortcut → open the exact flagged machine when there's a single one to action
+  // (prefer the out-of-service / critical one), else the plant dashboard
   var alerts=[]; try{ alerts=JSON.parse(localStorage.getItem('slan_plant_alerts')||'[]'); }catch(e){}
   var base='plant.html?role=director';
-  location.href = (alerts.length===1 && alerts[0] && alerts[0].code) ? (base+'&machine='+encodeURIComponent(alerts[0].code)) : base;
+  var critical=alerts.filter(function(a){ return a && a.critical && a.code; });
+  if(critical.length===1){ location.href=base+'&machine='+encodeURIComponent(critical[0].code); return; }
+  if(alerts.length===1 && alerts[0] && alerts[0].code){ location.href=base+'&machine='+encodeURIComponent(alerts[0].code); return; }
+  location.href=base;
 }
 function dirChipTapGate(){ location.href='plant.html?role=director'; } // gate stops = an oversight figure (no single record) → the plant dashboard's due-diligence callout
 function supChipTapPremob(){
@@ -38621,7 +38621,8 @@ function plantDemoSwitch(role){
     localStorage.setItem('slan_onboarded','true');
     localStorage.setItem('slan_site_ps_done_'+today,'true');
     try{ var eb=document.getElementById('demo-banner'); if(eb) eb.remove(); if(typeof showDemoBanner==='function') showDemoBanner(); }catch(e){}
-    if(role==='director'){ if(typeof goToAnalytics==='function') goToAnalytics('director'); else goTo('screen-dash'); }
+    if (typeof ahOpenHome === 'function') { ahOpenHome(); }
+    else if(role==='director'){ if(typeof goToAnalytics==='function') goToAnalytics('director'); else goTo('screen-dash'); }
     else if(role==='supervisor'){ goTo('screen-dash'); if(typeof loadSuperDash==='function') loadSuperDash(); }
     else { goTo('screen-home'); if(typeof initHome==='function') initHome(p); }
   }catch(e){}
