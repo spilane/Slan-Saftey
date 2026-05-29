@@ -2240,6 +2240,37 @@ function ahEnsureHomeBack(){
     row.insertBefore(b, row.firstChild);
   } catch(e) {}
 }
+
+/* Make the WHS division home read like the Plant & Equipment header: a bold
+   "WHS" title in place of the personal greeting, and drop the weather strip +
+   date/role badges (both already shown on the launcher one tap earlier). Keeps
+   the director's site filter. Scheduled as a microtask from goTo() so it runs
+   right after each home's entry fn sets the greeting (before paint = no flicker).
+   Reversible: remove this fn + its goTo call to restore the greeting style. */
+function ahStyleDivisionHome(){
+  try{
+    var scr = document.querySelector('.screen.active'); if(!scr) return;
+    var HOMES = {'screen-home':1,'screen-dash':1,'screen-analytics':1};
+    if(!HOMES[scr.id]) return;
+    // screen-analytics is also the supervisor's Analytics SUB-screen — only title it for the director's home
+    if(scr.id==='screen-analytics' && !(typeof anIsDirector!=='undefined' && anIsDirector)) return;
+    var tb = scr.querySelector('.topbar'); if(!tb) return;
+    var g = tb.querySelector('.tbar-greeting');
+    if(g){
+      var h1 = g.querySelector('h1');
+      if(h1){ h1.textContent='WHS'; h1.style.fontSize='20px'; h1.style.fontWeight='700'; h1.style.letterSpacing='-.02em'; }
+      var sub = g.querySelector('p'); if(sub) sub.style.display='none';
+    }
+    // weather off (redundant — it's on the launcher)
+    scr.querySelectorAll('[onclick*="loadWeather"]').forEach(function(w){ w.style.display='none'; });
+    // date/role badges off — but keep the director's site filter (it lives inside the badge-row)
+    if(scr.id==='screen-analytics'){
+      tb.querySelectorAll('.badge-row .badge').forEach(function(b){ b.style.display='none'; });
+    } else {
+      var br = tb.querySelector('.badge-row'); if(br) br.style.display='none';
+    }
+  }catch(e){}
+}
 </script>
 
 <div id="screen-home" class="screen">
@@ -21046,6 +21077,7 @@ function goTo(id){
   try { ensureInteriorAvatar(); } catch(e) {}
   try { paintHomeAvatars(); } catch(e) {}
   try { ahEnsureHomeBack(); } catch(e) {}
+  try { Promise.resolve().then(ahStyleDivisionHome); } catch(e) {}
   window.scrollTo(0,0);
   // Auto-refresh chip strip when landing on worker home or supervisor dash
   if (id === 'screen-home') {
