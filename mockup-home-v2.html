@@ -124,7 +124,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
   <div class="body">
 
     <!-- TODAY'S ACTIVITY first — pulled from every area, tidied -->
-    <div class="section-head" style="margin-top:2px"><span class="lbl">Today's activity</span><span class="link">View all ›</span></div>
+    <div class="section-head" style="margin-top:2px"><span class="lbl">Today's activity</span><span class="link" id="actviewall">View all ›</span></div>
     <div class="actcard"><div class="actstrip" id="actstrip"></div></div>
 
     <!-- DIVISION TILES — under the activity, all the same -->
@@ -186,17 +186,16 @@ document.getElementById('divgrid').innerHTML = DIVISIONS.map(function(v){
     +'<div class="t-name">'+v.nm+'</div><div class="t-sub">'+v.sub+'</div></div>';
 }).join('');
 
-/* Tidy: show what needs action (red) then to-do (amber); fold everything
-   finished into a single green "done" pill so the strip stays short. */
-var ord = {fail:0, warn:1};
-var actionable = ACTIVITY.filter(function(a){ return a.s==='fail' || a.s==='warn'; })
-                         .sort(function(a,b){ return ord[a.s]-ord[b.s]; });
-var doneN = ACTIVITY.filter(function(a){ return a.s==='done' || a.s==='neutral'; }).length;
-var html = actionable.map(function(a){
+/* Tidy: most urgent first (red, then amber), show only the top few on the
+   home and put the rest behind "View all (N)" so the strip stays short. */
+var ord = {fail:0, warn:1, neutral:2, done:3};
+var sorted = ACTIVITY.slice().sort(function(a,b){ return ord[a.s]-ord[b.s]; });
+var TOP = 4;
+document.getElementById('actstrip').innerHTML = sorted.slice(0, TOP).map(function(a){
   return '<div class="status-pill '+a.s+'"><span class="sp-dot"></span>'+a.t+'</div>';
 }).join('');
-if(doneN) html += '<div class="status-pill done"><span class="sp-dot"></span>✓ '+doneN+' done</div>';
-document.getElementById('actstrip').innerHTML = html;
+var _va = document.getElementById('actviewall');
+if(_va) _va.textContent = 'View all (' + ACTIVITY.length + ') ›';
 </script>
 </body>
 </html>
