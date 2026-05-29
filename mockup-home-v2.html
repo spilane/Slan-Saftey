@@ -10,10 +10,9 @@
 :root{
   --ink:#0E1A14; --deep:#1C382A; --deep-2:#0E2A1F; --mid:#2D6A45;
   --gold:#C8A02C; --gold-l:#D4AF37;
-  --bg:#F5F7F4; --card:#FFFFFF; --muted:#66756C; --muted-2:#94A099;
-  --line:rgba(16,40,30,.09); --line-soft:rgba(16,40,30,.06);
-  --ok:#1B7A3D; --okbg:#E8F4ED; --warn:#A06A00; --warnbg:#FBF1DC; --bad:#B23636; --badbg:#FBEBEB;
-  --r-lg:22px; --r:16px; --r-sm:12px; --pill:999px;
+  --bg:#F5F7F4; --card:#FFFFFF; --muted:#66756C; --muted-2:#94A099; --border:rgba(16,40,30,.12);
+  --line-soft:rgba(16,40,30,.06);
+  --r:16px; --r-sm:12px; --pill:999px;
   --sh-sm:0 1px 2px rgba(16,40,30,.05); --sh:0 14px 32px -16px rgba(16,40,30,.22);
   --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
 }
@@ -34,7 +33,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .hdr-actions{display:flex;align-items:center;gap:10px}
 .icon-btn{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
 .icon-btn svg{width:20px;height:20px;stroke:#fff;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.badge-dot{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--bad);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--deep)}
+.badge-dot{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#B23636;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--deep)}
 .avatar{width:42px;height:42px;border-radius:50%;background:rgba(200,160,44,.2);border:2px solid rgba(200,160,44,.5);display:flex;align-items:center;justify-content:center;color:var(--gold-l);font-weight:700;font-size:14px;cursor:pointer}
 .greet{margin-top:18px}
 .greet h1{font-size:24px;font-weight:700;color:#fff;letter-spacing:-.03em;line-height:1.1}
@@ -52,62 +51,40 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
 .body{padding:18px 18px calc(96px + var(--sb))}
 .section-head{display:flex;align-items:baseline;justify-content:space-between;margin:22px 4px 11px}
-.section-head:first-child{margin-top:2px}
 .section-head .lbl{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.13em;text-transform:uppercase}
 .section-head .link{font-size:12px;font-weight:600;color:var(--mid);cursor:pointer}
 
-/* attention pills (shortcuts to all areas) */
-.list{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);box-shadow:var(--sh-sm);overflow:hidden}
-.row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line-soft);cursor:pointer;border-left:4px solid transparent}
-.row:last-child{border-bottom:none}
-.row.red{border-left-color:var(--bad)} .row.amb{border-left-color:var(--warn)} .row.grn{border-left-color:var(--ok)}
-.rdot{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.rdot svg{width:17px;height:17px;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.rdot.red{background:var(--badbg)} .rdot.red svg{stroke:var(--bad)}
-.rdot.amb{background:var(--warnbg)} .rdot.amb svg{stroke:var(--warn)}
-.rdot.grn{background:var(--okbg)} .rdot.grn svg{stroke:var(--ok)}
-.rmain{flex:1;min-width:0}
-.rt{font-size:13px;font-weight:600;letter-spacing:-.01em}
-.rs{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tag{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:8px;background:#EEF2F0;color:#5c6b62;flex-shrink:0}
-.tag.plant{background:#E9F0FA;color:#2B5FA6} .tag.whs{background:var(--okbg);color:var(--ok)} .tag.enviro{background:#E2F3F1;color:#147A70} .tag.people{background:#EEEAF8;color:#5A45A6}
-.chev{stroke:var(--muted-2);width:16px;height:16px;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-
-/* division tiles */
+/* division tiles — all the same */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .tile{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);box-shadow:var(--sh-sm);padding:15px;cursor:pointer;transition:transform .14s ease;position:relative}
 .tile:active{transform:scale(.975)}
-.tile.feat{grid-column:span 2;background:linear-gradient(150deg,var(--deep),var(--deep-2));border-color:transparent;display:flex;align-items:center;gap:14px;box-shadow:var(--sh)}
-.tile.feat .ic{margin-bottom:0;background:rgba(200,160,44,.18)} .tile.feat .ic svg{stroke:var(--gold-l)}
-.tile.feat .t-name{color:#fff;font-size:15px} .tile.feat .t-sub{color:rgba(255,255,255,.62)}
-.tile.feat .feat-text{flex:1}
-.tile.feat .arrow{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tile.feat .arrow svg{width:16px;height:16px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .tile.soon{opacity:.62}
 .ic{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .ic svg{width:22px;height:22px;stroke-width:1.85;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.ic.green{background:var(--okbg)} .ic.green svg{stroke:var(--ok)}
+.ic.green{background:#E8F4ED} .ic.green svg{stroke:#1B7A3D}
 .ic.blue{background:#E9F0FA} .ic.blue svg{stroke:#2B5FA6}
 .ic.teal{background:#E2F3F1} .ic.teal svg{stroke:#147A70}
 .ic.purple{background:#EEEAF8} .ic.purple svg{stroke:#5A45A6}
 .ic.gold{background:#FAF3DD} .ic.gold svg{stroke:#9a7c1c}
 .t-name{font-size:14px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
 .t-sub{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
-.t-badge{position:absolute;top:13px;right:13px;min-width:20px;height:20px;padding:0 6px;border-radius:var(--pill);background:var(--bad);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.t-badge.amb{background:var(--warn)}
+.t-badge{position:absolute;top:13px;right:13px;min-width:20px;height:20px;padding:0 6px;border-radius:var(--pill);background:#B23636;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .t-soon{position:absolute;top:14px;right:13px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-2);background:#EEF2F0;border-radius:7px;padding:3px 7px}
 
-/* quick actions */
-.qa{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:9px}
-.qabtn{background:var(--card);border:1px solid var(--line-soft);border-radius:14px;box-shadow:var(--sh-sm);padding:13px 4px 11px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
-.qabtn .qic{width:38px;height:38px;border-radius:11px;background:var(--okbg);display:flex;align-items:center;justify-content:center}
-.qabtn .qic svg{width:19px;height:19px;stroke:var(--deep);stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.qabtn .ql{font-size:10.5px;font-weight:600;color:var(--ink);text-align:center;line-height:1.2}
+/* Today's activity — the real status pills from the app */
+.actcard{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);box-shadow:var(--sh-sm);padding:14px}
+.actstrip{display:flex;flex-wrap:wrap;gap:8px}
+.status-pill{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:500;color:var(--muted);cursor:pointer}
+.sp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:#7A807A}
+.status-pill.done{background:#B7E1C4;border-color:#1B6E3A;color:#0F4A27;font-weight:600} .status-pill.done .sp-dot{background:#0F4A27}
+.status-pill.warn{background:#F5C48A;border-color:#BA7517;color:#633806;font-weight:600} .status-pill.warn .sp-dot{background:#854F0B}
+.status-pill.fail{background:#FCEBEB;border-color:rgba(184,50,50,.35);color:#A32D2D;font-weight:600} .status-pill.fail .sp-dot{background:#A32D2D}
+.status-pill.neutral{background:#F0F1F0;border-color:#AAB0AB;color:#3A3F3B} .status-pill.neutral .sp-dot{background:#7A807A}
 
 .note{background:#FBF7EA;border:1px solid #E8D9A0;color:#5a4a1a;border-radius:12px;margin:18px 0 0;padding:11px 13px;font-size:11.5px;line-height:1.5}
 
 /* bottom nav */
-.nav{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;padding:8px 0 calc(8px + var(--sb))}
+.nav{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + var(--sb))}
 .ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--muted-2);cursor:pointer}
 .ni svg{width:23px;height:23px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke:currentColor}
 .ni.on{color:var(--deep)}
@@ -146,14 +123,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
   <div class="body">
 
-    <!-- DIVISION TILES — directly under the header (WHS green box first) -->
+    <!-- DIVISION TILES — directly under the header, all the same -->
     <div class="grid" id="divgrid"></div>
 
-    <!-- NEEDS ATTENTION — shortcut pills across every area, below the tiles -->
-    <div class="section-head" style="margin-top:20px"><span class="lbl">Needs your attention</span><span class="link">View all ›</span></div>
-    <div class="list" id="attlist"></div>
+    <!-- TODAY'S ACTIVITY — the real status pills, from every area -->
+    <div class="section-head"><span class="lbl">Today's activity</span><span class="link">View all ›</span></div>
+    <div class="actcard"><div class="actstrip" id="actstrip"></div></div>
 
-    <div class="note"><b>Concept — not clickable.</b> The home for whoever is logged in (role is chosen at sign-in). The areas sit right under the header — tap a tile to open that division's own home. Below them, today's items from <b>every</b> area surface as shortcut pills — tap one and you go straight to that exact record.</div>
+    <div class="note"><b>Concept — not clickable.</b> The home for whoever is logged in (role chosen at sign-in). The areas sit under the header. Below them, the <b>Today's activity</b> pills are pulled from <b>every</b> area into one strip — green = done, amber = to&nbsp;do, red = needs action — tap one to jump straight to it.</div>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -168,54 +145,48 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
 <script>
 var ICON = {
-  alert:'<path d="M10.3 4 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
   truck:'<path d="M3 17h2l1-5h11l3 4h1"/><circle cx="7.5" cy="18" r="1.7"/><circle cx="17.5" cy="18" r="1.7"/><path d="M6 12V7h7l3 5"/>',
-  flask:'<path d="M9 3h6"/><path d="M10 3v6l-5 9a1.6 1.6 0 0 0 1.4 2.5h11.2A1.6 1.6 0 0 0 19 18l-5-9V3"/>',
-  file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9.5 14l2 2 3.5-4"/>',
-  check:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
-  leaf:'<path d="M11 20A7 7 0 0 1 4 13c0-6 7-9 16-9 0 9-3 16-9 16z"/><path d="M11 20c0-4 1.5-7 5-9"/>',
   shield:'<path d="M12 3l8 4v5c0 4.5-3 7.6-8 9-5-1.4-8-4.5-8-9V7z"/><path d="M9 12l2 2 4-4"/>',
-  users:'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M17.5 20a5.5 5.5 0 0 0-3-4.9"/>',
-  clipboard:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 11h6"/><path d="M9 15h4"/>',
-  plus:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v5"/><path d="M9.5 14.5h5"/>'
+  leaf:'<path d="M11 20A7 7 0 0 1 4 13c0-6 7-9 16-9 0 9-3 16-9 16z"/><path d="M11 20c0-4 1.5-7 5-9"/>',
+  check:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
+  users:'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M17.5 20a5.5 5.5 0 0 0-3-4.9"/>'
 };
 function svg(k){ return '<svg viewBox="0 0 24 24">'+(ICON[k]||'')+'</svg>'; }
 
-/* The logged-in role (set at sign-in) decides what shows. Example: supervisor. */
-var ATT = [
-  {c:'red',ic:'truck',t:'MAG-009 — out of service',s:'Critical fault flagged · open the machine',tag:'plant',tagn:'Plant'},
-  {c:'red',ic:'alert',t:'Incident INC-2451 — open',s:'Actual injury · awaiting your review',tag:'whs',tagn:'WHS'},
-  {c:'amb',ic:'file',t:'2 permits to approve',s:'Hot Works · Working at Heights',tag:'whs',tagn:'WHS'},
-  {c:'amb',ic:'clipboard',t:'EWP-019 — pre-mob to clear',s:'Hired in · assign a ticketed operator',tag:'plant',tagn:'Plant'},
-  {c:'amb',ic:'flask',t:'SDS expired — Solvent Cleaner (MEK)',s:'Renew before use on site',tag:'whs',tagn:'WHS'},
-  {c:'grn',ic:'check',t:'10 of 10 pre-starts done',s:'All Bondi plant checked today',tag:'plant',tagn:'Plant'}
-];
+/* Areas — WHS is a normal tile like the rest now */
 var DIVISIONS = [
-  {feat:true, ic:'shield', cls:'gold', nm:'WHS', sub:'Incidents · permits · SDS · toolbox · hazards', badge:'3'},
+  {ic:'shield', cls:'green', nm:'WHS', sub:'Incidents · permits · SDS · toolbox · hazards', badge:'3'},
   {ic:'truck', cls:'blue', nm:'Plant & Equipment', sub:'Machines, pre-starts, hired plant, work orders', badge:'2'},
   {ic:'leaf', cls:'teal', nm:'Environmental', sub:'Waste, spills, dust & water monitoring', soon:true},
   {ic:'check', cls:'gold', nm:'Quality', sub:'ITPs, inspections, non-conformances', soon:true},
   {ic:'users', cls:'purple', nm:'People & Admin', sub:'Inductions, training matrix, documents', soon:true}
 ];
-document.getElementById('attlist').innerHTML = ATT.map(function(a){
-  return '<div class="row '+a.c+'"><div class="rdot '+a.c+'">'+svg(a.ic)+'</div>'
-    +'<div class="rmain"><div class="rt">'+a.t+'</div><div class="rs">'+a.s+'</div></div>'
-    +'<span class="tag '+a.tag+'">'+a.tagn+'</span>'
-    +'<svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>';
-}).join('');
+
+/* Today's activity — the real pills from the app's activity strip, pulled across areas */
+var ACTIVITY = [
+  {t:'Signed in', s:'done'},
+  {t:'Pre-starts 10/10', s:'done'},
+  {t:'SWMS', s:'done'},
+  {t:"Toolbox talk", s:'warn'},
+  {t:'Permits · 2 to approve', s:'warn'},
+  {t:'Hazards', s:'neutral'},
+  {t:'SDS expired', s:'fail'},
+  {t:'Incident open', s:'fail'},
+  {t:'Plant out of service', s:'fail'},
+  {t:'Pre-mob to clear', s:'warn'},
+  {t:'Hire return due', s:'warn'}
+];
 
 document.getElementById('divgrid').innerHTML = DIVISIONS.map(function(v){
-  if(v.feat){
-    return '<div class="tile feat"><div class="ic '+v.cls+'">'+svg(v.ic)+'</div>'
-      +'<div class="feat-text"><div class="t-name">'+v.nm+'</div><div class="t-sub">'+v.sub+'</div></div>'
-      +'<div class="arrow"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div></div>';
-  }
   var corner = v.soon ? '<span class="t-soon">Soon</span>' : (v.badge ? '<span class="t-badge">'+v.badge+'</span>' : '');
   return '<div class="tile'+(v.soon?' soon':'')+'">'+corner
     +'<div class="ic '+v.cls+'">'+svg(v.ic)+'</div>'
     +'<div class="t-name">'+v.nm+'</div><div class="t-sub">'+v.sub+'</div></div>';
 }).join('');
 
+document.getElementById('actstrip').innerHTML = ACTIVITY.map(function(a){
+  return '<div class="status-pill '+a.s+'"><span class="sp-dot"></span>'+a.t+'</div>';
+}).join('');
 </script>
 </body>
 </html>
