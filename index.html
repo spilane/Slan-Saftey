@@ -38594,11 +38594,13 @@ function startDemoAs(role) {
   if (existingBanner) existingBanner.remove();
   showDemoBanner();
 
-  // DEMO MODE: walk through onboarding pre-filled
-  localStorage.removeItem('slan_onboarded');
+  // Switching role lands STRAIGHT on the new app home (the launcher) with the
+  // demo profile already complete — no need to re-walk the onboarding screens
+  // each switch. (The "New worker — see induction" entry still demos onboarding.)
+  localStorage.setItem('slan_onboarded', 'true');
   window._demoTargetRole = role;
-  goTo('screen-profile');
-  demoPrefillAll(p, role);
+  if (typeof ahOpenHome === 'function') { ahOpenHome(); }
+  else { localStorage.removeItem('slan_onboarded'); goTo('screen-profile'); demoPrefillAll(p, role); }
 }
 
 function startDemo() {
