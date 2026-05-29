@@ -2217,6 +2217,29 @@ function ahOpenPlant(){
   location.href = 'plant.html';
 }
 function ahSoon(name){ try { if (typeof slanAlert === 'function') slanAlert((name || 'This area') + ' is coming soon.'); } catch(e) {} }
+/* Adds a "back to launcher" arrow to the CURRENT role's division home header
+   (worker->screen-home, supervisor->screen-dash, director->screen-analytics).
+   Idempotent; runs from goTo() after paintHomeAvatars(), mirroring the
+   ensureInteriorAvatar() pattern so the homes pick up a standard back-btn. */
+function ahEnsureHomeBack(){
+  try {
+    var role = ahRole();
+    var homeId = role === 'supervisor' ? 'screen-dash' : role === 'director' ? 'screen-analytics' : 'screen-home';
+    // Clear any stale launcher-back arrow first (e.g. left on screen-analytics
+    // after a demo role-flip) so there is exactly one, on the right home only.
+    document.querySelectorAll('.ah-homeback').forEach(function(x){ x.remove(); });
+    var scr = document.querySelector('.screen.active');
+    if (!scr || scr.id !== homeId) return;
+    var row = scr.querySelector('.topbar .topbar-row');
+    if (!row || row.querySelector('.back-btn')) return;
+    var b = document.createElement('button');
+    b.className = 'back-btn ah-homeback';
+    b.setAttribute('onclick', 'ahOpenHome()');
+    b.setAttribute('title', 'All areas');
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    row.insertBefore(b, row.firstChild);
+  } catch(e) {}
+}
 </script>
 
 <div id="screen-home" class="screen">
@@ -14009,10 +14032,6 @@ function checkOnboarding() {
   const onboarded = localStorage.getItem('slan_onboarded');
   const p = getProfile();
 
-  // TEMP preview hook: open the new app home/launcher with ?home=app
-  // (lets the new home be previewed live before it becomes the default entry).
-  try { if (p && /[?&]home=app(?:&|$)/.test(location.search)) { ahOpenHome(); return; } } catch(e) {}
-
   // Copy logo to onboarding screen
   const sl  = document.querySelector('#screen-profile .setup-hero img');
   const obl = document.getElementById('ob-logo');
@@ -14023,12 +14042,12 @@ function checkOnboarding() {
     DEMO_MODE = true;
     if (!p) { goTo('screen-onboarding'); return; }
     if (p.role === 'Company Director') {
-      goToAnalytics('director');  // PIN-gated within
+      requirePin(() => ahOpenHome());  // PIN, then the new app home
     } else if (p.role === 'Site Supervisor') {
-      requirePin(() => _doOpenSuperDash());  // PIN required even in demo
+      requirePin(() => ahOpenHome());  // PIN required even in demo, then the app home
     } else {
-      goTo('screen-home');
-      initHome(p);
+      ahOpenHome();
+      try { initHome(p); } catch(e) {}
     }
     return;
   }
@@ -14040,16 +14059,16 @@ function checkOnboarding() {
     initSig();
     checkLocationPermissionStatus();
   } else if (p.role === 'Site Supervisor') {
-    // Supervisor — PIN fires immediately, then go to supervisor home
-    requirePin(() => { _doOpenSuperDash(); });
+    // Supervisor — PIN fires immediately, then the new app home
+    requirePin(() => { ahOpenHome(); });
   } else if (p.role === 'Company Director') {
-    // Director — go straight to analytics
-    goToAnalytics('director');
+    // Director — PIN, then the new app home
+    requirePin(() => { ahOpenHome(); });
   } else {
-    // Worker — go to home screen
-    goTo('screen-home');
-    initHome(p);
-    checkTalkNotif();
+    // Worker — open the new app home
+    ahOpenHome();
+    try { initHome(p); } catch(e) {}
+    try { checkTalkNotif(); } catch(e) {}
   }
 }
 
@@ -21021,6 +21040,7 @@ function goTo(id){
   // director screens, then paint everyone's initials (consistent across portals)
   try { ensureInteriorAvatar(); } catch(e) {}
   try { paintHomeAvatars(); } catch(e) {}
+  try { ahEnsureHomeBack(); } catch(e) {}
   window.scrollTo(0,0);
   // Auto-refresh chip strip when landing on worker home or supervisor dash
   if (id === 'screen-home') {
