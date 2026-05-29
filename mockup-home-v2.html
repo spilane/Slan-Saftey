@@ -87,6 +87,30 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
 .note{background:#FBF7EA;border:1px solid #E8D9A0;color:#5a4a1a;border-radius:12px;margin:18px 0 0;padding:11px 13px;font-size:11.5px;line-height:1.5}
 
+/* "View all" expanded sheet */
+.sheet{position:absolute;inset:0;background:var(--bg);z-index:70;display:none;flex-direction:column}
+.sheet.on{display:flex}
+.sheet-hd{background:linear-gradient(165deg,var(--deep),var(--deep-2));padding:calc(var(--st) + 14px) 18px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.sheet-hd .bk{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.1);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.sheet-hd .bk svg{width:18px;height:18px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.sheet-hd h2{font-size:17px;font-weight:700;color:#fff}
+.sheet-hd p{font-size:11.5px;color:rgba(255,255,255,.6);margin-top:2px}
+.sheet-body{flex:1;overflow-y:auto;padding:16px 18px 30px}
+.grp-lbl{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:18px 4px 9px}
+.grp-lbl:first-child{margin-top:0}
+.alist{background:#fff;border:1px solid var(--line-soft);border-radius:14px;box-shadow:var(--sh-sm);overflow:hidden}
+.arow{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line-soft);border-left:4px solid transparent;cursor:pointer}
+.arow:last-child{border-bottom:none}
+.arow.fail{border-left-color:#A32D2D} .arow.warn{border-left-color:#BA7517} .arow.done{border-left-color:#1B6E3A}
+.adot{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:700}
+.adot.fail{background:#FCEBEB;color:#A32D2D} .adot.warn{background:#FBF1DC;color:#854F0B} .adot.done{background:#E8F4ED;color:#1B6E3A}
+.amain{flex:1;min-width:0}
+.at{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.as{font-size:11.5px;color:var(--muted);margin-top:2px}
+.tag{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:8px;background:#EEF2F0;color:#5c6b62;flex-shrink:0}
+.tag.plant{background:#E9F0FA;color:#2B5FA6} .tag.whs{background:#E8F4ED;color:#1B7A3D}
+.chev{stroke:var(--muted-2);width:16px;height:16px;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
 /* bottom nav */
 .nav{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + var(--sb))}
 .ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--muted-2);cursor:pointer}
@@ -129,7 +153,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
     <!-- TODAY'S ACTIVITY first — flat full-width strip, single scrollable row -->
     <div class="actwrap">
-      <div class="actwrap-top"><span class="lbl">Today's activity</span><span class="link" id="actviewall">View all ›</span></div>
+      <div class="actwrap-top"><span class="lbl">Today's activity</span><span class="link" id="actviewall" onclick="openAct()">View all ›</span></div>
       <div class="actstrip" id="actstrip"></div>
     </div>
 
@@ -137,6 +161,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
     <div class="grid" id="divgrid" style="margin-top:18px"></div>
 
     <div class="note"><b>Concept — not clickable.</b> The home for whoever is logged in (role chosen at sign-in). <b>Today's activity</b> pulls items from <b>every</b> area into one strip. To keep it tidy when there are lots, it shows what <b>needs action first (red), then to-do (amber)</b>, and folds everything finished into one green <b>"✓ done"</b> pill — tap it (or "View all") to expand. Tap any pill to jump straight to it.</div>
+  </div>
+
+  <!-- "VIEW ALL" EXPANDED SHEET -->
+  <div class="sheet" id="act-sheet">
+    <div class="sheet-hd">
+      <button class="bk" onclick="closeAct()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div><h2>Today's activity</h2><p>Bondi Junction · Sat 30 May</p></div>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -170,18 +203,19 @@ var DIVISIONS = [
   {ic:'box', cls:'blue', nm:'Procurement & Deliveries', sub:'Materials, delivery dockets, ordering', soon:true}
 ];
 
-/* Today's activity — the real pills from the app's strip, pulled across areas */
+/* Today's activity — the real pills from the app's strip, pulled across areas.
+   sub/tag are used in the "View all" expanded list. */
 var ACTIVITY = [
-  {t:'Sign In', s:'warn'},
-  {t:'SWMS', s:'warn'},
-  {t:'Toolbox Talk', s:'warn'},
-  {t:'Incidents (closed)', s:'done'},
-  {t:'3 plant flagged', s:'fail'},
-  {t:'Pre-Start', s:'warn'},
-  {t:'2 permits to approve', s:'warn'},
-  {t:'SDS expired', s:'fail'},
-  {t:'Pre-mob to clear', s:'warn'},
-  {t:'Hire return due', s:'warn'}
+  {t:'Sign In', s:'warn', sub:'Confirm your fit-for-work declaration', tag:'whs', tagn:'WHS'},
+  {t:'SWMS', s:'warn', sub:'Crane lift SWMS · sign before work', tag:'whs', tagn:'WHS'},
+  {t:'Toolbox Talk', s:'warn', sub:"Today's talk · 2 min", tag:'whs', tagn:'WHS'},
+  {t:'Incidents (closed)', s:'done', sub:'All incidents up to date', tag:'whs', tagn:'WHS'},
+  {t:'3 plant flagged', s:'fail', sub:'Flagged on pre-start · open work orders', tag:'plant', tagn:'Plant'},
+  {t:'Pre-Start', s:'warn', sub:'Site pre-start to complete', tag:'whs', tagn:'WHS'},
+  {t:'2 permits to approve', s:'warn', sub:'Hot Works · Working at Heights', tag:'whs', tagn:'WHS'},
+  {t:'SDS expired', s:'fail', sub:'Solvent Cleaner (MEK) · renew before use', tag:'whs', tagn:'WHS'},
+  {t:'Pre-mob to clear', s:'warn', sub:'EWP-019 · assign a ticketed operator', tag:'plant', tagn:'Plant'},
+  {t:'Hire return due', s:'warn', sub:'GEN-005 · arrange off-hire', tag:'plant', tagn:'Plant'}
 ];
 
 document.getElementById('divgrid').innerHTML = DIVISIONS.map(function(v){
@@ -198,6 +232,21 @@ document.getElementById('actstrip').innerHTML = ACTIVITY.map(function(a){
 }).join('');
 var _va = document.getElementById('actviewall');
 if(_va) _va.textContent = 'View all (' + ACTIVITY.length + ') ›';
+
+/* "View all" expanded list — grouped by status, action-first, with detail */
+var GROUPS = [ {k:'fail', lbl:'Needs action', ic:'!'}, {k:'warn', lbl:'To do', ic:'•'}, {k:'done', lbl:'Done', ic:'✓'} ];
+document.getElementById('sheet-body').innerHTML = GROUPS.map(function(g){
+  var items = ACTIVITY.filter(function(a){ return a.s===g.k; });
+  if(!items.length) return '';
+  return '<div class="grp-lbl">'+g.lbl+' ('+items.length+')</div><div class="alist">' + items.map(function(a){
+    return '<div class="arow '+a.s+'"><div class="adot '+a.s+'">'+g.ic+'</div>'
+      +'<div class="amain"><div class="at">'+a.t+'</div><div class="as">'+(a.sub||'')+'</div></div>'
+      +'<span class="tag '+a.tag+'">'+a.tagn+'</span>'
+      +'<svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>';
+  }).join('') + '</div>';
+}).join('');
+function openAct(){ document.getElementById('act-sheet').classList.add('on'); }
+function closeAct(){ document.getElementById('act-sheet').classList.remove('on'); }
 </script>
 </body>
 </html>
