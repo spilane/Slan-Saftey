@@ -13915,7 +13915,7 @@ function _hdrLogo() {
   img.style.cssText = 'height:60px;object-fit:contain;display:block'; w.appendChild(img); return w;
 }
 function _hdrGreeting(title) {
-  var fg = document.createElement('div'); fg.className = 'form-greeting';
+  var fg = document.createElement('div'); fg.className = 'form-greeting'; fg.style.paddingLeft = '0';
   var h1 = document.createElement('h1'); h1.style.color = '#fff'; h1.textContent = title;
   fg.appendChild(h1); return fg;
 }
@@ -13924,10 +13924,12 @@ function _hdrGreeting(title) {
 function _recolorFg(fg) {
   var simple = Array.prototype.every.call(fg.children, function(c){ return c.tagName === 'H1' || c.tagName === 'P'; });
   if (simple) {
-    // white text + drop any inline size/weight so the .form-greeting CSS
-    // (h1 20px/700, p 12.5px) applies — matches every other interior header.
+    // Left edge flush with the back button (the .form-greeting CSS adds an
+    // extra 18px indent we don't want), white title, and hide the subtitle —
+    // matches the agreed mockup: back arrow + title in line, no extra text.
+    fg.style.paddingLeft = '0';
     fg.querySelectorAll('h1').forEach(function(h){ h.style.color = '#fff'; h.style.fontSize = ''; h.style.fontWeight = ''; });
-    fg.querySelectorAll('p').forEach(function(pp){ pp.style.color = 'rgba(255,255,255,.8)'; pp.style.fontSize = ''; });
+    fg.querySelectorAll('p').forEach(function(pp){ pp.style.display = 'none'; });
   }
   return simple;
 }
