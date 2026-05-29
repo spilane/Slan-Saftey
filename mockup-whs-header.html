@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Slán · WHS header — before / after</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#1C382A; --mid:#2D6A45; --gold:#C8A02C; --gold-l:#D4AF37;
+  --bg:#F2F3F2; --card:#fff; --text:#0F1F17; --muted:#5C6B62; --border:rgba(27,58,45,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--text);-webkit-font-smoothing:antialiased;padding:22px 14px 40px}
+.preview{max-width:920px;margin:0 auto 18px;text-align:center}
+.preview h2{font-size:17px;font-weight:800;color:var(--deep)}
+.preview p{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.55}
+.row{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;max-width:920px;margin:0 auto}
+.col{flex:0 0 380px;max-width:380px}
+.tag{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:10px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.tag.before{color:#A32D2D}
+.tag.after{color:#1B6E3A}
+.tag .dot{width:9px;height:9px;border-radius:50%}
+.tag.before .dot{background:#A32D2D}
+.tag.after .dot{background:#1B6E3A}
+
+.phone{background:var(--bg);border-radius:26px;overflow:hidden;box-shadow:0 26px 50px -22px rgba(16,40,30,.45);border:1px solid rgba(16,40,30,.08)}
+
+/* ── header (matches the real app's green topbar) ── */
+.hdr{background:var(--deep);padding:14px 16px 16px}
+.hrow{display:flex;align-items:center;justify-content:space-between}
+.back{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.back svg{width:17px;height:17px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.logo{text-align:center;line-height:1}
+.logo .mk{font-family:'DM Mono',monospace;font-size:21px;font-weight:500;color:var(--gold);letter-spacing:.01em}
+.logo .nm{display:block;font-size:8px;letter-spacing:.32em;color:rgba(200,160,44,.85);margin-top:2px}
+.logo .co{display:block;font-size:6px;letter-spacing:.22em;color:rgba(200,160,44,.55);margin-top:2px}
+.hr-right{display:flex;align-items:center;gap:9px}
+.bell{position:relative;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center}
+.bell svg{width:17px;height:17px;stroke:#fff;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.bell .b{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#B23636;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--deep)}
+.av{width:36px;height:36px;border-radius:50%;background:rgba(200,160,44,.2);border:2px solid rgba(200,160,44,.55);display:flex;align-items:center;justify-content:center;color:var(--gold-l);font-weight:700;font-size:13px}
+
+/* OLD greeting style */
+.greet{margin-top:13px}
+.greet h1{font-size:21px;font-weight:600;color:#fff;letter-spacing:-.02em}
+.greet p{font-size:12.5px;color:rgba(255,255,255,.55);margin-top:3px}
+.badges{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 11px;font-size:11px;color:rgba(255,255,255,.8)}
+.badge .bd{width:6px;height:6px;border-radius:50%;background:#5CDB95}
+.badge.role{background:rgba(200,160,44,.16);border-color:rgba(200,160,44,.32);color:var(--gold-l);font-weight:700}
+.wx{margin-top:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between}
+.wx .l{display:flex;align-items:center;gap:10px}
+.wx .ic{font-size:20px}
+.wx .t{font-size:14px;font-weight:600;color:#fff}
+.wx .s{font-size:10px;color:rgba(255,255,255,.5)}
+
+/* NEW titled style (matches Plant & Equipment) */
+.title{margin-top:13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.title h1{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.filter{background:rgba(255,255,255,.12);border:1px solid rgba(200,160,44,.45);border-radius:8px;color:#fff;font-size:11px;padding:5px 11px;font-weight:600}
+
+/* ── body (same under both) ── */
+.body{padding:14px}
+.metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px 8px;text-align:center}
+.metric .n{font-size:20px;font-weight:700}
+.metric .n.g{color:#1B6E3A}.metric .n.a{color:#B8860B}.metric .n.d{color:var(--text)}
+.metric .k{font-size:10px;color:var(--muted);margin-top:2px}
+.online{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:14px -14px 0;padding:9px 14px}
+.online .l{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--text)}
+.online .l .d{width:7px;height:7px;border-radius:50%;background:#1B6E3A}
+.online .r{font-size:11px;color:var(--muted)}
+.act{padding:13px 0 2px}
+.act-l{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:9px}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:5px 12px;font-size:11.5px;font-weight:600}
+.pill .pd{width:6px;height:6px;border-radius:50%}
+.pill.fail{background:#FCEBEB;border:1px solid rgba(184,50,50,.3);color:#A32D2D}.pill.fail .pd{background:#A32D2D}
+.pill.warn{background:#F5C48A;border:1px solid #BA7517;color:#633806}.pill.warn .pd{background:#854F0B}
+.cap{max-width:920px;margin:22px auto 0;background:#FBF7EA;border:1px solid #E8D9A0;color:#5a4a1a;border-radius:12px;padding:13px 15px;font-size:12.5px;line-height:1.6}
+</style>
+</head>
+<body>
+  <div class="preview">
+    <h2>WHS home — before / after</h2>
+    <p>Same screen, same data. The only change is the header block: the personal greeting + weather are replaced by a clean <b>“WHS”</b> title, so it now reads like the Plant&nbsp;&amp; Equipment header.</p>
+  </div>
+
+  <div class="row">
+
+    <!-- BEFORE -->
+    <div class="col">
+      <div class="tag before"><span class="dot"></span>Before</div>
+      <div class="phone">
+        <div class="hdr">
+          <div class="hrow">
+            <div class="back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="logo"><span class="mk">Slán</span><span class="nm">SAFETY</span><span class="co">WHS COMPLIANCE</span></div>
+            <div class="hr-right"><div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="b">5</span></div><div class="av">PM</div></div>
+          </div>
+          <div class="greet"><h1>Good morning, Patrick</h1><p>Murphy Civil Construction</p></div>
+          <div class="badges"><span class="badge"><span class="bd"></span>Sat, 30 May</span><span class="badge role">Director</span></div>
+          <div class="wx"><div class="l"><div class="ic">⛅</div><div><div class="t">19°C</div><div class="s">Partly cloudy · Bondi Junction</div></div></div></div>
+        </div>
+        <div class="body">
+          <div class="metrics">
+            <div class="metric"><div class="n d">20</div><div class="k">Signed in</div></div>
+            <div class="metric"><div class="n d">8</div><div class="k">Pre-starts</div></div>
+            <div class="metric"><div class="n a">2</div><div class="k">Open hazards</div></div>
+          </div>
+          <div class="online"><div class="l"><span class="d"></span>Online</div><div class="r">Updated just now</div></div>
+          <div class="act"><div class="act-l">Today's activity</div><div class="pills"><span class="pill fail"><span class="pd"></span>1 machine out of service</span><span class="pill warn"><span class="pd"></span>3 stopped at the gate</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="col">
+      <div class="tag after"><span class="dot"></span>After (new)</div>
+      <div class="phone">
+        <div class="hdr">
+          <div class="hrow">
+            <div class="back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+            <div class="logo"><span class="mk">Slán</span><span class="nm">SAFETY</span><span class="co">WHS COMPLIANCE</span></div>
+            <div class="hr-right"><div class="bell"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="b">5</span></div><div class="av">PM</div></div>
+          </div>
+          <div class="title"><h1>WHS</h1><span class="filter">All sites ⌄</span></div>
+        </div>
+        <div class="body">
+          <div class="metrics">
+            <div class="metric"><div class="n d">20</div><div class="k">Signed in</div></div>
+            <div class="metric"><div class="n d">8</div><div class="k">Pre-starts</div></div>
+            <div class="metric"><div class="n a">2</div><div class="k">Open hazards</div></div>
+          </div>
+          <div class="online"><div class="l"><span class="d"></span>Online</div><div class="r">Updated just now</div></div>
+          <div class="act"><div class="act-l">Today's activity</div><div class="pills"><span class="pill fail"><span class="pd"></span>1 machine out of service</span><span class="pill warn"><span class="pd"></span>3 stopped at the gate</span></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cap"><b>Why the change:</b> the new launcher (the home above WHS / Plant) already greets you by name and shows the weather one tap earlier — so repeating it inside WHS was doubling up. Dropping it and using a bold <b>“WHS”</b> title makes the screen read as “you’re now inside WHS”, and makes WHS and <b>Plant&nbsp;&amp; Equipment</b> look like the same product. Everything below the header (metrics, today’s activity, tiles) is unchanged.</div>
+</body>
+</html>
