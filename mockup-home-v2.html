@@ -153,10 +153,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
     <!-- DIVISION TILES — straight under the pills, no extra heading -->
     <div class="grid" id="divgrid" style="margin-top:14px"></div>
 
-    <!-- QUICK ACTIONS -->
-    <div class="section-head"><span class="lbl">Quick actions</span></div>
-    <div class="qa" id="qa"></div>
-
     <div class="note"><b>Concept — not clickable.</b> The home for whoever is logged in (role is chosen at sign-in). Today's items from <b>every</b> area surface as shortcut pills — tap one and you go straight to that exact record. The area tiles sit right under them; tap a tile to open that division's own home.</div>
   </div>
 
@@ -201,8 +197,6 @@ var DIVISIONS = [
   {ic:'check', cls:'gold', nm:'Quality', sub:'ITPs, inspections, non-conformances', soon:true},
   {ic:'users', cls:'purple', nm:'People & Admin', sub:'Inductions, training matrix, documents', soon:true}
 ];
-var QA = [{ic:'alert',l:'Report hazard'},{ic:'plus',l:'New permit'},{ic:'clipboard',l:'Toolbox talk'},{ic:'users',l:'Sign-in board'}];
-
 document.getElementById('attlist').innerHTML = ATT.map(function(a){
   return '<div class="row '+a.c+'"><div class="rdot '+a.c+'">'+svg(a.ic)+'</div>'
     +'<div class="rmain"><div class="rt">'+a.t+'</div><div class="rs">'+a.s+'</div></div>'
@@ -222,9 +216,6 @@ document.getElementById('divgrid').innerHTML = DIVISIONS.map(function(v){
     +'<div class="t-name">'+v.nm+'</div><div class="t-sub">'+v.sub+'</div></div>';
 }).join('');
 
-document.getElementById('qa').innerHTML = QA.map(function(q){
-  return '<div class="qabtn"><div class="qic">'+svg(q.ic)+'</div><div class="ql">'+q.l+'</div></div>';
-}).join('');
 </script>
 </body>
 </html>
