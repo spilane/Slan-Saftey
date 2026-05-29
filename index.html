@@ -818,6 +818,9 @@ input[type="time"] {
 .form-greeting p{font-size:12.5px;color:var(--muted);margin:4px 0 0 0}
 .badge-row{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
 .badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:20px;padding:4px 10px;font-size:11px;color:rgba(255,255,255,.8);font-weight:500}
+.moved-from-header{padding:12px 16px 0;display:flex;gap:7px;flex-wrap:wrap}
+.moved-from-header .badge{background:#fff;color:var(--muted);border-color:var(--border)}
+.moved-from-header .badge.active-month,.moved-from-header .badge.active-filter{background:var(--gold);color:var(--deep);border-color:var(--gold)}
 .bdot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
 /* white header metric cards (supervisor + director home) — dark/amber/green numbers on white */
 #an-live-signin,#an-live-prestart,#an-live-incidents,#d-m-signin,#d-m-talk,#d-m-ps{color:#1B3A2D!important}
@@ -13917,6 +13920,7 @@ function _hdrLogo() {
 function _hdrGreeting(title) {
   var fg = document.createElement('div'); fg.className = 'form-greeting'; fg.style.paddingLeft = '0';
   var h1 = document.createElement('h1'); h1.style.color = '#fff'; h1.textContent = title;
+  h1.style.whiteSpace = 'nowrap'; h1.style.overflow = 'hidden'; h1.style.textOverflow = 'ellipsis';
   fg.appendChild(h1); return fg;
 }
 // White-out a plain title+subtitle block so it reads on the green bar. Returns
@@ -13928,7 +13932,7 @@ function _recolorFg(fg) {
     // extra 18px indent we don't want), white title, and hide the subtitle —
     // matches the agreed mockup: back arrow + title in line, no extra text.
     fg.style.paddingLeft = '0';
-    fg.querySelectorAll('h1').forEach(function(h){ h.style.color = '#fff'; h.style.fontSize = ''; h.style.fontWeight = ''; });
+    fg.querySelectorAll('h1').forEach(function(h){ h.style.color = '#fff'; h.style.fontSize = ''; h.style.fontWeight = ''; h.style.whiteSpace = 'nowrap'; h.style.overflow = 'hidden'; h.style.textOverflow = 'ellipsis'; });
     fg.querySelectorAll('p').forEach(function(pp){ pp.style.display = 'none'; });
   }
   return simple;
@@ -13988,14 +13992,27 @@ function ensureInteriorAvatar() {
     // ---- already ".topbar": ensure row = [back/spacer · logo · avatar] ----
     var row = hdr.querySelector('.topbar-row');
     if (!row) return;
+    row.style.paddingBottom = '0';             // some rows shipped a 12px bottom pad → taller header
     // Bring every already-built .topbar into line with the director header:
     // a 60px logo and a 14px green-bar bottom padding. A few screens shipped a
     // 28px logo (Toolbox, sign-in confirm) or 0 padding (Toolbox/History/Stars).
     if (hdr.style.paddingBottom && hdr.style.paddingBottom !== '14px') hdr.style.paddingBottom = '14px';
+    var _exLogoWrap = row.querySelector(':scope > .tbar-logo');
+    if (_exLogoWrap) _exLogoWrap.style.padding = '2px 0';   // consistent wrapper pad → identical row height
     var _exLogo = row.querySelector(':scope > .tbar-logo img');
     if (_exLogo && _exLogo.style.height !== '60px') {
       _exLogo.style.height = '60px'; _exLogo.style.objectFit = 'contain'; _exLogo.style.display = 'block';
     }
+    // Uniform height: give the few title-less screens a title, and move any
+    // extra control block (scorecard month selector / corrective-actions
+    // filter) out of the green bar down into the body.
+    var TITLE_MAP = {'screen-hazard':'Report a Hazard','screen-incident':'Incident Report','screen-prestart':'Daily Pre-Start','screen-psychosocial':'Wellbeing Check','screen-history':'My Activity','screen-confirm':'Signed In'};
+    if (!hdr.querySelector(':scope > .form-greeting') && TITLE_MAP[scr.id]) hdr.appendChild(_hdrGreeting(TITLE_MAP[scr.id]));
+    Array.prototype.slice.call(hdr.children).forEach(function(c){
+      if (c.classList.contains('topbar-row') || c.classList.contains('form-greeting')) return;
+      c.classList.add('moved-from-header');
+      hdr.parentNode.insertBefore(c, hdr.nextSibling);   // relocate to the top of the body (once)
+    });
     var hasAction = Array.prototype.some.call(row.children, function(c){
       return c.tagName === 'BUTTON' && !c.classList.contains('back-btn');
     });
