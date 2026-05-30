@@ -23955,7 +23955,8 @@ function renderAnPrestarts() {
       });
     });
   }
-  // Source 2: plant.html records (shared localStorage)
+  // Source 2: plant.html records (shared localStorage). Real schema:
+  // {code, machine, type, site, worker, when, faults[], critical, needsFFW, comments, items}.
   try {
     const plantRecs = JSON.parse(localStorage.getItem('slan_plant_records') || '[]');
     const todayISO = new Date().toISOString().slice(0,10);
@@ -23963,13 +23964,19 @@ function renderAnPrestarts() {
       if (!r || !r.when) return;
       const d = (r.when || '').slice(0,10);
       if (d !== todayISO) return;
+      let outcome = 'Fit for Use';
+      if (r.critical) outcome = 'Out of Service';
+      else if (r.needsFFW || (Array.isArray(r.faults) && r.faults.length)) outcome = 'Defects Found';
+      const defectSummary = Array.isArray(r.faults) && r.faults.length
+        ? r.faults.map(function(f){ return f && (f.label || f.item || f.name) || ''; }).filter(Boolean).join('; ')
+        : (r.comments || '');
       items.push({
-        title:    r.code || 'Machine',
+        title:    r.machine || r.code || 'Machine',
         code:     r.code || '',
-        operator: r.operator_name || r.operator || '—',
+        operator: r.worker || '—',
         time:     (r.when || '').slice(11,16),
-        outcome:  (r.outcome === 'pass' || r.outcome === 'clear') ? 'Fit for Use' : (r.outcome === 'fail' ? 'Out of Service' : (r.outcome === 'minor' || r.outcome === 'major' ? 'Defects Found' : 'Completed')),
-        defects:  r.summary || ''
+        outcome:  outcome,
+        defects:  defectSummary
       });
     });
   } catch(e){}
