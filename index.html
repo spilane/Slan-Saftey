@@ -3699,6 +3699,44 @@ function ahStyleDivisionHome(){
   </div>
 </div>
 
+<!-- ═══════════════════ TODAY'S SITE ROSTER (director "On site" KPI drill-down) ═══ -->
+<div id="screen-an-roster" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-analytics')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#3D5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Today's Site Roster</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:60px">
+    <div style="padding:0 0 8px">
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Who's on site today</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="an-roster-summary">Loading roster…</div>
+    </div>
+    <div id="an-roster-container" style="display:flex;flex-direction:column;gap:14px"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TODAY'S PRE-STARTS (director "Pre-starts" KPI drill-down) ═══ -->
+<div id="screen-an-prestarts" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="goTo('screen-analytics')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#1B6E6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Today's Pre-Starts</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:60px">
+    <div style="padding:0 0 8px">
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Pre-starts completed today</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="an-ps-summary">Loading pre-starts…</div>
+    </div>
+    <div id="an-ps-container" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
 <!-- ═══════════════════ RECENT INCIDENTS LIST (supervisor view) ═══ -->
 <div id="screen-incident-list" class="screen">
   <div class="tbar" style="background:var(--deep)">
@@ -10667,9 +10705,9 @@ function ahStyleDivisionHome(){
       <div class="sf-sec-hdr"><div class="sf-sec-hdr-l">📊 Safety overview</div></div>
       <div class="sf-sec-body">
         <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-          <div class="kpi k-indigo" style="cursor:default"><div class="kpi-l">Signed in</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="an-live-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
-          <div class="kpi k-teal" style="cursor:default"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="an-live-prestart">—</span><span class="kpi-tr good">▲+1</span></div></div>
-          <div class="kpi k-amber" onclick="if(typeof goToHazardList==='function'){goToHazardList();}else{goTo('screen-hazard');}"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span><span class="kpi-tr good">▼-1</span></div></div>
+          <div class="kpi k-indigo" onclick="goToAnRoster()"><div class="kpi-l">Signed in</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="an-live-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
+          <div class="kpi k-teal" onclick="goToAnPrestarts()"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="an-live-prestart">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-amber" onclick="goToDirectorHazard()"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span><span class="kpi-tr good">▼-1</span></div></div>
         </div>
         <div id="an-lti-row" class="kpis" style="grid-template-columns:repeat(2,1fr);margin-top:10px">
           <div class="kpi k-green" style="cursor:default"><div class="kpi-l">LTI-free days</div><div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v" id="an-live-lti">—</span><span class="kpi-tr good">▲+1</span></div></div>
@@ -23811,6 +23849,156 @@ function incLoadCritical() {
     var s = (r.severity || '').toLowerCase();
     return s === 'critical' || s === 'major';
   });
+}
+
+// ───────────────────────────────────────────────
+// DIRECTOR SAFETY KPI DRILL-DOWNS: "On site" + "Pre-starts"
+// ───────────────────────────────────────────────
+// Today's site roster — opened from the director "Signed in" KPI.
+// Reads DEMO_SIGNINS (+ any live queue records). Groups currently-on-site
+// people by site, shows role + company + sign-in time.
+function goToAnRoster() {
+  goTo('screen-an-roster');
+  renderAnRoster();
+}
+function renderAnRoster() {
+  const today = new Date().toLocaleDateString('en-AU');
+  // Collect today's records keyed by (name+date) so the latest event wins
+  const byKey = {};
+  function add(rec) {
+    if (!rec || !rec.worker_name || !rec.date) return;
+    if (rec.date !== today) return;
+    const k = rec.worker_name + '|' + rec.date;
+    const prev = byKey[k];
+    if (!prev || (rec.time || '') >= (prev.time || '')) byKey[k] = rec;
+  }
+  // Source 1: demo seed
+  if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) {
+    DEMO_SIGNINS.forEach(add);
+  }
+  // Source 2: live queue (real submissions, normalised shape)
+  try {
+    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    q.forEach(function(s){
+      if (!s || !s.data || s.data.form_type !== 'attendance') return;
+      add({
+        worker_name: s.data.worker_name,
+        company:     s.data.company || '',
+        role:        s.data.role || '',
+        type:        s.data.submission_type || 'Sign In',
+        time:        s.data.time || '',
+        date:        (s.data.date || '').replace(/-/g,'/'),
+        address:     s.data.address || ''
+      });
+    });
+  } catch(e){}
+  // Currently on-site = last event today is a Sign In
+  const onSite = Object.values(byKey).filter(function(r){ return (r.type||'') === 'Sign In'; });
+  // Group by site (use address — site code not in DEMO_SIGNINS schema)
+  const visible = {};
+  onSite.forEach(function(r){
+    const site = r.address || 'Unknown site';
+    (visible[site] = visible[site] || []).push(r);
+  });
+  const total = onSite.length;
+  const siteNames = Object.keys(visible).sort();
+  const sum = document.getElementById('an-roster-summary');
+  if (sum) sum.textContent = total + ' on site today across ' + siteNames.length + ' ' + (siteNames.length === 1 ? 'site' : 'sites') + '.';
+  const cont = document.getElementById('an-roster-container');
+  if (!cont) return;
+  if (!total) {
+    cont.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No one is signed in yet today.</div>';
+    return;
+  }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  cont.innerHTML = siteNames.map(function(site){
+    const ppl = visible[site].slice().sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
+    const rows = ppl.map(function(r){
+      return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid #3D5AAD;border-radius:8px;background:#fff">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+          '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.worker_name) + '</div>' +
+          '<span style="font-size:10.5px;font-weight:700;color:#3D5AAD;flex-shrink:0">' + esc(r.time || '—') + '</span>' +
+        '</div>' +
+        '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.role || '—') + ' · ' + esc(r.company || '—') + '</div>' +
+      '</div>';
+    }).join('');
+    return '<div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">' +
+        '<span>' + esc(site) + '</span>' +
+        '<span style="color:#3D5AAD">' + ppl.length + '</span>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' + rows + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// Today's pre-starts — opened from the director "Pre-starts" KPI.
+// Reads DEMO_PRESTARTS (site/non-plant) and plant.html's slan_plant_records.
+function goToAnPrestarts() {
+  goTo('screen-an-prestarts');
+  renderAnPrestarts();
+}
+function renderAnPrestarts() {
+  const today = new Date().toLocaleDateString('en-AU');
+  const items = [];
+  // Source 1: demo seed (site-level pre-starts)
+  if (typeof DEMO_PRESTARTS !== 'undefined' && Array.isArray(DEMO_PRESTARTS)) {
+    DEMO_PRESTARTS.forEach(function(r){
+      if (!r || r.date !== today) return;
+      items.push({
+        title:    r.plant_name || 'Pre-start',
+        code:     r.plant_id || '',
+        operator: r.operator || '—',
+        time:     r.time || '',
+        outcome:  r.outcome || '',
+        defects:  r.defects || ''
+      });
+    });
+  }
+  // Source 2: plant.html records (shared localStorage)
+  try {
+    const plantRecs = JSON.parse(localStorage.getItem('slan_plant_records') || '[]');
+    const todayISO = new Date().toISOString().slice(0,10);
+    plantRecs.forEach(function(r){
+      if (!r || !r.when) return;
+      const d = (r.when || '').slice(0,10);
+      if (d !== todayISO) return;
+      items.push({
+        title:    r.code || 'Machine',
+        code:     r.code || '',
+        operator: r.operator_name || r.operator || '—',
+        time:     (r.when || '').slice(11,16),
+        outcome:  (r.outcome === 'pass' || r.outcome === 'clear') ? 'Fit for Use' : (r.outcome === 'fail' ? 'Out of Service' : (r.outcome === 'minor' || r.outcome === 'major' ? 'Defects Found' : 'Completed')),
+        defects:  r.summary || ''
+      });
+    });
+  } catch(e){}
+  // Sort newest first
+  items.sort(function(a,b){ return (b.time || '').localeCompare(a.time || ''); });
+  const cleared = items.filter(function(i){ return /fit/i.test(i.outcome); }).length;
+  const issues  = items.length - cleared;
+  const sum = document.getElementById('an-ps-summary');
+  if (sum) sum.textContent = items.length + ' pre-start' + (items.length === 1 ? '' : 's') + ' completed today · ' + cleared + ' fit for use · ' + issues + ' with issues.';
+  const cont = document.getElementById('an-ps-container');
+  if (!cont) return;
+  if (!items.length) {
+    cont.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No pre-starts logged yet today.</div>';
+    return;
+  }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  cont.innerHTML = items.map(function(r){
+    const ok = /fit/i.test(r.outcome);
+    const col = ok ? '#1B6E3A' : '#BA7517';
+    const bg  = ok ? '#E6F5ED' : '#FDF8EC';
+    return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + col + ';border-radius:8px;background:#fff">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+        '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.title) + (r.code ? ' <span style="color:#888;font-weight:500;font-size:11px">(' + esc(r.code) + ')</span>' : '') + '</div>' +
+        '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;flex-shrink:0;background:' + bg + ';color:' + col + ';text-transform:uppercase;letter-spacing:.04em">' + esc(r.outcome) + '</span>' +
+      '</div>' +
+      '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.operator) + (r.time ? ' · ' + esc(r.time) : '') + '</div>' +
+      (r.defects && !/^none$/i.test(r.defects) ? '<div style="font-size:11px;color:#BA7517;margin-top:4px;line-height:1.4">⚠ ' + esc(r.defects) + '</div>' : '') +
+    '</div>';
+  }).join('');
 }
 
 // Recent-incidents list view (supervisor primary, also accessible to workers
