@@ -822,13 +822,21 @@ input[type="time"] {
 .moved-from-header .badge{background:#fff;color:var(--muted);border-color:var(--border)}
 .moved-from-header .badge.active-month,.moved-from-header .badge.active-filter{background:var(--gold);color:var(--deep);border-color:var(--gold)}
 .bdot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
-/* Safety dashboard metric cards (supervisor + director) — colour-coded by meaning, each card distinct */
-#an-live-signin,#d-m-signin{color:#4047A0!important}  /* indigo — people present */
-#an-live-prestart,#d-m-ps{color:#0E7470!important}    /* teal — operations */
-#d-m-talk{color:#9a7c1c!important}                    /* gold — compliance done */
-#an-live-hazards,#d-m-haz{color:#9A6A00!important}    /* amber — needs attention */
-#an-live-incidents{color:#A32D2D!important}           /* red — problem */
-#an-live-lti{color:#1B7A3D!important}
+/* Safety dashboard KPI cards (supervisor + director) — SAME FORMAT as Plant's Fleet Overview */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:680px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{border-radius:10px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.1);border:1.5px solid}
+.kpi-l{font-size:9px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;opacity:.85}
+.kpi-row{display:flex;align-items:center;justify-content:center;gap:9px}
+.kpi-ic{font-size:23px;line-height:1}
+.kpi-v{font-size:30px;font-weight:800;line-height:1}
+.kpi.k-blue{background:linear-gradient(135deg,#EAF2F8 0%,#CFE3F2 100%);border-color:#9EC3DA;color:#1F495C}
+.kpi.k-green{background:linear-gradient(135deg,#E9F6EE 0%,#C7EAD4 100%);border-color:#9BD3AE;color:#13502A}
+.kpi.k-amber{background:linear-gradient(135deg,#FFF6E6 0%,#FBE2B0 100%);border-color:#E6C57A;color:#8A5A00}
+.kpi.k-red{background:linear-gradient(135deg,#FBECEC 0%,#F6CFCF 100%);border-color:#E2A6A6;color:#8E2525}
+.kpi.k-indigo{background:linear-gradient(135deg,#EAEDFA 0%,#C7D0F0 100%);border-color:#A5AEDB;color:#3540A0}
+.kpi.k-teal{background:linear-gradient(135deg,#E1F2EE 0%,#BEE0D8 100%);border-color:#8FC9BE;color:#0E5A55}
+.kpi.k-gold{background:linear-gradient(135deg,#FAEFD0 0%,#F0DCA1 100%);border-color:#D7BD7A;color:#7A5800}
 .bdot.g{background:#5CDB95}.bdot.r{background:#FF6B6B}
 
 /* SYNC BAR */
@@ -2648,27 +2656,11 @@ function ahStyleDivisionHome(){
   </div>
   <!-- METRICS — under the header on the body, colour-coded by meaning (like Plant) -->
   <div style="padding:14px 14px 0">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:9px">
-      <div style="background:linear-gradient(180deg,#EEF1FD 0%,#DCE2F6 100%);border:1px solid #C7CCF0;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)">
-        <div style="font-size:17px;line-height:1">🪪</div>
-        <div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="d-m-signin">—</div>
-        <div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">On site</div>
-      </div>
-      <div style="background:linear-gradient(180deg,#FCF6E3 0%,#F4E8B8 100%);border:1px solid #E7D697;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)">
-        <div style="font-size:17px;line-height:1">💬</div>
-        <div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="d-m-talk">—</div>
-        <div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Talk signed</div>
-      </div>
-      <div style="background:linear-gradient(180deg,#E5F5F1 0%,#D2EAE4 100%);border:1px solid #B8DDD5;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)">
-        <div style="font-size:17px;line-height:1">📋</div>
-        <div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="d-m-ps">—</div>
-        <div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Pre-starts</div>
-      </div>
-      <div style="background:linear-gradient(180deg,#FCF4DC 0%,#F2E0AC 100%);border:1px solid #ECDBAC;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)">
-        <div style="font-size:17px;line-height:1">⚠️</div>
-        <div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="d-m-haz">—</div>
-        <div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Hazards</div>
-      </div>
+    <div class="kpis">
+      <div class="kpi k-indigo"><div class="kpi-l">On site</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="d-m-signin">—</span></div></div>
+      <div class="kpi k-gold"><div class="kpi-l">Talk signed</div><div class="kpi-row"><span class="kpi-ic">💬</span><span class="kpi-v" id="d-m-talk">—</span></div></div>
+      <div class="kpi k-teal"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="d-m-ps">—</span></div></div>
+      <div class="kpi k-amber"><div class="kpi-l">Hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="d-m-haz">—</span></div></div>
     </div>
   </div>
 
@@ -10629,14 +10621,14 @@ function ahStyleDivisionHome(){
         <option value="site-c">Liverpool</option>
       </select>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">
-      <div style="background:linear-gradient(180deg,#EEF1FD 0%,#DCE2F6 100%);border:1px solid #C7CCF0;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">🪪</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-signin">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Signed in</div></div>
-      <div style="background:linear-gradient(180deg,#E5F5F1 0%,#D2EAE4 100%);border:1px solid #B8DDD5;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">📋</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-prestart">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Pre-starts</div></div>
-      <div style="background:linear-gradient(180deg,#FCF4DC 0%,#F2E0AC 100%);border:1px solid #ECDBAC;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">⚠️</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-hazards">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Open hazards</div></div>
+    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi k-indigo"><div class="kpi-l">Signed in</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="an-live-signin">—</span></div></div>
+      <div class="kpi k-teal"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="an-live-prestart">—</span></div></div>
+      <div class="kpi k-amber"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span></div></div>
     </div>
-    <div id="an-lti-row" style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px">
-      <div style="background:linear-gradient(180deg,#ECF6EE 0%,#D6EBDB 100%);border:1px solid #C2E2CF;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">🛡️</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-lti">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">LTI-free days</div></div>
-      <div style="background:linear-gradient(180deg,#FCEFEF 0%,#F4D7D7 100%);border:1px solid #F1D1D1;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">❗</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-incidents">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Incidents</div></div>
+    <div id="an-lti-row" class="kpis" style="grid-template-columns:repeat(2,1fr);margin-top:10px">
+      <div class="kpi k-green"><div class="kpi-l">LTI-free days</div><div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v" id="an-live-lti">—</span></div></div>
+      <div class="kpi k-red"><div class="kpi-l">Incidents</div><div class="kpi-row"><span class="kpi-ic">❗</span><span class="kpi-v" id="an-live-incidents">—</span></div></div>
     </div>
   </div>
   <!-- ONLINE BAR (matches supervisor: online first, then today's activity) -->
