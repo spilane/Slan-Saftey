@@ -837,6 +837,28 @@ input[type="time"] {
 .kpi.k-indigo{background:linear-gradient(135deg,#EAEDFA 0%,#C7D0F0 100%);border-color:#A5AEDB;color:#3540A0}
 .kpi.k-teal{background:linear-gradient(135deg,#E1F2EE 0%,#BEE0D8 100%);border-color:#8FC9BE;color:#0E5A55}
 .kpi.k-gold{background:linear-gradient(135deg,#FAEFD0 0%,#F0DCA1 100%);border-color:#D7BD7A;color:#7A5800}
+/* Trend arrows on KPIs — green when direction is good, red when bad (overrides card colour) */
+.kpi-tr{font-size:11px;font-weight:800;margin-left:3px;letter-spacing:-.01em}
+.kpi-tr.good{color:#1B7A3D!important}
+.kpi-tr.bad{color:#A32D2D!important}
+/* Section card (matches plant.html's fcard — gold top line + green/gold header bar) */
+.sf-sec{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;border-top:3px solid var(--gold);box-shadow:0 1px 2px rgba(16,40,30,.05);margin-bottom:14px}
+.sf-sec-hdr{background:linear-gradient(135deg,#1C382A 0%,#0E2A1F 100%);color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sf-sec-hdr-l{display:flex;align-items:center;gap:8px;min-width:0}
+.sf-sec-hdr-r{display:flex;align-items:center;gap:9px;font-size:9.5px;letter-spacing:.04em;color:rgba(200,160,44,.7);font-weight:600;flex-shrink:0;text-transform:none}
+.sf-sec-hdr-r .va{color:#D4AF37;font-weight:700;cursor:pointer;font-size:10px}
+.sf-sec-hdr-r .sf-dot{width:5px;height:5px;border-radius:50%;background:rgba(200,160,44,.5)}
+.sf-sec-body{padding:14px}
+/* Site chips row */
+.sf-chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;margin:0 0 14px}
+.sf-chips::-webkit-scrollbar{display:none}
+.sf-chip{display:inline-flex;align-items:center;background:#fff;border:1px solid var(--border);border-radius:999px;padding:7px 13px;font-size:11.5px;font-weight:600;color:var(--text);white-space:nowrap;cursor:pointer;flex-shrink:0;box-shadow:0 1px 2px rgba(16,40,30,.05)}
+.sf-chip.on{background:var(--gold);border-color:var(--gold);color:#3a2e05}
+/* Tile chevron */
+.tile{position:relative}
+.tile-chev{position:absolute;bottom:11px;right:13px;font-size:18px;font-weight:700;color:#94A099;line-height:1;pointer-events:none}
+/* "Areas" label above tile grid */
+.sf-areas-lbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:18px 4px 9px}
 .bdot.g{background:#5CDB95}.bdot.r{background:#FF6B6B}
 
 /* SYNC BAR */
@@ -2654,41 +2676,47 @@ function ahStyleDivisionHome(){
     </div>
 
   </div>
-  <!-- METRICS — under the header on the body, colour-coded by meaning (like Plant) -->
+  <!-- Safety dashboard body: ⚡ Today's activity (action-first), then 📊 Safety overview -->
   <div style="padding:14px 14px 0">
-    <div class="kpis">
-      <div class="kpi k-indigo"><div class="kpi-l">On site</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="d-m-signin">—</span></div></div>
-      <div class="kpi k-gold"><div class="kpi-l">Talk signed</div><div class="kpi-row"><span class="kpi-ic">💬</span><span class="kpi-v" id="d-m-talk">—</span></div></div>
-      <div class="kpi k-teal"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="d-m-ps">—</span></div></div>
-      <div class="kpi k-amber"><div class="kpi-l">Hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="d-m-haz">—</span></div></div>
+
+    <!-- ⚡ TODAY'S ACTIVITY — first, because it's what needs attention now -->
+    <div class="sf-sec">
+      <div class="sf-sec-hdr">
+        <div class="sf-sec-hdr-l">⚡ Today's activity</div>
+        <div class="sf-sec-hdr-r"><span id="d-sright-stamp">Updated just now</span></div>
+      </div>
+      <div class="sf-sec-body">
+        <div id="d-status-strip" style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="status-pill" id="d-pill-signin" onclick="supChipTapSignIn()"><div class="sp-dot sp-pending"></div><span id="d-pill-signin-lbl">Sign In</span></div>
+          <div class="status-pill" id="d-pill-ps" onclick="supChipTapPrestart()"><div class="sp-dot sp-pending"></div><span id="d-pill-ps-lbl">Site Pre-Start</span></div>
+          <div class="status-pill" id="d-pill-swms" onclick="supChipTapSwms()"><div class="sp-dot sp-pending"></div><span id="d-pill-swms-lbl">SWMS</span></div>
+          <div class="status-pill" id="d-pill-talk" onclick="supChipTapTalk()"><div class="sp-dot sp-pending"></div><span id="d-pill-talk-lbl">Toolbox Talk</span></div>
+          <div class="status-pill" id="d-pill-sds" onclick="supChipTapSDS()"><div class="sp-dot sp-pending"></div><span id="d-pill-sds-lbl">SDS Reports</span></div>
+          <div class="status-pill" id="d-pill-haz" onclick="supChipTapHazards()"><div class="sp-dot sp-pending"></div><span id="d-pill-haz-lbl">Hazards</span></div>
+          <div class="status-pill" id="d-pill-inc" onclick="supChipTapIncidents()"><div class="sp-dot sp-pending"></div><span id="d-pill-inc-lbl">Incidents</span></div>
+          <div class="status-pill" id="d-pill-plant" onclick="supChipTapPlant()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-lbl">Plant</span></div>
+          <div class="status-pill" id="d-pill-plant-appr" onclick="openPlantApprovals()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-appr-lbl">Plant approvals</span></div>
+          <div class="status-pill" id="d-pill-plant-ps" onclick="supOpenPlantToday()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-ps-lbl">Pre-starts</span></div>
+          <div class="status-pill" id="d-pill-premob" onclick="supChipTapPremob()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-premob-lbl">Pre-mob</span></div>
+          <div class="status-pill" id="d-pill-hirereturn" onclick="supChipTapHireReturn()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereturn-lbl">Hire returns</span></div>
+          <div class="status-pill" id="d-pill-hirereq" onclick="supChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereq-lbl">Hire request</span></div>
+          <div class="status-pill" id="d-pill-plantdone" onclick="supChipTapPlantDone()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plantdone-lbl">Repair done</span></div>
+          <div class="status-pill" id="d-pill-woage" onclick="supChipTapWoAge()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-woage-lbl">Work orders open too long</span></div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- SYNC BAR -->
-  <div class="syncbar">
-    <div class="sync-l"><div class="bdot g" id="d-sdot"></div><span id="d-slbl">Online</span></div>
-    <div class="sync-r" id="d-sright"></div>
-  </div>
-
-  <!-- SUPERVISOR TODAY'S ACTIVITY STRIP -->
-  <div id="d-status-strip" style="background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px">
-    <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Today's activity</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <div class="status-pill" id="d-pill-signin" onclick="supChipTapSignIn()"><div class="sp-dot sp-pending"></div><span id="d-pill-signin-lbl">Sign In</span></div>
-      <div class="status-pill" id="d-pill-ps" onclick="supChipTapPrestart()"><div class="sp-dot sp-pending"></div><span id="d-pill-ps-lbl">Site Pre-Start</span></div>
-      <div class="status-pill" id="d-pill-swms" onclick="supChipTapSwms()"><div class="sp-dot sp-pending"></div><span id="d-pill-swms-lbl">SWMS</span></div>
-      <div class="status-pill" id="d-pill-talk" onclick="supChipTapTalk()"><div class="sp-dot sp-pending"></div><span id="d-pill-talk-lbl">Toolbox Talk</span></div>
-      <div class="status-pill" id="d-pill-sds" onclick="supChipTapSDS()"><div class="sp-dot sp-pending"></div><span id="d-pill-sds-lbl">SDS Reports</span></div>
-      <div class="status-pill" id="d-pill-haz" onclick="supChipTapHazards()"><div class="sp-dot sp-pending"></div><span id="d-pill-haz-lbl">Hazards</span></div>
-      <div class="status-pill" id="d-pill-inc" onclick="supChipTapIncidents()"><div class="sp-dot sp-pending"></div><span id="d-pill-inc-lbl">Incidents</span></div>
-      <div class="status-pill" id="d-pill-plant" onclick="supChipTapPlant()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-lbl">Plant</span></div>
-      <div class="status-pill" id="d-pill-plant-appr" onclick="openPlantApprovals()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-appr-lbl">Plant approvals</span></div>
-      <div class="status-pill" id="d-pill-plant-ps" onclick="supOpenPlantToday()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plant-ps-lbl">Pre-starts</span></div>
-      <div class="status-pill" id="d-pill-premob" onclick="supChipTapPremob()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-premob-lbl">Pre-mob</span></div>
-      <div class="status-pill" id="d-pill-hirereturn" onclick="supChipTapHireReturn()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereturn-lbl">Hire returns</span></div>
-      <div class="status-pill" id="d-pill-hirereq" onclick="supChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-hirereq-lbl">Hire request</span></div>
-      <div class="status-pill" id="d-pill-plantdone" onclick="supChipTapPlantDone()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-plantdone-lbl">Repair done</span></div>
-      <div class="status-pill" id="d-pill-woage" onclick="supChipTapWoAge()" style="display:none"><div class="sp-dot sp-pending"></div><span id="d-pill-woage-lbl">Work orders open too long</span></div>
+    <!-- 📊 SAFETY OVERVIEW — KPI cards with trend arrows (Plant Fleet Overview format) -->
+    <div class="sf-sec">
+      <div class="sf-sec-hdr"><div class="sf-sec-hdr-l">📊 Safety overview</div></div>
+      <div class="sf-sec-body">
+        <div class="kpis">
+          <div class="kpi k-indigo"><div class="kpi-l">On site</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="d-m-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
+          <div class="kpi k-gold"><div class="kpi-l">Talk signed</div><div class="kpi-row"><span class="kpi-ic">💬</span><span class="kpi-v" id="d-m-talk">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-teal"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="d-m-ps">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-amber"><div class="kpi-l">Hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="d-m-haz">—</span><span class="kpi-tr good">▼-1</span></div></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -10610,40 +10638,46 @@ function ahStyleDivisionHome(){
       </div>
     </div>
   </div>
-  <!-- TODAY-AT-A-GLANCE — under the header on the body, colour-coded by meaning (like Plant) -->
+  <!-- Safety dashboard body: chips, then ⚡ Today's activity (action-first), then 📊 Safety overview -->
   <div style="padding:14px 14px 0">
-    <!-- Site filter (director only — moved out of the green header so the chosen site shows clearly) -->
-    <div id="an-site-filter-wrap" style="display:none;margin-bottom:11px">
-      <select id="an-site-select" onchange="anSiteChanged()" style="background:#fff;border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:12.5px;font-weight:600;padding:8px 14px;font-family:inherit;outline:none;cursor:pointer;box-shadow:0 1px 2px rgba(16,40,30,.05)">
-        <option value="all">All sites</option>
-        <option value="site-a">Parramatta</option>
-        <option value="site-b">Blacktown</option>
-        <option value="site-c">Liverpool</option>
-      </select>
+    <!-- Site chips (director only — replaces the dropdown; the chosen site is clearly visible) -->
+    <div id="an-site-filter-wrap" class="sf-chips" style="display:none">
+      <span class="sf-chip on" data-value="all" onclick="anSiteChipPick(this)">All sites</span>
+      <span class="sf-chip" data-value="site-a" onclick="anSiteChipPick(this)">Bondi Junction</span>
+      <span class="sf-chip" data-value="site-b" onclick="anSiteChipPick(this)">Parramatta</span>
+      <span class="sf-chip" data-value="site-c" onclick="anSiteChipPick(this)">Sydney Olympic Park</span>
     </div>
-    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-      <div class="kpi k-indigo"><div class="kpi-l">Signed in</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="an-live-signin">—</span></div></div>
-      <div class="kpi k-teal"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="an-live-prestart">—</span></div></div>
-      <div class="kpi k-amber"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span></div></div>
+
+    <!-- ⚡ TODAY'S ACTIVITY — first, because it's what needs attention now -->
+    <div class="sf-sec">
+      <div class="sf-sec-hdr">
+        <div class="sf-sec-hdr-l">⚡ Today's activity</div>
+        <div class="sf-sec-hdr-r"><span>Updated just now</span></div>
+      </div>
+      <div class="sf-sec-body">
+        <div id="an-status-strip" style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="status-pill" id="an-pill-inc" onclick="dirChipTapIncidents()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-inc-lbl">Incidents</span></div>
+          <div class="status-pill" id="an-pill-plant" onclick="dirChipTapPlant()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-plant-lbl">Plant</span></div>
+          <div class="status-pill" id="an-pill-hirereq" onclick="dirChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-hirereq-lbl">Hire requests</span></div>
+          <div class="status-pill" id="an-pill-gate" onclick="dirChipTapGate()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-gate-lbl">Gate stops</span></div>
+        </div>
+      </div>
     </div>
-    <div id="an-lti-row" class="kpis" style="grid-template-columns:repeat(2,1fr);margin-top:10px">
-      <div class="kpi k-green"><div class="kpi-l">LTI-free days</div><div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v" id="an-live-lti">—</span></div></div>
-      <div class="kpi k-red"><div class="kpi-l">Incidents</div><div class="kpi-row"><span class="kpi-ic">❗</span><span class="kpi-v" id="an-live-incidents">—</span></div></div>
-    </div>
-  </div>
-  <!-- ONLINE BAR (matches supervisor: online first, then today's activity) -->
-  <div class="syncbar">
-    <div class="sync-l"><div class="bdot g"></div><span>Online</span></div>
-    <div class="sync-r" id="an-last-sync">Updated just now</div>
-  </div>
-  <!-- DIRECTOR TODAY'S ACTIVITY STRIP (mirrors worker/supervisor pills) -->
-  <div id="an-status-strip" style="background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px;display:none">
-    <div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Today's activity</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <div class="status-pill" id="an-pill-inc" onclick="dirChipTapIncidents()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-inc-lbl">Incidents</span></div>
-      <div class="status-pill" id="an-pill-plant" onclick="dirChipTapPlant()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-plant-lbl">Plant</span></div>
-      <div class="status-pill" id="an-pill-hirereq" onclick="dirChipTapHireReq()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-hirereq-lbl">Hire requests</span></div>
-      <div class="status-pill" id="an-pill-gate" onclick="dirChipTapGate()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-gate-lbl">Gate stops</span></div>
+
+    <!-- 📊 SAFETY OVERVIEW — KPI cards with trend arrows (Plant Fleet Overview format) -->
+    <div class="sf-sec">
+      <div class="sf-sec-hdr"><div class="sf-sec-hdr-l">📊 Safety overview</div></div>
+      <div class="sf-sec-body">
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi k-indigo"><div class="kpi-l">Signed in</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="an-live-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
+          <div class="kpi k-teal"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="an-live-prestart">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-amber"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span><span class="kpi-tr good">▼-1</span></div></div>
+        </div>
+        <div id="an-lti-row" class="kpis" style="grid-template-columns:repeat(2,1fr);margin-top:10px">
+          <div class="kpi k-green"><div class="kpi-l">LTI-free days</div><div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v" id="an-live-lti">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-red"><div class="kpi-l">Incidents</div><div class="kpi-row"><span class="kpi-ic">❗</span><span class="kpi-v" id="an-live-incidents">—</span><span class="kpi-tr good">▼-2</span></div></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -18043,7 +18077,8 @@ function dirUpdateActivityStrip(){
   // 4) Due-diligence — people stopped at the gate this month (company-wide oversight figure)
   var gateStops=3;
   setPill('gate', gateStops>0, gateStops+' stopped at the gate', 'warn');
-  strip.style.display = any ? '' : 'none';
+  /* Always keep flex layout — the section card wraps this; an empty body is fine */
+  strip.style.display = 'flex';
 }
 function dirChipTapHireReq(){
   // shortcut → open the exact pending request to approve (newest first), not the tab
@@ -37843,10 +37878,20 @@ function analyticsBack() {
   window.scrollTo(0, 0);
 }
 
+/* Site chip click: visually toggle the .on state, then re-run anSiteChanged */
+function anSiteChipPick(el) {
+  if (!el) return;
+  var wrap = document.getElementById('an-site-filter-wrap');
+  if (wrap) wrap.querySelectorAll('.sf-chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  if (typeof anSiteChanged === 'function') anSiteChanged();
+}
+
 function anSiteChanged() {
-  var site = document.getElementById('an-site-select');
-  if (!site) return;
-  var val = site.value;
+  /* Read the active chip's data-value (chips replaced the dropdown) */
+  var active = document.querySelector('#an-site-filter-wrap .sf-chip.on');
+  if (!active) return;
+  var val = active.dataset.value || 'all';
   if (DEMO_MODE || localStorage.getItem('slan_demo')) {
     var siteData = {
       'all':    { signin:20, prestart:8,  hazards:2, lti:47, incidents:3 },
