@@ -2711,10 +2711,10 @@ function ahStyleDivisionHome(){
       <div class="sf-sec-hdr"><div class="sf-sec-hdr-l">📊 Safety overview</div></div>
       <div class="sf-sec-body">
         <div class="kpis">
-          <div class="kpi k-indigo" onclick="supChipTapSignIn()"><div class="kpi-l">On site</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="d-m-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
-          <div class="kpi k-gold" onclick="supChipTapTalk()"><div class="kpi-l">Talk signed</div><div class="kpi-row"><span class="kpi-ic">💬</span><span class="kpi-v" id="d-m-talk">—</span><span class="kpi-tr good">▲+1</span></div></div>
-          <div class="kpi k-teal" onclick="supChipTapPrestart()"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="d-m-ps">—</span><span class="kpi-tr good">▲+1</span></div></div>
-          <div class="kpi k-amber" onclick="supChipTapHazards()"><div class="kpi-l">Hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="d-m-haz">—</span><span class="kpi-tr good">▼-1</span></div></div>
+          <div class="kpi k-indigo" onclick="supKpiTapOnSite()"><div class="kpi-l">On site</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="d-m-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
+          <div class="kpi k-gold" onclick="supKpiTapTalk()"><div class="kpi-l">Talk signed</div><div class="kpi-row"><span class="kpi-ic">💬</span><span class="kpi-v" id="d-m-talk">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-teal" onclick="supKpiTapPrestart()"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="d-m-ps">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-amber" onclick="supKpiTapHazards()"><div class="kpi-l">Hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="d-m-haz">—</span><span class="kpi-tr good">▼-1</span></div></div>
         </div>
       </div>
     </div>
@@ -3702,7 +3702,7 @@ function ahStyleDivisionHome(){
 <!-- ═══════════════════ TODAY'S SITE ROSTER (director "On site" KPI drill-down) ═══ -->
 <div id="screen-an-roster" class="screen">
   <div class="tbar" style="background:var(--deep)">
-    <button class="back-btn" onclick="goTo('screen-analytics')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="back-btn" onclick="anKpiBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
     <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
       <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#3D5AAD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
       <span style="font-size:14px;font-weight:600;color:#fff">Today's Site Roster</span>
@@ -3718,19 +3718,71 @@ function ahStyleDivisionHome(){
   </div>
 </div>
 
-<!-- ═══════════════════ TODAY'S PRE-STARTS (director "Pre-starts" KPI drill-down) ═══ -->
-<div id="screen-an-prestarts" class="screen">
+<!-- ═══════════════════ TODAY'S TOOLBOX TALK (supervisor "Talk signed" KPI drill-down) ═══ -->
+<div id="screen-an-talk" class="screen">
   <div class="tbar" style="background:var(--deep)">
-    <button class="back-btn" onclick="goTo('screen-analytics')"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="back-btn" onclick="anKpiBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
     <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
-      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#1B6E6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-      <span style="font-size:14px;font-weight:600;color:#fff">Today's Pre-Starts</span>
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Today's Toolbox Talk</span>
     </div>
     <div style="width:36px"></div>
   </div>
   <div style="padding:18px;padding-bottom:60px">
     <div style="padding:0 0 8px">
-      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Pre-starts completed today</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px" id="an-talk-title">Today's toolbox talk</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="an-talk-summary">Loading attendance…</div>
+    </div>
+    <div id="an-talk-container" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ LTI STATUS (director "LTI-free days" KPI drill-down) ═══ -->
+<div id="screen-an-lti" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="anKpiBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#1B6E3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">LTI Status</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:60px">
+    <!-- Hero streak panel -->
+    <div style="background:linear-gradient(135deg, #E6F5ED 0%, #D4ECD8 100%);border:1.5px solid rgba(27,110,58,.25);border-radius:14px;padding:22px 18px;text-align:center;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:#1B6E3A;text-transform:uppercase;letter-spacing:.08em">Days without a Lost Time Injury</div>
+      <div style="font-size:52px;font-weight:800;color:#1B6E3A;line-height:1;margin:8px 0 4px" id="an-lti-streak">—</div>
+      <div style="font-size:12px;color:#3D5A48" id="an-lti-since">Calculating…</div>
+    </div>
+    <!-- Per-site breakdown (if more than one site) -->
+    <div id="an-lti-bysite" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+    <!-- What counts as an LTI -->
+    <div class="fcard">
+      <div class="fcard-hdr">What counts as a Lost Time Injury (LTI)?</div>
+      <div class="fcard-body" style="font-size:12.5px;line-height:1.55;color:#3D5A48">
+        An LTI is a workplace injury that keeps a worker off work for one full shift or more after the day of the incident. We measure the streak from the day after the most recent LTI. First-aid-only injuries don't reset the streak — only injuries that result in lost time do.<br><br>
+        Source: medical certificates attached to incident reports. Days lost roll up automatically from each incident's Return-to-Work record.
+      </div>
+    </div>
+    <!-- Recent LTIs (if any in the last 90 days) -->
+    <div style="padding:0 2px;margin:14px 0 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">Recent LTIs (last 90 days)</div>
+    <div id="an-lti-recent" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TODAY'S PLANT PRE-STARTS (director "Pre-starts" KPI drill-down) ═══ -->
+<div id="screen-an-prestarts" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="anKpiBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#1B6E6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Plant Pre-Starts Today</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:60px">
+    <div style="padding:0 0 8px">
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Plant pre-starts completed today</div>
       <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="an-ps-summary">Loading pre-starts…</div>
     </div>
     <div id="an-ps-container" style="display:flex;flex-direction:column;gap:8px"></div>
@@ -10710,8 +10762,8 @@ function ahStyleDivisionHome(){
           <div class="kpi k-amber" onclick="goToDirectorHazard()"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span><span class="kpi-tr good">▼-1</span></div></div>
         </div>
         <div id="an-lti-row" class="kpis" style="grid-template-columns:repeat(2,1fr);margin-top:10px">
-          <div class="kpi k-green" style="cursor:default"><div class="kpi-l">LTI-free days</div><div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v" id="an-live-lti">—</span><span class="kpi-tr good">▲+1</span></div></div>
-          <div class="kpi k-red" onclick="if(typeof goToIncidentList==='function'){goToIncidentList();}else if(typeof goToIncident==='function'){goToIncident();}"><div class="kpi-l">Incidents</div><div class="kpi-row"><span class="kpi-ic">❗</span><span class="kpi-v" id="an-live-incidents">—</span><span class="kpi-tr good">▼-2</span></div></div>
+          <div class="kpi k-green" onclick="goToAnLti()"><div class="kpi-l">LTI-free days</div><div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v" id="an-live-lti">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-red" onclick="goToAnIncidents()"><div class="kpi-l">Incidents</div><div class="kpi-row"><span class="kpi-ic">❗</span><span class="kpi-v" id="an-live-incidents">—</span><span class="kpi-tr good">▼-2</span></div></div>
         </div>
       </div>
     </div>
@@ -13941,34 +13993,45 @@ var _today = new Date().toLocaleDateString('en-AU');
 var _yest  = new Date(Date.now()-86400000).toLocaleDateString('en-AU');
 var _d2    = new Date(Date.now()-86400000*2).toLocaleDateString('en-AU');
 
+// 3 demo sites — match the director KPI chips + anSiteChanged() per-site counts.
+// site-a (Bondi) is Eoin's site, gets the bulk of records (12 workers + supervisor)
+// site-b (Parramatta) gets 5 workers; site-c (SOP) gets 3.
+var DEMO_SITES = {
+  'site-a': { name:'Bondi Junction', address:'4 Oxford St, Bondi Junction' },
+  'site-b': { name:'Parramatta',     address:'12 Wentworth Ave, Parramatta' },
+  'site-c': { name:'Sydney Olympic Park', address:'1 Olympic Bvd, Sydney Olympic Park' }
+};
 var DEMO_SIGNINS = [
-  { worker_name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',          type:'Sign In',  time:'06:48', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:6  },
-  { worker_name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',          type:'Sign In',  time:'06:52', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:8  },
-  { worker_name:'Sam Carroll',     company:'Burke Civil Contractors',   role:'Concretor',           type:'Sign In',  time:'06:55', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:5  },
-  { worker_name:'Tom Burke',       company:'Burke Civil Contractors',   role:'Labourer',            type:'Sign In',  time:'06:58', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:9  },
-  { worker_name:'Chris Walsh',     company:'Smith Formwork Pty Ltd',    role:'Formworker',          type:'Sign In',  time:'07:01', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:7  },
-  { worker_name:'Dave Murphy',     company:'Smith Formwork Pty Ltd',    role:'Carpenter',           type:'Sign In',  time:'07:03', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:11 },
-  { worker_name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',              type:'Sign In',  time:'07:05', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:8  },
-  { worker_name:'Pat Healy',       company:'Murphy Civil Construction', role:'Labourer',            type:'Sign In',  time:'07:08', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:6  },
-  { worker_name:'Brendan Kelly',   company:'Kelly Crane Services',      role:'Crane Operator',      type:'Sign In',  time:'06:40', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:4  },
-  { worker_name:'Mick Doyle',      company:'Burke Civil Contractors',   role:'Excavator Operator',  type:'Sign In',  time:'06:45', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:7  },
-  { worker_name:'Shane Connolly',  company:'Murphy Civil Construction', role:'Steelfixer',          type:'Sign In',  time:'07:10', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:9  },
-  { worker_name:'Aaron Farrell',   company:'Smith Formwork Pty Ltd',    role:'Formworker',          type:'Sign In',  time:'07:12', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:8  },
-  { worker_name:'Gary Tully',      company:'Tully Plumbing',            role:'Plumber',             type:'Sign In',  time:'07:15', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:5  },
-  { worker_name:'Wayne Slattery',  company:'Slattery Electrical',       role:'Electrician',         type:'Sign In',  time:'07:18', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:6  },
-  { worker_name:'James Riordan',   company:'Murphy Civil Construction', role:'Labourer',            type:'Sign In',  time:'07:20', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:10 },
-  { worker_name:'Kevin Nash',      company:'Burke Civil Contractors',   role:'Traffic Controller',  type:'Sign In',  time:'06:30', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:5  },
-  { worker_name:'Paul Sheridan',   company:'Murphy Civil Construction', role:'Concretor',           type:'Sign In',  time:'07:22', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:8  },
-  { worker_name:'Dean Mc Grath',   company:'Smith Formwork Pty Ltd',    role:'Carpenter',           type:'Sign In',  time:'07:25', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:7  },
-  { worker_name:'Liam Brennan',    company:'Murphy Civil Construction', role:'Labourer',            type:'Sign In',  time:'07:28', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:9  },
-  { worker_name:'Niall Costello',  company:'Burke Civil Contractors',   role:'Labourer',            type:'Sign In',  time:'07:30', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:6  },
+  // ── Bondi Junction (site-a) — 12 workers + Eoin (supervisor) + Patrick (director here today)
+  { worker_name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',          type:'Sign In',  time:'06:48', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:6  },
+  { worker_name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',          type:'Sign In',  time:'06:52', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:8  },
+  { worker_name:'Sam Carroll',     company:'Burke Civil Contractors',   role:'Concretor',           type:'Sign In',  time:'06:55', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:5  },
+  { worker_name:'Tom Burke',       company:'Burke Civil Contractors',   role:'Labourer',            type:'Sign In',  time:'06:58', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:9  },
+  { worker_name:'Chris Walsh',     company:'Smith Formwork Pty Ltd',    role:'Formworker',          type:'Sign In',  time:'07:01', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:7  },
+  { worker_name:'Dave Murphy',     company:'Smith Formwork Pty Ltd',    role:'Carpenter',           type:'Sign In',  time:'07:03', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:11 },
+  { worker_name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',              type:'Sign In',  time:'07:05', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:8  },
+  { worker_name:'Pat Healy',       company:'Murphy Civil Construction', role:'Labourer',            type:'Sign In',  time:'07:08', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:6  },
+  { worker_name:'Brendan Kelly',   company:'Kelly Crane Services',      role:'Crane Operator',      type:'Sign In',  time:'06:40', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:4  },
+  { worker_name:'Mick Doyle',      company:'Burke Civil Contractors',   role:'Excavator Operator',  type:'Sign In',  time:'06:45', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:7  },
+  { worker_name:'Shane Connolly',  company:'Murphy Civil Construction', role:'Steelfixer',          type:'Sign In',  time:'07:10', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:9  },
+  { worker_name:'Aaron Farrell',   company:'Smith Formwork Pty Ltd',    role:'Formworker',          type:'Sign In',  time:'07:12', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:8  },
+  // ── Parramatta (site-b) — 5 workers
+  { worker_name:'Gary Tully',      company:'Tully Plumbing',            role:'Plumber',             type:'Sign In',  time:'07:15', date:_today,  site_code:'site-b', site_name:'Parramatta',           address:'12 Wentworth Ave, Parramatta',         gps_accuracy_m:5  },
+  { worker_name:'Wayne Slattery',  company:'Slattery Electrical',       role:'Electrician',         type:'Sign In',  time:'07:18', date:_today,  site_code:'site-b', site_name:'Parramatta',           address:'12 Wentworth Ave, Parramatta',         gps_accuracy_m:6  },
+  { worker_name:'James Riordan',   company:'Murphy Civil Construction', role:'Labourer',            type:'Sign In',  time:'07:20', date:_today,  site_code:'site-b', site_name:'Parramatta',           address:'12 Wentworth Ave, Parramatta',         gps_accuracy_m:10 },
+  { worker_name:'Kevin Nash',      company:'Burke Civil Contractors',   role:'Traffic Controller',  type:'Sign In',  time:'06:30', date:_today,  site_code:'site-b', site_name:'Parramatta',           address:'12 Wentworth Ave, Parramatta',         gps_accuracy_m:5  },
+  { worker_name:'Paul Sheridan',   company:'Murphy Civil Construction', role:'Concretor',           type:'Sign In',  time:'07:22', date:_today,  site_code:'site-b', site_name:'Parramatta',           address:'12 Wentworth Ave, Parramatta',         gps_accuracy_m:8  },
+  // ── Sydney Olympic Park (site-c) — 3 workers
+  { worker_name:'Dean Mc Grath',   company:'Smith Formwork Pty Ltd',    role:'Carpenter',           type:'Sign In',  time:'07:25', date:_today,  site_code:'site-c', site_name:'Sydney Olympic Park',  address:'1 Olympic Bvd, Sydney Olympic Park',   gps_accuracy_m:7  },
+  { worker_name:'Liam Brennan',    company:'Murphy Civil Construction', role:'Labourer',            type:'Sign In',  time:'07:28', date:_today,  site_code:'site-c', site_name:'Sydney Olympic Park',  address:'1 Olympic Bvd, Sydney Olympic Park',   gps_accuracy_m:9  },
+  { worker_name:'Niall Costello',  company:'Burke Civil Contractors',   role:'Labourer',            type:'Sign In',  time:'07:30', date:_today,  site_code:'site-c', site_name:'Sydney Olympic Park',  address:'1 Olympic Bvd, Sydney Olympic Park',   gps_accuracy_m:6  },
   // Supervisors / directors signed in today — needed for fire watch handover picker
-  { worker_name:'Eoin Burke',      company:'Murphy Civil Construction', role:'Site Supervisor',     type:'Sign In',  time:'06:30', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:5  },
-  { worker_name:'Patrick Murphy',  company:'Murphy Civil Construction', role:'Director',            type:'Sign In',  time:'06:35', date:_today,  address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:6  },
-  // Yesterday sign-outs
-  { worker_name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',           type:'Sign Out', time:'16:32', date:_yest,   address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:7  },
-  { worker_name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',          type:'Sign Out', time:'16:28', date:_yest,   address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:9  },
-  { worker_name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',              type:'Sign Out', time:'15:45', date:_yest,   address:'12 Wentworth Ave, Parramatta', gps_accuracy_m:8  }
+  { worker_name:'Eoin Burke',      company:'Murphy Civil Construction', role:'Site Supervisor',     type:'Sign In',  time:'06:30', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:5  },
+  { worker_name:'Patrick Murphy',  company:'Murphy Civil Construction', role:'Director',            type:'Sign In',  time:'06:35', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:6  },
+  // Yesterday sign-outs (Bondi)
+  { worker_name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',           type:'Sign Out', time:'16:32', date:_yest,   site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:7  },
+  { worker_name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',          type:'Sign Out', time:'16:28', date:_yest,   site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:9  },
+  { worker_name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',              type:'Sign Out', time:'15:45', date:_yest,   site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:8  }
 ];
 
 var DEMO_HAZARDS = [
@@ -23854,15 +23917,37 @@ function incLoadCritical() {
 // ───────────────────────────────────────────────
 // DIRECTOR SAFETY KPI DRILL-DOWNS: "On site" + "Pre-starts"
 // ───────────────────────────────────────────────
-// Today's site roster — opened from the director "Signed in" KPI.
-// Reads DEMO_SIGNINS (+ any live queue records). Groups currently-on-site
-// people by site, shows role + company + sign-in time.
+// Today's site roster — opened from the "Signed in"/"On site" KPI.
+// Director: respects the analytics site chip. Supervisor: scoped to their site.
+// Reads DEMO_SIGNINS (+ any live attendance queue records).
 function goToAnRoster() {
   goTo('screen-an-roster');
   renderAnRoster();
 }
+function _anRosterScope() {
+  // Returns {role, scope:'all'|'site-a'|'site-b'|'site-c', supSiteName?}
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  const role = p && p.role ? String(p.role).toLowerCase() : '';
+  if (role.indexOf('supervisor') !== -1) {
+    // Supervisor — scope to their own site name. Eoin's site = Bondi Junction.
+    const supName = (typeof SITE_CONTACTS !== 'undefined' && SITE_CONTACTS.supervisor && SITE_CONTACTS.supervisor.name) ? SITE_CONTACTS.supervisor.name : (p.name || '');
+    // Try to infer supervisor's site_code from their own DEMO_SIGNINS row
+    let supCode = 'site-a';
+    let supSiteName = 'Bondi Junction';
+    if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) {
+      const row = DEMO_SIGNINS.find(function(s){ return s.worker_name === supName; });
+      if (row && row.site_code) { supCode = row.site_code; supSiteName = row.site_name || supSiteName; }
+    }
+    return { role:'supervisor', scope: supCode, supSiteName: supSiteName };
+  }
+  // Director — read analytics site chip
+  const active = document.querySelector('#an-site-filter-wrap .sf-chip.on');
+  const val = active ? (active.getAttribute('data-value') || 'all') : 'all';
+  return { role:'director', scope: val };
+}
 function renderAnRoster() {
   const today = new Date().toLocaleDateString('en-AU');
+  const scope = _anRosterScope();
   // Collect today's records keyed by (name+date) so the latest event wins
   const byKey = {};
   function add(rec) {
@@ -23872,11 +23957,9 @@ function renderAnRoster() {
     const prev = byKey[k];
     if (!prev || (rec.time || '') >= (prev.time || '')) byKey[k] = rec;
   }
-  // Source 1: demo seed
   if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) {
     DEMO_SIGNINS.forEach(add);
   }
-  // Source 2: live queue (real submissions, normalised shape)
   try {
     const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
     q.forEach(function(s){
@@ -23888,22 +23971,36 @@ function renderAnRoster() {
         type:        s.data.submission_type || 'Sign In',
         time:        s.data.time || '',
         date:        (s.data.date || '').replace(/-/g,'/'),
+        site_code:   s.data.site_code || '',
+        site_name:   s.data.site_name || s.data.address || '',
         address:     s.data.address || ''
       });
     });
   } catch(e){}
   // Currently on-site = last event today is a Sign In
-  const onSite = Object.values(byKey).filter(function(r){ return (r.type||'') === 'Sign In'; });
-  // Group by site (use address — site code not in DEMO_SIGNINS schema)
+  let onSite = Object.values(byKey).filter(function(r){ return (r.type||'') === 'Sign In'; });
+  // Apply site scope
+  if (scope.scope !== 'all') {
+    onSite = onSite.filter(function(r){ return r.site_code === scope.scope; });
+  }
+  // Group by site name
   const visible = {};
   onSite.forEach(function(r){
-    const site = r.address || 'Unknown site';
-    (visible[site] = visible[site] || []).push(r);
+    const key = r.site_name || r.address || 'Unknown site';
+    (visible[key] = visible[key] || []).push(r);
   });
   const total = onSite.length;
   const siteNames = Object.keys(visible).sort();
   const sum = document.getElementById('an-roster-summary');
-  if (sum) sum.textContent = total + ' on site today across ' + siteNames.length + ' ' + (siteNames.length === 1 ? 'site' : 'sites') + '.';
+  if (sum) {
+    if (scope.role === 'supervisor') {
+      sum.textContent = total + ' on site at ' + (scope.supSiteName || 'your site') + ' today.';
+    } else if (scope.scope === 'all') {
+      sum.textContent = total + ' on site today across ' + siteNames.length + ' ' + (siteNames.length === 1 ? 'site' : 'sites') + '.';
+    } else {
+      sum.textContent = total + ' on site today.';
+    }
+  }
   const cont = document.getElementById('an-roster-container');
   if (!cont) return;
   if (!total) {
@@ -23932,31 +24029,161 @@ function renderAnRoster() {
   }).join('');
 }
 
-// Today's pre-starts — opened from the director "Pre-starts" KPI.
-// Reads DEMO_PRESTARTS (site/non-plant) and plant.html's slan_plant_records.
+// LTI Status drill-down — opened from the "LTI-free days" KPI.
+// Reads the KPI value (hardcoded to 47 in the demo for "all sites"),
+// shows last LTI date, recent LTIs from incident records, and a per-site
+// breakdown when more than one site is in play.
+function goToAnLti() {
+  goTo('screen-an-lti');
+  renderAnLti();
+}
+function renderAnLti() {
+  // Hero number — read the KPI value the user just clicked
+  const liveV = document.getElementById('an-live-lti');
+  const streak = (liveV && parseInt(liveV.textContent, 10)) || 47;
+  const streakEl = document.getElementById('an-lti-streak');
+  if (streakEl) streakEl.textContent = String(streak);
+  // Compute the "since" date from the streak
+  const since = new Date(Date.now() - streak * 86400000);
+  const sinceFmt = since.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+  const sinceEl = document.getElementById('an-lti-since');
+  if (sinceEl) sinceEl.textContent = 'Last lost-time injury: ' + sinceFmt;
+  // Per-site breakdown — only show if the analytics chip exposes per-site numbers
+  const bySiteEl = document.getElementById('an-lti-bysite');
+  if (bySiteEl) {
+    const bySite = [
+      { label:'Bondi Junction', days:47 },
+      { label:'Parramatta',     days:32 },
+      { label:'Sydney Olympic Park', days:18 }
+    ];
+    bySiteEl.innerHTML = '<div style="padding:0 2px;margin:0 0 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">By site</div>' +
+      bySite.map(function(s){
+        return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid #1B6E3A;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:space-between">' +
+          '<div style="font-size:13px;font-weight:600;color:#1A2A1F">' + s.label + '</div>' +
+          '<div style="font-size:18px;font-weight:700;color:#1B6E3A">' + s.days + ' <span style="font-size:11px;color:#3D5A48;font-weight:500">days</span></div>' +
+        '</div>';
+      }).join('');
+  }
+  // Recent LTIs — scan incidents for ones that have an rtw record with days_lost > 0
+  const recentEl = document.getElementById('an-lti-recent');
+  if (!recentEl) return;
+  let ltis = [];
+  try {
+    const inc = JSON.parse(localStorage.getItem('slan_incidents') || '[]');
+    inc.forEach(function(r){
+      const days = r && r.rtw && parseInt(r.rtw.days_lost, 10);
+      if (days && days >= 1) {
+        ltis.push({
+          ref:    r.reference || r.id || '',
+          when:   r.when || r.date || '',
+          site:   r.site || '',
+          desc:   r.title || r.summary || r.injury_type || 'Lost time injury',
+          days:   days,
+          worker: r.worker_name || r.injured_person || ''
+        });
+      }
+    });
+  } catch(e){}
+  // Sort newest first
+  ltis.sort(function(a,b){ return String(b.when).localeCompare(String(a.when)); });
+  if (!ltis.length) {
+    recentEl.innerHTML = '<div style="padding:18px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No LTIs recorded in the last 90 days. 🎉</div>';
+    return;
+  }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  recentEl.innerHTML = ltis.slice(0, 5).map(function(r){
+    return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid #B83232;border-radius:8px;background:#fff">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+        '<div style="font-size:13px;font-weight:600;color:#1A2A1F">' + esc(r.desc) + '</div>' +
+        '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;background:#FBE6E6;color:#B83232">' + r.days + ' DAYS LOST</span>' +
+      '</div>' +
+      '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.ref) + (r.site ? ' · ' + esc(r.site) : '') + (r.when ? ' · ' + esc(String(r.when).slice(0,10)) : '') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// Role-aware back button used by every Safety KPI drill-down screen
+// (roster, plant pre-starts, LTI, talk). Supervisor lands back on their
+// dashboard, director on their analytics home.
+function anKpiBack() {
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  const role = p && p.role ? String(p.role).toLowerCase() : '';
+  goTo(role.indexOf('supervisor') !== -1 ? 'screen-dash' : 'screen-analytics');
+}
+
+// ───────────────────────────────────────────────
+// SUPERVISOR SAFETY KPI DRILL-DOWNS
+// (the supChipTap* handlers stay action-shortcuts for the pills above —
+//  the KPI cards need to drill into LISTS, not start flows.)
+// ───────────────────────────────────────────────
+function supKpiTapOnSite()   { goToAnRoster(); }     // same renderer; auto-scopes via _anRosterScope()
+function supKpiTapPrestart() { goToAnPrestarts(); }  // same renderer; supervisor scope = their site
+function supKpiTapHazards()  {
+  if (typeof goToDirectorHazard === 'function') goToDirectorHazard();
+  else goTo('screen-hazard');
+}
+function supKpiTapTalk() {
+  goTo('screen-an-talk');
+  renderAnTalk();
+}
+function renderAnTalk() {
+  const today = new Date().toLocaleDateString('en-AU');
+  const signed = [];
+  if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
+    DEMO_TALKS.forEach(function(r){
+      if (!r || r.date !== today || !r.signed) return;
+      signed.push(r);
+    });
+  }
+  // Sort by sign-in time
+  signed.sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
+  // Title — use the first record's talk_title
+  const titleEl = document.getElementById('an-talk-title');
+  const title = signed.length && signed[0].talk_title ? signed[0].talk_title : 'Today\'s toolbox talk';
+  if (titleEl) titleEl.textContent = title;
+  const sumEl = document.getElementById('an-talk-summary');
+  if (sumEl) sumEl.textContent = signed.length + ' ' + (signed.length === 1 ? 'worker has' : 'workers have') + ' signed today\'s toolbox talk.';
+  const cont = document.getElementById('an-talk-container');
+  if (!cont) return;
+  if (!signed.length) {
+    cont.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No one has signed today\'s toolbox talk yet.</div>';
+    return;
+  }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  cont.innerHTML = signed.map(function(r){
+    return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid #B8960C;border-radius:8px;background:#fff">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+        '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.worker_name) + '</div>' +
+        '<span style="font-size:10.5px;font-weight:700;color:#B8960C;flex-shrink:0">' + esc(r.time || '—') + '</span>' +
+      '</div>' +
+      '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.company || '—') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// Director "Incidents" KPI — open the incident list defaulted to ALL,
+// so the director sees the 10 closed records (the Open tab is empty on
+// the demo data and made the screen look like the "report an incident" page).
+function goToAnIncidents() {
+  if (typeof goToIncidentList === 'function') {
+    goToIncidentList();
+    if (typeof incListSetFilter === 'function') incListSetFilter('all');
+  } else if (typeof goToIncident === 'function') {
+    goToIncident();
+  }
+}
+
+// Plant pre-starts today — opened from the "Pre-starts" KPI.
+// Director: shows ALL machines across all sites. Supervisor: scoped to their site.
+// Reads ONLY plant.html's slan_plant_records (the real Eoin demo data).
 function goToAnPrestarts() {
   goTo('screen-an-prestarts');
   renderAnPrestarts();
 }
 function renderAnPrestarts() {
-  const today = new Date().toLocaleDateString('en-AU');
   const items = [];
-  // Source 1: demo seed (site-level pre-starts)
-  if (typeof DEMO_PRESTARTS !== 'undefined' && Array.isArray(DEMO_PRESTARTS)) {
-    DEMO_PRESTARTS.forEach(function(r){
-      if (!r || r.date !== today) return;
-      items.push({
-        title:    r.plant_name || 'Pre-start',
-        code:     r.plant_id || '',
-        operator: r.operator || '—',
-        time:     r.time || '',
-        outcome:  r.outcome || '',
-        defects:  r.defects || ''
-      });
-    });
-  }
-  // Source 2: plant.html records (shared localStorage). Real schema:
-  // {code, machine, type, site, worker, when, faults[], critical, needsFFW, comments, items}.
+  const scope = _anRosterScope();
+  // Plant records — real schema: {code, machine, type, site, worker, when, faults[], critical, needsFFW, comments}
   try {
     const plantRecs = JSON.parse(localStorage.getItem('slan_plant_records') || '[]');
     const todayISO = new Date().toISOString().slice(0,10);
@@ -23964,6 +24191,8 @@ function renderAnPrestarts() {
       if (!r || !r.when) return;
       const d = (r.when || '').slice(0,10);
       if (d !== todayISO) return;
+      // Supervisor: scope to their site (Bondi by default — plant.html uses real site names)
+      if (scope.role === 'supervisor' && scope.supSiteName && r.site && r.site.indexOf(scope.supSiteName) === -1) return;
       let outcome = 'Fit for Use';
       if (r.critical) outcome = 'Out of Service';
       else if (r.needsFFW || (Array.isArray(r.faults) && r.faults.length)) outcome = 'Defects Found';
@@ -23973,6 +24202,7 @@ function renderAnPrestarts() {
       items.push({
         title:    r.machine || r.code || 'Machine',
         code:     r.code || '',
+        site:     r.site || '',
         operator: r.worker || '—',
         time:     (r.when || '').slice(11,16),
         outcome:  outcome,
@@ -23985,7 +24215,7 @@ function renderAnPrestarts() {
   const cleared = items.filter(function(i){ return /fit/i.test(i.outcome); }).length;
   const issues  = items.length - cleared;
   const sum = document.getElementById('an-ps-summary');
-  if (sum) sum.textContent = items.length + ' pre-start' + (items.length === 1 ? '' : 's') + ' completed today · ' + cleared + ' fit for use · ' + issues + ' with issues.';
+  if (sum) sum.textContent = items.length + ' machine' + (items.length === 1 ? '' : 's') + ' pre-started today · ' + cleared + ' fit for use · ' + issues + ' with issues.';
   const cont = document.getElementById('an-ps-container');
   if (!cont) return;
   if (!items.length) {
@@ -23995,14 +24225,15 @@ function renderAnPrestarts() {
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   cont.innerHTML = items.map(function(r){
     const ok = /fit/i.test(r.outcome);
-    const col = ok ? '#1B6E3A' : '#BA7517';
-    const bg  = ok ? '#E6F5ED' : '#FDF8EC';
+    const oos = /out of service/i.test(r.outcome);
+    const col = ok ? '#1B6E3A' : (oos ? '#B83232' : '#BA7517');
+    const bg  = ok ? '#E6F5ED' : (oos ? '#FBE6E6' : '#FDF8EC');
     return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + col + ';border-radius:8px;background:#fff">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
         '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.title) + (r.code ? ' <span style="color:#888;font-weight:500;font-size:11px">(' + esc(r.code) + ')</span>' : '') + '</div>' +
         '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;flex-shrink:0;background:' + bg + ';color:' + col + ';text-transform:uppercase;letter-spacing:.04em">' + esc(r.outcome) + '</span>' +
       '</div>' +
-      '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.operator) + (r.time ? ' · ' + esc(r.time) : '') + '</div>' +
+      '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.operator) + (r.time ? ' · ' + esc(r.time) : '') + (r.site && scope.role === 'director' ? ' · ' + esc(r.site) : '') + '</div>' +
       (r.defects && !/^none$/i.test(r.defects) ? '<div style="font-size:11px;color:#BA7517;margin-top:4px;line-height:1.4">⚠ ' + esc(r.defects) + '</div>' : '') +
     '</div>';
   }).join('');
