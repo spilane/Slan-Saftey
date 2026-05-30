@@ -822,9 +822,10 @@ input[type="time"] {
 .moved-from-header .badge{background:#fff;color:var(--muted);border-color:var(--border)}
 .moved-from-header .badge.active-month,.moved-from-header .badge.active-filter{background:var(--gold);color:var(--deep);border-color:var(--gold)}
 .bdot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
-/* white header metric cards (supervisor + director home) — dark/amber/green numbers on white */
-#an-live-signin,#an-live-prestart,#an-live-incidents,#d-m-signin,#d-m-talk,#d-m-ps{color:#1B3A2D!important}
-#an-live-hazards,#d-m-haz{color:#A9831A!important}
+/* Safety dashboard metric cards (supervisor + director) — colour-coded by meaning */
+#an-live-signin,#an-live-prestart,#d-m-signin,#d-m-talk,#d-m-ps{color:#2B5FA6!important}
+#an-live-incidents{color:#A32D2D!important}
+#an-live-hazards,#d-m-haz{color:#9A6A00!important}
 #an-live-lti{color:#1B7A3D!important}
 .bdot.g{background:#5CDB95}.bdot.r{background:#FF6B6B}
 
@@ -2022,7 +2023,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="ah-tile" onclick="ahOpenWHS()">
         <span class="ah-tbadge" id="ah-badge-whs">0</span>
         <div class="ah-ic green"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 4.5-3 7.6-8 9-5-1.4-8-4.5-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>
-        <div class="ah-tname">WHS</div><div class="ah-tsub">Incidents · permits · SDS · toolbox · hazards</div>
+        <div class="ah-tname">Safety</div><div class="ah-tsub">Incidents · permits · SDS · toolbox · hazards</div>
       </div>
       <div class="ah-tile" onclick="ahOpenPlant()">
         <span class="ah-tbadge" id="ah-badge-plant">0</span>
@@ -2091,7 +2092,7 @@ function ahStripInfo(){
 function ahPillTag(p){
   var s = ((p.id||'') + ' ' + (p.label||'')).toLowerCase();
   if (/plant|pre-mob|premob|hire|repair|servic|work order|\bwo\b|gate|mech/.test(s)) return { cls:'plant', nm:'Plant' };
-  return { cls:'whs', nm:'WHS' };
+  return { cls:'whs', nm:'Safety' };
 }
 async function ahUpdateActivity(){
   var info = ahStripInfo();
@@ -2258,7 +2259,7 @@ function ahStyleDivisionHome(){
     var g = tb.querySelector('.tbar-greeting');
     if(g){
       var h1 = g.querySelector('h1');
-      if(h1){ h1.textContent='WHS'; h1.style.fontSize='20px'; h1.style.fontWeight='700'; h1.style.letterSpacing='-.02em'; }
+      if(h1){ h1.textContent='Safety'; h1.style.fontSize='20px'; h1.style.fontWeight='700'; h1.style.letterSpacing='-.02em'; }
       var sub = g.querySelector('p'); if(sub) sub.style.display='none';
     }
     // weather off (redundant — it's on the launcher)
@@ -2651,23 +2652,25 @@ function ahStyleDivisionHome(){
       </div>
     </div>
 
-    <!-- 4 metric cards -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:10px">
-      <div style="background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 6px 14px -8px rgba(0,0,0,.35)">
-        <div style="font-size:22px;font-weight:600;color:#fff" id="d-m-signin">—</div>
-        <div style="font-size:9.5px;color:#66756C;margin-top:2px">On site</div>
+  </div>
+  <!-- METRICS — under the header on the body, colour-coded by meaning (like Plant) -->
+  <div style="padding:14px 14px 0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:9px">
+      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center">
+        <div style="font-size:22px;font-weight:700" id="d-m-signin">—</div>
+        <div style="font-size:10px;color:#5C6B62;margin-top:2px">On site</div>
       </div>
-      <div style="background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 6px 14px -8px rgba(0,0,0,.35)">
-        <div style="font-size:22px;font-weight:600;color:#fff" id="d-m-talk">—</div>
-        <div style="font-size:9.5px;color:#66756C;margin-top:2px">Talk signed</div>
+      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center">
+        <div style="font-size:22px;font-weight:700" id="d-m-talk">—</div>
+        <div style="font-size:10px;color:#5C6B62;margin-top:2px">Talk signed</div>
       </div>
-      <div style="background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 6px 14px -8px rgba(0,0,0,.35)">
-        <div style="font-size:22px;font-weight:600;color:#fff" id="d-m-ps">—</div>
-        <div style="font-size:9.5px;color:#66756C;margin-top:2px">Pre-starts</div>
+      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center">
+        <div style="font-size:22px;font-weight:700" id="d-m-ps">—</div>
+        <div style="font-size:10px;color:#5C6B62;margin-top:2px">Pre-starts</div>
       </div>
-      <div style="background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 6px 14px -8px rgba(0,0,0,.35)">
-        <div style="font-size:22px;font-weight:600;color:#fff" id="d-m-haz">—</div>
-        <div style="font-size:9.5px;color:#66756C;margin-top:2px">Hazards</div>
+      <div style="background:#FBF1DC;border:1px solid #ECDBAC;border-radius:13px;padding:13px 6px;text-align:center">
+        <div style="font-size:22px;font-weight:700" id="d-m-haz">—</div>
+        <div style="font-size:10px;color:#5C6B62;margin-top:2px">Hazards</div>
       </div>
     </div>
   </div>
@@ -10632,17 +10635,17 @@ function ahStyleDivisionHome(){
         <div id="an-wx-assess" style="font-size:9px;font-weight:600;margin-top:3px;border-radius:8px;padding:2px 7px;background:rgba(92,219,149,.2);color:#5CDB95">Checking...</div>
       </div>
     </div>
-    <!-- HEADER METRICS — in the green header like the supervisor home -->
-    <div style="margin-top:12px">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-        <div style="background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 6px 14px -8px rgba(0,0,0,.35)"><div style="font-size:22px;font-weight:600;color:#fff;line-height:1" id="an-live-signin">—</div><div style="font-size:9.5px;color:#66756C;margin-top:3px">Signed in</div></div>
-        <div style="background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 6px 14px -8px rgba(0,0,0,.35)"><div style="font-size:22px;font-weight:600;color:#fff;line-height:1" id="an-live-prestart">—</div><div style="font-size:9.5px;color:#66756C;margin-top:3px">Pre-starts</div></div>
-        <div style="background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 6px 14px -8px rgba(0,0,0,.35)"><div style="font-size:22px;font-weight:600;color:#D4AF37;line-height:1" id="an-live-hazards">—</div><div style="font-size:9.5px;color:#66756C;margin-top:3px">Open hazards</div></div>
-      </div>
-      <div id="an-lti-row" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
-        <div style="background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 6px 14px -8px rgba(0,0,0,.35)"><div style="font-size:22px;font-weight:600;color:#5CDB95;line-height:1" id="an-live-lti">—</div><div style="font-size:9.5px;color:#66756C;margin-top:3px">LTI-free days</div></div>
-        <div style="background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 6px 14px -8px rgba(0,0,0,.35)"><div style="font-size:22px;font-weight:600;color:#fff;line-height:1" id="an-live-incidents">—</div><div style="font-size:9.5px;color:#66756C;margin-top:3px">Incidents</div></div>
-      </div>
+  </div>
+  <!-- TODAY-AT-A-GLANCE — under the header on the body, colour-coded by meaning (like Plant) -->
+  <div style="padding:14px 14px 0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">
+      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-signin">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">Signed in</div></div>
+      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-prestart">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">Pre-starts</div></div>
+      <div style="background:#FBF1DC;border:1px solid #ECDBAC;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-hazards">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">Open hazards</div></div>
+    </div>
+    <div id="an-lti-row" style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px">
+      <div style="background:#E6F4EC;border:1px solid #C2E2CF;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-lti">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">LTI-free days</div></div>
+      <div style="background:#FCECEC;border:1px solid #F1D1D1;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-incidents">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">Incidents</div></div>
     </div>
   </div>
   <!-- ONLINE BAR (matches supervisor: online first, then today's activity) -->
