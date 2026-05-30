@@ -2711,10 +2711,10 @@ function ahStyleDivisionHome(){
       <div class="sf-sec-hdr"><div class="sf-sec-hdr-l">📊 Safety overview</div></div>
       <div class="sf-sec-body">
         <div class="kpis">
-          <div class="kpi k-indigo"><div class="kpi-l">On site</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="d-m-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
-          <div class="kpi k-gold"><div class="kpi-l">Talk signed</div><div class="kpi-row"><span class="kpi-ic">💬</span><span class="kpi-v" id="d-m-talk">—</span><span class="kpi-tr good">▲+1</span></div></div>
-          <div class="kpi k-teal"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="d-m-ps">—</span><span class="kpi-tr good">▲+1</span></div></div>
-          <div class="kpi k-amber"><div class="kpi-l">Hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="d-m-haz">—</span><span class="kpi-tr good">▼-1</span></div></div>
+          <div class="kpi k-indigo" onclick="supChipTapSignIn()"><div class="kpi-l">On site</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="d-m-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
+          <div class="kpi k-gold" onclick="supChipTapTalk()"><div class="kpi-l">Talk signed</div><div class="kpi-row"><span class="kpi-ic">💬</span><span class="kpi-v" id="d-m-talk">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-teal" onclick="supChipTapPrestart()"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="d-m-ps">—</span><span class="kpi-tr good">▲+1</span></div></div>
+          <div class="kpi k-amber" onclick="supChipTapHazards()"><div class="kpi-l">Hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="d-m-haz">—</span><span class="kpi-tr good">▼-1</span></div></div>
         </div>
       </div>
     </div>
@@ -10671,11 +10671,11 @@ function ahStyleDivisionHome(){
         <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
           <div class="kpi k-indigo"><div class="kpi-l">Signed in</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="an-live-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
           <div class="kpi k-teal"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="an-live-prestart">—</span><span class="kpi-tr good">▲+1</span></div></div>
-          <div class="kpi k-amber"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span><span class="kpi-tr good">▼-1</span></div></div>
+          <div class="kpi k-amber" onclick="if(typeof goToHazardList==='function'){goToHazardList();}else{goTo('screen-hazard');}"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span><span class="kpi-tr good">▼-1</span></div></div>
         </div>
         <div id="an-lti-row" class="kpis" style="grid-template-columns:repeat(2,1fr);margin-top:10px">
           <div class="kpi k-green"><div class="kpi-l">LTI-free days</div><div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v" id="an-live-lti">—</span><span class="kpi-tr good">▲+1</span></div></div>
-          <div class="kpi k-red"><div class="kpi-l">Incidents</div><div class="kpi-row"><span class="kpi-ic">❗</span><span class="kpi-v" id="an-live-incidents">—</span><span class="kpi-tr good">▼-2</span></div></div>
+          <div class="kpi k-red" onclick="if(typeof goToIncidentList==='function'){goToIncidentList();}else if(typeof goToIncident==='function'){goToIncident();}"><div class="kpi-l">Incidents</div><div class="kpi-row"><span class="kpi-ic">❗</span><span class="kpi-v" id="an-live-incidents">—</span><span class="kpi-tr good">▼-2</span></div></div>
         </div>
       </div>
     </div>
@@ -10686,12 +10686,7 @@ function ahStyleDivisionHome(){
 
     <!-- (Today-at-a-glance metrics moved up into the header, like the supervisor home) -->
 
-    <!-- Period + site filter row -->
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <div class="badge an-period" data-days="30" onclick="anSetPeriod(this)" style="cursor:pointer;background:var(--gold);color:var(--deep);border-color:var(--gold)">30 days</div>
-      <div class="badge an-period" data-days="90" onclick="anSetPeriod(this)" style="cursor:pointer">3 months</div>
-      <div class="badge an-period" data-days="365" onclick="anSetPeriod(this)" style="cursor:pointer">Year</div>
-    </div>
+    <!-- (Period filter row removed — not used in the new layout) -->
 
     <!-- (Director "Requires Attention" feed removed per request) -->
 
