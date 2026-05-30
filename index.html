@@ -3718,6 +3718,26 @@ function ahStyleDivisionHome(){
   </div>
 </div>
 
+<!-- ═══════════════════ OPEN HAZARDS (Hazards KPI shortcut) ═══ -->
+<div id="screen-an-hazards" class="screen">
+  <div class="tbar" style="background:var(--deep)">
+    <button class="back-btn" onclick="anKpiBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
+      <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#D4630A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <span style="font-size:14px;font-weight:600;color:#fff">Open Hazards</span>
+    </div>
+    <div style="width:36px"></div>
+  </div>
+  <div style="padding:18px;padding-bottom:60px">
+    <div style="padding:0 0 8px">
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Open hazards</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="an-haz-summary">Loading hazards…</div>
+    </div>
+    <div id="an-haz-container" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button onclick="goToDirectorHazard()" style="display:block;width:100%;padding:11px;margin-top:14px;background:transparent;color:#5C6B62;border:1px solid var(--border);border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">View full hazard register →</button>
+  </div>
+</div>
+
 <!-- ═══════════════════ TODAY'S TOOLBOX TALK (supervisor "Talk signed" KPI drill-down) ═══ -->
 <div id="screen-an-talk" class="screen">
   <div class="tbar" style="background:var(--deep)">
@@ -3770,19 +3790,19 @@ function ahStyleDivisionHome(){
   </div>
 </div>
 
-<!-- ═══════════════════ TODAY'S PLANT PRE-STARTS (director "Pre-starts" KPI drill-down) ═══ -->
+<!-- ═══════════════════ TODAY'S PRE-STARTS (Pre-starts KPI drill-down) ═══ -->
 <div id="screen-an-prestarts" class="screen">
   <div class="tbar" style="background:var(--deep)">
     <button class="back-btn" onclick="anKpiBack()"><svg viewBox="0 0 24 24" fill="none"><polyline points="15 18 9 12 15 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
     <div style="display:flex;align-items:center;gap:8px;margin-left:16px">
       <div class="tile-icon" style="width:28px;height:28px;border-radius:7px;background:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="#1B6E6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-      <span style="font-size:14px;font-weight:600;color:#fff">Plant Pre-Starts Today</span>
+      <span style="font-size:14px;font-weight:600;color:#fff">Today's Pre-Starts</span>
     </div>
     <div style="width:36px"></div>
   </div>
   <div style="padding:18px;padding-bottom:60px">
     <div style="padding:0 0 8px">
-      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Plant pre-starts completed today</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Pre-starts completed today</div>
       <div style="font-size:12.5px;color:var(--muted);line-height:1.5" id="an-ps-summary">Loading pre-starts…</div>
     </div>
     <div id="an-ps-container" style="display:flex;flex-direction:column;gap:8px"></div>
@@ -10746,8 +10766,13 @@ function ahStyleDivisionHome(){
       </div>
       <div class="sf-sec-body">
         <div id="an-status-strip" style="display:flex;gap:8px;flex-wrap:wrap">
-          <!-- Only Safety-relevant pills here. Plant pills (plant/hirereq/gate) belong on the Plant dashboard. -->
-          <div class="status-pill" id="an-pill-inc" onclick="dirChipTapIncidents()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-inc-lbl">Incidents</span></div>
+          <!-- Safety-relevant pills only. Plant pills (plant/hirereq/gate) live on the Plant dashboard. -->
+          <div class="status-pill" id="an-pill-signin" onclick="goToAnRoster()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-signin-lbl">Signed in</span></div>
+          <div class="status-pill" id="an-pill-ps"     onclick="goToAnPrestarts()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-ps-lbl">Pre-starts</span></div>
+          <div class="status-pill" id="an-pill-talk"   onclick="supKpiTapTalk()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-talk-lbl">Toolbox talk</span></div>
+          <div class="status-pill" id="an-pill-haz"    onclick="goToAnHazards()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-haz-lbl">Hazards</span></div>
+          <div class="status-pill" id="an-pill-lti"    onclick="goToAnLti()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-lti-lbl">LTI streak</span></div>
+          <div class="status-pill" id="an-pill-inc"    onclick="dirChipTapIncidents()" style="display:none"><div class="sp-dot sp-pending"></div><span id="an-pill-inc-lbl">Incidents</span></div>
         </div>
       </div>
     </div>
@@ -10759,7 +10784,7 @@ function ahStyleDivisionHome(){
         <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
           <div class="kpi k-indigo" onclick="goToAnRoster()"><div class="kpi-l">Signed in</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="an-live-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
           <div class="kpi k-teal" onclick="goToAnPrestarts()"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="an-live-prestart">—</span><span class="kpi-tr good">▲+1</span></div></div>
-          <div class="kpi k-amber" onclick="goToDirectorHazard()"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span><span class="kpi-tr good">▼-1</span></div></div>
+          <div class="kpi k-amber" onclick="goToAnHazards()"><div class="kpi-l">Open hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="an-live-hazards">—</span><span class="kpi-tr good">▼-1</span></div></div>
         </div>
         <div id="an-lti-row" class="kpis" style="grid-template-columns:repeat(2,1fr);margin-top:10px">
           <div class="kpi k-green" onclick="goToAnLti()"><div class="kpi-l">LTI-free days</div><div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v" id="an-live-lti">—</span><span class="kpi-tr good">▲+1</span></div></div>
@@ -15667,7 +15692,24 @@ async function loadSuperDash() {
     DEMO_MODE = true;
     // Ensure demo data arrays are populated
     if (!DEMO_WORKERS || DEMO_WORKERS.length < 5) buildDemoData();
-    renderSuperDash(DEMO_SIGNINS, DEMO_TALKS, DEMO_PRESTARTS, DEMO_HAZARDS, DEMO_VISITORS);
+    // Supervisor only sees their own site — scope all KPI/list inputs to it.
+    // _supSiteCode picks up the active supervisor's site (Bondi = site-a).
+    const supSite = (typeof _supSiteCode === 'function') ? _supSiteCode() : 'site-a';
+    const supSiteName = (typeof DEMO_SITES !== 'undefined' && DEMO_SITES[supSite]) ? DEMO_SITES[supSite].name : 'Bondi Junction';
+    // Sign-ins: filter by site_code; drop non-workers so KPI = inside count
+    const _sup_signIns = DEMO_SIGNINS.filter(function(s){
+      if (!s) return false;
+      if (s.site_code && s.site_code !== supSite) return false;
+      const role = String(s.role || '').toLowerCase();
+      if (role.indexOf('supervisor') !== -1 || role.indexOf('director') !== -1) return false;
+      return true;
+    });
+    // Names currently at the supervisor's site (used to scope talks etc.)
+    const _sup_namesOnSite = new Set(_sup_signIns.map(function(s){ return s.worker_name; }));
+    // Talks: only count workers who signed AND who are on supervisor's site today
+    const _sup_talks = DEMO_TALKS.filter(function(t){ return t && t.signed && _sup_namesOnSite.has(t.worker_name); });
+    // Hazards/visitors don't carry site info — they're already small demo arrays; keep as-is.
+    renderSuperDash(_sup_signIns, _sup_talks, DEMO_PRESTARTS, DEMO_HAZARDS, DEMO_VISITORS);
     return;
   }
   if (!db) { renderSuperDash([], [], [], [], []); return; }
@@ -18154,24 +18196,37 @@ function supChipTapHireReq(){
   location.href = target ? (base+'&hirereq='+encodeURIComponent(target.id)) : (base+'&tab=premob');
 }
 function dirUpdateActivityStrip(){
-  // Director pills are EXCEPTION/escalation only — what an officer needs to see, not day-to-day ops.
+  // Director Safety pills mirror the KPI cards so counts always agree.
   var strip=document.getElementById('an-status-strip'); if(!strip) return;
-  var any=false;
-  function setPill(id, show, label, state){ var p=document.getElementById('an-pill-'+id), l=document.getElementById('an-pill-'+id+'-lbl'); if(!p) return; if(show){ p.style.display=''; if(l) l.textContent=label; setPillState('an-pill-'+id, state||'warn'); any=true; } else { p.style.display='none'; } }
-  // 1) Major / notifiable incidents (critical only — not routine first-aid)
+  function setPill(id, show, label, state){ var p=document.getElementById('an-pill-'+id), l=document.getElementById('an-pill-'+id+'-lbl'); if(!p) return; if(show){ p.style.display=''; if(l) l.textContent=label; setPillState('an-pill-'+id, state||'warn'); } else { p.style.display='none'; } }
+  // Read the live KPI values (anSiteChanged keeps these in sync per chip)
+  function liveN(id, fallback){ var el=document.getElementById(id); var n = el ? parseInt(el.textContent, 10) : NaN; return isNaN(n) ? fallback : n; }
+  var nSig = liveN('an-live-signin',   20);
+  var nPs  = liveN('an-live-prestart',  8);
+  var nHaz = liveN('an-live-hazards',   2);
+  var nLti = liveN('an-live-lti',      18);
+  var nInc = liveN('an-live-incidents', 3);
+  // Talk-signed isn't on the chip data — derive from DEMO_TALKS when in demo
+  var nTalk = 0;
+  if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
+    var today = new Date().toLocaleDateString('en-AU');
+    nTalk = DEMO_TALKS.filter(function(t){ return t && t.signed && t.date === today; }).length;
+  }
+  // 1) Sign-ins — done (green) when anyone is on site
+  setPill('signin', nSig > 0, nSig + ' signed in across sites', 'done');
+  // 2) Pre-starts — done if any logged today, warn if zero
+  setPill('ps', true, nPs + ' pre-start' + (nPs === 1 ? '' : 's') + ' today', nPs > 0 ? 'done' : 'warn');
+  // 3) Toolbox talk
+  setPill('talk', true, nTalk + ' signed today\'s toolbox talk', nTalk > 0 ? 'done' : 'warn');
+  // 4) Hazards — amber if any open, green if zero
+  setPill('haz', true, nHaz + ' open hazard' + (nHaz === 1 ? '' : 's'), nHaz > 0 ? 'warn' : 'done');
+  // 5) LTI streak — red if low (<30d), amber if <90d, otherwise green
+  var ltiState = nLti < 30 ? 'fail' : (nLti < 90 ? 'warn' : 'done');
+  setPill('lti', true, nLti + ' days LTI-free', ltiState);
+  // 6) Major / notifiable incidents
   var crit=(typeof incLoadCritical==='function')?incLoadCritical():[];
-  setPill('inc', crit.length>0, crit.length+' major incident'+(crit.length>1?'s':'')+' to review', 'fail');
-  // 2) Plant out of service / damaged (flagged faults from the plant page)
-  var alerts=[]; try{ alerts=JSON.parse(localStorage.getItem('slan_plant_alerts')||'[]'); }catch(e){}
-  var outCt=alerts.filter(function(x){ return x.critical; }).length;
-  setPill('plant', alerts.length>0, (outCt? (outCt+' machine'+(outCt>1?'s':'')+' out of service') : (alerts.length+' machine'+(alerts.length>1?'s':'')+' flagged')), outCt?'fail':'warn');
-  // 3) Hire requests to approve
-  var pending=_hireReqsRead().filter(function(r){ return r.status==='pending'; });
-  setPill('hirereq', pending.length>0, pending.length+' hire request'+(pending.length>1?'s':'')+' to approve', 'warn');
-  // 4) Due-diligence — people stopped at the gate this month (company-wide oversight figure)
-  var gateStops=3;
-  setPill('gate', gateStops>0, gateStops+' stopped at the gate', 'warn');
-  /* Always keep flex layout — the section card wraps this; an empty body is fine */
+  setPill('inc', crit.length > 0, crit.length + ' major incident' + (crit.length > 1 ? 's' : '') + ' to review', 'fail');
+  // Always keep flex layout — the section card wraps this; an empty body is fine.
   strip.style.display = 'flex';
 }
 function dirChipTapHireReq(){
@@ -23929,15 +23984,8 @@ function _anRosterScope() {
   const p = (typeof getProfile === 'function') ? getProfile() : null;
   const role = p && p.role ? String(p.role).toLowerCase() : '';
   if (role.indexOf('supervisor') !== -1) {
-    // Supervisor — scope to their own site name. Eoin's site = Bondi Junction.
-    const supName = (typeof SITE_CONTACTS !== 'undefined' && SITE_CONTACTS.supervisor && SITE_CONTACTS.supervisor.name) ? SITE_CONTACTS.supervisor.name : (p.name || '');
-    // Try to infer supervisor's site_code from their own DEMO_SIGNINS row
-    let supCode = 'site-a';
-    let supSiteName = 'Bondi Junction';
-    if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) {
-      const row = DEMO_SIGNINS.find(function(s){ return s.worker_name === supName; });
-      if (row && row.site_code) { supCode = row.site_code; supSiteName = row.site_name || supSiteName; }
-    }
+    const supCode = _supSiteCode();
+    const supSiteName = (typeof DEMO_SITES !== 'undefined' && DEMO_SITES[supCode]) ? DEMO_SITES[supCode].name : 'Bondi Junction';
     return { role:'supervisor', scope: supCode, supSiteName: supSiteName };
   }
   // Director — read analytics site chip
@@ -23977,8 +24025,14 @@ function renderAnRoster() {
       });
     });
   } catch(e){}
-  // Currently on-site = last event today is a Sign In
-  let onSite = Object.values(byKey).filter(function(r){ return (r.type||'') === 'Sign In'; });
+  // Currently on-site = last event today is a Sign In. Exclude
+  // supervisors/directors so the worker headcount matches the KPI.
+  let onSite = Object.values(byKey).filter(function(r){
+    if ((r.type || '') !== 'Sign In') return false;
+    const rRole = String(r.role || '').toLowerCase();
+    if (rRole.indexOf('supervisor') !== -1 || rRole.indexOf('director') !== -1) return false;
+    return true;
+  });
   // Apply site scope
   if (scope.scope !== 'all') {
     onSite = onSite.filter(function(r){ return r.site_code === scope.scope; });
@@ -24007,22 +24061,29 @@ function renderAnRoster() {
     cont.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No one is signed in yet today.</div>';
     return;
   }
+  // Per-site accent colour so each group is visually distinct
+  const SITE_COL = {
+    'site-a': '#3D5AAD', // Bondi Junction — indigo
+    'site-b': '#1B6E6E', // Parramatta — teal
+    'site-c': '#D4630A'  // Sydney Olympic Park — orange
+  };
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   cont.innerHTML = siteNames.map(function(site){
     const ppl = visible[site].slice().sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
+    const col = SITE_COL[ppl[0] && ppl[0].site_code] || '#3D5AAD';
     const rows = ppl.map(function(r){
-      return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid #3D5AAD;border-radius:8px;background:#fff">' +
+      return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + col + ';border-radius:8px;background:#fff">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
           '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.worker_name) + '</div>' +
-          '<span style="font-size:10.5px;font-weight:700;color:#3D5AAD;flex-shrink:0">' + esc(r.time || '—') + '</span>' +
+          '<span style="font-size:10.5px;font-weight:700;color:' + col + ';flex-shrink:0">' + esc(r.time || '—') + '</span>' +
         '</div>' +
         '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.role || '—') + ' · ' + esc(r.company || '—') + '</div>' +
       '</div>';
     }).join('');
     return '<div>' +
       '<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">' +
-        '<span>' + esc(site) + '</span>' +
-        '<span style="color:#3D5AAD">' + ppl.length + '</span>' +
+        '<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + col + '"></span>' + esc(site) + '</span>' +
+        '<span style="color:' + col + '">' + ppl.length + '</span>' +
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:6px">' + rows + '</div>' +
     '</div>';
@@ -24038,29 +24099,41 @@ function goToAnLti() {
   renderAnLti();
 }
 function renderAnLti() {
-  // Hero number — read the KPI value the user just clicked
+  // Per-site streaks — single source of truth (mirror anSiteChanged numbers)
+  const bySite = [
+    { label:'Bondi Junction',        days:47 },
+    { label:'Parramatta',            days:32 },
+    { label:'Sydney Olympic Park',   days:18 }
+  ];
+  // Hero number — read the KPI value the user just clicked. All-sites
+  // streak = the MIN of per-site (the latest LTI anywhere resets the
+  // company streak — that's how LTIFR works).
   const liveV = document.getElementById('an-live-lti');
-  const streak = (liveV && parseInt(liveV.textContent, 10)) || 47;
+  const streak = (liveV && parseInt(liveV.textContent, 10)) || Math.min.apply(null, bySite.map(function(s){return s.days;}));
   const streakEl = document.getElementById('an-lti-streak');
   if (streakEl) streakEl.textContent = String(streak);
   // Compute the "since" date from the streak
   const since = new Date(Date.now() - streak * 86400000);
   const sinceFmt = since.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
   const sinceEl = document.getElementById('an-lti-since');
-  if (sinceEl) sinceEl.textContent = 'Last lost-time injury: ' + sinceFmt;
-  // Per-site breakdown — only show if the analytics chip exposes per-site numbers
+  if (sinceEl) {
+    // Find which site set the company streak (the one with the smallest value)
+    const minSite = bySite.reduce(function(m,s){ return s.days < m.days ? s : m; }, bySite[0]);
+    sinceEl.textContent = 'Last lost-time injury: ' + sinceFmt + ' · ' + minSite.label;
+  }
+  // Per-site breakdown — colour the site that's currently capping the streak
   const bySiteEl = document.getElementById('an-lti-bysite');
   if (bySiteEl) {
-    const bySite = [
-      { label:'Bondi Junction', days:47 },
-      { label:'Parramatta',     days:32 },
-      { label:'Sydney Olympic Park', days:18 }
-    ];
+    const minDays = Math.min.apply(null, bySite.map(function(s){ return s.days; }));
     bySiteEl.innerHTML = '<div style="padding:0 2px;margin:0 0 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">By site</div>' +
       bySite.map(function(s){
-        return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid #1B6E3A;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:space-between">' +
-          '<div style="font-size:13px;font-weight:600;color:#1A2A1F">' + s.label + '</div>' +
-          '<div style="font-size:18px;font-weight:700;color:#1B6E3A">' + s.days + ' <span style="font-size:11px;color:#3D5A48;font-weight:500">days</span></div>' +
+        const isMin = s.days === minDays;
+        const colTxt = isMin ? '#B83232' : '#1B6E3A';
+        const borderCol = isMin ? '#B83232' : '#1B6E3A';
+        const tag = isMin ? ' <span style="font-size:10px;font-weight:700;color:#B83232;background:#FBE6E6;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em">Most recent LTI</span>' : '';
+        return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + borderCol + ';border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px">' +
+          '<div style="font-size:13px;font-weight:600;color:#1A2A1F;display:flex;align-items:center;gap:8px;flex-wrap:wrap">' + s.label + tag + '</div>' +
+          '<div style="font-size:18px;font-weight:700;color:' + colTxt + ';flex-shrink:0">' + s.days + ' <span style="font-size:11px;color:#3D5A48;font-weight:500">days</span></div>' +
         '</div>';
       }).join('');
   }
@@ -24102,6 +24175,18 @@ function renderAnLti() {
   }).join('');
 }
 
+// Identify the active supervisor's site_code (defaults to Bondi for the
+// Eoin demo). Reads from DEMO_SIGNINS by looking up the profile's name.
+function _supSiteCode() {
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  const name = p && p.name ? p.name : '';
+  if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS) && name) {
+    const row = DEMO_SIGNINS.find(function(s){ return s.worker_name === name && s.site_code; });
+    if (row) return row.site_code;
+  }
+  return 'site-a';
+}
+
 // Role-aware back button used by every Safety KPI drill-down screen
 // (roster, plant pre-starts, LTI, talk). Supervisor lands back on their
 // dashboard, director on their analytics home.
@@ -24118,10 +24203,7 @@ function anKpiBack() {
 // ───────────────────────────────────────────────
 function supKpiTapOnSite()   { goToAnRoster(); }     // same renderer; auto-scopes via _anRosterScope()
 function supKpiTapPrestart() { goToAnPrestarts(); }  // same renderer; supervisor scope = their site
-function supKpiTapHazards()  {
-  if (typeof goToDirectorHazard === 'function') goToDirectorHazard();
-  else goTo('screen-hazard');
-}
+function supKpiTapHazards()  { goToAnHazards(); }    // open-hazards drill-down; matches KPI count
 function supKpiTapTalk() {
   goTo('screen-an-talk');
   renderAnTalk();
@@ -24161,10 +24243,81 @@ function renderAnTalk() {
   }).join('');
 }
 
+// Open hazards drill-down — opened from the "Open hazards"/"Hazards" KPI on
+// both director and supervisor. Shows ONLY hazards with status != resolved,
+// sorted by severity → KPI count matches what's shown. There's a "View full
+// register" button at the bottom for the broader view.
+function goToAnHazards() {
+  goTo('screen-an-hazards');
+  renderAnHazards();
+}
+function renderAnHazards() {
+  const scope = _anRosterScope();
+  let rows = [];
+  // Source 1: demo seed
+  if (typeof DEMO_HAZARDS !== 'undefined' && Array.isArray(DEMO_HAZARDS)) {
+    DEMO_HAZARDS.forEach(function(h){ rows.push(h); });
+  }
+  // Source 2: live records (slan_hazards if it exists)
+  try {
+    const live = JSON.parse(localStorage.getItem('slan_hazards') || '[]');
+    if (Array.isArray(live)) live.forEach(function(h){ rows.push(h); });
+  } catch(e){}
+  // Open only — match the KPI count
+  rows = rows.filter(function(h){
+    const st = String(h.status || '').toLowerCase();
+    return st !== 'resolved' && st !== 'closed';
+  });
+  // Severity ordering
+  const SEV_RANK = { 'critical':0, 'high':1, 'medium':2, 'low':3 };
+  rows.sort(function(a,b){
+    return (SEV_RANK[String(a.severity||'').toLowerCase()] || 9) - (SEV_RANK[String(b.severity||'').toLowerCase()] || 9);
+  });
+  const sum = document.getElementById('an-haz-summary');
+  if (sum) {
+    if (scope.role === 'supervisor') {
+      sum.textContent = rows.length + ' open hazard' + (rows.length === 1 ? '' : 's') + ' at ' + (scope.supSiteName || 'your site') + '.';
+    } else {
+      sum.textContent = rows.length + ' open hazard' + (rows.length === 1 ? '' : 's') + ' across the company.';
+    }
+  }
+  const cont = document.getElementById('an-haz-container');
+  if (!cont) return;
+  if (!rows.length) {
+    cont.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No open hazards. 🎉</div>';
+    return;
+  }
+  const SEV_COL = { 'critical':'#B83232', 'high':'#D4630A', 'medium':'#B8960C', 'low':'#3D5A48' };
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  cont.innerHTML = rows.map(function(h){
+    const col = SEV_COL[String(h.severity||'').toLowerCase()] || '#5C6B62';
+    const title = h.hazard_type || h.type || 'Hazard';
+    const loc = h.location || h.site || '';
+    const reporter = h.reporter_name || h.reporter || '';
+    return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + col + ';border-radius:8px;background:#fff">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+        '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1">' + esc(title) + '</div>' +
+        '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;background:' + col + '22;color:' + col + ';text-transform:uppercase;letter-spacing:.04em;flex-shrink:0">' + esc(h.severity || '—') + '</span>' +
+      '</div>' +
+      '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(loc) + (reporter ? ' · ' + esc(reporter) : '') + (h.date ? ' · ' + esc(h.date) : '') + '</div>' +
+      (h.corrective_action ? '<div style="font-size:11px;color:#3D5A48;margin-top:4px;line-height:1.4">' + esc(h.corrective_action) + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
 // Director "Incidents" KPI — open the incident list defaulted to ALL,
 // so the director sees the 10 closed records (the Open tab is empty on
 // the demo data and made the screen look like the "report an incident" page).
+// Auto-seeds the demo incidents if localStorage is empty, so the director
+// never lands on a blank screen.
 function goToAnIncidents() {
+  // Auto-seed if empty
+  try {
+    const have = JSON.parse(localStorage.getItem('slan_incidents') || '[]');
+    if ((!Array.isArray(have) || have.length === 0) && typeof incSeedDemoIncidents === 'function') {
+      incSeedDemoIncidents();
+    }
+  } catch(e){}
   if (typeof goToIncidentList === 'function') {
     goToIncidentList();
     if (typeof incListSetFilter === 'function') incListSetFilter('all');
@@ -24173,9 +24326,10 @@ function goToAnIncidents() {
   }
 }
 
-// Plant pre-starts today — opened from the "Pre-starts" KPI.
+// Pre-starts today — opened from the Safety "Pre-starts" KPI.
 // Director: shows ALL machines across all sites. Supervisor: scoped to their site.
-// Reads ONLY plant.html's slan_plant_records (the real Eoin demo data).
+// Reads plant.html's slan_plant_records (the real Eoin demo data); the
+// title is left agnostic so it doesn't clash with the Plant division.
 function goToAnPrestarts() {
   goTo('screen-an-prestarts');
   renderAnPrestarts();
@@ -24286,15 +24440,19 @@ function renderIncidentList() {
   if (!container) return;
   const me = (typeof getProfile === 'function') ? getProfile() : null;
   const isSup = !!(me && me.role === 'Site Supervisor');
+  const isDir = !!(me && me.role && String(me.role).toLowerCase().indexOf('director') !== -1);
   const allRaw = (typeof incLoadAll === 'function') ? incLoadAll() : [];
-  
-  // CRITICAL: Supervisors see only THEIR site's incidents, not all incidents!
+
+  // Scope by role:
+  // - Director  = ALL incidents (company-wide oversight)
+  // - Supervisor = incidents at their site (supervisor_name match)
+  // - Worker    = only their own reports
   let scoped;
-  if (isSup) {
-    // Filter by supervisor_name to show only this supervisor's incidents
+  if (isDir) {
+    scoped = allRaw.slice();
+  } else if (isSup) {
     scoped = allRaw.filter(function(r){ return r.supervisor_name === (me && me.name); });
   } else {
-    // Workers see only their own reports
     scoped = allRaw.filter(function(r){ return r.reporter_name === (me && me.name); });
   }
   
@@ -38312,17 +38470,23 @@ function anSiteChanged() {
   if (!active) return;
   var val = active.dataset.value || 'all';
   if (DEMO_MODE || localStorage.getItem('slan_demo')) {
+    // Per-site LTI streaks. All-sites streak = MIN of per-site (the latest
+    // LTI anywhere resets the company-wide counter — Niall's point).
+    var ltiA = 47, ltiB = 32, ltiC = 18;
+    var ltiAll = Math.min(ltiA, ltiB, ltiC);
     var siteData = {
-      'all':    { signin:20, prestart:8,  hazards:2, lti:47, incidents:3 },
-      'site-a': { signin:12, prestart:5,  hazards:1, lti:47, incidents:2 },
-      'site-b': { signin:5,  prestart:2,  hazards:1, lti:32, incidents:1 },
-      'site-c': { signin:3,  prestart:1,  hazards:0, lti:18, incidents:0 },
+      'all':    { signin:20, prestart:8,  hazards:2, lti: ltiAll, incidents:3 },
+      'site-a': { signin:12, prestart:5,  hazards:1, lti: ltiA,   incidents:2 },
+      'site-b': { signin:5,  prestart:2,  hazards:1, lti: ltiB,   incidents:1 },
+      'site-c': { signin:3,  prestart:1,  hazards:0, lti: ltiC,   incidents:0 },
     };
     var d = siteData[val] || siteData['all'];
     var set = function(id, v) { var el = document.getElementById(id); if(el) el.textContent = v; };
     set('an-live-signin', d.signin); set('an-live-prestart', d.prestart);
     set('an-live-hazards', d.hazards); set('an-live-lti', d.lti);
     set('an-live-incidents', d.incidents);
+    // Update director pill counts to match KPIs (single source of truth)
+    if (typeof dirUpdateActivityStrip === 'function') dirUpdateActivityStrip();
   }
 }
 
