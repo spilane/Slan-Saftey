@@ -4,33 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Slán · Dashboard layout — Plant + Safety proposed</title>
+<title>Slán · Dashboard layout v3 — Plant + Safety proposed</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#0E1A14; --deep:#1C382A; --deep-2:#0E2A1F; --mid:#2D6A45;
   --gold:#C8A02C; --gold-l:#D4AF37;
   --bg:#F2F3F2; --card:#FFFFFF; --muted:#66756C; --muted-2:#94A099; --border:rgba(16,40,30,.10);
-  --line:rgba(16,40,30,.06);
+  --line:rgba(16,40,30,.07);
   --sh-sm:0 1px 2px rgba(16,40,30,.05); --sh:0 8px 22px -12px rgba(16,40,30,.18);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--ink);-webkit-font-smoothing:antialiased;padding:26px 14px 50px}
-.preview{max-width:900px;margin:0 auto 22px;text-align:center}
+.preview{max-width:980px;margin:0 auto 22px;text-align:center}
 .preview .tag{display:inline-block;background:var(--gold);color:#3a2e05;font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;padding:5px 11px;border-radius:6px;margin-bottom:10px}
 .preview h2{font-size:19px;font-weight:800;color:var(--deep);letter-spacing:-.01em}
-.preview p{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.6;max-width:680px;margin-left:auto;margin-right:auto}
+.preview p{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.6;max-width:720px;margin-left:auto;margin-right:auto}
 .preview p b{color:var(--ink)}
 
-.row{display:flex;gap:34px;justify-content:center;flex-wrap:wrap;max-width:920px;margin:6px auto 0}
-.col{flex:0 0 410px;max-width:410px}
+.row{display:flex;gap:34px;justify-content:center;flex-wrap:wrap;max-width:980px;margin:6px auto 0}
+.col{flex:0 0 430px;max-width:430px}
 .label{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:11px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--deep)}
 .label .dot{width:9px;height:9px;border-radius:50%;background:var(--gold)}
 
 .phone{background:var(--bg);border-radius:30px;overflow:hidden;box-shadow:0 28px 56px -24px rgba(16,40,30,.45);border:1px solid rgba(16,40,30,.08)}
 .sb{height:env(safe-area-inset-top,0);min-height:6px;background:var(--deep)}
 
-/* header (compact, matches the real app) */
+/* header */
 .hdr{background:var(--deep);padding:13px 16px 15px;position:relative}
 .hdr::after{content:"";position:absolute;left:18px;right:18px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,160,44,.45),transparent)}
 .hrow{display:flex;align-items:center;justify-content:space-between}
@@ -48,26 +48,29 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .title{margin-top:13px}
 .title h1{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.1}
 
-/* body */
 .body{padding:14px 14px 18px;background:var(--bg)}
 
-/* site chips (Plant style) */
+/* site chips */
 .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;margin-bottom:14px}
 .chips::-webkit-scrollbar{display:none}
 .chip{display:inline-flex;align-items:center;background:#fff;border:1px solid var(--border);border-radius:999px;padding:7px 13px;font-size:11.5px;font-weight:600;color:var(--ink);white-space:nowrap;cursor:pointer;flex-shrink:0;box-shadow:var(--sh-sm)}
 .chip.on{background:var(--gold);border-color:var(--gold);color:#3a2e05}
 
-/* section card (matches Plant's .fcard with gold top + green/gold header bar) */
+/* SECTION CARD (gold-top + green-gold-header bar) */
 .sec{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;border-top:3px solid var(--gold);box-shadow:var(--sh-sm);margin-bottom:14px}
-.sec-hdr{background:linear-gradient(135deg,var(--deep) 0%,var(--deep-2) 100%);color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:10px 14px;display:flex;align-items:center;gap:8px}
+.sec-hdr{background:linear-gradient(135deg,var(--deep) 0%,var(--deep-2) 100%);color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sec-hdr-l{display:flex;align-items:center;gap:8px;min-width:0}
+.sec-hdr-r{display:flex;align-items:center;gap:9px;font-size:9.5px;letter-spacing:.05em;color:rgba(200,160,44,.7);font-weight:600;flex-shrink:0}
+.sec-hdr-r .va{color:var(--gold-l);font-weight:700;cursor:pointer;text-transform:none;letter-spacing:.04em;font-size:10px}
+.sec-hdr-r .dot{width:5px;height:5px;border-radius:50%;background:rgba(200,160,44,.5)}
 .sec-body{padding:14px}
 
-/* KPI cards (verbatim from Plant) */
+/* KPI cards — verbatim from Plant */
 .kpis{display:grid;gap:10px}
 .kpis.three{grid-template-columns:repeat(3,1fr)}
 .kpis.two{grid-template-columns:repeat(2,1fr);margin-top:10px}
 .kpis.four{grid-template-columns:repeat(2,1fr)}
-.kpi{border-radius:10px;padding:13px 10px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.1);border:1.5px solid}
+.kpi{border-radius:10px;padding:13px 10px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.1);border:1.5px solid;cursor:pointer;position:relative}
 .kpi-l{font-size:9px;margin-bottom:7px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;opacity:.85}
 .kpi-row{display:flex;align-items:center;justify-content:center;gap:7px}
 .kpi-ic{font-size:21px;line-height:1}
@@ -80,23 +83,43 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .kpi.k-indigo{background:linear-gradient(135deg,#EAEDFA 0%,#C7D0F0 100%);border-color:#A5AEDB;color:#3540A0}
 .kpi.k-teal{background:linear-gradient(135deg,#E1F2EE 0%,#BEE0D8 100%);border-color:#8FC9BE;color:#0E5A55}
 
-.dd-note{font-size:12px;line-height:1.55;color:var(--ink)}
-.dd-note b{color:#A32D2D}
-
-/* activity strip (Safety) */
+/* activity strip */
 .actstrip{display:flex;gap:8px;flex-wrap:wrap}
-.act-pill{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:600}
+.act-pill{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:600;cursor:pointer}
 .act-pill .pd{width:6px;height:6px;border-radius:50%}
 .act-pill.fail{background:#FCEBEB;border:1px solid rgba(184,50,50,.3);color:#A32D2D}.act-pill.fail .pd{background:#A32D2D}
 .act-pill.warn{background:#F5C48A;border:1px solid #BA7517;color:#633806}.act-pill.warn .pd{background:#854F0B}
+.act-pill.done{background:#B7E1C4;border:1px solid #1B6E3A;color:#0F4A27}.act-pill.done .pd{background:#0F4A27}
 
-/* tiles row label */
+/* "All clear" empty state for activity */
+.all-clear{display:flex;align-items:center;gap:11px;padding:6px 4px}
+.all-clear .tick{width:34px;height:34px;border-radius:50%;background:#E8F4ED;color:#1B7A3D;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+.all-clear .t{font-size:13px;font-weight:700;color:var(--ink)}
+.all-clear .s{font-size:11.5px;color:var(--muted);margin-top:1px}
+
+.dd-note{font-size:12px;line-height:1.55;color:var(--ink)}
+.dd-note b{color:#A32D2D}
+
+/* PREMIUM ISSUE LIST (Machines needing attention / Open issues) */
+.issues{display:flex;flex-direction:column;margin:-4px 0}
+.issue{display:flex;align-items:flex-start;gap:11px;padding:11px 4px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.issue:last-child{border-bottom:none;padding-bottom:4px}
+.issue-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.issue-dot.red{background:#A32D2D}.issue-dot.amber{background:#BA7517}
+.issue-main{flex:1;min-width:0}
+.issue-t{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700;color:var(--ink);line-height:1.25}
+.issue-stat{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:6px}
+.issue-stat.red{background:#FCEBEB;color:#A32D2D}.issue-stat.amber{background:#FBF1DC;color:#9A6A00}.issue-stat.blue{background:#E9F0FA;color:#2B5FA6}
+.issue-s{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.issue-chev{width:14px;height:14px;stroke:var(--muted-2);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:6px}
+
 .tlbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:6px 4px 9px}
 
-/* tiles (matches Safety's tile pattern — clean white card, icon + name + sub) */
+/* tiles with chevron */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.tile{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 13px;cursor:pointer;box-shadow:var(--sh-sm);position:relative;transition:transform .14s ease}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 13px 14px;cursor:pointer;box-shadow:var(--sh-sm);position:relative;transition:transform .14s ease}
 .tile:active{transform:scale(.985)}
+.tile-chev{position:absolute;bottom:11px;right:13px;font-size:18px;font-weight:700;color:var(--muted-2);line-height:1}
 .ticon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
 .ticon svg{width:21px;height:21px;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .ti-blue{background:#E9F0FA}.ti-blue svg{stroke:#2B5FA6}
@@ -106,20 +129,22 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 .ti-purple{background:#EEEAF8}.ti-purple svg{stroke:#5A45A6}
 .ti-gold{background:#FAF3DD}.ti-gold svg{stroke:#9a7c1c}
 .ti-red{background:#FCEBEB}.ti-red svg{stroke:#A32D2D}
-.tn{font-size:13.5px;font-weight:700;letter-spacing:-.01em;line-height:1.25;color:var(--ink)}
-.ts{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35}
+.tn{font-size:13.5px;font-weight:700;letter-spacing:-.01em;line-height:1.25;color:var(--ink);padding-right:18px}
+.ts{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35;padding-right:18px}
 .tb{position:absolute;top:13px;right:13px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#B23636;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
 
-.cap{max-width:920px;margin:26px auto 0;background:#FBF7EA;border:1px solid #E8D9A0;color:#5a4a1a;border-radius:12px;padding:14px 16px;font-size:12.5px;line-height:1.65}
+.cap{max-width:980px;margin:26px auto 0;background:#FBF7EA;border:1px solid #E8D9A0;color:#5a4a1a;border-radius:12px;padding:14px 16px;font-size:12.5px;line-height:1.65}
 .cap b{color:#3a2e05}
+.cap ul{margin:8px 0 0 16px;padding:0}
+.cap li{margin:3px 0}
 </style>
 </head>
 <body>
 
   <div class="preview">
-    <div class="tag">Proposed layout · Plant + Safety</div>
+    <div class="tag">Proposed layout v3 · Plant + Safety</div>
     <h2>Same rhythm, different content · Director view</h2>
-    <p>Both dashboards follow the same pattern: <b>compact green header</b> → <b>site chips</b> → <b>Today's activity</b> (action-first, what needs attention now) → <b>Overview section</b> (KPI cards in the gold-top / green-gold-header card) → other <b>dashboard sections</b> → <b>tile grid for everything else</b>. Plant drops its 6 tabs; the areas behind them become 5 tiles. Safety gets the same Overview wrapper and site chips. Worker and supervisor views use the same shape, just less data.</p>
+    <p>Today's activity at the top (with <b>View all</b> + a freshness timestamp), then the Overview KPIs, then a premium <b>"needs attention"</b> list (Machines needing attention on Plant; Open incidents &amp; hazards on Safety), then the Areas tile grid (with a subtle chevron). Tap a KPI to drill into that breakdown. An "All clear" green-tick replaces the activity strip on days nothing's flagged.</p>
   </div>
 
   <div class="row">
@@ -139,7 +164,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
         </div>
 
         <div class="body">
-          <!-- site chips -->
           <div class="chips">
             <span class="chip on">All sites</span>
             <span class="chip">Bondi Junction</span>
@@ -147,20 +171,23 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
             <span class="chip">Sydney Olympic Park</span>
           </div>
 
-          <!-- TODAY'S ACTIVITY — first, because it's what needs attention now -->
+          <!-- TODAY'S ACTIVITY first -->
           <div class="sec">
-            <div class="sec-hdr">⚡ Today's activity</div>
+            <div class="sec-hdr">
+              <div class="sec-hdr-l">⚡ Today's activity</div>
+              <div class="sec-hdr-r"><span>Updated just now</span><span class="dot"></span><span class="va">View all (12) ›</span></div>
+            </div>
             <div class="sec-body"><div class="actstrip">
               <span class="act-pill fail"><span class="pd"></span>1 machine out of service</span>
               <span class="act-pill fail"><span class="pd"></span>1 work order open 7+ days</span>
               <span class="act-pill warn"><span class="pd"></span>3 stopped at the gate</span>
-              <span class="act-pill warn"><span class="pd"></span>GEN-005 hire due back in 4d</span>
+              <span class="act-pill warn"><span class="pd"></span>GEN-005 hire due in 4d</span>
             </div></div>
           </div>
 
           <!-- FLEET OVERVIEW -->
           <div class="sec">
-            <div class="sec-hdr">📊 Fleet overview</div>
+            <div class="sec-hdr"><div class="sec-hdr-l">📊 Fleet overview</div><div class="sec-hdr-r"><span>30 days</span></div></div>
             <div class="sec-body">
               <div class="kpis four">
                 <div class="kpi k-blue"><div class="kpi-l">Machines</div><div class="kpi-row"><span class="kpi-ic">🚜</span><span class="kpi-v">14</span></div></div>
@@ -171,36 +198,45 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
             </div>
           </div>
 
-          <!-- Due diligence -->
+          <!-- MACHINES NEEDING ATTENTION — premium list -->
           <div class="sec">
-            <div class="sec-hdr">⚠ Due-diligence — operations blocked</div>
-            <div class="sec-body"><div class="dd-note"><b>3 attempts</b> this month to operate a machine without the required licence / ticket were stopped at the gate before work began.</div></div>
+            <div class="sec-hdr"><div class="sec-hdr-l">🔧 Machines needing attention</div><div class="sec-hdr-r"><span class="va">View all (5) ›</span></div></div>
+            <div class="sec-body"><div class="issues">
+              <div class="issue">
+                <div class="issue-dot red"></div>
+                <div class="issue-main">
+                  <div class="issue-t">MAG-009 · Magni RTH 6.46 <span class="issue-stat red">Out of service</span></div>
+                  <div class="issue-s">Hydraulic leak on boom · flagged Mon 26 May · Dave Wilkins assigned</div>
+                </div>
+                <svg class="issue-chev" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+              </div>
+              <div class="issue">
+                <div class="issue-dot amber"></div>
+                <div class="issue-main">
+                  <div class="issue-t">CRN-007 · Franna AT-40 <span class="issue-stat amber">Service overdue</span></div>
+                  <div class="issue-s">23 May · overdue 7 days · book a workshop</div>
+                </div>
+                <svg class="issue-chev" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+              </div>
+              <div class="issue">
+                <div class="issue-dot amber"></div>
+                <div class="issue-main">
+                  <div class="issue-t">EWP-018 · Genie GS-1932 <span class="issue-stat amber">Inspection due</span></div>
+                  <div class="issue-s">Annual statutory · due 22 Aug · not yet booked</div>
+                </div>
+                <svg class="issue-chev" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+              </div>
+            </div></div>
           </div>
 
-          <!-- TILES (replacing the tabs) -->
+          <!-- AREAS -->
           <div class="tlbl">Areas</div>
           <div class="tiles">
-            <div class="tile">
-              <div class="ticon ti-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5"/><path d="M12 12v9"/></svg></div>
-              <div class="tn">Assets</div><div class="ts">14 machines registered</div>
-            </div>
-            <div class="tile">
-              <div class="ticon ti-purple"><svg viewBox="0 0 24 24" fill="none"><path d="M3 17h2l1-5h11l3 4h1"/><circle cx="7.5" cy="18" r="1.7"/><circle cx="17.5" cy="18" r="1.7"/><path d="M6 12V7h7l3 5"/></svg></div>
-              <div class="tn">Hired Equipment</div><div class="ts">3 on hire · 1 due back</div>
-            </div>
-            <div class="tile">
-              <div class="ticon ti-teal"><svg viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg></div>
-              <div class="tn">Analytics</div><div class="ts">Trends &amp; charts</div>
-            </div>
-            <div class="tile">
-              <div class="ticon ti-green"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v5c0 4.5-3 7.6-8 9-5-1.4-8-4.5-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>
-              <div class="tn">Compliance</div><div class="ts">Certs, services, tickets</div>
-            </div>
-            <div class="tile">
-              <span class="tb">8</span>
-              <div class="ticon ti-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6 2 2 6-6a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg></div>
-              <div class="tn">Work Orders</div><div class="ts">8 open · 1 over 7 days</div>
-            </div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5"/><path d="M12 12v9"/></svg></div><div class="tn">Assets</div><div class="ts">14 machines registered</div></div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-purple"><svg viewBox="0 0 24 24" fill="none"><path d="M3 17h2l1-5h11l3 4h1"/><circle cx="7.5" cy="18" r="1.7"/><circle cx="17.5" cy="18" r="1.7"/><path d="M6 12V7h7l3 5"/></svg></div><div class="tn">Hired Equipment</div><div class="ts">3 on hire · 1 due back</div></div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-teal"><svg viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg></div><div class="tn">Analytics</div><div class="ts">Trends &amp; charts</div></div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-green"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v5c0 4.5-3 7.6-8 9-5-1.4-8-4.5-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="tn">Compliance</div><div class="ts">Certs, services, tickets</div></div>
+            <div class="tile"><span class="tb">8</span><span class="tile-chev">›</span><div class="ticon ti-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6 2 2 6-6a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg></div><div class="tn">Work Orders</div><div class="ts">8 open · 1 over 7 days</div></div>
           </div>
         </div>
       </div>
@@ -221,7 +257,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
         </div>
 
         <div class="body">
-          <!-- site chips -->
           <div class="chips">
             <span class="chip on">All sites</span>
             <span class="chip">Parramatta</span>
@@ -229,9 +264,12 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
             <span class="chip">Liverpool</span>
           </div>
 
-          <!-- TODAY'S ACTIVITY — first, because it's what needs attention now -->
+          <!-- TODAY'S ACTIVITY first -->
           <div class="sec">
-            <div class="sec-hdr">⚡ Today's activity</div>
+            <div class="sec-hdr">
+              <div class="sec-hdr-l">⚡ Today's activity</div>
+              <div class="sec-hdr-r"><span>Updated just now</span><span class="dot"></span><span class="va">View all (8) ›</span></div>
+            </div>
             <div class="sec-body"><div class="actstrip">
               <span class="act-pill fail"><span class="pd"></span>Notifiable incident open</span>
               <span class="act-pill fail"><span class="pd"></span>SDS expired · Solvent (MEK)</span>
@@ -242,7 +280,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
 
           <!-- SAFETY OVERVIEW -->
           <div class="sec">
-            <div class="sec-hdr">🛡 Safety overview</div>
+            <div class="sec-hdr"><div class="sec-hdr-l">🛡 Safety overview</div><div class="sec-hdr-r"><span>30 days</span></div></div>
             <div class="sec-body">
               <div class="kpis three">
                 <div class="kpi k-indigo"><div class="kpi-l">Signed in</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v">20</span></div></div>
@@ -256,43 +294,48 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
             </div>
           </div>
 
-          <!-- TILES -->
+          <!-- OPEN ISSUES — premium list, parallel to Plant's -->
+          <div class="sec">
+            <div class="sec-hdr"><div class="sec-hdr-l">⚠ Open issues</div><div class="sec-hdr-r"><span class="va">View all (5) ›</span></div></div>
+            <div class="sec-body"><div class="issues">
+              <div class="issue">
+                <div class="issue-dot red"></div>
+                <div class="issue-main">
+                  <div class="issue-t">INC-0341 · Notifiable incident <span class="issue-stat red">Open</span></div>
+                  <div class="issue-s">Fall from height · 2nd floor scaffold · reported 28 May</div>
+                </div>
+                <svg class="issue-chev" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+              </div>
+              <div class="issue">
+                <div class="issue-dot amber"></div>
+                <div class="issue-main">
+                  <div class="issue-t">HAZ-204 · Trip hazard <span class="issue-stat amber">High</span></div>
+                  <div class="issue-s">Loose timber on level-2 access route · reported 29 May</div>
+                </div>
+                <svg class="issue-chev" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+              </div>
+              <div class="issue">
+                <div class="issue-dot amber"></div>
+                <div class="issue-main">
+                  <div class="issue-t">HAZ-198 · Exposed cabling <span class="issue-stat amber">Medium</span></div>
+                  <div class="issue-s">Site office, southern wall · reported 27 May</div>
+                </div>
+                <svg class="issue-chev" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+              </div>
+            </div></div>
+          </div>
+
+          <!-- AREAS -->
           <div class="tlbl">Areas</div>
           <div class="tiles">
-            <div class="tile">
-              <div class="ticon ti-green"><svg viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
-              <div class="tn">Sign In / Out</div><div class="ts">On-site attendance</div>
-            </div>
-            <div class="tile">
-              <div class="ticon ti-teal"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2"/><polyline points="9 11 11 13 15 9"/></svg></div>
-              <div class="tn">Daily Pre-Start</div><div class="ts">Site inspection</div>
-            </div>
-            <div class="tile">
-              <div class="ticon ti-purple"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
-              <div class="tn">SWMS Library</div><div class="ts">Read &amp; sign SWMS</div>
-            </div>
-            <div class="tile">
-              <div class="ticon ti-blue"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/></svg></div>
-              <div class="tn">Toolbox Talk</div><div class="ts">Sign today's talk</div>
-            </div>
-            <div class="tile">
-              <span class="tb">2</span>
-              <div class="ticon ti-amber"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
-              <div class="tn">Permits</div><div class="ts">Hot Works, WAH &amp; more</div>
-            </div>
-            <div class="tile">
-              <div class="ticon ti-teal"><svg viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/></svg></div>
-              <div class="tn">SDS Lookup</div><div class="ts">Search safety data</div>
-            </div>
-            <div class="tile">
-              <div class="ticon ti-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 22h20L12 2z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="18" r=".8" fill="currentColor"/></svg></div>
-              <div class="tn">Hazards</div><div class="ts">Report &amp; review</div>
-            </div>
-            <div class="tile">
-              <span class="tb">3</span>
-              <div class="ticon ti-red"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v6"/><path d="M9 22h6"/><path d="M6 14a6 6 0 0 1 12 0v8H6z"/></svg></div>
-              <div class="tn">Incidents</div><div class="ts">Report &amp; track</div>
-            </div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-green"><svg viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div><div class="tn">Sign In / Out</div><div class="ts">On-site attendance</div></div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-teal"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2"/><polyline points="9 11 11 13 15 9"/></svg></div><div class="tn">Daily Pre-Start</div><div class="ts">Site inspection</div></div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-purple"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div><div class="tn">SWMS Library</div><div class="ts">Read &amp; sign SWMS</div></div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-blue"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/></svg></div><div class="tn">Toolbox Talk</div><div class="ts">Sign today's talk</div></div>
+            <div class="tile"><span class="tb">2</span><span class="tile-chev">›</span><div class="ticon ti-amber"><svg viewBox="0 0 24 24" fill="none"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div><div class="tn">Permits</div><div class="ts">Hot Works, WAH &amp; more</div></div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-teal"><svg viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/></svg></div><div class="tn">SDS Lookup</div><div class="ts">Search safety data</div></div>
+            <div class="tile"><span class="tile-chev">›</span><div class="ticon ti-amber"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 22h20L12 2z"/><line x1="12" y1="9" x2="12" y2="14"/></svg></div><div class="tn">Hazards</div><div class="ts">Report &amp; review</div></div>
+            <div class="tile"><span class="tb">3</span><span class="tile-chev">›</span><div class="ticon ti-red"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v6"/><path d="M9 22h6"/><path d="M6 14a6 6 0 0 1 12 0v8H6z"/></svg></div><div class="tn">Incidents</div><div class="ts">Report &amp; track</div></div>
           </div>
         </div>
       </div>
@@ -301,7 +344,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#E7EBE7;color:var(--i
   </div>
 
   <div class="cap">
-    <b>Why this works for premium / clean / clear:</b> the page has a clear rhythm — one big section per row, generous gaps, the gold-top &amp; green-gold-header card framing each data block, KPI cards with the same Plant treatment, and a tile grid where the labels and counts are the only things doing the talking. Tap a tile, go to that area. No tab to remember, no hidden state. Both pages read the same way; what changes is the words.
+    <b>What's new in v3:</b>
+    <ul>
+      <li>Today's activity at the top on both pages, with <b>"View all (N) ›"</b> on the right of the section header and a small <b>"Updated just now"</b> freshness timestamp</li>
+      <li>Plant's <b>Machines needing attention</b> and Safety's parallel <b>Open issues</b> reformatted: bold code + status badge on the first line, plain-English detail underneath, subtle red/amber dot on the left, chevron on the right — premium list pattern</li>
+      <li>KPI cards are now <b>tappable</b> (drill into the breakdown — Plant already has this, Safety inherits it)</li>
+      <li>Subtle <b>chevron</b> in the bottom-right of each tile, hinting it opens an area</li>
+      <li>An <b>"All clear" green-tick</b> empty state for days when nothing's flagged (replaces the activity strip — see CSS, ready to wire)</li>
+      <li>Tiles themselves kept clean and quiet — they're the navigation, not the show. The KPI section card carries the premium feel.</li>
+    </ul>
   </div>
 
 </body>
