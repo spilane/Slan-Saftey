@@ -822,10 +822,12 @@ input[type="time"] {
 .moved-from-header .badge{background:#fff;color:var(--muted);border-color:var(--border)}
 .moved-from-header .badge.active-month,.moved-from-header .badge.active-filter{background:var(--gold);color:var(--deep);border-color:var(--gold)}
 .bdot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
-/* Safety dashboard metric cards (supervisor + director) — colour-coded by meaning */
-#an-live-signin,#an-live-prestart,#d-m-signin,#d-m-talk,#d-m-ps{color:#2B5FA6!important}
-#an-live-incidents{color:#A32D2D!important}
-#an-live-hazards,#d-m-haz{color:#9A6A00!important}
+/* Safety dashboard metric cards (supervisor + director) — colour-coded by meaning, each card distinct */
+#an-live-signin,#d-m-signin{color:#4047A0!important}  /* indigo — people present */
+#an-live-prestart,#d-m-ps{color:#0E7470!important}    /* teal — operations */
+#d-m-talk{color:#9a7c1c!important}                    /* gold — compliance done */
+#an-live-hazards,#d-m-haz{color:#9A6A00!important}    /* amber — needs attention */
+#an-live-incidents{color:#A32D2D!important}           /* red — problem */
 #an-live-lti{color:#1B7A3D!important}
 .bdot.g{background:#5CDB95}.bdot.r{background:#FF6B6B}
 
@@ -2265,11 +2267,8 @@ function ahStyleDivisionHome(){
     // weather off (redundant — it's on the launcher)
     scr.querySelectorAll('[onclick*="loadWeather"]').forEach(function(w){ w.style.display='none'; });
     // date/role badges off — but keep the director's site filter (it lives inside the badge-row)
-    if(scr.id==='screen-analytics'){
-      tb.querySelectorAll('.badge-row .badge').forEach(function(b){ b.style.display='none'; });
-    } else {
-      var br = tb.querySelector('.badge-row'); if(br) br.style.display='none';
-    }
+    // Site filter is now on the body (not inside .badge-row), so hide the whole row
+    var br = tb.querySelector('.badge-row'); if(br) br.style.display='none';
   }catch(e){}
 }
 </script>
@@ -2437,12 +2436,6 @@ function ahStyleDivisionHome(){
       <div class="tile" onclick="goToPermitsToWork()">
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#B8960C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg></div>
         <div class="tile-name">Permits to Work</div><div class="tile-sub" id="worker-ptw-tile-sub">Hot Works, WAH &amp; more</div>
-      </div>
-      <div class="tile" data-mech="1" onclick="workerOpenPlant()">
-        <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
-        <div class="tile-name">Plant &amp; Equipment</div>
-        <div class="tile-sub" id="prestart-tile-sub">Plant &amp; equipment</div>
-        <div class="tile-notif" id="prestart-notif" style="display:none"></div>
       </div>
       <div class="tile" onclick="goToSdsLookup()">
         <div class="tile-icon ic-teal"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="12" cy="13" r="2"/><path d="M12 15v3"/></svg></div>
@@ -2656,21 +2649,25 @@ function ahStyleDivisionHome(){
   <!-- METRICS — under the header on the body, colour-coded by meaning (like Plant) -->
   <div style="padding:14px 14px 0">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:9px">
-      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center">
-        <div style="font-size:22px;font-weight:700" id="d-m-signin">—</div>
-        <div style="font-size:10px;color:#5C6B62;margin-top:2px">On site</div>
+      <div style="background:linear-gradient(180deg,#EEF1FD 0%,#DCE2F6 100%);border:1px solid #C7CCF0;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)">
+        <div style="font-size:17px;line-height:1">🪪</div>
+        <div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="d-m-signin">—</div>
+        <div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">On site</div>
       </div>
-      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center">
-        <div style="font-size:22px;font-weight:700" id="d-m-talk">—</div>
-        <div style="font-size:10px;color:#5C6B62;margin-top:2px">Talk signed</div>
+      <div style="background:linear-gradient(180deg,#FCF6E3 0%,#F4E8B8 100%);border:1px solid #E7D697;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)">
+        <div style="font-size:17px;line-height:1">💬</div>
+        <div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="d-m-talk">—</div>
+        <div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Talk signed</div>
       </div>
-      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center">
-        <div style="font-size:22px;font-weight:700" id="d-m-ps">—</div>
-        <div style="font-size:10px;color:#5C6B62;margin-top:2px">Pre-starts</div>
+      <div style="background:linear-gradient(180deg,#E5F5F1 0%,#D2EAE4 100%);border:1px solid #B8DDD5;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)">
+        <div style="font-size:17px;line-height:1">📋</div>
+        <div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="d-m-ps">—</div>
+        <div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Pre-starts</div>
       </div>
-      <div style="background:#FBF1DC;border:1px solid #ECDBAC;border-radius:13px;padding:13px 6px;text-align:center">
-        <div style="font-size:22px;font-weight:700" id="d-m-haz">—</div>
-        <div style="font-size:10px;color:#5C6B62;margin-top:2px">Hazards</div>
+      <div style="background:linear-gradient(180deg,#FCF4DC 0%,#F2E0AC 100%);border:1px solid #ECDBAC;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)">
+        <div style="font-size:17px;line-height:1">⚠️</div>
+        <div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="d-m-haz">—</div>
+        <div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Hazards</div>
       </div>
     </div>
   </div>
@@ -2747,13 +2744,6 @@ function ahStyleDivisionHome(){
         <div class="tile-icon ic-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#906500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg></div>
         <div class="tile-name">Permits to Work</div>
         <div class="tile-sub" id="ptw-tile-sub">Log &amp; track permits</div>
-      </div>
-
-      <!-- Plant & Equipment (opens the full asset platform in a new tab) -->
-      <div class="tile" id="stile-plant" onclick="location.href='plant.html?role=supervisor&site=Bondi%20Junction%20Mixed%20Use'">
-        <div class="tile-icon" style="background:#E6F5ED"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l2 2 4-4"/></svg></div>
-        <div class="tile-name">Plant &amp; Equipment</div>
-        <div class="tile-sub" id="d-plant-tile-sub">Machines, pre-starts &amp; service</div>
       </div>
 
       <div class="tile" onclick="goToSdsLookup()">
@@ -10611,14 +10601,6 @@ function ahStyleDivisionHome(){
     <div class="badge-row">
       <div class="badge"><div class="bdot"></div><span id="an-date">Today</span></div>
       <div id="an-role-badge" class="badge" style="background:rgba(184,150,12,.15);border-color:rgba(184,150,12,.3);color:rgba(184,150,12,.9)">Director</div>
-      <div id="an-site-filter-wrap" style="display:none;margin-left:auto">
-        <select id="an-site-select" onchange="anSiteChanged()" style="background:rgba(255,255,255,.12);border:1px solid rgba(184,150,12,.45);border-radius:8px;color:#fff;font-size:11px;padding:5px 10px;font-family:inherit;outline:none">
-          <option value="all">All sites</option>
-          <option value="site-a">Parramatta</option>
-          <option value="site-b">Blacktown</option>
-          <option value="site-c">Liverpool</option>
-        </select>
-      </div>
     </div>
     <!-- WEATHER WIDGET (matches supervisor header) -->
     <div id="an-weather-bar" style="margin-top:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="loadWeather()">
@@ -10638,14 +10620,23 @@ function ahStyleDivisionHome(){
   </div>
   <!-- TODAY-AT-A-GLANCE — under the header on the body, colour-coded by meaning (like Plant) -->
   <div style="padding:14px 14px 0">
+    <!-- Site filter (director only — moved out of the green header so the chosen site shows clearly) -->
+    <div id="an-site-filter-wrap" style="display:none;margin-bottom:11px">
+      <select id="an-site-select" onchange="anSiteChanged()" style="background:#fff;border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:12.5px;font-weight:600;padding:8px 14px;font-family:inherit;outline:none;cursor:pointer;box-shadow:0 1px 2px rgba(16,40,30,.05)">
+        <option value="all">All sites</option>
+        <option value="site-a">Parramatta</option>
+        <option value="site-b">Blacktown</option>
+        <option value="site-c">Liverpool</option>
+      </select>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">
-      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-signin">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">Signed in</div></div>
-      <div style="background:#EAF1FB;border:1px solid #D4E1F4;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-prestart">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">Pre-starts</div></div>
-      <div style="background:#FBF1DC;border:1px solid #ECDBAC;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-hazards">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">Open hazards</div></div>
+      <div style="background:linear-gradient(180deg,#EEF1FD 0%,#DCE2F6 100%);border:1px solid #C7CCF0;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">🪪</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-signin">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Signed in</div></div>
+      <div style="background:linear-gradient(180deg,#E5F5F1 0%,#D2EAE4 100%);border:1px solid #B8DDD5;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">📋</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-prestart">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Pre-starts</div></div>
+      <div style="background:linear-gradient(180deg,#FCF4DC 0%,#F2E0AC 100%);border:1px solid #ECDBAC;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">⚠️</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-hazards">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Open hazards</div></div>
     </div>
     <div id="an-lti-row" style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px">
-      <div style="background:#E6F4EC;border:1px solid #C2E2CF;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-lti">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">LTI-free days</div></div>
-      <div style="background:#FCECEC;border:1px solid #F1D1D1;border-radius:13px;padding:13px 6px;text-align:center"><div style="font-size:22px;font-weight:700;line-height:1" id="an-live-incidents">—</div><div style="font-size:10px;color:#5C6B62;margin-top:3px">Incidents</div></div>
+      <div style="background:linear-gradient(180deg,#ECF6EE 0%,#D6EBDB 100%);border:1px solid #C2E2CF;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">🛡️</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-lti">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">LTI-free days</div></div>
+      <div style="background:linear-gradient(180deg,#FCEFEF 0%,#F4D7D7 100%);border:1px solid #F1D1D1;border-radius:13px;padding:11px 6px 12px;text-align:center;box-shadow:0 1px 2px rgba(16,40,30,.05)"><div style="font-size:17px;line-height:1">❗</div><div style="font-size:22px;font-weight:700;line-height:1;margin-top:4px" id="an-live-incidents">—</div><div style="font-size:10px;color:#5C6B62;margin-top:2px;font-weight:600">Incidents</div></div>
     </div>
   </div>
   <!-- ONLINE BAR (matches supervisor: online first, then today's activity) -->
@@ -10694,11 +10685,6 @@ function ahStyleDivisionHome(){
         <div class="tile-icon" style="background:#FEF0E6"><svg viewBox="0 0 24 24" fill="none" stroke="#D4630A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
         <div class="tile-name">Hazard Register</div>
         <div class="tile-sub" id="an-haz-summary">Loading hazards…</div>
-      </div>
-      <div class="tile" onclick="location.href='plant.html?role=director'">
-        <div class="tile-icon" style="background:#E6EEF0"><svg viewBox="0 0 24 24" fill="none" stroke="#1F495C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6 2 2 6-6a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg></div>
-        <div class="tile-name">Plant &amp; Equipment</div>
-        <div class="tile-sub" id="an-plant-summary">Loading fleet…</div>
       </div>
       <div class="tile" onclick="goToDirectorPermits()">
         <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M9 2h6a1 1 0 0 1 1 1v1h1a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1z"/><path d="M9 14l2 2 4-4"/></svg></div>
