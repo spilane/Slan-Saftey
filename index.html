@@ -15706,23 +15706,20 @@ async function loadSuperDash() {
     DEMO_MODE = true;
     // Ensure demo data arrays are populated
     if (!DEMO_WORKERS || DEMO_WORKERS.length < 5) buildDemoData();
-    // Supervisor only sees their own site — scope all KPI/list inputs to it.
-    // _supSiteCode picks up the active supervisor's site (Bondi = site-a).
+    // Supervisor only sees their own site — and only people who are CURRENTLY
+    // on site (sign-out drops them from the list/count). Single source of
+    // truth via _currentlyOnSiteToday(), so sign-in/out moves every metric.
     const supSite = (typeof _supSiteCode === 'function') ? _supSiteCode() : 'site-a';
     const supSiteName = (typeof DEMO_SITES !== 'undefined' && DEMO_SITES[supSite]) ? DEMO_SITES[supSite].name : 'Bondi Junction';
-    // Sign-ins: filter by site_code; drop non-workers so KPI = inside count
-    const _sup_signIns = DEMO_SIGNINS.filter(function(s){
-      if (!s) return false;
-      if (s.site_code && s.site_code !== supSite) return false;
-      const role = String(s.role || '').toLowerCase();
-      if (role.indexOf('supervisor') !== -1 || role.indexOf('director') !== -1) return false;
-      return true;
-    });
-    // Names currently at the supervisor's site (used to scope talks etc.)
+    const _sup_onSite = (typeof _currentlyOnSiteToday === 'function')
+      ? _currentlyOnSiteToday().filter(function(r){ return r.site_code === supSite; })
+      : [];
+    // renderSuperDash expects records shaped like DEMO_SIGNINS rows.
+    const _sup_signIns = _sup_onSite.map(function(r){ return { worker_name:r.worker_name, company:r.company, role:r.role, type:'Sign In', time:r.time, site_code:r.site_code, site_name:r.site_name }; });
+    // Talks: only count workers who signed AND are currently on site
     const _sup_namesOnSite = new Set(_sup_signIns.map(function(s){ return s.worker_name; }));
-    // Talks: only count workers who signed AND who are on supervisor's site today
     const _sup_talks = DEMO_TALKS.filter(function(t){ return t && t.signed && _sup_namesOnSite.has(t.worker_name); });
-    // Hazards/visitors don't carry site info — they're already small demo arrays; keep as-is.
+    // Hazards/visitors don't carry site info — keep as-is for the demo arrays.
     renderSuperDash(_sup_signIns, _sup_talks, DEMO_PRESTARTS, DEMO_HAZARDS, DEMO_VISITORS);
     return;
   }
@@ -24019,46 +24016,8 @@ function _anRosterScope() {
   return { role:'director', scope: val };
 }
 function renderAnRoster() {
-  const today = new Date().toLocaleDateString('en-AU');
   const scope = _anRosterScope();
-  // Collect today's records keyed by (name+date) so the latest event wins
-  const byKey = {};
-  function add(rec) {
-    if (!rec || !rec.worker_name || !rec.date) return;
-    if (rec.date !== today) return;
-    const k = rec.worker_name + '|' + rec.date;
-    const prev = byKey[k];
-    if (!prev || (rec.time || '') >= (prev.time || '')) byKey[k] = rec;
-  }
-  if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) {
-    DEMO_SIGNINS.forEach(add);
-  }
-  try {
-    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
-    q.forEach(function(s){
-      if (!s || !s.data || s.data.form_type !== 'attendance') return;
-      add({
-        worker_name: s.data.worker_name,
-        company:     s.data.company || '',
-        role:        s.data.role || '',
-        type:        s.data.submission_type || 'Sign In',
-        time:        s.data.time || '',
-        date:        (s.data.date || '').replace(/-/g,'/'),
-        site_code:   s.data.site_code || '',
-        site_name:   s.data.site_name || s.data.address || '',
-        address:     s.data.address || ''
-      });
-    });
-  } catch(e){}
-  // Currently on-site = last event today is a Sign In. Exclude
-  // supervisors/directors so the worker headcount matches the KPI.
-  let onSite = Object.values(byKey).filter(function(r){
-    if ((r.type || '') !== 'Sign In') return false;
-    const rRole = String(r.role || '').toLowerCase();
-    if (rRole.indexOf('supervisor') !== -1 || rRole.indexOf('director') !== -1) return false;
-    return true;
-  });
-  // Apply site scope
+  let onSite = (typeof _currentlyOnSiteToday === 'function') ? _currentlyOnSiteToday() : [];
   if (scope.scope !== 'all') {
     onSite = onSite.filter(function(r){ return r.site_code === scope.scope; });
   }
@@ -24214,6 +24173,56 @@ function renderAnLti() {
   }).join('');
 }
 
+// SINGLE SOURCE OF TRUTH for "who is currently on site today".
+// Looks at every attendance event today (DEMO_SIGNINS + slan_queue),
+// keeps the LATEST event per worker (sort by time string), and returns
+// only those whose latest event is "Sign In". A sign-out makes a worker
+// drop out of this list — so every KPI / list that calls this helper
+// will visibly tick DOWN when someone signs out.
+function _currentlyOnSiteToday() {
+  const today = new Date().toLocaleDateString('en-AU');
+  const byWorker = {};
+  function add(rec) {
+    if (!rec || !rec.worker_name) return;
+    if ((rec.date || '') !== today) return;
+    const role = String(rec.role || '').toLowerCase();
+    if (role.indexOf('supervisor') !== -1 || role.indexOf('director') !== -1) return;
+    const time = rec.time || '';
+    const prev = byWorker[rec.worker_name];
+    if (!prev || time >= prev.time) {
+      byWorker[rec.worker_name] = {
+        worker_name: rec.worker_name,
+        company:   rec.company || '',
+        role:      rec.role || '',
+        site_code: rec.site_code || 'site-a',
+        site_name: rec.site_name || rec.address || '',
+        time:      time,
+        type:      rec.type || rec.submission_type || ''
+      };
+    }
+  }
+  if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) {
+    DEMO_SIGNINS.forEach(add);
+  }
+  try {
+    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    q.forEach(function(s){
+      if (!s || !s.data || s.data.form_type !== 'attendance') return;
+      add({
+        worker_name: s.data.worker_name,
+        company:     s.data.company || '',
+        role:        s.data.role || '',
+        type:        s.data.submission_type || s.data.type || 'Sign In',
+        time:        s.data.time || '',
+        date:        (s.data.date || '').replace(/-/g,'/'),
+        site_code:   s.data.site_code || '',
+        site_name:   s.data.site_name || s.data.address || ''
+      });
+    });
+  } catch(e){}
+  return Object.values(byWorker).filter(function(r){ return r.type === 'Sign In'; });
+}
+
 // Identify the active supervisor's site_code (defaults to Bondi for the
 // Eoin demo). Reads from DEMO_SIGNINS by looking up the profile's name.
 function _supSiteCode() {
@@ -24256,19 +24265,16 @@ function supKpiTapTalk() {
 function renderAnTalk() {
   const today = new Date().toLocaleDateString('en-AU');
   const scope = _anRosterScope();
-  // Names of people currently on the (sup's) site — used to scope the talk
-  // list for supervisors so the KPI count matches the rows shown.
-  let onSiteNames = null;
-  if (scope.role === 'supervisor' && typeof DEMO_SIGNINS !== 'undefined') {
-    onSiteNames = new Set(DEMO_SIGNINS.filter(function(s){
-      return s && s.date === today && s.site_code === scope.scope && (s.type || '') === 'Sign In';
-    }).map(function(s){ return s.worker_name; }));
-  }
+  // Only count workers who signed the talk AND are CURRENTLY on site.
+  // Sign-out removes them from this list so the KPI ticks down with them.
+  let onSite = (typeof _currentlyOnSiteToday === 'function') ? _currentlyOnSiteToday() : [];
+  if (scope.role === 'supervisor') onSite = onSite.filter(function(r){ return r.site_code === scope.scope; });
+  const onSiteNames = new Set(onSite.map(function(r){ return r.worker_name; }));
   const signed = [];
   if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
     DEMO_TALKS.forEach(function(r){
       if (!r || r.date !== today || !r.signed) return;
-      if (onSiteNames && !onSiteNames.has(r.worker_name)) return;
+      if (!onSiteNames.has(r.worker_name)) return;
       signed.push(r);
     });
   }
@@ -24386,41 +24392,10 @@ function goToAnPrestarts() {
 }
 function renderAnPrestarts() {
   const scope = _anRosterScope();
-  const today = new Date().toLocaleDateString('en-AU');
   // Niall's rule: completing a daily pre-start is part of signing in, so
-  // every signed-in worker has done a pre-start. Build the list from the
-  // same source as the on-site roster (DEMO_SIGNINS + live queue), then
-  // overlay each worker's PLANT pre-start outcome if they happened to do
-  // one (out-of-service / defects flow through here).
-  const byKey = {};
-  function addSig(rec){
-    if (!rec || !rec.worker_name || !rec.date) return;
-    if (rec.date !== today) return;
-    if ((rec.type || '') !== 'Sign In') return;
-    const rRole = String(rec.role || '').toLowerCase();
-    if (rRole.indexOf('supervisor') !== -1 || rRole.indexOf('director') !== -1) return;
-    const k = rec.worker_name + '|' + (rec.site_code || '');
-    if (!byKey[k]) byKey[k] = rec;
-  }
-  if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) DEMO_SIGNINS.forEach(addSig);
-  try {
-    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
-    q.forEach(function(s){
-      if (!s || !s.data || s.data.form_type !== 'attendance') return;
-      addSig({
-        worker_name: s.data.worker_name,
-        company:     s.data.company || '',
-        role:        s.data.role || '',
-        type:        s.data.submission_type || 'Sign In',
-        time:        s.data.time || '',
-        date:        (s.data.date || '').replace(/-/g,'/'),
-        site_code:   s.data.site_code || 'site-a',
-        site_name:   s.data.site_name || s.data.address || ''
-      });
-    });
-  } catch(e){}
-  // Site scope
-  let onSite = Object.values(byKey);
+  // the list of "pre-starts done today" == "workers currently on site".
+  // Sign-out makes a worker drop out of both.
+  let onSite = (typeof _currentlyOnSiteToday === 'function') ? _currentlyOnSiteToday() : [];
   if (scope.role === 'supervisor') onSite = onSite.filter(function(r){ return r.site_code === scope.scope; });
   // Build the per-worker plant pre-start outcome lookup (if any)
   const plantOutcomeByWorker = {};
@@ -38630,40 +38605,30 @@ function anSiteChanged() {
     // LTI anywhere resets the company-wide counter — Niall's point).
     var ltiA = 47, ltiB = 32, ltiC = 18;
     var ltiAll = Math.min(ltiA, ltiB, ltiC);
-    // Per-site demo numbers. All-sites is derived as the SUM of per-site
-    // so the math always adds up. Pre-start equals sign-in: in Niall's
-    // workflow, completing a pre-start is part of signing in, so a worker
-    // can't be on site without one. When you sign in real-time, both
-    // counts move together.
+    // Sign-in / pre-start are LIVE — computed from _currentlyOnSiteToday()
+    // so they tick UP when a worker signs in and DOWN when they sign out.
+    // Pre-start = sign-in count (in Niall's workflow, completing the daily
+    // pre-start is part of signing in, so the two move together).
+    var onSite = (typeof _currentlyOnSiteToday === 'function') ? _currentlyOnSiteToday() : [];
+    var liveByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
+    onSite.forEach(function(r){ var c = r.site_code || 'site-a'; if (liveByCode[c] != null) liveByCode[c]++; });
+    // Talk-signed count: workers on site today AND in DEMO_TALKS
+    var todayAU = new Date().toLocaleDateString('en-AU');
+    var talkByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
+    if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
+      var siteByName = {};
+      onSite.forEach(function(r){ siteByName[r.worker_name] = r.site_code; });
+      DEMO_TALKS.forEach(function(t){
+        if (!t || !t.signed || t.date !== todayAU) return;
+        var c = siteByName[t.worker_name];
+        if (c && talkByCode[c] != null) talkByCode[c]++;
+      });
+    }
     var perSite = {
-      'site-a': { signin:12, prestart:12, hazards:1, lti: ltiA,   incidents:2 },
-      'site-b': { signin:5,  prestart:5,  hazards:1, lti: ltiB,   incidents:1 },
-      'site-c': { signin:3,  prestart:3,  hazards:0, lti: ltiC,   incidents:0 },
+      'site-a': { signin: liveByCode['site-a'], prestart: liveByCode['site-a'], talks: talkByCode['site-a'], hazards:1, lti: ltiA, incidents:2 },
+      'site-b': { signin: liveByCode['site-b'], prestart: liveByCode['site-b'], talks: talkByCode['site-b'], hazards:1, lti: ltiB, incidents:1 },
+      'site-c': { signin: liveByCode['site-c'], prestart: liveByCode['site-c'], talks: talkByCode['site-c'], hazards:0, lti: ltiC, incidents:0 },
     };
-    // Bump pre-start/sign-in counts to include any LIVE sign-ins from
-    // slan_queue (so a real sign-in flow visibly moves the KPI).
-    try {
-      var todayAU = new Date().toLocaleDateString('en-AU');
-      var q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
-      var liveByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
-      var seen = new Set();
-      q.forEach(function(s){
-        if (!s || !s.data) return;
-        if (s.data.form_type !== 'attendance') return;
-        if (s.data.submission_type !== 'Sign In') return;
-        if ((s.data.date || '').replace(/-/g,'/') !== todayAU) return;
-        if (seen.has(s.data.worker_name)) return;
-        seen.add(s.data.worker_name);
-        var code = s.data.site_code || 'site-a';
-        if (liveByCode[code] != null) liveByCode[code]++;
-      });
-      Object.keys(liveByCode).forEach(function(k){
-        if (liveByCode[k] > 0) {
-          perSite[k].signin   += liveByCode[k];
-          perSite[k].prestart += liveByCode[k];
-        }
-      });
-    } catch(e){}
     function sumField(key){ return perSite['site-a'][key] + perSite['site-b'][key] + perSite['site-c'][key]; }
     var siteData = {
       'all':    { signin: sumField('signin'), prestart: sumField('prestart'), hazards: sumField('hazards'), lti: ltiAll, incidents: sumField('incidents') },
