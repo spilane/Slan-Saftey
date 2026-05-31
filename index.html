@@ -38751,16 +38751,15 @@ function anSiteChanged() {
       var c = siteByName[name];
       if (c && talkByCode[c] != null) talkByCode[c]++;
     });
-    // Hazards & incidents for BONDI come from live records (DEMO_HAZARDS
-    // seed + slan_hazards + slan_queue hazard_reports / incidents). Other
-    // sites are "made up" demo numbers per Niall: "everything must follow
-    // the demo from Eoin's site... for the other sites u can make it up."
-    var hazA = (typeof _openHazards   === 'function') ? _openHazards('site-a').length   : 0;
-    var incA = (typeof _openIncidents === 'function') ? _openIncidents('site-a').length : 0;
+    // Hazards & incidents are LIVE counts only — no hardcoded "made up"
+    // numbers, otherwise the KPI ends up larger than the drill-down list.
+    // Each site reads from _openHazards / _openIncidents scoped by code.
+    function hazFor(code){ return (typeof _openHazards   === 'function') ? _openHazards(code).length   : 0; }
+    function incFor(code){ return (typeof _openIncidents === 'function') ? _openIncidents(code).length : 0; }
     var perSite = {
-      'site-a': { signin: liveByCode['site-a'], prestart: liveByCode['site-a'], talks: talkByCode['site-a'], hazards: hazA, lti: ltiA, incidents: incA },
-      'site-b': { signin: liveByCode['site-b'], prestart: liveByCode['site-b'], talks: talkByCode['site-b'], hazards: 1,    lti: ltiB, incidents: 1    },
-      'site-c': { signin: liveByCode['site-c'], prestart: liveByCode['site-c'], talks: talkByCode['site-c'], hazards: 0,    lti: ltiC, incidents: 0    },
+      'site-a': { signin: liveByCode['site-a'], prestart: liveByCode['site-a'], talks: talkByCode['site-a'], hazards: hazFor('site-a'), lti: ltiA, incidents: incFor('site-a') },
+      'site-b': { signin: liveByCode['site-b'], prestart: liveByCode['site-b'], talks: talkByCode['site-b'], hazards: hazFor('site-b'), lti: ltiB, incidents: incFor('site-b') },
+      'site-c': { signin: liveByCode['site-c'], prestart: liveByCode['site-c'], talks: talkByCode['site-c'], hazards: hazFor('site-c'), lti: ltiC, incidents: incFor('site-c') },
     };
     function sumField(key){ return perSite['site-a'][key] + perSite['site-b'][key] + perSite['site-c'][key]; }
     var siteData = {
