@@ -15766,26 +15766,11 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
   // so the count on the card always matches the rows inside (Niall's rule).
   if (mSignin) mSignin.textContent = signedIn.length;
   if (mTalk)   mTalk.textContent   = talks.length;
-  // Pre-starts: count of today's plant records at the supervisor's site
-  // (matches renderAnPrestarts which reads slan_plant_records scoped by site).
-  if (mPs) {
-    var psCount = 0;
-    try {
-      var supSiteName = (typeof _supSiteCode === 'function' && typeof DEMO_SITES !== 'undefined') ? (DEMO_SITES[_supSiteCode()] || {}).name : 'Bondi Junction';
-      var precs = JSON.parse(localStorage.getItem('slan_plant_records') || '[]');
-      var todayISO = new Date().toISOString().slice(0,10);
-      psCount = precs.filter(function(r){
-        if (!r || !r.when) return false;
-        if (r.when.slice(0,10) !== todayISO) return false;
-        return !r.site || !supSiteName || r.site.indexOf(supSiteName) !== -1;
-      }).length;
-    } catch(e){}
-    // No DEMO_PRESTARTS fallback — that's a different dataset and would
-    // make the KPI disagree with the drill-down (which reads only
-    // slan_plant_records). Showing 0 is honest when the device has no
-    // live plant records.
-    mPs.textContent = psCount;
-  }
+  // Pre-starts: every worker who has signed in has completed a pre-start
+  // (Niall's rule — the daily pre-start is part of the sign-in flow), so
+  // the KPI = sign-in count at the supervisor's site. Sign-in triggers
+  // both KPIs to tick up together.
+  if (mPs) mPs.textContent = signedIn.length;
   // Hazards: OPEN hazards only — matches the open-hazards drill-down list.
   if (mHaz) {
     var openHaz = hazards.filter(function(h){ var st = String(h && h.status || '').toLowerCase(); return st !== 'resolved' && st !== 'closed'; }).length;
@@ -24400,37 +24385,76 @@ function goToAnPrestarts() {
   renderAnPrestarts();
 }
 function renderAnPrestarts() {
-  const items = [];
   const scope = _anRosterScope();
-  // Plant records — real schema: {code, machine, type, site, worker, when, faults[], critical, needsFFW, comments}
+  const today = new Date().toLocaleDateString('en-AU');
+  // Niall's rule: completing a daily pre-start is part of signing in, so
+  // every signed-in worker has done a pre-start. Build the list from the
+  // same source as the on-site roster (DEMO_SIGNINS + live queue), then
+  // overlay each worker's PLANT pre-start outcome if they happened to do
+  // one (out-of-service / defects flow through here).
+  const byKey = {};
+  function addSig(rec){
+    if (!rec || !rec.worker_name || !rec.date) return;
+    if (rec.date !== today) return;
+    if ((rec.type || '') !== 'Sign In') return;
+    const rRole = String(rec.role || '').toLowerCase();
+    if (rRole.indexOf('supervisor') !== -1 || rRole.indexOf('director') !== -1) return;
+    const k = rec.worker_name + '|' + (rec.site_code || '');
+    if (!byKey[k]) byKey[k] = rec;
+  }
+  if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) DEMO_SIGNINS.forEach(addSig);
+  try {
+    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    q.forEach(function(s){
+      if (!s || !s.data || s.data.form_type !== 'attendance') return;
+      addSig({
+        worker_name: s.data.worker_name,
+        company:     s.data.company || '',
+        role:        s.data.role || '',
+        type:        s.data.submission_type || 'Sign In',
+        time:        s.data.time || '',
+        date:        (s.data.date || '').replace(/-/g,'/'),
+        site_code:   s.data.site_code || 'site-a',
+        site_name:   s.data.site_name || s.data.address || ''
+      });
+    });
+  } catch(e){}
+  // Site scope
+  let onSite = Object.values(byKey);
+  if (scope.role === 'supervisor') onSite = onSite.filter(function(r){ return r.site_code === scope.scope; });
+  // Build the per-worker plant pre-start outcome lookup (if any)
+  const plantOutcomeByWorker = {};
   try {
     const plantRecs = JSON.parse(localStorage.getItem('slan_plant_records') || '[]');
     const todayISO = new Date().toISOString().slice(0,10);
     plantRecs.forEach(function(r){
       if (!r || !r.when) return;
-      const d = (r.when || '').slice(0,10);
-      if (d !== todayISO) return;
-      // Supervisor: scope to their site (Bondi by default — plant.html uses real site names)
-      if (scope.role === 'supervisor' && scope.supSiteName && r.site && r.site.indexOf(scope.supSiteName) === -1) return;
+      if ((r.when || '').slice(0,10) !== todayISO) return;
+      const name = r.worker || '';
+      if (!name) return;
       let outcome = 'Fit for Use';
       if (r.critical) outcome = 'Out of Service';
       else if (r.needsFFW || (Array.isArray(r.faults) && r.faults.length)) outcome = 'Defects Found';
-      const defectSummary = Array.isArray(r.faults) && r.faults.length
-        ? r.faults.map(function(f){ return f && (f.label || f.item || f.name) || ''; }).filter(Boolean).join('; ')
-        : '';
-      items.push({
-        title:    r.machine || r.code || 'Machine',
-        code:     r.code || '',
-        site:     r.site || '',
-        operator: r.worker || '—',
-        time:     (r.when || '').slice(11,16),
-        outcome:  outcome,
-        defects:  defectSummary
-      });
+      const prev = plantOutcomeByWorker[name];
+      // Keep the worst outcome if the worker did multiple machine pre-starts
+      const rank = { 'Out of Service':0, 'Defects Found':1, 'Fit for Use':2 };
+      if (!prev || rank[outcome] < rank[prev]) plantOutcomeByWorker[name] = outcome;
     });
   } catch(e){}
-  // Sort newest first
-  items.sort(function(a,b){ return (b.time || '').localeCompare(a.time || ''); });
+  const items = onSite.map(function(r){
+    const outcome = plantOutcomeByWorker[r.worker_name] || 'Fit for Use';
+    return {
+      operator: r.worker_name,
+      role:     r.role || '',
+      company:  r.company || '',
+      time:     r.time || '',
+      site:     r.site_name || '',
+      site_code: r.site_code || 'site-a',
+      outcome:  outcome,
+      defects:  ''
+    };
+  });
+  items.sort(function(a,b){ return (a.time || '').localeCompare(b.time || ''); });
   const cleared = items.filter(function(i){ return /fit/i.test(i.outcome); }).length;
   const issues  = items.length - cleared;
   const sum = document.getElementById('an-ps-summary');
@@ -24470,10 +24494,9 @@ function renderAnPrestarts() {
         '<span style="font-size:10.5px;font-weight:700;color:' + col + ';flex-shrink:0">' + esc(r.time || '—') + '</span>' +
       '</div>' +
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:3px">' +
-        '<div style="font-size:10.5px;color:#888;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.title) + (r.code ? ' (' + esc(r.code) + ')' : '') + '</div>' +
+        '<div style="font-size:10.5px;color:#888;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.role || '—') + (r.company ? ' · ' + esc(r.company) : '') + '</div>' +
         '<span style="font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:11px;flex-shrink:0;background:' + badgeBg + ';color:' + badgeCol + ';text-transform:uppercase;letter-spacing:.04em">' + esc(r.outcome) + '</span>' +
       '</div>' +
-      (r.defects && !/^none$/i.test(r.defects) ? '<div style="font-size:11px;color:#BA7517;margin-top:4px;line-height:1.4">⚠ ' + esc(r.defects) + '</div>' : '') +
     '</div>';
   }
   // Supervisor: single site, flat list. Director: group by site like the roster.
@@ -24485,8 +24508,8 @@ function renderAnPrestarts() {
   // Director — group by site
   const groups = {};
   items.forEach(function(r){
-    const code = siteCodeFor(r.site);
-    const siteName = r.site || 'Unknown site';
+    const code = r.site_code || siteCodeFor(r.site);
+    const siteName = r.site || ((typeof DEMO_SITES !== 'undefined' && DEMO_SITES[code]) ? DEMO_SITES[code].name : 'Unknown site');
     (groups[siteName] = groups[siteName] || { code: code, rows: [] }).rows.push(r);
   });
   const siteNames = Object.keys(groups).sort();
@@ -38608,13 +38631,39 @@ function anSiteChanged() {
     var ltiA = 47, ltiB = 32, ltiC = 18;
     var ltiAll = Math.min(ltiA, ltiB, ltiC);
     // Per-site demo numbers. All-sites is derived as the SUM of per-site
-    // so the math always adds up (Niall: "u have 0 incident but for
-    // parramatta u have 1 Bondi 2" — the 0 was inconsistent).
+    // so the math always adds up. Pre-start equals sign-in: in Niall's
+    // workflow, completing a pre-start is part of signing in, so a worker
+    // can't be on site without one. When you sign in real-time, both
+    // counts move together.
     var perSite = {
-      'site-a': { signin:12, prestart:5,  hazards:1, lti: ltiA,   incidents:2 },
-      'site-b': { signin:5,  prestart:2,  hazards:1, lti: ltiB,   incidents:1 },
-      'site-c': { signin:3,  prestart:1,  hazards:0, lti: ltiC,   incidents:0 },
+      'site-a': { signin:12, prestart:12, hazards:1, lti: ltiA,   incidents:2 },
+      'site-b': { signin:5,  prestart:5,  hazards:1, lti: ltiB,   incidents:1 },
+      'site-c': { signin:3,  prestart:3,  hazards:0, lti: ltiC,   incidents:0 },
     };
+    // Bump pre-start/sign-in counts to include any LIVE sign-ins from
+    // slan_queue (so a real sign-in flow visibly moves the KPI).
+    try {
+      var todayAU = new Date().toLocaleDateString('en-AU');
+      var q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+      var liveByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
+      var seen = new Set();
+      q.forEach(function(s){
+        if (!s || !s.data) return;
+        if (s.data.form_type !== 'attendance') return;
+        if (s.data.submission_type !== 'Sign In') return;
+        if ((s.data.date || '').replace(/-/g,'/') !== todayAU) return;
+        if (seen.has(s.data.worker_name)) return;
+        seen.add(s.data.worker_name);
+        var code = s.data.site_code || 'site-a';
+        if (liveByCode[code] != null) liveByCode[code]++;
+      });
+      Object.keys(liveByCode).forEach(function(k){
+        if (liveByCode[k] > 0) {
+          perSite[k].signin   += liveByCode[k];
+          perSite[k].prestart += liveByCode[k];
+        }
+      });
+    } catch(e){}
     function sumField(key){ return perSite['site-a'][key] + perSite['site-b'][key] + perSite['site-c'][key]; }
     var siteData = {
       'all':    { signin: sumField('signin'), prestart: sumField('prestart'), hazards: sumField('hazards'), lti: ltiAll, incidents: sumField('incidents') },
