@@ -2662,8 +2662,10 @@ function ahStyleDivisionHome(){
     <div class="fcard">
       <div class="fcard-hdr" id="si-detail-hdr">Record</div>
       <div class="fcard-body" id="si-detail-rows">
-        <div class="frow"><span class="lbl">Worker</span><span class="val" id="sd-name">—</span></div>
-        <div class="frow"><span class="lbl">Time</span><span class="val" id="sd-time">—</span></div>
+        <div class="frow"><span class="lbl">Site</span><span class="val" id="sd-site">—</span></div>
+        <div class="frow"><span class="lbl">Signed in by</span><span class="val" id="sd-name">—</span></div>
+        <div class="frow"><span class="lbl">Company</span><span class="val" id="sd-company">—</span></div>
+        <div class="frow"><span class="lbl">Signed in at</span><span class="val" id="sd-time">—</span></div>
       </div>
     </div>
 
@@ -21761,13 +21763,17 @@ function showSuccess(m,p,now,ref){
   const rows = document.getElementById('si-detail-rows');
   if (rows) {
     rows.innerHTML =
-      '<div class="frow"><span class="lbl">Worker</span><span class="val" id="sd-name">\u2014</span></div>' +
-      '<div class="frow"><span class="lbl">Time</span><span class="val" id="sd-time">\u2014</span></div>';
+      '<div class="frow"><span class="lbl">Site</span><span class="val" id="sd-site">\u2014</span></div>' +
+      '<div class="frow"><span class="lbl">' + (isIn ? 'Signed in by' : 'Signed out by') + '</span><span class="val" id="sd-name">\u2014</span></div>' +
+      '<div class="frow"><span class="lbl">Company</span><span class="val" id="sd-company">\u2014</span></div>' +
+      '<div class="frow"><span class="lbl">' + (isIn ? 'Signed in at' : 'Signed out at') + '</span><span class="val" id="sd-time">\u2014</span></div>';
   }
   const hdr = document.getElementById('si-detail-hdr');
   if (hdr) hdr.textContent = 'Record';
-  document.getElementById('sd-name').textContent  = p.name;
-  document.getElementById('sd-time').textContent  = now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true});
+  document.getElementById('sd-site').textContent    = (typeof SITE !== 'undefined' ? SITE : '\u2014');
+  document.getElementById('sd-name').textContent    = p.name;
+  document.getElementById('sd-company').textContent = p.company || '\u2014';
+  document.getElementById('sd-time').textContent    = now.toLocaleDateString('en-AU') + ' \u00b7 ' + now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true});
   // CTA: "Back to home" (consistent across success screens — Niall's rule)
   const cta = document.getElementById('si-cta-btn');
   if (cta) { cta.textContent = 'Back to home'; cta.onclick = function(){ goTo('screen-home'); }; }
