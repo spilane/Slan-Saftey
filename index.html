@@ -24437,21 +24437,11 @@ function goToAnHazards() {
 }
 function renderAnHazards() {
   const scope = _anRosterScope();
-  let rows = [];
-  // Source 1: demo seed
-  if (typeof DEMO_HAZARDS !== 'undefined' && Array.isArray(DEMO_HAZARDS)) {
-    DEMO_HAZARDS.forEach(function(h){ rows.push(h); });
-  }
-  // Source 2: live records (slan_hazards if it exists)
-  try {
-    const live = JSON.parse(localStorage.getItem('slan_hazards') || '[]');
-    if (Array.isArray(live)) live.forEach(function(h){ rows.push(h); });
-  } catch(e){}
-  // Open only — match the KPI count
-  rows = rows.filter(function(h){
-    const st = String(h.status || '').toLowerCase();
-    return st !== 'resolved' && st !== 'closed';
-  });
+  // Single source-of-truth: same helper the KPI count uses.
+  // Director sees all sites; supervisor scoped to their site.
+  let rows = (typeof _openHazards === 'function')
+    ? _openHazards(scope.role === 'supervisor' ? scope.scope : undefined)
+    : [];
   // Severity ordering
   const SEV_RANK = { 'critical':0, 'high':1, 'medium':2, 'low':3 };
   rows.sort(function(a,b){
