@@ -24479,7 +24479,7 @@ function renderIncidentList() {
     } else {
       const open    = scoped.filter(function(r){ return (r.status || 'open') !== 'closed'; }).length;
       const closed  = scoped.filter(function(r){ return (r.status || 'open') === 'closed'; }).length;
-      const scope   = isSup ? 'on record' : 'filed by you';
+      const scope   = (isSup || isDir) ? 'on record' : 'filed by you';
       summary.textContent = scoped.length + ' incident' + (scoped.length === 1 ? '' : 's') + ' ' + scope + ' \u00b7 ' + open + ' open \u00b7 ' + closed + ' closed';
     }
   }
@@ -38484,7 +38484,20 @@ function anSiteChanged() {
     var set = function(id, v) { var el = document.getElementById(id); if(el) el.textContent = v; };
     set('an-live-signin', d.signin); set('an-live-prestart', d.prestart);
     set('an-live-hazards', d.hazards); set('an-live-lti', d.lti);
-    set('an-live-incidents', d.incidents);
+    // Incidents KPI = open incidents from real records (matches what the
+    // drill-down list will show once they filter to Open). Falls back to
+    // hardcoded demo number if the incident store isn't ready yet.
+    var incCount = d.incidents;
+    try {
+      if (typeof incLoadAll === 'function') {
+        var all = incLoadAll();
+        var open = all.filter(function(r){ return (r.status || 'open') !== 'closed'; }).length;
+        if (val === 'all') incCount = open;
+        // For per-site we don't have site tagging on real incidents yet —
+        // leave the demo number for site chips.
+      }
+    } catch(e){}
+    set('an-live-incidents', incCount);
     // Update director pill counts to match KPIs (single source of truth)
     if (typeof dirUpdateActivityStrip === 'function') dirUpdateActivityStrip();
   }
