@@ -15706,27 +15706,30 @@ async function loadSuperDash() {
     DEMO_MODE = true;
     // Ensure demo data arrays are populated
     if (!DEMO_WORKERS || DEMO_WORKERS.length < 5) buildDemoData();
-    // Supervisor only sees their own site — and only people who are CURRENTLY
-    // on site (sign-out drops them from the list/count). Single source of
-    // truth via _currentlyOnSiteToday(), so sign-in/out moves every metric.
+    // Supervisor sees only their site. Each KPI uses the right source:
+    //  - sign-ins  = CURRENTLY on site (drops on sign-out)
+    //  - pre-start = did pre-start today (persists after sign-out)
+    //  - talks     = signed today's talk (persists, like Niall's rule:
+    //               "toolbox nmber stay up until the new toolbox is added in")
     const supSite = (typeof _supSiteCode === 'function') ? _supSiteCode() : 'site-a';
     const supSiteName = (typeof DEMO_SITES !== 'undefined' && DEMO_SITES[supSite]) ? DEMO_SITES[supSite].name : 'Bondi Junction';
     const _sup_onSite = (typeof _currentlyOnSiteToday === 'function')
       ? _currentlyOnSiteToday().filter(function(r){ return r.site_code === supSite; })
       : [];
-    // renderSuperDash expects records shaped like DEMO_SIGNINS rows.
     const _sup_signIns = _sup_onSite.map(function(r){ return { worker_name:r.worker_name, company:r.company, role:r.role, type:'Sign In', time:r.time, site_code:r.site_code, site_name:r.site_name }; });
-    // Talks: count workers who are currently on site AND have signed the
-    // talk via EITHER the DEMO_TALKS seed OR a real tbt record. Filing a
-    // talk-sign through the talk screen ticks the KPI up immediately.
-    const _sup_namesOnSite = new Set(_sup_signIns.map(function(s){ return s.worker_name; }));
+    // Pre-starts today (persists): any worker with a Sign In event today
+    // at this site (regardless of whether they later signed out).
+    const _sup_didPs = (typeof _didPreStartToday === 'function')
+      ? _didPreStartToday().filter(function(r){ return r.site_code === supSite; })
+      : [];
+    // Talks (persists): unique workers who signed the current talk, scoped
+    // to this site via their sign-in-today record.
     const _sup_today = new Date().toLocaleDateString('en-AU');
-    const _sup_signedNames = new Set();
-    DEMO_TALKS.forEach(function(t){ if (t && t.signed && t.date === _sup_today && _sup_namesOnSite.has(t.worker_name)) _sup_signedNames.add(t.worker_name); });
-    if (typeof tbtLoadAll === 'function') {
-      try { tbtLoadAll().forEach(function(r){ if (r && r.date === _sup_today && _sup_namesOnSite.has(r.worker_name)) _sup_signedNames.add(r.worker_name); }); } catch(e){}
-    }
-    const _sup_talks = Array.from(_sup_signedNames).map(function(name){ return { worker_name:name, signed:true, date:_sup_today }; });
+    const _sup_psNames = new Set(_sup_didPs.map(function(r){ return r.worker_name; }));
+    const _sup_signedNames = (typeof _signedTalkToday === 'function') ? _signedTalkToday() : [];
+    const _sup_talks = _sup_signedNames
+      .filter(function(name){ return _sup_psNames.has(name); })
+      .map(function(name){ return { worker_name:name, signed:true, date:_sup_today }; });
     // Hazards/visitors don't carry site info — keep as-is for the demo arrays.
     renderSuperDash(_sup_signIns, _sup_talks, DEMO_PRESTARTS, DEMO_HAZARDS, DEMO_VISITORS);
     return;
@@ -24280,12 +24283,70 @@ function _iAmCurrentlyOnSite() {
   return _currentlyOnSiteToday().some(function(r){ return r.worker_name === p.name; });
 }
 
+// "Did pre-start today" — anyone who has a Sign In event today (regardless
+// of whether they later signed out). The pre-start is part of the sign-in
+// flow, so once done it's done for the day; sign-out doesn't undo it.
+// Niall: "toolbox nmber stay up until the new toolbox is added in" — same
+// principle applies to pre-start (a daily safety check that persists).
+function _didPreStartToday() {
+  const today = new Date().toLocaleDateString('en-AU');
+  const seen = {};
+  function note(rec) {
+    if (!rec || !rec.worker_name) return;
+    if ((rec.date || '') !== today) return;
+    const role = String(rec.role || '').toLowerCase();
+    if (role.indexOf('supervisor') !== -1 || role.indexOf('director') !== -1) return;
+    if ((rec.type || rec.submission_type || '') !== 'Sign In') return;
+    if (!seen[rec.worker_name]) seen[rec.worker_name] = rec;
+  }
+  if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) {
+    DEMO_SIGNINS.forEach(note);
+  }
+  try {
+    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    q.forEach(function(s){
+      if (!s || !s.data || s.data.form_type !== 'attendance') return;
+      note({
+        worker_name: s.data.worker_name,
+        role:        s.data.role || '',
+        type:        s.data.submission_type || s.data.type || 'Sign In',
+        date:        (s.data.date || '').replace(/-/g,'/'),
+        site_code:   s.data.site_code || 'site-a',
+        site_name:   s.data.site_name || s.data.address || ''
+      });
+    });
+  } catch(e){}
+  return Object.values(seen);
+}
+
+// "Has signed the current toolbox talk" — counts every unique worker who
+// has a sign in DEMO_TALKS for today OR a tbtLoadAll() record today.
+// Persists even after the worker signs out (Niall: "toolbox nmber stay
+// up until the new toolbox is added in").
+function _signedTalkToday() {
+  const today = new Date().toLocaleDateString('en-AU');
+  const names = new Set();
+  if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
+    DEMO_TALKS.forEach(function(t){
+      if (t && t.signed && t.date === today && t.worker_name) names.add(t.worker_name);
+    });
+  }
+  if (typeof tbtLoadAll === 'function') {
+    try {
+      tbtLoadAll().forEach(function(r){
+        if (r && r.date === today && r.worker_name) names.add(r.worker_name);
+      });
+    } catch(e){}
+  }
+  return Array.from(names);
+}
+
 // SINGLE SOURCE OF TRUTH for "who is currently on site today".
 // Looks at every attendance event today (DEMO_SIGNINS + slan_queue),
 // keeps the LATEST event per worker (sort by time string), and returns
 // only those whose latest event is "Sign In". A sign-out makes a worker
-// drop out of this list — so every KPI / list that calls this helper
-// will visibly tick DOWN when someone signs out.
+// drop out of this list. Only the Sign-In/On-Site KPI uses this — the
+// pre-start and toolbox counts don't (they persist after sign-out).
 function _currentlyOnSiteToday() {
   const today = new Date().toLocaleDateString('en-AU');
   const byWorker = {};
@@ -24372,17 +24433,20 @@ function supKpiTapTalk() {
 function renderAnTalk() {
   const today = new Date().toLocaleDateString('en-AU');
   const scope = _anRosterScope();
-  // Only count workers who signed the talk AND are CURRENTLY on site.
-  // Sign-out removes them from this list so the KPI ticks down with them.
-  let onSite = (typeof _currentlyOnSiteToday === 'function') ? _currentlyOnSiteToday() : [];
-  if (scope.role === 'supervisor') onSite = onSite.filter(function(r){ return r.site_code === scope.scope; });
-  const onSiteNames = new Set(onSite.map(function(r){ return r.worker_name; }));
+  // Toolbox sign PERSISTS — once signed, you stay signed until a NEW talk
+  // is published. Sign-out doesn't undo it (Niall: "toolbox nmber stay
+  // up until the new toolbox is added in"). For per-site attribution we
+  // look up where each signed worker did their pre-start today.
+  const psToday = (typeof _didPreStartToday === 'function') ? _didPreStartToday() : [];
+  const siteByName = {};
+  psToday.forEach(function(r){ siteByName[r.worker_name] = r.site_code; });
+  const allowSite = scope.role === 'supervisor' ? scope.scope : null;
   const signed = [];
   const seenNames = new Set();
   function pushSign(r) {
     if (!r || !r.worker_name) return;
     if (seenNames.has(r.worker_name)) return;
-    if (!onSiteNames.has(r.worker_name)) return;
+    if (allowSite && siteByName[r.worker_name] !== allowSite) return;
     seenNames.add(r.worker_name);
     signed.push(r);
   }
@@ -24392,7 +24456,6 @@ function renderAnTalk() {
       pushSign(r);
     });
   }
-  // Live tbt records (real signatures via the toolbox talk screen)
   if (typeof tbtLoadAll === 'function') {
     try {
       tbtLoadAll().forEach(function(r){
@@ -24505,10 +24568,10 @@ function goToAnPrestarts() {
 }
 function renderAnPrestarts() {
   const scope = _anRosterScope();
-  // Niall's rule: completing a daily pre-start is part of signing in, so
-  // the list of "pre-starts done today" == "workers currently on site".
-  // Sign-out makes a worker drop out of both.
-  let onSite = (typeof _currentlyOnSiteToday === 'function') ? _currentlyOnSiteToday() : [];
+  // Pre-starts done today PERSIST after sign-out (you don't undo your
+  // pre-start by leaving site). So list = every worker with a Sign In
+  // event today, not just those currently on site.
+  let onSite = (typeof _didPreStartToday === 'function') ? _didPreStartToday() : [];
   if (scope.role === 'supervisor') onSite = onSite.filter(function(r){ return r.site_code === scope.scope; });
   // Build the per-worker plant pre-start outcome lookup (if any)
   const plantOutcomeByWorker = {};
@@ -38718,38 +38781,38 @@ function anSiteChanged() {
     // LTI anywhere resets the company-wide counter — Niall's point).
     var ltiA = 47, ltiB = 32, ltiC = 18;
     var ltiAll = Math.min(ltiA, ltiB, ltiC);
-    // Sign-in / pre-start are LIVE — computed from _currentlyOnSiteToday()
-    // so they tick UP when a worker signs in and DOWN when they sign out.
-    // Pre-start = sign-in count (in Niall's workflow, completing the daily
-    // pre-start is part of signing in, so the two move together).
+    // Sign-In KPI = workers CURRENTLY on site (drops on sign-out)
     var onSite = (typeof _currentlyOnSiteToday === 'function') ? _currentlyOnSiteToday() : [];
-    var liveByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
-    onSite.forEach(function(r){ var c = r.site_code || 'site-a'; if (liveByCode[c] != null) liveByCode[c]++; });
-    // Talk-signed count: workers currently on site AND who have signed
-    // today's toolbox talk. Sources: DEMO_TALKS (seed) + tbtLoadAll() (real
-    // sign records from the talk screen). Live sign of the talk bumps the
-    // KPI; sign-out drops it.
+    var signinByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
+    onSite.forEach(function(r){ var c = r.site_code || 'site-a'; if (signinByCode[c] != null) signinByCode[c]++; });
+    // Pre-start KPI = workers who signed in today AT ALL (persists after
+    // sign-out — once your pre-start is done for the day, it's done).
+    var didPs = (typeof _didPreStartToday === 'function') ? _didPreStartToday() : [];
+    var prestartByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
+    didPs.forEach(function(r){ var c = r.site_code || 'site-a'; if (prestartByCode[c] != null) prestartByCode[c]++; });
+    // Talk-signed KPI = unique workers who signed the current toolbox talk
+    // (DEMO_TALKS + tbtLoadAll). Persists across sign-in/out cycles. Site
+    // attribution: look up the worker in DEMO_SIGNINS / queue to find their
+    // site_code (today's record). If unknown, default to site-a (Bondi).
     var todayAU = new Date().toLocaleDateString('en-AU');
-    var talkByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
     var siteByName = {};
-    onSite.forEach(function(r){ siteByName[r.worker_name] = r.site_code; });
-    var signedNames = new Set();
-    if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
-      DEMO_TALKS.forEach(function(t){
-        if (!t || !t.signed || t.date !== todayAU) return;
-        signedNames.add(t.worker_name);
+    if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) {
+      DEMO_SIGNINS.forEach(function(s){ if (s.date === todayAU && (s.type === 'Sign In')) siteByName[s.worker_name] = s.site_code || 'site-a'; });
+    }
+    try {
+      var _q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+      _q.forEach(function(s){
+        if (!s || !s.data || s.data.form_type !== 'attendance') return;
+        if ((s.data.date || '').replace(/-/g,'/') !== todayAU) return;
+        if ((s.data.submission_type || '') !== 'Sign In') return;
+        siteByName[s.data.worker_name] = s.data.site_code || 'site-a';
       });
-    }
-    if (typeof tbtLoadAll === 'function') {
-      try {
-        tbtLoadAll().forEach(function(r){
-          if (r && r.date === todayAU && r.worker_name) signedNames.add(r.worker_name);
-        });
-      } catch(e){}
-    }
+    } catch(e){}
+    var talkByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
+    var signedNames = (typeof _signedTalkToday === 'function') ? _signedTalkToday() : [];
     signedNames.forEach(function(name){
-      var c = siteByName[name];
-      if (c && talkByCode[c] != null) talkByCode[c]++;
+      var c = siteByName[name] || 'site-a';
+      if (talkByCode[c] != null) talkByCode[c]++;
     });
     // Hazards & incidents are LIVE counts only — no hardcoded "made up"
     // numbers, otherwise the KPI ends up larger than the drill-down list.
@@ -38757,9 +38820,9 @@ function anSiteChanged() {
     function hazFor(code){ return (typeof _openHazards   === 'function') ? _openHazards(code).length   : 0; }
     function incFor(code){ return (typeof _openIncidents === 'function') ? _openIncidents(code).length : 0; }
     var perSite = {
-      'site-a': { signin: liveByCode['site-a'], prestart: liveByCode['site-a'], talks: talkByCode['site-a'], hazards: hazFor('site-a'), lti: ltiA, incidents: incFor('site-a') },
-      'site-b': { signin: liveByCode['site-b'], prestart: liveByCode['site-b'], talks: talkByCode['site-b'], hazards: hazFor('site-b'), lti: ltiB, incidents: incFor('site-b') },
-      'site-c': { signin: liveByCode['site-c'], prestart: liveByCode['site-c'], talks: talkByCode['site-c'], hazards: hazFor('site-c'), lti: ltiC, incidents: incFor('site-c') },
+      'site-a': { signin: signinByCode['site-a'], prestart: prestartByCode['site-a'], talks: talkByCode['site-a'], hazards: hazFor('site-a'), lti: ltiA, incidents: incFor('site-a') },
+      'site-b': { signin: signinByCode['site-b'], prestart: prestartByCode['site-b'], talks: talkByCode['site-b'], hazards: hazFor('site-b'), lti: ltiB, incidents: incFor('site-b') },
+      'site-c': { signin: signinByCode['site-c'], prestart: prestartByCode['site-c'], talks: talkByCode['site-c'], hazards: hazFor('site-c'), lti: ltiC, incidents: incFor('site-c') },
     };
     function sumField(key){ return perSite['site-a'][key] + perSite['site-b'][key] + perSite['site-c'][key]; }
     var siteData = {
