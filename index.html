@@ -2710,11 +2710,14 @@ function ahStyleDivisionHome(){
     <div class="sf-sec">
       <div class="sf-sec-hdr"><div class="sf-sec-hdr-l">📊 Safety overview</div></div>
       <div class="sf-sec-body">
-        <div class="kpis">
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
           <div class="kpi k-indigo" onclick="supKpiTapOnSite()"><div class="kpi-l">On site</div><div class="kpi-row"><span class="kpi-ic">🪪</span><span class="kpi-v" id="d-m-signin">—</span><span class="kpi-tr good">▲+2</span></div></div>
           <div class="kpi k-gold" onclick="supKpiTapTalk()"><div class="kpi-l">Talk signed</div><div class="kpi-row"><span class="kpi-ic">💬</span><span class="kpi-v" id="d-m-talk">—</span><span class="kpi-tr good">▲+1</span></div></div>
           <div class="kpi k-teal" onclick="supKpiTapPrestart()"><div class="kpi-l">Pre-starts</div><div class="kpi-row"><span class="kpi-ic">📋</span><span class="kpi-v" id="d-m-ps">—</span><span class="kpi-tr good">▲+1</span></div></div>
+        </div>
+        <div class="kpis" style="grid-template-columns:repeat(2,1fr);margin-top:10px">
           <div class="kpi k-amber" onclick="supKpiTapHazards()"><div class="kpi-l">Hazards</div><div class="kpi-row"><span class="kpi-ic">⚠️</span><span class="kpi-v" id="d-m-haz">—</span><span class="kpi-tr good">▼-1</span></div></div>
+          <div class="kpi k-red" onclick="supKpiTapIncidents()"><div class="kpi-l">Incidents</div><div class="kpi-row"><span class="kpi-ic">❗</span><span class="kpi-v" id="d-m-inc">—</span><span class="kpi-tr good">▼-1</span></div></div>
         </div>
       </div>
     </div>
@@ -14108,10 +14111,13 @@ var DEMO_TALKS = [
   { worker_name:'Wayne Slattery',  company:'Slattery Electrical',       time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
   { worker_name:'James Riordan',   company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
   { worker_name:'Kevin Nash',      company:'Burke Civil Contractors',   time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
-  { worker_name:'Paul Sheridan',   company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:false, date:_today },
-  { worker_name:'Dean Mc Grath',   company:'Smith Formwork Pty Ltd',    time:'07:30', talk_title:'Working at Heights — April 2026', signed:false, date:_today },
-  { worker_name:'Liam Brennan',    company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:false, date:_today },
-  { worker_name:'Niall Costello',  company:'Burke Civil Contractors',   time:'07:30', talk_title:'Working at Heights — April 2026', signed:false, date:_today }
+  // Per Niall's workflow rule: a worker can't sign in without first
+  // signing the toolbox. These four are in DEMO_SIGNINS today, so they
+  // must also be in DEMO_TALKS as signed.
+  { worker_name:'Paul Sheridan',   company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
+  { worker_name:'Dean Mc Grath',   company:'Smith Formwork Pty Ltd',    time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
+  { worker_name:'Liam Brennan',    company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
+  { worker_name:'Niall Costello',  company:'Burke Civil Contractors',   time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today }
 ];
 
 var DEMO_STARS = [
@@ -15770,6 +15776,7 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
   const mTalk   = document.getElementById('d-m-talk');
   const mPs     = document.getElementById('d-m-ps');
   const mHaz    = document.getElementById('d-m-haz');
+  const mInc    = document.getElementById('d-m-inc');
   // Each KPI value comes from the SAME data source the drill-down list reads,
   // so the count on the card always matches the rows inside (Niall's rule).
   if (mSignin) mSignin.textContent = signedIn.length;
@@ -15793,6 +15800,13 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
     var openHaz = (typeof _openHazards === 'function') ? _openHazards(supCode).length : 0;
     mHaz.textContent = openHaz;
     mHaz.style.color = openHaz > 0 ? '#EF8C3A' : '#fff';
+  }
+  // Incidents: OPEN incidents at the supervisor's site (live source — filing
+  // an incident via the form bumps this).
+  if (mInc) {
+    var supCode2 = (typeof _supSiteCode === 'function') ? _supSiteCode() : 'site-a';
+    var openInc = (typeof _openIncidents === 'function') ? _openIncidents(supCode2).length : 0;
+    mInc.textContent = openInc;
   }
 
   // Activity pills — same style as worker home
@@ -24432,6 +24446,7 @@ function anKpiBack() {
 function supKpiTapOnSite()   { goToAnRoster(); }     // same renderer; auto-scopes via _anRosterScope()
 function supKpiTapPrestart() { goToAnPrestarts(); }  // same renderer; supervisor scope = their site
 function supKpiTapHazards()  { goToAnHazards(); }    // open-hazards drill-down; matches KPI count
+function supKpiTapIncidents(){ goToAnIncidents(); }  // open incidents at supervisor's site
 function supKpiTapTalk() {
   goTo('screen-an-talk');
   renderAnTalk();
