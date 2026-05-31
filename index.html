@@ -3769,10 +3769,31 @@ function ahStyleDivisionHome(){
   </div>
   <div style="padding:18px;padding-bottom:60px">
     <!-- Hero streak panel -->
-    <div style="background:linear-gradient(135deg, #E6F5ED 0%, #D4ECD8 100%);border:1.5px solid rgba(27,110,58,.25);border-radius:14px;padding:22px 18px;text-align:center;margin-bottom:14px">
+    <div style="background:linear-gradient(135deg, #E6F5ED 0%, #D4ECD8 100%);border:1.5px solid rgba(27,110,58,.25);border-radius:14px;padding:22px 18px;text-align:center;margin-bottom:10px">
       <div style="font-size:11px;font-weight:700;color:#1B6E3A;text-transform:uppercase;letter-spacing:.08em">Days without a Lost Time Injury</div>
       <div style="font-size:52px;font-weight:800;color:#1B6E3A;line-height:1;margin:8px 0 4px" id="an-lti-streak">—</div>
       <div style="font-size:12px;color:#3D5A48" id="an-lti-since">Calculating…</div>
+    </div>
+    <!-- Industry benchmark comparison -->
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <div style="flex:1;padding:11px 12px;border:1px solid #E8E8E8;border-radius:10px;background:#fff">
+        <div style="font-size:10px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">Your streak</div>
+        <div style="font-size:22px;font-weight:800;color:#1B6E3A;margin-top:2px" id="an-lti-ours">—</div>
+        <div style="font-size:10.5px;color:#888">days</div>
+      </div>
+      <div style="flex:1;padding:11px 12px;border:1px solid #E8E8E8;border-radius:10px;background:#FAFAF7">
+        <div style="font-size:10px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">Industry benchmark</div>
+        <div style="font-size:22px;font-weight:800;color:#5C6B62;margin-top:2px">30</div>
+        <div style="font-size:10.5px;color:#888">days · AU civil construction</div>
+      </div>
+      <div style="flex:1;padding:11px 12px;border:1px solid #E8E8E8;border-radius:10px;background:#fff">
+        <div style="font-size:10px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">Vs benchmark</div>
+        <div style="font-size:22px;font-weight:800;margin-top:2px" id="an-lti-vs">—</div>
+        <div style="font-size:10.5px;color:#888" id="an-lti-vs-lbl">—</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#888;line-height:1.5;margin:-6px 2px 14px">
+      Benchmark based on Safe Work Australia construction LTIFR data (~5–7 per million hours worked). Indicative only — your insurer will use your own LTIFR for premium calcs.
     </div>
     <!-- Per-site breakdown (if more than one site) -->
     <div id="an-lti-bysite" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
@@ -24138,6 +24159,26 @@ function renderAnLti() {
   const streak = (liveV && parseInt(liveV.textContent, 10)) || Math.min.apply(null, bySite.map(function(s){return s.days;}));
   const streakEl = document.getElementById('an-lti-streak');
   if (streakEl) streakEl.textContent = String(streak);
+  // Industry comparison row
+  const INDUSTRY_BENCH = 30; // days · AU civil construction (Safe Work Australia indicative)
+  const oursEl = document.getElementById('an-lti-ours');
+  if (oursEl) oursEl.textContent = String(streak);
+  const vsEl = document.getElementById('an-lti-vs');
+  const vsLbl = document.getElementById('an-lti-vs-lbl');
+  if (vsEl && vsLbl) {
+    const diff = streak - INDUSTRY_BENCH;
+    if (diff >= 0) {
+      vsEl.textContent = '+' + diff;
+      vsEl.style.color = '#1B6E3A';
+      vsLbl.textContent = 'days above';
+      vsLbl.style.color = '#1B6E3A';
+    } else {
+      vsEl.textContent = String(diff);
+      vsEl.style.color = '#B83232';
+      vsLbl.textContent = 'days below';
+      vsLbl.style.color = '#B83232';
+    }
+  }
   // Compute the "since" date from the streak
   const since = new Date(Date.now() - streak * 86400000);
   const sinceFmt = since.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
@@ -24214,12 +24255,18 @@ function _supSiteCode() {
 }
 
 // Role-aware back button used by every Safety KPI drill-down screen
-// (roster, plant pre-starts, LTI, talk). Supervisor lands back on their
-// dashboard, director on their analytics home.
+// (roster, plant pre-starts, LTI, talk, hazards). Supervisor lands back on
+// their dashboard; director goes via goToAnalytics so the KPI values get
+// refreshed on return (otherwise LTI/Incidents/etc keep stale numbers).
 function anKpiBack() {
   const p = (typeof getProfile === 'function') ? getProfile() : null;
   const role = p && p.role ? String(p.role).toLowerCase() : '';
-  goTo(role.indexOf('supervisor') !== -1 ? 'screen-dash' : 'screen-analytics');
+  if (role.indexOf('supervisor') !== -1) {
+    goTo('screen-dash');
+    return;
+  }
+  if (typeof goToAnalytics === 'function') goToAnalytics('director');
+  else goTo('screen-analytics');
 }
 
 // ───────────────────────────────────────────────
@@ -24347,16 +24394,11 @@ function renderAnHazards() {
 // Auto-seeds the demo incidents if localStorage is empty, so the director
 // never lands on a blank screen.
 function goToAnIncidents() {
-  // Auto-seed if empty
-  try {
-    const have = JSON.parse(localStorage.getItem('slan_incidents') || '[]');
-    if ((!Array.isArray(have) || have.length === 0) && typeof incSeedDemoIncidents === 'function') {
-      incSeedDemoIncidents();
-    }
-  } catch(e){}
+  // KPI value = open incidents. Drill-down lands on the Open tab so
+  // KPI count == list count (Niall's "if KPI=2 show me those 2" rule).
   if (typeof goToIncidentList === 'function') {
     goToIncidentList();
-    if (typeof incListSetFilter === 'function') incListSetFilter('all');
+    if (typeof incListSetFilter === 'function') incListSetFilter('open');
   } else if (typeof goToIncident === 'function') {
     goToIncident();
   }
@@ -24434,11 +24476,21 @@ function renderAnPrestarts() {
 // incident, sorted newest first.
 function goToIncidentList() {
   // Set the list back button to return to the right home (matches the
-  // canonical goToPermitsToWork pattern)
+  // canonical goToPermitsToWork pattern). Director goes back to the
+  // Safety analytics screen, otherwise the analytics KPIs/pills look
+  // like they "disappeared" after a back-click.
   const p = (typeof getProfile === 'function') ? getProfile() : null;
-  const isSup = !!(p && p.role === 'Site Supervisor');
+  const role = p && p.role ? String(p.role).toLowerCase() : '';
+  const isSup = role.indexOf('supervisor') !== -1;
+  const isDir = role.indexOf('director')   !== -1;
+  // Director: route via goToAnalytics so the analytics KPI values get refreshed
+  // on the way back (otherwise the LTI/Incidents cards keep stale numbers
+  // after a back-click from a drill-down).
+  const backOnclick = isSup ? "goTo('screen-dash')"
+                     : isDir ? "goToAnalytics('director')"
+                     : "goTo('screen-home')";
   const backBtn = document.querySelector('#screen-incident-list .tbar .back-btn');
-  if (backBtn) backBtn.setAttribute('onclick', isSup ? "goTo('screen-dash')" : "goTo('screen-home')");
+  if (backBtn) backBtn.setAttribute('onclick', backOnclick);
   // Reset search input each visit
   const sIn = document.getElementById('inc-list-search');
   if (sIn) sIn.value = '';
@@ -38371,6 +38423,10 @@ function goToAnalytics(fromRole) {
   goTo('screen-analytics');
   // Weather in the header (matches supervisor) — repaint if already loaded, else fetch
   try { if(window._lastWx) updateWeatherUI(window._lastWx); else if(typeof loadWeather==='function') loadWeather(); } catch(e) {}
+  // ALWAYS refresh the KPI values on entry — otherwise the cards keep the
+  // previous value (e.g. LTI showing 47 after we already set it to 18) and
+  // pills look stale after a back-navigation from a drill-down.
+  try { if (typeof anSiteChanged === 'function') anSiteChanged(); } catch(e) {}
   // Director activity-pill strip (hire requests to approve, etc.) — directors only
   try { if (anIsDirector) { dirUpdateActivityStrip(); } else { var _anStrip=document.getElementById('an-status-strip'); if(_anStrip) _anStrip.style.display='none'; } } catch(e) {}
   const p = getProfile();
