@@ -15748,10 +15748,35 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
   const mTalk   = document.getElementById('d-m-talk');
   const mPs     = document.getElementById('d-m-ps');
   const mHaz    = document.getElementById('d-m-haz');
+  // Each KPI value comes from the SAME data source the drill-down list reads,
+  // so the count on the card always matches the rows inside (Niall's rule).
   if (mSignin) mSignin.textContent = signedIn.length;
   if (mTalk)   mTalk.textContent   = talks.length;
-  if (mPs)     mPs.textContent     = workerPs.length;
-  if (mHaz)  { mHaz.textContent = hazards.length; mHaz.style.color = hazards.length > 0 ? '#EF8C3A' : '#fff'; }
+  // Pre-starts: count of today's plant records at the supervisor's site
+  // (matches renderAnPrestarts which reads slan_plant_records scoped by site).
+  if (mPs) {
+    var psCount = 0;
+    try {
+      var supSiteName = (typeof _supSiteCode === 'function' && typeof DEMO_SITES !== 'undefined') ? (DEMO_SITES[_supSiteCode()] || {}).name : 'Bondi Junction';
+      var precs = JSON.parse(localStorage.getItem('slan_plant_records') || '[]');
+      var todayISO = new Date().toISOString().slice(0,10);
+      psCount = precs.filter(function(r){
+        if (!r || !r.when) return false;
+        if (r.when.slice(0,10) !== todayISO) return false;
+        return !r.site || !supSiteName || r.site.indexOf(supSiteName) !== -1;
+      }).length;
+    } catch(e){}
+    // Fall back to DEMO_PRESTARTS count when there are no live plant records
+    // (e.g. a brand-new browser); avoids showing zero on fresh demo loads.
+    if (psCount === 0) psCount = workerPs.length;
+    mPs.textContent = psCount;
+  }
+  // Hazards: OPEN hazards only — matches the open-hazards drill-down list.
+  if (mHaz) {
+    var openHaz = hazards.filter(function(h){ var st = String(h && h.status || '').toLowerCase(); return st !== 'resolved' && st !== 'closed'; }).length;
+    mHaz.textContent = openHaz;
+    mHaz.style.color = openHaz > 0 ? '#EF8C3A' : '#fff';
+  }
 
   // Activity pills — same style as worker home
   const setP = (id, lblId, count, label, ok) => {
@@ -24210,10 +24235,20 @@ function supKpiTapTalk() {
 }
 function renderAnTalk() {
   const today = new Date().toLocaleDateString('en-AU');
+  const scope = _anRosterScope();
+  // Names of people currently on the (sup's) site — used to scope the talk
+  // list for supervisors so the KPI count matches the rows shown.
+  let onSiteNames = null;
+  if (scope.role === 'supervisor' && typeof DEMO_SIGNINS !== 'undefined') {
+    onSiteNames = new Set(DEMO_SIGNINS.filter(function(s){
+      return s && s.date === today && s.site_code === scope.scope && (s.type || '') === 'Sign In';
+    }).map(function(s){ return s.worker_name; }));
+  }
   const signed = [];
   if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
     DEMO_TALKS.forEach(function(r){
       if (!r || r.date !== today || !r.signed) return;
+      if (onSiteNames && !onSiteNames.has(r.worker_name)) return;
       signed.push(r);
     });
   }
