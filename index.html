@@ -14044,8 +14044,11 @@ var DEMO_SITES = {
   'site-c': { name:'Sydney Olympic Park', address:'1 Olympic Bvd, Sydney Olympic Park' }
 };
 var DEMO_SIGNINS = [
-  // ── Bondi Junction (site-a) — 12 workers + Eoin (supervisor) + Patrick (director here today)
-  { worker_name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',          type:'Sign In',  time:'06:48', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:6  },
+  // ── Bondi Junction (site-a) — 11 workers + Eoin (supervisor) + Patrick (director here today)
+  // Note: Jake Ryan is the demo's "main worker" profile and is deliberately
+  // NOT pre-seeded here today. Niall demos the gate flow as Jake (sign
+  // toolbox → do pre-start → sign in), which moves Bondi's count from 11
+  // to 12 in front of the client.
   { worker_name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',          type:'Sign In',  time:'06:52', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:8  },
   { worker_name:'Sam Carroll',     company:'Burke Civil Contractors',   role:'Concretor',           type:'Sign In',  time:'06:55', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:5  },
   { worker_name:'Tom Burke',       company:'Burke Civil Contractors',   role:'Labourer',            type:'Sign In',  time:'06:58', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:9  },
@@ -14071,6 +14074,7 @@ var DEMO_SIGNINS = [
   { worker_name:'Eoin Burke',      company:'Murphy Civil Construction', role:'Site Supervisor',     type:'Sign In',  time:'06:30', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:5  },
   { worker_name:'Patrick Murphy',  company:'Murphy Civil Construction', role:'Director',            type:'Sign In',  time:'06:35', date:_today,  site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:6  },
   // Yesterday sign-outs (Bondi)
+  // (Jake Ryan's YESTERDAY sign-out kept so any history view still has it.)
   { worker_name:'Jake Ryan',       company:'Murphy Civil Construction', role:'Concretor',           type:'Sign Out', time:'16:32', date:_yest,   site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:7  },
   { worker_name:'Mark Flynn',      company:'Murphy Civil Construction', role:'Formworker',          type:'Sign Out', time:'16:28', date:_yest,   site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:9  },
   { worker_name:"Lee O'Brien",     company:'Murphy Civil Construction', role:'Rigger',              type:'Sign Out', time:'15:45', date:_yest,   site_code:'site-a', site_name:'Bondi Junction',       address:'4 Oxford St, Bondi Junction',          gps_accuracy_m:8  }
@@ -14095,7 +14099,10 @@ var DEMO_PRESTARTS = [
 ];
 
 var DEMO_TALKS = [
-  { worker_name:'Jake Ryan',       company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
+  // Jake Ryan deliberately NOT here today — he's the demo's "main worker"
+  // and Niall demos the gate flow (sign toolbox -> pre-start -> sign in)
+  // as Jake in front of a client. After Jake signs the talk, Bondi's
+  // talk-signed count moves from 11 -> 12.
   { worker_name:'Mark Flynn',      company:'Murphy Civil Construction', time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
   { worker_name:'Sam Carroll',     company:'Burke Civil Contractors',   time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
   { worker_name:'Tom Burke',       company:'Burke Civil Contractors',   time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today },
