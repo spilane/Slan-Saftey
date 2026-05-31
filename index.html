@@ -2589,11 +2589,6 @@ function ahStyleDivisionHome(){
           <div class="eos-check" id="ffd-check-3"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;opacity:0"><polyline points="20 6 9 17 4 12"/></svg></div>
           <span>I have <strong>no untreated injuries</strong> that could affect my work.</span>
         </button>
-        <div style="margin-top:6px;padding-top:10px;border-top:1px solid var(--border);font-size:11.5px;color:var(--muted);line-height:1.5">
-          Location <span id="loc-status" style="color:#1B6E3A;font-weight:600">captured ✓</span>
-          &nbsp;·&nbsp;
-          Signature <span id="sig-status" style="color:#1B6E3A;font-weight:600">on file ✓</span>
-        </div>
       </div>
     </div>
 
@@ -16654,6 +16649,16 @@ function viewSitePreStart(opts) {
   opts = opts || {};
   const asGate = !!opts.asGate;
   goTo('screen-sps-view');
+  // Fill the empty topbar logo + avatar initials
+  const _spsLogo = document.getElementById('sps-view-logo');
+  if (_spsLogo && (typeof _canonicalLogoSrc === 'function') && (!_spsLogo.getAttribute('src') || _spsLogo.getAttribute('src').length < 10)) {
+    _spsLogo.src = _canonicalLogoSrc();
+  }
+  const _spsAv = document.getElementById('sps-view-avatar');
+  const _spsP = (typeof getProfile === 'function') ? getProfile() : null;
+  if (_spsAv && _spsP && _spsP.name) {
+    _spsAv.textContent = _spsP.name.split(' ').map(function(s){ return s.charAt(0); }).join('').toUpperCase().slice(0,2);
+  }
   const body = document.getElementById('sps-viewer-body');
   if (!body) return;
   body.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:32px">Loading...</div>';
@@ -21670,6 +21675,23 @@ function finalSubmit(){
 function showSuccess(m,p,now,ref){
   goTo('screen-success');
   const isIn=m==='in';
+  // Fill the empty topbar logo (screen-success is in ensureInteriorAvatar's
+  // SKIP list, so it never gets auto-populated).
+  const _logo = document.getElementById('succ-logo');
+  if (_logo && (typeof _canonicalLogoSrc === 'function') && (!_logo.getAttribute('src') || _logo.getAttribute('src').length < 10)) {
+    _logo.src = _canonicalLogoSrc();
+  }
+  // Initials in the avatar
+  const _av = document.getElementById('succ-avatar');
+  if (_av && p && p.name) {
+    const inits = p.name.split(' ').map(function(s){ return s.charAt(0); }).join('').toUpperCase().slice(0,2);
+    const span = _av.querySelector('span') || document.createElement('span');
+    span.textContent = inits;
+    span.style.cssText = 'font-weight:700;font-size:13px;color:#B8960C;font-family:inherit';
+    const svg = _av.querySelector('svg');
+    if (svg) svg.remove();
+    if (!_av.contains(span)) _av.appendChild(span);
+  }
   // Top-bar header (past tense — the action is done)
   document.getElementById('si-title').textContent = isIn ? 'Signed In' : 'Signed Out';
   document.getElementById('si-sub').textContent   = 'Your attendance has been recorded';
@@ -21708,6 +21730,23 @@ function showSuccess(m,p,now,ref){
 function showSharedSuccess(opts) {
   opts = opts || {};
   goTo('screen-success');
+  // Fill the empty topbar logo + avatar (screen-success is in
+  // ensureInteriorAvatar's SKIP list, so it's never auto-populated).
+  const _slogo = document.getElementById('succ-logo');
+  if (_slogo && (typeof _canonicalLogoSrc === 'function') && (!_slogo.getAttribute('src') || _slogo.getAttribute('src').length < 10)) {
+    _slogo.src = _canonicalLogoSrc();
+  }
+  const _sav = document.getElementById('succ-avatar');
+  const _p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (_sav && _p && _p.name) {
+    const _inits = _p.name.split(' ').map(function(s){ return s.charAt(0); }).join('').toUpperCase().slice(0,2);
+    const _sp = _sav.querySelector('span') || document.createElement('span');
+    _sp.textContent = _inits;
+    _sp.style.cssText = 'font-weight:700;font-size:13px;color:#B8960C;font-family:inherit';
+    const _svg = _sav.querySelector('svg');
+    if (_svg) _svg.remove();
+    if (!_sav.contains(_sp)) _sav.appendChild(_sp);
+  }
   // Header (past tense \u2014 Niall's rule)
   const titleEl = document.getElementById('si-title');
   if (titleEl) titleEl.textContent = opts.title || 'Submitted';
