@@ -39958,6 +39958,12 @@ function startDemoAs(role) {
     p.sig = (typeof _makeDemoSig === 'function') ? _makeDemoSig(p.name) : null;
     p.photo = null;
   }
+  // Belt-and-braces: regenerate the signature if it's missing on the
+  // preserved profile too. Earlier demo profiles shipped with sig=null;
+  // this catches them on the next role-flip / demo re-entry.
+  if (!p.sig && typeof _makeDemoSig === 'function') {
+    p.sig = _makeDemoSig(p.name);
+  }
   localStorage.setItem('slan_profile', JSON.stringify(p));
   localStorage.setItem('slan_onboarded', 'true');
   // Reset sign-in / toolbox state ONLY on initial demo entry. Role flips
