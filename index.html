@@ -24152,11 +24152,11 @@ function renderAnLti() {
     { label:'Parramatta',            days:32 },
     { label:'Sydney Olympic Park',   days:18 }
   ];
-  // Hero number — read the KPI value the user just clicked. All-sites
-  // streak = the MIN of per-site (the latest LTI anywhere resets the
-  // company streak — that's how LTIFR works).
-  const liveV = document.getElementById('an-live-lti');
-  const streak = (liveV && parseInt(liveV.textContent, 10)) || Math.min.apply(null, bySite.map(function(s){return s.days;}));
+  // Hero number — compute from the per-site array (single source of
+  // truth). All-sites streak = MIN of per-site streaks (the most recent
+  // LTI anywhere caps the company-wide streak). Don't read it back from
+  // the KPI text — that can be stale.
+  const streak = Math.min.apply(null, bySite.map(function(s){ return s.days; }));
   const streakEl = document.getElementById('an-lti-streak');
   if (streakEl) streakEl.textContent = String(streak);
   // Industry comparison row
@@ -39489,14 +39489,15 @@ function wcSearch(val) {
 // ═══════════════════════════════════════════════════════════════
 function anPopulateDemoMetrics() {
   var set = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
-  // Live stats row (always visible)
-  set('an-live-signin', '20'); set('an-live-prestart', '8');
-  set('an-live-hazards', '2'); set('an-live-lti', '47'); set('an-live-incidents', '3');
+  // Live stats row — DEFER to anSiteChanged() for the all-vs-per-site values
+  // (it computes LTI as min(per-site)=18 and pulls real incident counts).
+  // Only the section-metrics below stay hardcoded for now.
+  if (typeof anSiteChanged === 'function') { try { anSiteChanged(); } catch(e){} }
   // Section metrics
   set('an-val-incidents', '3'); set('an-sub-incidents', '▼ 40% vs last period');
   set('an-val-hazards', '2'); set('an-sub-hazards', '▲ 2 require action');
   set('an-val-prestart', '94%'); set('an-sub-prestart', '▲ compliance rate');
-  set('an-val-lti', '47'); set('an-sub-lti', '★ Personal best');
+  set('an-val-lti', '18'); set('an-sub-lti', 'Capped by SOP — last LTI there');
   set('an-lic-exp', '1'); set('an-lic-soon', '3'); set('an-lic-cur', '41');
   set('an-lic-pct', '93% workforce compliant');
   set('an-val-plant', '2'); set('an-sub-plant', '1 critical — action needed');
