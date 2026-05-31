@@ -24084,10 +24084,6 @@ function renderAnRoster() {
   }
   const cont = document.getElementById('an-roster-container');
   if (!cont) return;
-  if (!total) {
-    cont.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No one is signed in yet today.</div>';
-    return;
-  }
   // Per-site accent colour so each group is visually distinct
   const SITE_COL = {
     'site-a': '#3D5AAD', // Bondi Junction — indigo
@@ -24095,26 +24091,57 @@ function renderAnRoster() {
     'site-c': '#D4630A'  // Sydney Olympic Park — orange
   };
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  cont.innerHTML = siteNames.map(function(site){
-    const ppl = visible[site].slice().sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
-    const col = SITE_COL[ppl[0] && ppl[0].site_code] || '#3D5AAD';
-    const rows = ppl.map(function(r){
-      return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + col + ';border-radius:8px;background:#fff">' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
-          '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.worker_name) + '</div>' +
-          '<span style="font-size:10.5px;font-weight:700;color:' + col + ';flex-shrink:0">' + esc(r.time || '—') + '</span>' +
+  function rowHtml(r, col){
+    return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + col + ';border-radius:8px;background:#fff">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+        '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.worker_name) + '</div>' +
+        '<span style="font-size:10.5px;font-weight:700;color:' + col + ';flex-shrink:0">' + esc(r.time || '—') + '</span>' +
+      '</div>' +
+      '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.role || '—') + ' · ' + esc(r.company || '—') + '</div>' +
+    '</div>';
+  }
+  function groupedHtml(groupsObj, accentForSection){
+    const names = Object.keys(groupsObj).sort();
+    return names.map(function(site){
+      const ppl = groupsObj[site].slice().sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
+      const col = SITE_COL[ppl[0] && ppl[0].site_code] || accentForSection;
+      return '<div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">' +
+          '<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + col + '"></span>' + esc(site) + '</span>' +
+          '<span style="color:' + col + '">' + ppl.length + '</span>' +
         '</div>' +
-        '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.role || '—') + ' · ' + esc(r.company || '—') + '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:6px">' + ppl.map(function(r){ return rowHtml(r, col); }).join('') + '</div>' +
       '</div>';
     }).join('');
-    return '<div>' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">' +
-        '<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + col + '"></span>' + esc(site) + '</span>' +
-        '<span style="color:' + col + '">' + ppl.length + '</span>' +
+  }
+  // ── Section 1: On Site Now
+  let onSiteHtml;
+  if (!total) {
+    onSiteHtml = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No one is signed in yet today.</div>';
+  } else {
+    onSiteHtml = groupedHtml(visible, '#3D5AAD');
+  }
+  // ── Section 2: Signed Out Today (anyone whose latest event today is Sign Out)
+  let signedOut = (typeof _signedOutToday === 'function') ? _signedOutToday() : [];
+  if (scope.scope !== 'all') signedOut = signedOut.filter(function(r){ return r.site_code === scope.scope; });
+  const outGroups = {};
+  signedOut.forEach(function(r){
+    const key = r.site_name || 'Unknown site';
+    (outGroups[key] = outGroups[key] || []).push(r);
+  });
+  const outTotal = signedOut.length;
+  const SIGNED_OUT_GREY = '#7A7A7A';
+  let signedOutSection = '';
+  if (outTotal > 0) {
+    signedOutSection = '<div style="margin-top:18px">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px;font-size:13px;font-weight:700;color:#3A3A3A">' +
+        '<span>Signed out today</span>' +
+        '<span style="font-size:11px;color:#888;font-weight:600">' + outTotal + ' · today only</span>' +
       '</div>' +
-      '<div style="display:flex;flex-direction:column;gap:6px">' + rows + '</div>' +
+      groupedHtml(outGroups, SIGNED_OUT_GREY) +
     '</div>';
-  }).join('');
+  }
+  cont.innerHTML = onSiteHtml + signedOutSection;
 }
 
 // LTI Status drill-down — opened from the "LTI-free days" KPI.
@@ -24292,6 +24319,51 @@ function _openIncidents(siteCode) {
     });
   } catch(e){}
   return out;
+}
+
+// Workers whose LATEST event today is a Sign Out. (Mirror of
+// _currentlyOnSiteToday — same merge logic, opposite final filter.)
+// Used by the roster's "Signed out today" section.
+function _signedOutToday() {
+  const today = new Date().toLocaleDateString('en-AU');
+  const byWorker = {};
+  function add(rec) {
+    if (!rec || !rec.worker_name) return;
+    if ((rec.date || '') !== today) return;
+    const role = String(rec.role || '').toLowerCase();
+    if (role.indexOf('supervisor') !== -1 || role.indexOf('director') !== -1) return;
+    const time = rec.time || '';
+    const prev = byWorker[rec.worker_name];
+    if (!prev || time >= prev.time) {
+      byWorker[rec.worker_name] = {
+        worker_name: rec.worker_name,
+        company:   rec.company || '',
+        role:      rec.role || '',
+        site_code: rec.site_code || 'site-a',
+        site_name: rec.site_name || rec.address || '',
+        time:      time,
+        type:      rec.type || rec.submission_type || ''
+      };
+    }
+  }
+  if (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS)) DEMO_SIGNINS.forEach(add);
+  try {
+    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    q.forEach(function(s){
+      if (!s || !s.data || s.data.form_type !== 'attendance') return;
+      add({
+        worker_name: s.data.worker_name,
+        company:     s.data.company || '',
+        role:        s.data.role || '',
+        type:        s.data.submission_type || s.data.type || 'Sign In',
+        time:        s.data.time || '',
+        date:        (s.data.date || '').replace(/-/g,'/'),
+        site_code:   s.data.site_code || '',
+        site_name:   s.data.site_name || s.data.address || ''
+      });
+    });
+  } catch(e){}
+  return Object.values(byWorker).filter(function(r){ return r.type === 'Sign Out'; });
 }
 
 // Is the CURRENT profile currently on site today?
