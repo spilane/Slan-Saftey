@@ -15766,9 +15766,10 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
         return !r.site || !supSiteName || r.site.indexOf(supSiteName) !== -1;
       }).length;
     } catch(e){}
-    // Fall back to DEMO_PRESTARTS count when there are no live plant records
-    // (e.g. a brand-new browser); avoids showing zero on fresh demo loads.
-    if (psCount === 0) psCount = workerPs.length;
+    // No DEMO_PRESTARTS fallback — that's a different dataset and would
+    // make the KPI disagree with the drill-down (which reads only
+    // slan_plant_records). Showing 0 is honest when the device has no
+    // live plant records.
     mPs.textContent = psCount;
   }
   // Hazards: OPEN hazards only — matches the open-hazards drill-down list.
