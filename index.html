@@ -2170,18 +2170,18 @@ function ahRenderStrip(pills){
   var nonDone = pills.filter(function(p){ return p.state !== 'done'; })
                      .sort(function(a,b){ return (order[a.state]==null?3:order[a.state]) - (order[b.state]==null?3:order[b.state]); });
   var dones = pills.filter(function(p){ return p.state === 'done'; });
-  nonDone.forEach(function(p){
+  function clone(p){
     var c = p.el.cloneNode(true);
     c.removeAttribute('id');
     c.querySelectorAll('[id]').forEach(function(n){ n.removeAttribute('id'); });
     c.style.display = '';
-    strip.appendChild(c);
-  });
-  if (dones.length){
-    var d = document.createElement('div'); d.className = 'status-pill done'; d.setAttribute('onclick','ahViewAll()');
-    d.innerHTML = '<div class="sp-dot"></div><span>✓ ' + dones.length + ' done</span>';
-    strip.appendChild(d);
+    return c;
   }
+  // Niall: "it should say something not 1 done." Show every done item
+  // individually with its actual label (e.g. "Toolbox signed ✓"), not
+  // collapsed into a generic counter.
+  nonDone.forEach(function(p){ strip.appendChild(clone(p)); });
+  dones.forEach(function(p){ strip.appendChild(clone(p)); });
   if (!pills.length){
     var e = document.createElement('div'); e.className = 'status-pill done';
     e.innerHTML = '<div class="sp-dot"></div><span>✓ All clear</span>';
@@ -2556,6 +2556,12 @@ function ahStyleDivisionHome(){
     <span id="c-type" style="display:none"></span>
     <span id="c-coords" style="display:none"></span>
     <span id="c-addr" style="display:none"></span>
+
+    <!-- Today's site pre-start (sign-in only — populated by startFlow) -->
+    <div id="conf-sps-card" class="fcard" style="display:none">
+      <div class="fcard-hdr">Today's site pre-start</div>
+      <div class="fcard-body" id="conf-sps-body" style="gap:10px;font-size:13px;line-height:1.55"></div>
+    </div>
 
     <!-- Your details -->
     <div class="fcard">
@@ -14463,6 +14469,30 @@ function _interiorAvatarEl() {
 }
 // The Slán logo lives as a base64 <img> on several headers; grab the first one
 // that's actually loaded (same approach the director/analytics screens use).
+// Generate a cursive signature PNG dataURL for a worker's name, on a
+// transparent background with an underline. Used so demo profiles ship
+// with a signature on file - every form (toolbox, sign-in, hazard,
+// incident, plant pre-start) then signs automatically.
+function _makeDemoSig(name) {
+  try {
+    var c = document.createElement('canvas');
+    c.width = 600; c.height = 160;
+    var ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.font = 'italic 700 64px "Brush Script MT", "Lucida Handwriting", cursive';
+    ctx.fillStyle = '#1A2A1F';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(name || 'Worker', 20, 90);
+    ctx.strokeStyle = '#1A2A1F';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(20, 130);
+    ctx.lineTo(Math.min(580, 20 + ctx.measureText(name || 'Worker').width + 20), 130);
+    ctx.stroke();
+    return c.toDataURL('image/png');
+  } catch(e) { return null; }
+}
+
 function _canonicalLogoSrc() {
   var imgs = document.querySelectorAll('.tbar-logo img, img[alt="Slán Safety"]');
   for (var i = 0; i < imgs.length; i++) { if (imgs[i].src && imgs[i].src.length > 10) return imgs[i].src; }
@@ -21491,11 +21521,10 @@ function startFlow(m){
   // who missed the original delivery, and end-of-day stragglers who haven't
   // signed it yet.
   if (typeof tbtBlocksSignInOut === 'function' && tbtBlocksSignInOut()) return;
-  // SITE PRE-START GATE (sign-in only): worker must review today's site
-  // pre-start submitted by the supervisor, tick "I've read this and am fit
-  // for work" and sign before they can sign in. Niall's workflow: toolbox
-  // first, then site pre-start, then sign in.
-  if (m === 'in' && typeof spsBlocksSignIn === 'function' && spsBlocksSignIn()) return;
+  // SITE PRE-START is now shown INLINE on the Sign In screen below
+  // (Niall's "combine 1 and 2" — 2-step flow: Toolbox -> Sign In with
+  // SPS embedded). No separate gate. If no SPS exists, the worker still
+  // sees a "not submitted yet" banner inline.
   // SIGN-OUT GATE: block sign-out if worker has active Hot Works permits
   if (m === 'out' && typeof hwCheckActivePermitsForSignOut === 'function' && !window._hwGateBypass) {
     if (hwCheckActivePermitsForSignOut()) return; // gate handled, user redirected
@@ -21530,6 +21559,36 @@ function startFlow(m){
     } else {
       _sigStatus.textContent = 'add in profile';
       _sigStatus.style.color = '#D4630A';
+    }
+  }
+
+  // Populate the inline "Today's site pre-start" card for sign-in (hidden
+  // for sign-out). Worker reviews + ticks "I have read today's site
+  // pre-start" as one of the 5 FFD ticks below.
+  var _spsCard = document.getElementById('conf-sps-card');
+  var _spsBody = document.getElementById('conf-sps-body');
+  if (_spsCard && _spsBody) {
+    if (m === 'in') {
+      var sps = (typeof _todaysSitePreStart === 'function') ? _todaysSitePreStart() : null;
+      function _esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      if (sps) {
+        var wx = sps.weather || {};
+        var html = '<div style="background:#E6F5ED;border:1px solid rgba(27,110,58,.18);border-radius:8px;padding:8px 12px;font-size:12px;color:#1B6E3A;font-weight:600">✓ Site cleared by ' + _esc(sps.worker_name || 'supervisor') + ' at ' + _esc(sps.time || '') + '</div>';
+        if (wx && wx.temp != null) {
+          html += '<div><span style="color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Weather</span><div style="margin-top:3px">' + _esc(wx.temp) + '°C · ' + _esc(wx.desc || '') + ' · wind ' + _esc(wx.wind) + ' km/h</div></div>';
+          if (sps.weather_assessment) html += '<div style="font-size:12px;color:#1B6E3A;font-weight:500">' + _esc(sps.weather_assessment) + '</div>';
+        }
+        if (sps.tasks_today)   html += '<div><span style="color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Today\'s scope</span><div style="margin-top:3px;white-space:pre-wrap">' + _esc(sps.tasks_today) + '</div></div>';
+        if (sps.hazards_today) html += '<div><span style="color:#D4630A;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Hazards &amp; controls</span><div style="margin-top:3px;white-space:pre-wrap">' + _esc(sps.hazards_today) + '</div></div>';
+        if (sps.carryover)     html += '<div><span style="color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Carry-over</span><div style="margin-top:3px;white-space:pre-wrap">' + _esc(sps.carryover) + '</div></div>';
+        if (sps.notes)         html += '<div><span style="color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Supervisor notes</span><div style="margin-top:3px;white-space:pre-wrap">' + _esc(sps.notes) + '</div></div>';
+        _spsBody.innerHTML = html;
+      } else {
+        _spsBody.innerHTML = '<div style="background:#FEF0E6;border:1px solid rgba(212,99,10,.2);border-radius:8px;padding:10px 14px;text-align:center"><div style="font-size:13px;font-weight:600;color:#D4630A">Not submitted yet</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">Your supervisor has not completed today\'s site pre-start. Check with them before continuing.</div></div>';
+      }
+      _spsCard.style.display = '';
+    } else {
+      _spsCard.style.display = 'none';
     }
   }
 
@@ -39893,7 +39952,10 @@ function startDemoAs(role) {
     p = profiles[role] || profiles.supervisor;
     p.created = new Date().toISOString();
     p.demo = true;
-    p.sig = null;
+    // Auto-generate a cursive signature for the demo profile so the toolbox
+    // talk, sign-in, hazard, incident, plant pre-start, etc. all sign with
+    // the worker's name without the user having to draw it.
+    p.sig = (typeof _makeDemoSig === 'function') ? _makeDemoSig(p.name) : null;
     p.photo = null;
   }
   localStorage.setItem('slan_profile', JSON.stringify(p));
