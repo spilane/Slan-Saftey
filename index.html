@@ -788,9 +788,14 @@ var directorDemoIncidents = [
   .screen{background:#F2F3F2!important;color:#0F1F17!important}
   input,select,textarea{background:#fff!important;color:#0F1F17!important}
 }
-html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
-.screen{display:none;flex-direction:column;min-height:100dvh}
+html,body{height:100%;width:100%;margin:0;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.screen{display:none;flex-direction:column;width:100%;min-height:100dvh}
 .screen.active{display:flex}
+/* Force every direct child of .screen (topbar, syncbar, fbody, etc.) to
+   stretch the full viewport width. Without this, on a desktop browser
+   the children size to their content and the topbar appears as a
+   narrow centered card with grey on either side. */
+.screen > *{width:100%;box-sizing:border-box}
 .sb{height:calc(var(--st) + 10px);background:#1C382A}
 
 /* TOP BAR */
