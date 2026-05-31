@@ -15716,9 +15716,17 @@ async function loadSuperDash() {
       : [];
     // renderSuperDash expects records shaped like DEMO_SIGNINS rows.
     const _sup_signIns = _sup_onSite.map(function(r){ return { worker_name:r.worker_name, company:r.company, role:r.role, type:'Sign In', time:r.time, site_code:r.site_code, site_name:r.site_name }; });
-    // Talks: only count workers who signed AND are currently on site
+    // Talks: count workers who are currently on site AND have signed the
+    // talk via EITHER the DEMO_TALKS seed OR a real tbt record. Filing a
+    // talk-sign through the talk screen ticks the KPI up immediately.
     const _sup_namesOnSite = new Set(_sup_signIns.map(function(s){ return s.worker_name; }));
-    const _sup_talks = DEMO_TALKS.filter(function(t){ return t && t.signed && _sup_namesOnSite.has(t.worker_name); });
+    const _sup_today = new Date().toLocaleDateString('en-AU');
+    const _sup_signedNames = new Set();
+    DEMO_TALKS.forEach(function(t){ if (t && t.signed && t.date === _sup_today && _sup_namesOnSite.has(t.worker_name)) _sup_signedNames.add(t.worker_name); });
+    if (typeof tbtLoadAll === 'function') {
+      try { tbtLoadAll().forEach(function(r){ if (r && r.date === _sup_today && _sup_namesOnSite.has(r.worker_name)) _sup_signedNames.add(r.worker_name); }); } catch(e){}
+    }
+    const _sup_talks = Array.from(_sup_signedNames).map(function(name){ return { worker_name:name, signed:true, date:_sup_today }; });
     // Hazards/visitors don't carry site info — keep as-is for the demo arrays.
     renderSuperDash(_sup_signIns, _sup_talks, DEMO_PRESTARTS, DEMO_HAZARDS, DEMO_VISITORS);
     return;
@@ -15768,9 +15776,12 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
   // the KPI = sign-in count at the supervisor's site. Sign-in triggers
   // both KPIs to tick up together.
   if (mPs) mPs.textContent = signedIn.length;
-  // Hazards: OPEN hazards only — matches the open-hazards drill-down list.
+  // Hazards: OPEN hazards from the live source (DEMO_HAZARDS + slan_hazards
+  // + slan_queue) scoped to the supervisor's site. Filing a hazard via the
+  // hazard form ticks this up.
   if (mHaz) {
-    var openHaz = hazards.filter(function(h){ var st = String(h && h.status || '').toLowerCase(); return st !== 'resolved' && st !== 'closed'; }).length;
+    var supCode = (typeof _supSiteCode === 'function') ? _supSiteCode() : 'site-a';
+    var openHaz = (typeof _openHazards === 'function') ? _openHazards(supCode).length : 0;
     mHaz.textContent = openHaz;
     mHaz.style.color = openHaz > 0 ? '#EF8C3A' : '#fff';
   }
@@ -17420,17 +17431,18 @@ async function updateStatusStrip() {
   const today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
   const q = JSON.parse(localStorage.getItem('slan_queue')||'[]');
 
-  // Sign In / Sign Out (dynamic chip)
-  // Primary source: localStorage flags set when user signs in/out (reliable)
-  // Fallback: check slan_queue for today's attendance records by submission_type
-  const signedInToday  = !!localStorage.getItem('slan_signed_in_today')  || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign In'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
-  const signedOutToday = !!localStorage.getItem('slan_signed_out_today') || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign Out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  // Sign In / Sign Out — consult the single source-of-truth helper so
+  // workers who are signed in via DEMO_SIGNINS (e.g. Jake at Bondi) see
+  // the same "On Site" state on their own portal that the director sees.
+  const _onSite = (typeof _iAmCurrentlyOnSite === 'function') ? _iAmCurrentlyOnSite() : false;
+  const signedInToday  = _onSite || !!localStorage.getItem('slan_signed_in_today')  || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign In'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  const signedOutToday = !_onSite && (!!localStorage.getItem('slan_signed_out_today') || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign Out' && s.data.date && s.data.date.replace(/\//g,'-') === today));
   const signinLbl  = document.getElementById('sp-signin-lbl');
   const signinPill = document.getElementById('sp-signin');
   if (signinLbl && signinPill) {
     // After sign-out (or never signed in), show amber pulsing "Sign In"
     // Worker can always sign in again if they return to site
-    if (signedInToday && !signedOutToday) {
+    if (_onSite || (signedInToday && !signedOutToday)) {
       signinLbl.textContent = 'On Site · Tap To Sign Out';
       setPillState('sp-signin', 'done');
     } else {
@@ -17439,8 +17451,9 @@ async function updateStatusStrip() {
     }
   }
 
-  // Pre-Start - done if queue has prestart entry today or localStorage flag set
-  const prestartDoneToday = q.some(s => s.data && s.data.form_type === 'prestart' && s.data.date && s.data.date.replace(/\//g,'-') === today) || !!localStorage.getItem('prestart_signed_' + today);
+  // Pre-Start — completing the daily pre-start is part of sign-in (Niall's
+  // workflow), so if you're currently on site, your pre-start is done.
+  const prestartDoneToday = _onSite || q.some(s => s.data && s.data.form_type === 'prestart' && s.data.date && s.data.date.replace(/\//g,'-') === today) || !!localStorage.getItem('prestart_signed_' + today);
   setPillState('sp-prestart', prestartDoneToday ? 'done' : 'warn');
 
   // SWMS - persist green until new available
@@ -24173,6 +24186,100 @@ function renderAnLti() {
   }).join('');
 }
 
+// LIVE OPEN HAZARDS — counts what's actually on the books.
+// Sources: DEMO_HAZARDS seed, slan_hazards live records, slan_queue
+// hazard_reports submitted today. Open = not resolved/closed.
+// Optional siteCode: 'site-a' (Bondi) returns only hazards that belong
+// to Bondi (via siteHint heuristic — DEMO_HAZARDS doesn't carry a
+// site_code so we treat seed entries as belonging to Bondi, the
+// demo's primary site).
+function _openHazards(siteCode) {
+  const out = [];
+  const seenRefs = new Set();
+  function add(h, defaultSite) {
+    if (!h) return;
+    const status = String(h.status || 'open').toLowerCase();
+    if (status === 'resolved' || status === 'closed') return;
+    const code = h.site_code || defaultSite || 'site-a';
+    if (siteCode && code !== siteCode) return;
+    const key = h.ref || h.id || (h.hazard_type + '|' + h.date + '|' + h.location);
+    if (seenRefs.has(key)) return;
+    seenRefs.add(key);
+    out.push(Object.assign({}, h, { site_code: code }));
+  }
+  if (typeof DEMO_HAZARDS !== 'undefined' && Array.isArray(DEMO_HAZARDS)) {
+    DEMO_HAZARDS.forEach(function(h){ add(h, 'site-a'); });
+  }
+  try {
+    const live = JSON.parse(localStorage.getItem('slan_hazards') || '[]');
+    if (Array.isArray(live)) live.forEach(function(h){ add(h, 'site-a'); });
+  } catch(e){}
+  try {
+    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    q.forEach(function(s){
+      if (!s || !s.data) return;
+      if (s.data.form_type !== 'hazard_report') return;
+      add({
+        ref:         s.data.ref,
+        hazard_type: s.data.hazard_type,
+        severity:    s.data.effective_severity || s.data.severity,
+        location:    s.data.location,
+        date:        s.data.date,
+        time:        s.data.time,
+        reporter_name: s.data.reporter_name,
+        status:      'open'
+      }, 'site-a');
+    });
+  } catch(e){}
+  return out;
+}
+
+// LIVE OPEN INCIDENTS — same idea for incidents.
+function _openIncidents(siteCode) {
+  const out = [];
+  try {
+    const all = (typeof incLoadAll === 'function') ? incLoadAll() : JSON.parse(localStorage.getItem('slan_incidents_v1') || '[]');
+    all.forEach(function(r){
+      const status = String(r.status || 'open').toLowerCase();
+      if (status === 'closed') return;
+      // Real incidents don't carry site_code yet — assume Bondi (the
+      // primary demo site) so the count reacts to live submissions.
+      const code = r.site_code || 'site-a';
+      if (siteCode && code !== siteCode) return;
+      out.push(r);
+    });
+  } catch(e){}
+  // Also count any in-flight reports the user just queued.
+  try {
+    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    q.forEach(function(s){
+      if (!s || !s.data) return;
+      if (s.data.form_type !== 'incident_report' && s.data.form_type !== 'incident') return;
+      const code = s.data.site_code || 'site-a';
+      if (siteCode && code !== siteCode) return;
+      if (out.some(function(r){ return r.ref === s.data.ref; })) return;
+      out.push(Object.assign({}, s.data, { site_code: code }));
+    });
+  } catch(e){}
+  return out;
+}
+
+// Is the CURRENT profile currently on site today?
+// Used by the worker portal's "Sign In" pill so Jake's portal agrees with
+// the director / supervisor view (if Jake is in DEMO_SIGNINS, Jake's own
+// portal must show him as on site).
+function _iAmCurrentlyOnSite() {
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!p || !p.name) return false;
+  // The legacy slan_signed_in_today flag still wins if it's been explicitly
+  // set this session (matches the existing behaviour of submitSignIn).
+  if (localStorage.getItem('slan_signed_out_today')) return false;
+  if (localStorage.getItem('slan_signed_in_today'))  return true;
+  // Otherwise consult the central helper that respects sign-out.
+  if (typeof _currentlyOnSiteToday !== 'function') return false;
+  return _currentlyOnSiteToday().some(function(r){ return r.worker_name === p.name; });
+}
+
 // SINGLE SOURCE OF TRUTH for "who is currently on site today".
 // Looks at every attendance event today (DEMO_SIGNINS + slan_queue),
 // keeps the LATEST event per worker (sort by time string), and returns
@@ -24271,12 +24378,28 @@ function renderAnTalk() {
   if (scope.role === 'supervisor') onSite = onSite.filter(function(r){ return r.site_code === scope.scope; });
   const onSiteNames = new Set(onSite.map(function(r){ return r.worker_name; }));
   const signed = [];
+  const seenNames = new Set();
+  function pushSign(r) {
+    if (!r || !r.worker_name) return;
+    if (seenNames.has(r.worker_name)) return;
+    if (!onSiteNames.has(r.worker_name)) return;
+    seenNames.add(r.worker_name);
+    signed.push(r);
+  }
   if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
     DEMO_TALKS.forEach(function(r){
       if (!r || r.date !== today || !r.signed) return;
-      if (!onSiteNames.has(r.worker_name)) return;
-      signed.push(r);
+      pushSign(r);
     });
+  }
+  // Live tbt records (real signatures via the toolbox talk screen)
+  if (typeof tbtLoadAll === 'function') {
+    try {
+      tbtLoadAll().forEach(function(r){
+        if (!r || r.date !== today) return;
+        pushSign({ worker_name:r.worker_name, company:r.company || r.reporter_company || '', time:r.time || '', talk_title:r.talk_title || r.title, date:today });
+      });
+    } catch(e){}
   }
   // Sort by sign-in time
   signed.sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
@@ -38612,22 +38735,42 @@ function anSiteChanged() {
     var onSite = (typeof _currentlyOnSiteToday === 'function') ? _currentlyOnSiteToday() : [];
     var liveByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
     onSite.forEach(function(r){ var c = r.site_code || 'site-a'; if (liveByCode[c] != null) liveByCode[c]++; });
-    // Talk-signed count: workers on site today AND in DEMO_TALKS
+    // Talk-signed count: workers currently on site AND who have signed
+    // today's toolbox talk. Sources: DEMO_TALKS (seed) + tbtLoadAll() (real
+    // sign records from the talk screen). Live sign of the talk bumps the
+    // KPI; sign-out drops it.
     var todayAU = new Date().toLocaleDateString('en-AU');
     var talkByCode = { 'site-a':0, 'site-b':0, 'site-c':0 };
+    var siteByName = {};
+    onSite.forEach(function(r){ siteByName[r.worker_name] = r.site_code; });
+    var signedNames = new Set();
     if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
-      var siteByName = {};
-      onSite.forEach(function(r){ siteByName[r.worker_name] = r.site_code; });
       DEMO_TALKS.forEach(function(t){
         if (!t || !t.signed || t.date !== todayAU) return;
-        var c = siteByName[t.worker_name];
-        if (c && talkByCode[c] != null) talkByCode[c]++;
+        signedNames.add(t.worker_name);
       });
     }
+    if (typeof tbtLoadAll === 'function') {
+      try {
+        tbtLoadAll().forEach(function(r){
+          if (r && r.date === todayAU && r.worker_name) signedNames.add(r.worker_name);
+        });
+      } catch(e){}
+    }
+    signedNames.forEach(function(name){
+      var c = siteByName[name];
+      if (c && talkByCode[c] != null) talkByCode[c]++;
+    });
+    // Hazards & incidents for BONDI come from live records (DEMO_HAZARDS
+    // seed + slan_hazards + slan_queue hazard_reports / incidents). Other
+    // sites are "made up" demo numbers per Niall: "everything must follow
+    // the demo from Eoin's site... for the other sites u can make it up."
+    var hazA = (typeof _openHazards   === 'function') ? _openHazards('site-a').length   : 0;
+    var incA = (typeof _openIncidents === 'function') ? _openIncidents('site-a').length : 0;
     var perSite = {
-      'site-a': { signin: liveByCode['site-a'], prestart: liveByCode['site-a'], talks: talkByCode['site-a'], hazards:1, lti: ltiA, incidents:2 },
-      'site-b': { signin: liveByCode['site-b'], prestart: liveByCode['site-b'], talks: talkByCode['site-b'], hazards:1, lti: ltiB, incidents:1 },
-      'site-c': { signin: liveByCode['site-c'], prestart: liveByCode['site-c'], talks: talkByCode['site-c'], hazards:0, lti: ltiC, incidents:0 },
+      'site-a': { signin: liveByCode['site-a'], prestart: liveByCode['site-a'], talks: talkByCode['site-a'], hazards: hazA, lti: ltiA, incidents: incA },
+      'site-b': { signin: liveByCode['site-b'], prestart: liveByCode['site-b'], talks: talkByCode['site-b'], hazards: 1,    lti: ltiB, incidents: 1    },
+      'site-c': { signin: liveByCode['site-c'], prestart: liveByCode['site-c'], talks: talkByCode['site-c'], hazards: 0,    lti: ltiC, incidents: 0    },
     };
     function sumField(key){ return perSite['site-a'][key] + perSite['site-b'][key] + perSite['site-c'][key]; }
     var siteData = {
