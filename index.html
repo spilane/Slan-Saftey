@@ -3768,35 +3768,28 @@ function ahStyleDivisionHome(){
     <div style="width:36px"></div>
   </div>
   <div style="padding:18px;padding-bottom:60px">
-    <!-- Hero streak panel -->
-    <div style="background:linear-gradient(135deg, #E6F5ED 0%, #D4ECD8 100%);border:1.5px solid rgba(27,110,58,.25);border-radius:14px;padding:22px 18px;text-align:center;margin-bottom:10px">
-      <div style="font-size:11px;font-weight:700;color:#1B6E3A;text-transform:uppercase;letter-spacing:.08em">Days without a Lost Time Injury</div>
-      <div style="font-size:52px;font-weight:800;color:#1B6E3A;line-height:1;margin:8px 0 4px" id="an-lti-streak">—</div>
-      <div style="font-size:12px;color:#3D5A48" id="an-lti-since">Calculating…</div>
-    </div>
-    <!-- Industry benchmark comparison -->
-    <div style="display:flex;gap:8px;margin-bottom:14px">
-      <div style="flex:1;padding:11px 12px;border:1px solid #E8E8E8;border-radius:10px;background:#fff">
-        <div style="font-size:10px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">Your streak</div>
-        <div style="font-size:22px;font-weight:800;color:#1B6E3A;margin-top:2px" id="an-lti-ours">—</div>
-        <div style="font-size:10.5px;color:#888">days</div>
+    <!-- KPI cards (match the Safety overview layout) -->
+    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi k-green" style="cursor:default">
+        <div class="kpi-l">Your streak</div>
+        <div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v" id="an-lti-streak">—</span><span class="kpi-tr good" id="an-lti-vs">—</span></div>
       </div>
-      <div style="flex:1;padding:11px 12px;border:1px solid #E8E8E8;border-radius:10px;background:#FAFAF7">
-        <div style="font-size:10px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">Industry benchmark</div>
-        <div style="font-size:22px;font-weight:800;color:#5C6B62;margin-top:2px">30</div>
-        <div style="font-size:10.5px;color:#888">days · AU civil construction</div>
+      <div class="kpi k-blue" style="cursor:default">
+        <div class="kpi-l">Industry avg</div>
+        <div class="kpi-row"><span class="kpi-ic">📊</span><span class="kpi-v">30</span><span class="kpi-tr" style="background:transparent;color:#888;border:none;padding:0;font-weight:500">days</span></div>
       </div>
-      <div style="flex:1;padding:11px 12px;border:1px solid #E8E8E8;border-radius:10px;background:#fff">
-        <div style="font-size:10px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">Vs benchmark</div>
-        <div style="font-size:22px;font-weight:800;margin-top:2px" id="an-lti-vs">—</div>
-        <div style="font-size:10.5px;color:#888" id="an-lti-vs-lbl">—</div>
+      <div class="kpi k-indigo" style="cursor:default">
+        <div class="kpi-l">Last LTI</div>
+        <div class="kpi-row"><span class="kpi-ic">📅</span><span class="kpi-v" id="an-lti-since-num" style="font-size:18px;line-height:1.15">—</span></div>
       </div>
     </div>
+    <div style="font-size:11.5px;color:#5C6B62;line-height:1.5;margin:6px 2px 14px" id="an-lti-since">Calculating…</div>
+    <!-- Per-site breakdown — same .kpis grid, so it matches the overview style -->
+    <div style="padding:0 2px;margin:0 0 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">By site</div>
+    <div id="an-lti-bysite" class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px"></div>
     <div style="font-size:11px;color:#888;line-height:1.5;margin:-6px 2px 14px">
-      Benchmark based on Safe Work Australia construction LTIFR data (~5–7 per million hours worked). Indicative only — your insurer will use your own LTIFR for premium calcs.
+      Industry benchmark based on Safe Work Australia construction LTIFR (~5–7 per million hours worked). Indicative only — your insurer will use your own LTIFR for premium calcs.
     </div>
-    <!-- Per-site breakdown (if more than one site) -->
-    <div id="an-lti-bysite" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
     <!-- What counts as an LTI -->
     <div class="fcard">
       <div class="fcard-hdr">What counts as a Lost Time Injury (LTI)?</div>
@@ -24148,61 +24141,55 @@ function goToAnLti() {
 function renderAnLti() {
   // Per-site streaks — single source of truth (mirror anSiteChanged numbers)
   const bySite = [
-    { label:'Bondi Junction',        days:47 },
-    { label:'Parramatta',            days:32 },
-    { label:'Sydney Olympic Park',   days:18 }
+    { label:'Bondi Junction',        days:47, hue:'k-indigo' },
+    { label:'Parramatta',            days:32, hue:'k-teal'   },
+    { label:'Sydney Olympic Park',   days:18, hue:'k-amber'  }
   ];
-  // Hero number — compute from the per-site array (single source of
-  // truth). All-sites streak = MIN of per-site streaks (the most recent
-  // LTI anywhere caps the company-wide streak). Don't read it back from
-  // the KPI text — that can be stale.
+  // Company streak = MIN of per-site (most recent LTI anywhere caps the
+  // company-wide streak). Always compute from this array so the screen is
+  // immune to whatever the KPI text node happens to say.
   const streak = Math.min.apply(null, bySite.map(function(s){ return s.days; }));
   const streakEl = document.getElementById('an-lti-streak');
   if (streakEl) streakEl.textContent = String(streak);
-  // Industry comparison row
-  const INDUSTRY_BENCH = 30; // days · AU civil construction (Safe Work Australia indicative)
-  const oursEl = document.getElementById('an-lti-ours');
-  if (oursEl) oursEl.textContent = String(streak);
+  // Industry comparison shown as a trend chip on the streak card
+  const INDUSTRY_BENCH = 30;
   const vsEl = document.getElementById('an-lti-vs');
-  const vsLbl = document.getElementById('an-lti-vs-lbl');
-  if (vsEl && vsLbl) {
+  if (vsEl) {
     const diff = streak - INDUSTRY_BENCH;
     if (diff >= 0) {
-      vsEl.textContent = '+' + diff;
-      vsEl.style.color = '#1B6E3A';
-      vsLbl.textContent = 'days above';
-      vsLbl.style.color = '#1B6E3A';
+      vsEl.textContent = '▲ +' + diff + ' vs industry';
+      vsEl.className = 'kpi-tr good';
     } else {
-      vsEl.textContent = String(diff);
-      vsEl.style.color = '#B83232';
-      vsLbl.textContent = 'days below';
-      vsLbl.style.color = '#B83232';
+      vsEl.textContent = '▼ ' + diff + ' vs industry';
+      vsEl.className = 'kpi-tr bad';
     }
   }
-  // Compute the "since" date from the streak
+  // Last LTI card + footer line
   const since = new Date(Date.now() - streak * 86400000);
-  const sinceFmt = since.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+  const sinceFmtShort = since.toLocaleDateString('en-AU', { day:'numeric', month:'short' });
+  const sinceFmtLong  = since.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+  const sinceNumEl = document.getElementById('an-lti-since-num');
+  if (sinceNumEl) sinceNumEl.textContent = sinceFmtShort;
   const sinceEl = document.getElementById('an-lti-since');
   if (sinceEl) {
-    // Find which site set the company streak (the one with the smallest value)
     const minSite = bySite.reduce(function(m,s){ return s.days < m.days ? s : m; }, bySite[0]);
-    sinceEl.textContent = 'Last lost-time injury: ' + sinceFmt + ' · ' + minSite.label;
+    sinceEl.textContent = 'Last lost-time injury was ' + sinceFmtLong + ' at ' + minSite.label + '. That site is currently capping the company-wide streak.';
   }
-  // Per-site breakdown — colour the site that's currently capping the streak
+  // Per-site breakdown — use the same .kpi card style as the overview
   const bySiteEl = document.getElementById('an-lti-bysite');
   if (bySiteEl) {
     const minDays = Math.min.apply(null, bySite.map(function(s){ return s.days; }));
-    bySiteEl.innerHTML = '<div style="padding:0 2px;margin:0 0 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">By site</div>' +
-      bySite.map(function(s){
-        const isMin = s.days === minDays;
-        const colTxt = isMin ? '#B83232' : '#1B6E3A';
-        const borderCol = isMin ? '#B83232' : '#1B6E3A';
-        const tag = isMin ? ' <span style="font-size:10px;font-weight:700;color:#B83232;background:#FBE6E6;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em">Most recent LTI</span>' : '';
-        return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + borderCol + ';border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px">' +
-          '<div style="font-size:13px;font-weight:600;color:#1A2A1F;display:flex;align-items:center;gap:8px;flex-wrap:wrap">' + s.label + tag + '</div>' +
-          '<div style="font-size:18px;font-weight:700;color:' + colTxt + ';flex-shrink:0">' + s.days + ' <span style="font-size:11px;color:#3D5A48;font-weight:500">days</span></div>' +
-        '</div>';
-      }).join('');
+    bySiteEl.innerHTML = bySite.map(function(s){
+      const isMin = s.days === minDays;
+      const trendChip = isMin
+        ? '<span class="kpi-tr bad">Most recent LTI</span>'
+        : '<span class="kpi-tr good">▲ above SOP</span>';
+      const hue = isMin ? 'k-red' : s.hue;
+      return '<div class="kpi ' + hue + '" style="cursor:default">' +
+        '<div class="kpi-l">' + s.label + '</div>' +
+        '<div class="kpi-row"><span class="kpi-ic">🛡️</span><span class="kpi-v">' + s.days + '</span>' + trendChip + '</div>' +
+      '</div>';
+    }).join('');
   }
   // Recent LTIs — scan incidents for ones that have an rtw record with days_lost > 0
   const recentEl = document.getElementById('an-lti-recent');
@@ -24447,7 +24434,13 @@ function renderAnPrestarts() {
   const cleared = items.filter(function(i){ return /fit/i.test(i.outcome); }).length;
   const issues  = items.length - cleared;
   const sum = document.getElementById('an-ps-summary');
-  if (sum) sum.textContent = items.length + ' pre-start' + (items.length === 1 ? '' : 's') + ' completed today · ' + cleared + ' fit for use · ' + issues + ' with issues.';
+  if (sum) {
+    if (items.length === 0) {
+      sum.textContent = 'No pre-starts have been completed yet today.';
+    } else {
+      sum.textContent = items.length + ' pre-start' + (items.length === 1 ? '' : 's') + ' completed today · ' + cleared + ' fit for use · ' + issues + ' with issues.';
+    }
+  }
   const cont = document.getElementById('an-ps-container');
   if (!cont) return;
   if (!items.length) {
@@ -38572,30 +38565,26 @@ function anSiteChanged() {
     // LTI anywhere resets the company-wide counter — Niall's point).
     var ltiA = 47, ltiB = 32, ltiC = 18;
     var ltiAll = Math.min(ltiA, ltiB, ltiC);
-    var siteData = {
-      'all':    { signin:20, prestart:8,  hazards:2, lti: ltiAll, incidents:3 },
+    // Per-site demo numbers. All-sites is derived as the SUM of per-site
+    // so the math always adds up (Niall: "u have 0 incident but for
+    // parramatta u have 1 Bondi 2" — the 0 was inconsistent).
+    var perSite = {
       'site-a': { signin:12, prestart:5,  hazards:1, lti: ltiA,   incidents:2 },
       'site-b': { signin:5,  prestart:2,  hazards:1, lti: ltiB,   incidents:1 },
       'site-c': { signin:3,  prestart:1,  hazards:0, lti: ltiC,   incidents:0 },
+    };
+    function sumField(key){ return perSite['site-a'][key] + perSite['site-b'][key] + perSite['site-c'][key]; }
+    var siteData = {
+      'all':    { signin: sumField('signin'), prestart: sumField('prestart'), hazards: sumField('hazards'), lti: ltiAll, incidents: sumField('incidents') },
+      'site-a': perSite['site-a'],
+      'site-b': perSite['site-b'],
+      'site-c': perSite['site-c'],
     };
     var d = siteData[val] || siteData['all'];
     var set = function(id, v) { var el = document.getElementById(id); if(el) el.textContent = v; };
     set('an-live-signin', d.signin); set('an-live-prestart', d.prestart);
     set('an-live-hazards', d.hazards); set('an-live-lti', d.lti);
-    // Incidents KPI = open incidents from real records (matches what the
-    // drill-down list will show once they filter to Open). Falls back to
-    // hardcoded demo number if the incident store isn't ready yet.
-    var incCount = d.incidents;
-    try {
-      if (typeof incLoadAll === 'function') {
-        var all = incLoadAll();
-        var open = all.filter(function(r){ return (r.status || 'open') !== 'closed'; }).length;
-        if (val === 'all') incCount = open;
-        // For per-site we don't have site tagging on real incidents yet —
-        // leave the demo number for site chips.
-      }
-    } catch(e){}
-    set('an-live-incidents', incCount);
+    set('an-live-incidents', d.incidents);
     // Update director pill counts to match KPIs (single source of truth)
     if (typeof dirUpdateActivityStrip === 'function') dirUpdateActivityStrip();
   }
