@@ -15774,11 +15774,17 @@ function renderSuperDash(signIns, talks, prestarts, hazards, visitors) {
   // so the count on the card always matches the rows inside (Niall's rule).
   if (mSignin) mSignin.textContent = signedIn.length;
   if (mTalk)   mTalk.textContent   = talks.length;
-  // Pre-starts: every worker who has signed in has completed a pre-start
-  // (Niall's rule — the daily pre-start is part of the sign-in flow), so
-  // the KPI = sign-in count at the supervisor's site. Sign-in triggers
-  // both KPIs to tick up together.
-  if (mPs) mPs.textContent = signedIn.length;
+  // Pre-starts done today PERSIST after sign-out (Niall's workflow: once
+  // your pre-start is done for the day, it's done). Count = workers who
+  // had a Sign In event today at the supervisor's site, regardless of
+  // whether they're still on site now.
+  if (mPs) {
+    var supCode = (typeof _supSiteCode === 'function') ? _supSiteCode() : 'site-a';
+    var psCnt = (typeof _didPreStartToday === 'function')
+      ? _didPreStartToday().filter(function(r){ return r.site_code === supCode; }).length
+      : 0;
+    mPs.textContent = psCnt;
+  }
   // Hazards: OPEN hazards from the live source (DEMO_HAZARDS + slan_hazards
   // + slan_queue) scoped to the supervisor's site. Filing a hazard via the
   // hazard form ticks this up.
