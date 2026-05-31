@@ -14127,6 +14127,27 @@ var DEMO_TALKS = [
   { worker_name:'Niall Costello',  company:'Burke Civil Contractors',   time:'07:30', talk_title:'Working at Heights — April 2026', signed:true,  date:_today }
 ];
 
+// Today's site pre-start completed by Eoin Burke at Bondi Junction. Worker
+// portals read this so a worker tapping Sign In can review it, tick "I've
+// read this and am fit for work", sign, then sign in.
+var DEMO_SITE_PS = {
+  ref:               'SPS-' + new Date().getFullYear().toString().slice(-2) + String(new Date().getMonth()+1).padStart(2,'0') + String(new Date().getDate()).padStart(2,'0') + '-0625',
+  is_site_prestart:  true,
+  site:              'Bondi Junction Mixed Use',
+  site_code:         'site-a',
+  worker_name:       'Eoin Burke',
+  company:           'Murphy Civil Construction',
+  date:              _today,
+  time:              '06:25',
+  outcome:           'Site Cleared',
+  tasks_today:       'Form Level 4 west slab (steel and edge protection from 06:30). Concrete pour from 11:00. Rigging crew working east elevation, dogman at top.',
+  hazards_today:     'Wind forecast 25–35 km/h from 13:00 — crane operations to monitor. Loose materials at Level 3 east — clean and barrier. New traffic-management plan in place at Oxford St gate.',
+  carryover:         'Edge protection reinstated Level 3 east (yesterday\'s hazard). Damaged extension lead tagged and removed.',
+  notes:             'Visitor today: Bondi Council inspector at 14:00 — escort to be supplied by Eoin. Pump truck arriving from 09:30, hold gate clear.',
+  weather: { temp:18, desc:'Partly cloudy', wind:15, uv:5, code:2 },
+  weather_assessment: 'Conditions acceptable for all trades — monitor wind from 13:00.'
+};
+
 var DEMO_STARS = [
   { worker_name:'Jake Ryan',      reason:'Hazard spotted and reported', points:50,  awarded_by:'Eoin Burke', time:'10:15', date:_today, note:'Identified unsecured edge protection — potentially saved a life' },
   { worker_name:'Sam Carroll',    reason:'Correct PPE worn',            points:25,  awarded_by:'Eoin Burke', time:'09:30', date:_today, note:'Always sets the standard on PPE — every trade notices it' },
@@ -16599,97 +16620,157 @@ function goToSitePreStart() {
 }
 
 // ── WORKER SITE PRE-START VIEWER ─────────────────────────────────────────
-async function viewSitePreStart() {
+// Reads today's supervisor pre-start (live submission if there is one, else
+// the DEMO_SITE_PS seed). When called with { asGate:true } it shows a
+// "I've read this and am fit for work" confirmation card at the bottom —
+// after the worker signs that, sign-in is unblocked.
+function viewSitePreStart(opts) {
+  opts = opts || {};
+  const asGate = !!opts.asGate;
   goTo('screen-sps-view');
   const body = document.getElementById('sps-viewer-body');
+  if (!body) return;
   body.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:32px">Loading...</div>';
-
-  if (!db) {
-    body.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:32px">Connect Firebase to view pre-start</div>';
-    return;
-  }
 
   try {
     const today = new Date().toLocaleDateString('en-AU');
-    const snap  = await db.collection('prestarts')
-      .where('site','==',SITE)
-      .where('date','==',today)
-      .where('is_site_prestart','==',true)
-      .orderBy('_created','desc')
-      .limit(1)
-      .get();
+    const d = (typeof _todaysSitePreStart === 'function') ? _todaysSitePreStart() : null;
 
-    if (snap.empty) {
-      body.innerHTML = `<div style="background:#FEF0E6;border:1.5px solid rgba(212,99,10,.2);border-radius:var(--r);padding:16px;text-align:center">
-        <div style="font-size:16px;margin-bottom:8px">⏳</div>
-        <div style="font-size:14px;font-weight:600;color:#D4630A">Not submitted yet</div>
-        <div style="font-size:12.5px;color:var(--muted);margin-top:4px">Your supervisor has not completed today's site pre-start. Check with them before commencing work.</div>
-      </div>`;
+    if (!d) {
+      body.innerHTML = '<div style="background:#FEF0E6;border:1.5px solid rgba(212,99,10,.2);border-radius:var(--r);padding:16px;text-align:center">' +
+        '<div style="font-size:16px;margin-bottom:8px">⏳</div>' +
+        '<div style="font-size:14px;font-weight:600;color:#D4630A">Not submitted yet</div>' +
+        '<div style="font-size:12.5px;color:var(--muted);margin-top:4px">Your supervisor has not completed today\'s site pre-start. Check with them before commencing work.</div>' +
+      '</div>';
       return;
     }
 
-    const d = snap.docs[0].data();
+    function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-    // Weather block
+    const outcome = d.outcome || d.overall_outcome || 'Site Cleared';
+    const isFail  = outcome.toLowerCase().includes('fail') || outcome.toLowerCase().includes('stop') || outcome.toLowerCase().includes('not cleared');
+
     const wx = d.weather;
-    const wxHtml = wx ? `
-      <div class="fcard">
-        <div class="fcard-hdr">Today's weather</div>
-        <div class="fcard-body">
-          <div style="display:flex;align-items:center;gap:14px">
-            <div style="font-size:36px">${weatherIcon(wx.code||0)}</div>
-            <div>
-              <div style="font-size:18px;font-weight:600;color:var(--text)">${wx.temp}°C</div>
-              <div style="font-size:13px;color:var(--muted)">${wx.desc}</div>
-              <div style="font-size:11.5px;color:var(--muted);margin-top:2px">Wind ${wx.wind} km/h · UV ${wx.uv}</div>
-            </div>
-          </div>
-          <div style="margin-top:10px;padding:8px 10px;border-radius:var(--rs);background:${d.weather_assessment?.includes('Stop')?'#FAEBEB':d.weather_assessment?.includes('Restricted')?'#FEF0E6':d.weather_assessment?.includes('Caution')?'#FFFBF0':'#E6F5ED'}">
-            <div style="font-size:12.5px;font-weight:600;color:${d.weather_assessment?.includes('Stop')?'#B83232':d.weather_assessment?.includes('Restricted')?'#D4630A':d.weather_assessment?.includes('Caution')?'#976500':'#1B6E3A'}">${d.weather_assessment||'Assessment not recorded'}</div>
-          </div>
-        </div>
-      </div>` : '';
+    const wxIcon = (wx && typeof weatherIcon === 'function') ? weatherIcon(wx.code || 0) : '⛅';
+    const wxHtml = wx ? (
+      '<div class="fcard">' +
+        '<div class="fcard-hdr">Today\'s weather</div>' +
+        '<div class="fcard-body">' +
+          '<div style="display:flex;align-items:center;gap:14px">' +
+            '<div style="font-size:36px">' + wxIcon + '</div>' +
+            '<div>' +
+              '<div style="font-size:18px;font-weight:600;color:var(--text)">' + esc(wx.temp) + '°C</div>' +
+              '<div style="font-size:13px;color:var(--muted)">' + esc(wx.desc) + '</div>' +
+              '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">Wind ' + esc(wx.wind) + ' km/h · UV ' + esc(wx.uv) + '</div>' +
+            '</div>' +
+          '</div>' +
+          (d.weather_assessment ? '<div style="margin-top:10px;padding:8px 10px;border-radius:var(--rs);background:#E6F5ED"><div style="font-size:12.5px;font-weight:600;color:#1B6E3A">' + esc(d.weather_assessment) + '</div></div>' : '') +
+        '</div>' +
+      '</div>'
+    ) : '';
 
-    // Site conditions
-    const checks = d.checklist_results || {};
-    const checkHtml = Object.keys(checks).length ? `
-      <div class="fcard">
-        <div class="fcard-hdr">Site conditions</div>
-        <div class="fcard-body" style="gap:0;padding:8px 15px">
-          ${Object.entries(checks).map(([k,v])=>`
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:.5px solid var(--border)">
-              <div style="font-size:12.5px;color:var(--text);flex:1;padding-right:10px">${k.replace(/_/g,' ')}</div>
-              <span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:5px;flex-shrink:0;background:${v==='pass'?'#E6F5ED':v==='fail'?'#FAEBEB':'#F2F3F2'};color:${v==='pass'?'#1B6E3A':v==='fail'?'#B83232':'#666'}">${v?.toUpperCase()||'—'}</span>
-            </div>`).join('')}
-        </div>
-      </div>` : '';
+    function noteCard(title, text) {
+      if (!text) return '';
+      return '<div class="fcard">' +
+        '<div class="fcard-hdr">' + title + '</div>' +
+        '<div class="fcard-body"><div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap">' + esc(text) + '</div></div>' +
+      '</div>';
+    }
 
-    // Notes
-    const notesHtml = d.notes ? `
-      <div class="fcard">
-        <div class="fcard-hdr">Supervisor notes</div>
-        <div class="fcard-body"><div style="font-size:13px;color:var(--text);line-height:1.6">${d.notes}</div></div>
-      </div>` : '';
+    // Confirmation card (only when called as a sign-in gate). One tick +
+    // signature + optional "anything to flag?" box. Hitting the button
+    // saves the ack flag for this worker today and resumes sign-in.
+    const gateHtml = asGate ? (
+      '<div class="fcard" style="border:1.5px solid rgba(27,110,58,.25);background:#F5FAF4">' +
+        '<div class="fcard-hdr" style="color:#1B6E3A">Confirm and sign in</div>' +
+        '<div class="fcard-body" style="gap:10px">' +
+          '<label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:#1A2A1F;cursor:pointer">' +
+            '<input type="checkbox" id="sps-ack-check" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#1B6E3A" onchange="spsUpdateAckBtn()">' +
+            '<span>I have read today\'s site pre-start and confirm I am fit for work.</span>' +
+          '</label>' +
+          '<div class="fgroup">' +
+            '<label class="flabel" style="font-size:11.5px;color:#5C6B62">Anything to flag for your supervisor? <span style="color:#888;font-weight:500">(optional)</span></label>' +
+            '<textarea id="sps-ack-flag" rows="2" placeholder="Leave blank if nothing to raise" style="font-size:13px"></textarea>' +
+          '</div>' +
+          '<button id="sps-ack-btn" onclick="spsAckAndContinue()" disabled style="width:100%;padding:13px;background:#1B6E3A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:not-allowed;opacity:.5;font-family:\'DM Sans\',sans-serif">' +
+            'Confirm and continue to Sign In' +
+          '</button>' +
+          '<div style="font-size:11px;color:#5C6B62;line-height:1.5;text-align:center">' +
+            'Your name and the time will be recorded as your acknowledgement.' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    ) : '';
 
-    // Outcome banner
-    const outcome = d.overall_outcome || 'Pass';
-    const isFail  = outcome.toLowerCase().includes('fail') || outcome.toLowerCase().includes('stop');
-
-    body.innerHTML = `
-      <div style="background:${isFail?'#FAEBEB':'#E6F5ED'};border:1.5px solid ${isFail?'rgba(184,50,50,.2)':'rgba(27,110,58,.2)'};border-radius:var(--r);padding:14px 16px">
-        <div style="font-size:13px;font-weight:600;color:${isFail?'#B83232':'#1B6E3A'};margin-bottom:2px">${isFail?'⚠️ Issues identified — speak to your supervisor':'✓ Site assessed as safe to commence work'}</div>
-        <div style="font-size:12px;color:var(--muted)">Completed by ${d.worker_name||'Supervisor'} at ${d.time||''} · ${d.date||today}</div>
-      </div>
-      ${wxHtml}
-      ${checkHtml}
-      ${notesHtml}
-      <div style="font-size:11.5px;color:var(--muted);text-align:center;line-height:1.6;padding:4px 0 8px">
-        If you have any concerns about site conditions, speak to your supervisor before commencing work.
-      </div>`;
+    body.innerHTML =
+      '<div style="background:' + (isFail ? '#FAEBEB' : '#E6F5ED') + ';border:1.5px solid ' + (isFail ? 'rgba(184,50,50,.2)' : 'rgba(27,110,58,.2)') + ';border-radius:var(--r);padding:14px 16px">' +
+        '<div style="font-size:13px;font-weight:600;color:' + (isFail ? '#B83232' : '#1B6E3A') + ';margin-bottom:2px">' +
+          (isFail ? '⚠️ Issues identified — speak to your supervisor' : '✓ Site assessed as safe to commence work') +
+        '</div>' +
+        '<div style="font-size:12px;color:var(--muted)">Completed by ' + esc(d.worker_name || 'Supervisor') + ' at ' + esc(d.time || '') + ' · ' + esc(d.date || today) + '</div>' +
+      '</div>' +
+      wxHtml +
+      noteCard('Today\'s scope of work', d.tasks_today) +
+      noteCard('Today\'s hazards & controls', d.hazards_today) +
+      noteCard('Carry-over from yesterday', d.carryover) +
+      noteCard('Supervisor notes', d.notes) +
+      gateHtml;
   } catch(e) {
     body.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:32px">Could not load pre-start</div>';
     console.error('SPS viewer error:', e);
   }
+}
+
+// Toggle the "Confirm and continue" button based on the tick state.
+function spsUpdateAckBtn() {
+  const check = document.getElementById('sps-ack-check');
+  const btn   = document.getElementById('sps-ack-btn');
+  if (!check || !btn) return;
+  if (check.checked) {
+    btn.disabled = false;
+    btn.style.cursor = 'pointer';
+    btn.style.opacity = '1';
+  } else {
+    btn.disabled = true;
+    btn.style.cursor = 'not-allowed';
+    btn.style.opacity = '.5';
+  }
+}
+
+// Save the worker's acknowledgement of today's site pre-start, then continue
+// straight into the sign-in flow.
+function spsAckAndContinue() {
+  const check = document.getElementById('sps-ack-check');
+  if (!check || !check.checked) return;
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!p || !p.name) return;
+  const today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
+  const flagText = (document.getElementById('sps-ack-flag') || {}).value || '';
+  try {
+    const key = 'slan_sps_ack_' + today + '_' + p.name;
+    localStorage.setItem(key, JSON.stringify({
+      worker_name: p.name,
+      acked_at:    new Date().toISOString(),
+      flag_note:   flagText.trim()
+    }));
+    // If they raised a concern, drop it into slan_queue so it appears on
+    // the supervisor's activity feed.
+    if (flagText.trim()) {
+      const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+      q.push({ data: {
+        form_type:    'sps_concern',
+        worker_name:  p.name,
+        company:      p.company,
+        flag_note:    flagText.trim(),
+        date:         new Date().toLocaleDateString('en-AU'),
+        time:         new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false}),
+        site_code:    'site-a'
+      }});
+      localStorage.setItem('slan_queue', JSON.stringify(q));
+    }
+  } catch(e){}
+  // Resume sign-in flow
+  if (typeof startFlow === 'function') startFlow('in');
 }
 
 // ── WEATHER ICON HELPER (shared) ──────────────────────────────────────────
@@ -21409,6 +21490,11 @@ function startFlow(m){
   // who missed the original delivery, and end-of-day stragglers who haven't
   // signed it yet.
   if (typeof tbtBlocksSignInOut === 'function' && tbtBlocksSignInOut()) return;
+  // SITE PRE-START GATE (sign-in only): worker must review today's site
+  // pre-start submitted by the supervisor, tick "I've read this and am fit
+  // for work" and sign before they can sign in. Niall's workflow: toolbox
+  // first, then site pre-start, then sign in.
+  if (m === 'in' && typeof spsBlocksSignIn === 'function' && spsBlocksSignIn()) return;
   // SIGN-OUT GATE: block sign-out if worker has active Hot Works permits
   if (m === 'out' && typeof hwCheckActivePermitsForSignOut === 'function' && !window._hwGateBypass) {
     if (hwCheckActivePermitsForSignOut()) return; // gate handled, user redirected
@@ -24370,6 +24456,64 @@ function _signedOutToday() {
 // Used by the worker portal's "Sign In" pill so Jake's portal agrees with
 // the director / supervisor view (if Jake is in DEMO_SIGNINS, Jake's own
 // portal must show him as on site).
+// Today's site pre-start (the one Eoin filled in). Tries live queue first
+// (form_type = 'site_prestart'), then falls back to the demo seed so the
+// demo works straight away without anyone filling it in.
+function _todaysSitePreStart() {
+  const today = new Date().toLocaleDateString('en-AU');
+  try {
+    const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
+    for (let i = q.length - 1; i >= 0; i--) {
+      const s = q[i];
+      if (s && s.data && s.data.form_type === 'site_prestart' && s.data.date === today) return s.data;
+    }
+  } catch(e){}
+  if (typeof DEMO_SITE_PS !== 'undefined' && DEMO_SITE_PS && DEMO_SITE_PS.date === today) {
+    return DEMO_SITE_PS;
+  }
+  return null;
+}
+
+// Has the CURRENT profile already acknowledged today's site pre-start?
+// Stored as a per-worker, per-day flag: slan_sps_ack_{YYYY-MM-DD}_{name}
+function _iHaveAckedSitePreStart() {
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!p || !p.name) return false;
+  const today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
+  const key = 'slan_sps_ack_' + today + '_' + p.name;
+  return !!localStorage.getItem(key);
+}
+
+// Sign-in gate: fires for WORKERS only. Returns true if blocked (so
+// startFlow returns early and the gate modal handles next-step UX).
+//  - If no site pre-start exists for today: tell the worker to wait
+//    for the supervisor.
+//  - If it exists but the worker hasn't acknowledged it: send them
+//    into the viewer to read and confirm.
+function spsBlocksSignIn() {
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!p || !p.role) return false;
+  const role = String(p.role).toLowerCase();
+  if (role.indexOf('worker') === -1 && role.indexOf('mechanic') === -1) return false;
+  const ps = _todaysSitePreStart();
+  if (!ps) {
+    spsShowMissingModal();
+    return true;
+  }
+  if (_iHaveAckedSitePreStart()) return false;
+  // Have a pre-start but not acknowledged — open the viewer.
+  if (typeof viewSitePreStart === 'function') viewSitePreStart({ asGate: true });
+  return true;
+}
+
+function spsShowMissingModal() {
+  if (typeof slanAlert === 'function') {
+    slanAlert('Your supervisor has not completed today\'s site pre-start yet. You can\'t sign in until they do — ask them to fill it in first.');
+  } else {
+    alert('Site pre-start not yet submitted by the supervisor.');
+  }
+}
+
 function _iAmCurrentlyOnSite() {
   const p = (typeof getProfile === 'function') ? getProfile() : null;
   if (!p || !p.name) return false;
