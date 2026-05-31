@@ -24444,24 +24444,66 @@ function renderAnPrestarts() {
   const cont = document.getElementById('an-ps-container');
   if (!cont) return;
   if (!items.length) {
-    cont.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No pre-starts logged yet today.</div>';
+    cont.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:10px;background:#FAFAF7">No pre-starts have been completed yet today.</div>';
     return;
   }
   function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  cont.innerHTML = items.map(function(r){
+  // Per-site colour palette matches the on-site roster (Niall wants the
+  // pre-starts list to look like the signed-in list).
+  const SITE_COL = { 'site-a':'#3D5AAD', 'site-b':'#1B6E6E', 'site-c':'#D4630A' };
+  function siteCodeFor(siteName) {
+    if (!siteName) return 'site-a';
+    const s = String(siteName).toLowerCase();
+    if (s.indexOf('bondi') !== -1) return 'site-a';
+    if (s.indexOf('parramatta') !== -1) return 'site-b';
+    if (s.indexOf('olympic') !== -1) return 'site-c';
+    return 'site-a';
+  }
+  function rowHtml(r, col) {
     const ok = /fit/i.test(r.outcome);
     const oos = /out of service/i.test(r.outcome);
-    const col = ok ? '#1B6E3A' : (oos ? '#B83232' : '#BA7517');
-    const bg  = ok ? '#E6F5ED' : (oos ? '#FBE6E6' : '#FDF8EC');
+    const badgeCol = ok ? '#1B6E3A' : (oos ? '#B83232' : '#BA7517');
+    const badgeBg  = ok ? '#E6F5ED' : (oos ? '#FBE6E6' : '#FDF8EC');
     return '<div style="padding:11px 12px;border:1px solid #E8E8E8;border-left:4px solid ' + col + ';border-radius:8px;background:#fff">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
-        '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.title) + (r.code ? ' <span style="color:#888;font-weight:500;font-size:11px">(' + esc(r.code) + ')</span>' : '') + '</div>' +
-        '<span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;flex-shrink:0;background:' + bg + ';color:' + col + ';text-transform:uppercase;letter-spacing:.04em">' + esc(r.outcome) + '</span>' +
+        '<div style="font-size:13px;font-weight:600;color:#1A2A1F;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.operator) + '</div>' +
+        '<span style="font-size:10.5px;font-weight:700;color:' + col + ';flex-shrink:0">' + esc(r.time || '—') + '</span>' +
       '</div>' +
-      '<div style="font-size:10.5px;color:#888;margin-top:3px">' + esc(r.operator) + (r.time ? ' · ' + esc(r.time) : '') + (r.site && scope.role === 'director' ? ' · ' + esc(r.site) : '') + '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:3px">' +
+        '<div style="font-size:10.5px;color:#888;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.title) + (r.code ? ' (' + esc(r.code) + ')' : '') + '</div>' +
+        '<span style="font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:11px;flex-shrink:0;background:' + badgeBg + ';color:' + badgeCol + ';text-transform:uppercase;letter-spacing:.04em">' + esc(r.outcome) + '</span>' +
+      '</div>' +
       (r.defects && !/^none$/i.test(r.defects) ? '<div style="font-size:11px;color:#BA7517;margin-top:4px;line-height:1.4">⚠ ' + esc(r.defects) + '</div>' : '') +
     '</div>';
+  }
+  // Supervisor: single site, flat list. Director: group by site like the roster.
+  if (scope.role === 'supervisor') {
+    const col = SITE_COL[scope.scope] || '#3D5AAD';
+    cont.innerHTML = items.map(function(r){ return rowHtml(r, col); }).join('');
+    return;
+  }
+  // Director — group by site
+  const groups = {};
+  items.forEach(function(r){
+    const code = siteCodeFor(r.site);
+    const siteName = r.site || 'Unknown site';
+    (groups[siteName] = groups[siteName] || { code: code, rows: [] }).rows.push(r);
+  });
+  const siteNames = Object.keys(groups).sort();
+  cont.innerHTML = siteNames.map(function(siteName){
+    const g = groups[siteName];
+    const col = SITE_COL[g.code] || '#3D5AAD';
+    const rowsHtml = g.rows.sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); }).map(function(r){ return rowHtml(r, col); }).join('');
+    return '<div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font-size:11px;font-weight:700;color:#5C6B62;text-transform:uppercase;letter-spacing:.04em">' +
+        '<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + col + '"></span>' + esc(siteName) + '</span>' +
+        '<span style="color:' + col + '">' + g.rows.length + '</span>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' + rowsHtml + '</div>' +
+    '</div>';
   }).join('');
+  // Stack the site groups with spacing
+  cont.style.gap = '14px';
 }
 
 // Recent-incidents list view (supervisor primary, also accessible to workers
