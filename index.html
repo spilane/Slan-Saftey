@@ -2543,8 +2543,8 @@ function ahStyleDivisionHome(){
       <div style="width:34px"></div>
     </div>
     <div class="form-greeting">
-      <h1 id="conf-title">Sign In</h1>
-      <p id="conf-sub">Confirm your details and sign in</p>
+      <h1 id="conf-title">Site Briefing &amp; Sign In</h1>
+      <p id="conf-sub">Review today's briefing and sign in</p>
     </div>
   </div>
   <div class="syncbar">
@@ -2567,7 +2567,6 @@ function ahStyleDivisionHome(){
     <span id="c-name" style="display:none">—</span>
     <span id="c-company" style="display:none">—</span>
     <span id="c-role" style="display:none">—</span>
-    <span id="c-time" style="display:none">—</span>
 
     <!-- Fitness for Duty declaration (sign-in only) — 4 ticks, mirrors EOS -->
     <div id="ffd-card" class="fcard">
@@ -2665,9 +2664,6 @@ function ahStyleDivisionHome(){
       <div class="fcard-body" id="si-detail-rows">
         <div class="frow"><span class="lbl">Worker</span><span class="val" id="sd-name">—</span></div>
         <div class="frow"><span class="lbl">Time</span><span class="val" id="sd-time">—</span></div>
-        <div class="frow"><span class="lbl">Location</span><span class="val" id="sd-loc">—</span></div>
-        <div class="frow"><span class="lbl">Address</span><span class="val" id="sd-addr">—</span></div>
-        <div class="frow"><span class="lbl">Status</span><span class="val" id="sd-status">—</span></div>
       </div>
     </div>
 
@@ -21531,16 +21527,12 @@ function startFlow(m){
   // New form-greeting header (verb in pre-submit, past in success)
   var _confTitle = document.getElementById('conf-title');
   var _confSub   = document.getElementById('conf-sub');
-  if (_confTitle) _confTitle.textContent = m==='in' ? 'Sign In' : 'Sign Out';
-  if (_confSub)   _confSub.textContent   = m==='in' ? 'Confirm your details and sign in' : 'Confirm your shift and sign out';
+  if (_confTitle) _confTitle.textContent = m==='in' ? 'Site Briefing & Sign In' : 'Sign Out';
+  if (_confSub)   _confSub.textContent   = m==='in' ? "Review today's briefing and sign in" : 'Confirm your shift and sign out';
   document.getElementById('c-name').textContent=p.name;
   var _cCompany = document.getElementById('c-company');
   if (_cCompany) _cCompany.textContent = p.company || '—';
   document.getElementById('c-role').textContent = p.role || '—';
-  const now=new Date();
-  document.getElementById('c-time').textContent=
-    now.toLocaleDateString('en-AU')+' · '+
-    now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true});
   const btn=document.getElementById('conf-btn');
   btn.textContent=m==='in'?'Confirm Sign In':'Confirm Sign Out';
   btn.className='cbtn '+(m==='in'?'in':'out');
@@ -21624,6 +21616,14 @@ function startFlow(m){
     if (ffdCard) ffdCard.style.display = 'block';
     if (eosCard) eosCard.style.display = 'none';
     resetFFD();
+    // 5th tick ("I have read today's site pre-start") is only meaningful when
+    // the supervisor's SPS exists for this site today. With no SPS, hide it
+    // and pre-satisfy the slot so the Confirm gate accepts 4 ticks.
+    var _ffd5btn = document.getElementById('ffd-btn-4');
+    if (_ffd5btn) {
+      if (sps) { _ffd5btn.style.display = ''; ffdChecked[4] = false; }
+      else      { _ffd5btn.style.display = 'none'; ffdChecked[4] = true; }
+    }
   } else {
     // Sign-out — show end of shift declaration
     if (ffdCard) ffdCard.style.display = 'none';
@@ -21762,18 +21762,12 @@ function showSuccess(m,p,now,ref){
   if (rows) {
     rows.innerHTML =
       '<div class="frow"><span class="lbl">Worker</span><span class="val" id="sd-name">\u2014</span></div>' +
-      '<div class="frow"><span class="lbl">Time</span><span class="val" id="sd-time">\u2014</span></div>' +
-      '<div class="frow"><span class="lbl">Location</span><span class="val" id="sd-loc">\u2014</span></div>' +
-      '<div class="frow"><span class="lbl">Address</span><span class="val" id="sd-addr">\u2014</span></div>' +
-      '<div class="frow"><span class="lbl">Status</span><span class="val" id="sd-status">\u2014</span></div>';
+      '<div class="frow"><span class="lbl">Time</span><span class="val" id="sd-time">\u2014</span></div>';
   }
   const hdr = document.getElementById('si-detail-hdr');
   if (hdr) hdr.textContent = 'Record';
   document.getElementById('sd-name').textContent  = p.name;
   document.getElementById('sd-time').textContent  = now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true});
-  document.getElementById('sd-loc').textContent   = locData.lat ? locData.lat+', '+locData.lng : 'Not captured';
-  document.getElementById('sd-addr').textContent  = locData.address || '—';
-  document.getElementById('sd-status').textContent= (isOnline && PA_URL !== 'YOUR_POWER_AUTOMATE_URL_HERE') ? 'Sent to register ✓' : 'Saved on device — will sync';
   // CTA: "Back to home" (consistent across success screens — Niall's rule)
   const cta = document.getElementById('si-cta-btn');
   if (cta) { cta.textContent = 'Back to home'; cta.onclick = function(){ goTo('screen-home'); }; }
