@@ -24489,8 +24489,9 @@ function goToIncidentList() {
   const backOnclick = isSup ? "goTo('screen-dash')"
                      : isDir ? "goToAnalytics('director')"
                      : "goTo('screen-home')";
-  const backBtn = document.querySelector('#screen-incident-list .tbar .back-btn');
-  if (backBtn) backBtn.setAttribute('onclick', backOnclick);
+  // Note: the back-button onclick is RE-APPLIED below after goTo() runs,
+  // because ensureInteriorAvatar() rebuilds the header during goTo() and
+  // wipes any onclick set on the original button.
   // Reset search input each visit
   const sIn = document.getElementById('inc-list-search');
   if (sIn) sIn.value = '';
@@ -24498,6 +24499,11 @@ function goToIncidentList() {
   if (typeof incListSetFilter === 'function') incListSetFilter('open');
   else renderIncidentList();
   goTo('screen-incident-list');
+  // Re-apply the back-button onclick AFTER goTo, because the interior-header
+  // normaliser (ensureInteriorAvatar) rebuilds .tbar inside goTo and would
+  // otherwise wipe whatever onclick we set above.
+  const _bbAfter = document.querySelector('#screen-incident-list .tbar .back-btn, #screen-incident-list .topbar .back-btn');
+  if (_bbAfter) _bbAfter.setAttribute('onclick', backOnclick);
 }
 
 // Filter state for the recent-incidents list. Defaults to 'open' so the
