@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mockup v2 — Confirmation screens cleanup</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAF7; --text:#1A2A1F; --muted:#5C6B62; --border:#E8E8E8;
+    --deep:#1C382A; --mid:#2C6B5E; --gold:#B8960C; --rs:8px; --r:14px;
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:#EFEEEA;font-family:'DM Sans',sans-serif;color:var(--text);padding:24px}
+  .page-h{max-width:1280px;margin:0 auto 24px;padding:18px 22px;background:#fff;border-radius:14px;border:1px solid var(--border)}
+  .page-h h1{margin:0 0 8px;font-size:20px;font-weight:700}
+  .page-h p{margin:0 0 8px;color:var(--muted);font-size:13px;line-height:1.6}
+  .page-h ul{margin:6px 0 0 18px;font-size:13px;color:var(--text);line-height:1.7}
+  .page-h ul li{margin-bottom:2px}
+  .page-h strong{color:#1B6E3A}
+  .v2{display:inline-block;background:#1B6E3A;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.05em;text-transform:uppercase;margin-left:8px;vertical-align:middle}
+
+  .row{max-width:1280px;margin:0 auto 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+  @media(max-width:1100px){.row{grid-template-columns:1fr}}
+  .col-h{padding:14px 18px;background:#fff;border-radius:12px;border:1px solid var(--border);margin-bottom:12px}
+  .col-h strong{display:block;font-size:14px;margin-bottom:2px}
+  .col-h span{font-size:11.5px;color:var(--muted)}
+  .col-h.good strong{color:#1B6E3A}
+  .col-h.neutral strong{color:#3D5A48}
+
+  /* Phone frame */
+  .phone{width:100%;max-width:420px;margin:0 auto;background:#FAFAF7;border-radius:24px;border:8px solid #1f1f1f;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.18)}
+
+  /* Topbar (shared interior header pattern) */
+  .topbar{background:var(--deep);padding:16px 18px 18px;color:#fff}
+  .topbar-row{display:flex;align-items:center;justify-content:space-between}
+  .back-btn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.08);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .back-btn svg{width:16px;height:16px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .tbar-logo{font-family:serif;font-size:20px;color:var(--gold);letter-spacing:.04em;text-align:center}
+  .tbar-logo small{display:block;font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:.18em;color:rgba(255,255,255,.6);margin-top:1px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:rgba(184,150,12,.22);border:2px solid rgba(184,150,12,.55);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#B8960C}
+  .form-greeting{margin-top:12px}
+  .form-greeting h1{margin:0;font-size:20px;font-weight:700;color:#fff;line-height:1.2}
+  .form-greeting p{margin:3px 0 0;font-size:12px;color:rgba(255,255,255,.6)}
+
+  .syncbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:11px}
+  .syncbar .sync-l{display:flex;align-items:center;gap:7px;color:var(--text);font-weight:600}
+  .bdot{width:9px;height:9px;border-radius:50%;background:#1B6E3A}
+  .syncbar .sync-r{color:var(--muted);font-family:'DM Mono',monospace;font-size:10.5px}
+
+  /* fcard system */
+  .fbody{padding:14px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+  .fcard{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+  .fcard-hdr{padding:11px 16px;background:#FFFBF0;border-bottom:1px solid #F5E9C8;font-size:12.5px;font-weight:700;color:#B8960C;letter-spacing:.02em}
+  .fcard-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--text)}
+  .frow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;font-size:13px}
+  .frow > .lbl{color:var(--muted);font-size:12px;font-weight:500;line-height:1.35}
+  .frow > .val{color:var(--text);font-weight:600;text-align:right;font-size:13px;line-height:1.4;font-family:'DM Sans',sans-serif}
+
+  /* Hero success card */
+  .hero{background:linear-gradient(135deg,#E6F5ED 0%,#D4ECD8 100%);border:1.5px solid rgba(27,110,58,.25);border-radius:var(--r);padding:20px 18px;text-align:center}
+  .hero .icon{width:56px;height:56px;border-radius:50%;background:#fff;border:2px solid rgba(27,110,58,.35);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+  .hero .icon svg{width:28px;height:28px;stroke:#1B6E3A;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .hero h2{margin:0 0 6px;font-size:20px;font-weight:700;color:#0E2A1F}
+  .hero p{margin:0;font-size:13px;color:#3D5A48;line-height:1.5}
+
+  /* FFD checkbox row */
+  .ffd-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--border);font-size:13px;color:var(--text);cursor:pointer}
+  .ffd-row:first-of-type{border-top:none;padding-top:0}
+  .ffd-row input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#1B6E3A}
+  .ffd-row span{flex:1;line-height:1.45}
+
+  /* CTA */
+  .home-btn{width:100%;padding:14px;background:var(--mid);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.02em}
+  .home-btn.disabled{background:#C7C7C2;cursor:not-allowed}
+
+  .footer-ref{font-size:10.5px;color:var(--muted);text-align:center;padding:6px 0 2px;font-family:'DM Mono',monospace;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<div class="page-h">
+  <h1>Mockup v2 — confirmation screens cleanup <span class="v2">v2 — feedback applied</span></h1>
+  <p>Three screens to approve. Changes from v1 based on Niall's notes:</p>
+  <ul>
+    <li><strong>Reference number</strong> — removed from prominent display. It's still saved in the WHS register internally (audit trail / register lookup); shown only as a tiny grey line at the bottom of the success card. If you want it gone entirely, say.</li>
+    <li><strong>Fonts</strong> — all values now use the same DM Sans font + weight. No more mixed mono/sans in the same record card.</li>
+    <li><strong>Signing In screen — section 2 removed</strong>. GPS location and signature were over-stated; now they're a one-line confirmation under the Fitness for Duty card.</li>
+    <li><strong>Fitness for Duty — expanded</strong>. 4 individual ticks (not under influence, not fatigued, PPE in order, no untreated injury). Confirm Sign In button stays disabled until all four are ticked.</li>
+    <li><strong>"You're good to go" green hero</strong> — kept on Toolbox Talk Signed AND added to the new Signed In success screen (third column).</li>
+  </ul>
+</div>
+
+<div class="row">
+
+  <!-- ============ TOOLBOX TALK SIGNED (success) ============ -->
+  <div>
+    <div class="col-h good"><strong>1. Toolbox Talk Signed</strong><span>Fires after a worker signs the talk. Hero + record card. Same font for every value. Reference shown small at bottom (or remove).</span></div>
+    <div class="phone">
+      <div class="topbar">
+        <div class="topbar-row">
+          <button class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="tbar-logo">Slán<small>SAFETY · WHS COMPLIANCE</small></div>
+          <div class="avatar">JR</div>
+        </div>
+        <div class="form-greeting">
+          <h1>Toolbox Talk Signed</h1>
+          <p>Your attendance has been recorded</p>
+        </div>
+      </div>
+      <div class="syncbar">
+        <div class="sync-l"><div class="bdot"></div><span>Saved to register</span></div>
+        <div class="sync-r">SLS-TBT</div>
+      </div>
+      <div class="fbody">
+        <div class="hero">
+          <div class="icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <h2>You're good to go</h2>
+          <p>You can now do your pre-start and sign in.</p>
+        </div>
+        <div class="fcard">
+          <div class="fcard-hdr">Record</div>
+          <div class="fcard-body">
+            <div class="frow"><span class="lbl">Talk</span><span class="val">Working at Heights — April 2026</span></div>
+            <div class="frow"><span class="lbl">Signed by</span><span class="val">Jake Ryan</span></div>
+            <div class="frow"><span class="lbl">Company</span><span class="val">Murphy Civil Construction</span></div>
+            <div class="frow"><span class="lbl">Signed at</span><span class="val">31 May 2026 · 09:30 pm</span></div>
+          </div>
+        </div>
+        <button class="home-btn">Continue to Sign In →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SIGNING IN (pre-submit, with FFD) ============ -->
+  <div>
+    <div class="col-h good"><strong>2. Signing In (pre-submit)</strong><span>Section 2 removed. Just one details card + the expanded Fitness for Duty card. Confirm button disabled until all 4 FFD ticks are on.</span></div>
+    <div class="phone">
+      <div class="topbar">
+        <div class="topbar-row">
+          <button class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="tbar-logo">Slán<small>SAFETY · WHS COMPLIANCE</small></div>
+          <div class="avatar">JR</div>
+        </div>
+        <div class="form-greeting">
+          <h1>Sign In</h1>
+          <p>Confirm your details and sign in</p>
+        </div>
+      </div>
+      <div class="syncbar">
+        <div class="sync-l"><div class="bdot"></div><span>Live</span></div>
+        <div class="sync-r">SLS-ATT</div>
+      </div>
+      <div class="fbody">
+
+        <div class="fcard">
+          <div class="fcard-hdr">Your details</div>
+          <div class="fcard-body">
+            <div class="frow"><span class="lbl">Worker</span><span class="val">Jake Ryan</span></div>
+            <div class="frow"><span class="lbl">Company</span><span class="val">Murphy Civil Construction</span></div>
+            <div class="frow"><span class="lbl">Role</span><span class="val">Worker</span></div>
+            <div class="frow"><span class="lbl">Captured</span><span class="val">31 May 2026 · 09:33 pm</span></div>
+          </div>
+        </div>
+
+        <div class="fcard">
+          <div class="fcard-hdr">Fitness for Duty declaration</div>
+          <div class="fcard-body">
+            <p style="margin:0 0 6px;font-size:12.5px;color:var(--muted);line-height:1.5">Confirm each item before signing in.</p>
+            <label class="ffd-row"><input type="checkbox" checked><span>I am <strong>not</strong> under the influence of alcohol or drugs.</span></label>
+            <label class="ffd-row"><input type="checkbox" checked><span>I am <strong>not</strong> fatigued or impaired.</span></label>
+            <label class="ffd-row"><input type="checkbox" checked><span>I have all required <strong>PPE</strong> for today's work.</span></label>
+            <label class="ffd-row"><input type="checkbox" checked><span>I have <strong>no untreated injuries</strong> that could affect my work.</span></label>
+            <div style="margin-top:8px;padding-top:10px;border-top:1px solid var(--border);font-size:11.5px;color:var(--muted);line-height:1.5">
+              Location <span style="color:#1B6E3A;font-weight:600">captured ✓</span>
+              &nbsp;·&nbsp;
+              Signature <span style="color:#1B6E3A;font-weight:600">on file ✓</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="home-btn">Confirm Sign In →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SIGNED IN (success after submit) ============ -->
+  <div>
+    <div class="col-h good"><strong>3. Signed In (success)</strong><span>NEW — fires after the worker taps Confirm. Same green hero as the toolbox success. Niall: "should this be applied when signed in??" — yes, like this.</span></div>
+    <div class="phone">
+      <div class="topbar">
+        <div class="topbar-row">
+          <button class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="tbar-logo">Slán<small>SAFETY · WHS COMPLIANCE</small></div>
+          <div class="avatar">JR</div>
+        </div>
+        <div class="form-greeting">
+          <h1>Signed In</h1>
+          <p>Your attendance has been recorded</p>
+        </div>
+      </div>
+      <div class="syncbar">
+        <div class="sync-l"><div class="bdot"></div><span>Saved to register</span></div>
+        <div class="sync-r">SLS-ATT</div>
+      </div>
+      <div class="fbody">
+        <div class="hero">
+          <div class="icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <h2>You're signed in</h2>
+          <p>Work safe. Sign out when you leave site.</p>
+        </div>
+        <div class="fcard">
+          <div class="fcard-hdr">Record</div>
+          <div class="fcard-body">
+            <div class="frow"><span class="lbl">Worker</span><span class="val">Jake Ryan</span></div>
+            <div class="frow"><span class="lbl">Company</span><span class="val">Murphy Civil Construction</span></div>
+            <div class="frow"><span class="lbl">Site</span><span class="val">Bondi Junction Mixed Use</span></div>
+            <div class="frow"><span class="lbl">Signed in at</span><span class="val">31 May 2026 · 09:33 pm</span></div>
+          </div>
+        </div>
+        <button class="home-btn" style="background:transparent;color:var(--mid);border:1.5px solid var(--mid)">Back to home</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-h" style="margin-top:24px">
+  <h1 style="font-size:16px">Things I'd still like your call on</h1>
+  <ul>
+    <li><strong>Reference number</strong> — currently a tiny grey footer ("Saved as TALK-31052026 · WHS register SLS-REG-005"). Useful if a supervisor or auditor ever needs to look up the record. Tell me if you want it removed entirely or kept like this.</li>
+    <li><strong>FFD wording</strong> — are these 4 the right four for sign-in, or should I add/swap? (Common additions: "I've read today's site pre-start", "I have a valid white card", "I will follow all SWMS for my work today".)</li>
+    <li><strong>The "Continue to Sign In" button on the Toolbox success</strong> — only useful if the worker actually goes to sign in next. Should it instead just say "Done" / "Back to home"?</li>
+    <li><strong>The big red "Sign Out (when leaving)" button on Signed In success</strong> — saves the worker tapping back into the home, but feels a bit aggressive. Keep, soften (grey outline), or remove?</li>
+  </ul>
+  <p style="margin-top:10px;color:var(--muted)">No code has been pushed live for these screens — these are just mockups. When you're happy I'll apply them to <code>screen-success</code> + <code>screen-confirm</code> and the change will be live.</p>
+</div>
+
+</body>
+</html>
