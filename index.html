@@ -2557,22 +2557,17 @@ function ahStyleDivisionHome(){
     <span id="c-coords" style="display:none"></span>
     <span id="c-addr" style="display:none"></span>
 
-    <!-- Today's site pre-start (sign-in only — populated by startFlow) -->
-    <div id="conf-sps-card" class="fcard" style="display:none">
-      <div class="fcard-hdr">Today's site pre-start</div>
-      <div class="fcard-body" id="conf-sps-body" style="gap:10px;font-size:13px;line-height:1.55"></div>
-    </div>
+    <!-- Today's site pre-start (sign-in only — populated by startFlow with
+         the same multi-card layout as the SPS viewer: status banner +
+         weather + scope + hazards + carry-over + notes). -->
+    <div id="conf-sps-cards" style="display:none;flex-direction:column;gap:14px"></div>
 
-    <!-- Your details -->
-    <div class="fcard">
-      <div class="fcard-hdr">Your details</div>
-      <div class="fcard-body">
-        <div class="frow"><span class="lbl">Worker</span><span class="val" id="c-name">—</span></div>
-        <div class="frow"><span class="lbl">Company</span><span class="val" id="c-company">—</span></div>
-        <div class="frow"><span class="lbl">Role</span><span class="val" id="c-role">—</span></div>
-        <div class="frow"><span class="lbl">Captured</span><span class="val" id="c-time">—</span></div>
-      </div>
-    </div>
+    <!-- Hidden carriers for legacy details JS (id'd Name/Role/Time still
+         written by startFlow even though the visible card was dropped). -->
+    <span id="c-name" style="display:none">—</span>
+    <span id="c-company" style="display:none">—</span>
+    <span id="c-role" style="display:none">—</span>
+    <span id="c-time" style="display:none">—</span>
 
     <!-- Fitness for Duty declaration (sign-in only) — 4 ticks, mirrors EOS -->
     <div id="ffd-card" class="fcard">
@@ -21562,33 +21557,63 @@ function startFlow(m){
     }
   }
 
-  // Populate the inline "Today's site pre-start" card for sign-in (hidden
-  // for sign-out). Worker reviews + ticks "I have read today's site
-  // pre-start" as one of the 5 FFD ticks below.
-  var _spsCard = document.getElementById('conf-sps-card');
-  var _spsBody = document.getElementById('conf-sps-body');
-  if (_spsCard && _spsBody) {
+  // Populate the inline "Today's site pre-start" cards for sign-in (hidden
+  // for sign-out). Same multi-fcard layout the SPS viewer uses: a status
+  // banner + weather + scope + hazards + carry-over + supervisor notes,
+  // each as its own card. Worker reviews and ticks "I have read today's
+  // site pre-start" as the 5th FFD tick below.
+  var _spsCardsHost = document.getElementById('conf-sps-cards');
+  if (_spsCardsHost) {
     if (m === 'in') {
       var sps = (typeof _todaysSitePreStart === 'function') ? _todaysSitePreStart() : null;
       function _esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-      if (sps) {
-        var wx = sps.weather || {};
-        var html = '<div style="background:#E6F5ED;border:1px solid rgba(27,110,58,.18);border-radius:8px;padding:8px 12px;font-size:12px;color:#1B6E3A;font-weight:600">✓ Site cleared by ' + _esc(sps.worker_name || 'supervisor') + ' at ' + _esc(sps.time || '') + '</div>';
-        if (wx && wx.temp != null) {
-          html += '<div><span style="color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Weather</span><div style="margin-top:3px">' + _esc(wx.temp) + '°C · ' + _esc(wx.desc || '') + ' · wind ' + _esc(wx.wind) + ' km/h</div></div>';
-          if (sps.weather_assessment) html += '<div style="font-size:12px;color:#1B6E3A;font-weight:500">' + _esc(sps.weather_assessment) + '</div>';
-        }
-        if (sps.tasks_today)   html += '<div><span style="color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Today\'s scope</span><div style="margin-top:3px;white-space:pre-wrap">' + _esc(sps.tasks_today) + '</div></div>';
-        if (sps.hazards_today) html += '<div><span style="color:#D4630A;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Hazards &amp; controls</span><div style="margin-top:3px;white-space:pre-wrap">' + _esc(sps.hazards_today) + '</div></div>';
-        if (sps.carryover)     html += '<div><span style="color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Carry-over</span><div style="margin-top:3px;white-space:pre-wrap">' + _esc(sps.carryover) + '</div></div>';
-        if (sps.notes)         html += '<div><span style="color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Supervisor notes</span><div style="margin-top:3px;white-space:pre-wrap">' + _esc(sps.notes) + '</div></div>';
-        _spsBody.innerHTML = html;
-      } else {
-        _spsBody.innerHTML = '<div style="background:#FEF0E6;border:1px solid rgba(212,99,10,.2);border-radius:8px;padding:10px 14px;text-align:center"><div style="font-size:13px;font-weight:600;color:#D4630A">Not submitted yet</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">Your supervisor has not completed today\'s site pre-start. Check with them before continuing.</div></div>';
+      function _noteCard(title, text){
+        if (!text) return '';
+        return '<div class="fcard">' +
+          '<div class="fcard-hdr">' + title + '</div>' +
+          '<div class="fcard-body"><div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap">' + _esc(text) + '</div></div>' +
+        '</div>';
       }
-      _spsCard.style.display = '';
+      var html = '';
+      if (sps) {
+        var outcome = sps.outcome || sps.overall_outcome || 'Site Cleared';
+        var isFail = String(outcome).toLowerCase().indexOf('fail') !== -1 || String(outcome).toLowerCase().indexOf('stop') !== -1 || String(outcome).toLowerCase().indexOf('not cleared') !== -1;
+        html += '<div style="background:' + (isFail ? '#FAEBEB' : '#E6F5ED') + ';border:1.5px solid ' + (isFail ? 'rgba(184,50,50,.2)' : 'rgba(27,110,58,.2)') + ';border-radius:var(--r);padding:14px 16px">' +
+          '<div style="font-size:13px;font-weight:600;color:' + (isFail ? '#B83232' : '#1B6E3A') + ';margin-bottom:2px">' +
+            (isFail ? '⚠️ Issues identified — speak to your supervisor' : '✓ Site assessed as safe to commence work') +
+          '</div>' +
+          '<div style="font-size:12px;color:var(--muted)">Completed by ' + _esc(sps.worker_name || 'Supervisor') + ' at ' + _esc(sps.time || '') + ' · ' + _esc(sps.date || '') + '</div>' +
+        '</div>';
+        var wx = sps.weather || {};
+        if (wx && wx.temp != null) {
+          var wxIcon = (typeof weatherIcon === 'function') ? weatherIcon(wx.code || 0) : '⛅';
+          html += '<div class="fcard">' +
+            '<div class="fcard-hdr">Today\'s weather</div>' +
+            '<div class="fcard-body">' +
+              '<div style="display:flex;align-items:center;gap:14px">' +
+                '<div style="font-size:36px">' + wxIcon + '</div>' +
+                '<div>' +
+                  '<div style="font-size:18px;font-weight:600;color:var(--text)">' + _esc(wx.temp) + '°C</div>' +
+                  '<div style="font-size:13px;color:var(--muted)">' + _esc(wx.desc || '') + '</div>' +
+                  '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">Wind ' + _esc(wx.wind) + ' km/h · UV ' + _esc(wx.uv) + '</div>' +
+                '</div>' +
+              '</div>' +
+              (sps.weather_assessment ? '<div style="margin-top:10px;padding:8px 10px;border-radius:var(--rs);background:#E6F5ED"><div style="font-size:12.5px;font-weight:600;color:#1B6E3A">' + _esc(sps.weather_assessment) + '</div></div>' : '') +
+            '</div>' +
+          '</div>';
+        }
+        html += _noteCard("Today's scope of work",    sps.tasks_today);
+        html += _noteCard("Today's hazards & controls", sps.hazards_today);
+        html += _noteCard("Carry-over from yesterday", sps.carryover);
+        html += _noteCard("Supervisor notes",          sps.notes);
+      } else {
+        html = '<div class="fcard"><div class="fcard-hdr">Today\'s site pre-start</div><div class="fcard-body"><div style="background:#FEF0E6;border:1px solid rgba(212,99,10,.2);border-radius:8px;padding:12px 14px;text-align:center"><div style="font-size:14px;font-weight:600;color:#D4630A">⏳ Not submitted yet</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Your supervisor has not completed today\'s site pre-start. Check with them before continuing.</div></div></div></div>';
+      }
+      _spsCardsHost.innerHTML = html;
+      _spsCardsHost.style.display = 'flex';
     } else {
-      _spsCard.style.display = 'none';
+      _spsCardsHost.style.display = 'none';
+      _spsCardsHost.innerHTML = '';
     }
   }
 
