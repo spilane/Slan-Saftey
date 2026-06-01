@@ -10707,7 +10707,7 @@ function ahStyleDivisionHome(){
       <div class="fcard-body">
         <div class="fgroup">
           <label class="flabel">Attendance count <span style="font-weight:400;color:var(--muted);font-size:11px" id="wu-auto-count">(auto: 0 signed)</span></label>
-          <input type="text" id="wu-attendance" inputmode="numeric" placeholder="0" style="padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text);width:100%;outline:none;text-align:center;letter-spacing:.02em" autocomplete="off" oninput="tbtRefreshDebriefGate()">
+          <input type="text" id="wu-attendance" inputmode="numeric" placeholder="0" class="finput" style="text-align:center" autocomplete="off" oninput="tbtRefreshDebriefGate()">
         </div>
         <div class="fgroup">
           <label class="flabel">Site-specific hazards discussed</label>
@@ -17526,24 +17526,14 @@ function initHome(p){
       else { wbar.style.display = 'none'; }
     }
     if (isMech) {
-      var myWO = (typeof _mechMyWOs === 'function') ? _mechMyWOs() : [];
-      var mySvc = (typeof _mechMyServices === 'function') ? _mechMyServices() : [];
-      var overdue = myWO.filter(function(w){ return (typeof _woHeld==='function' && !_woHeld(w)) && (typeof _woAgeDays==='function') && (_woAgeDays(w)||0) >= 7; }).length;
-      var line = myWO.length + ' repair' + (myWO.length===1?'':'s') + (overdue? (' · ' + overdue + ' overdue') : '') + '  ·  ' + mySvc.length + ' service' + (mySvc.length===1?'':'s') + ' booked';
-      if (mc) {
-        mc.style.display = 'block';
-        mc.innerHTML =
-          '<div class="fcard" style="border-top:3px solid var(--gold)">' +
-            '<div class="fcard-hdr" style="display:flex;align-items:center;gap:8px">🔧 Your workshop</div>' +
-            '<div style="padding:14px 16px">' +
-              '<div style="font-size:13px;color:var(--muted);margin-bottom:4px">Assigned to you</div>' +
-              '<div style="font-size:16px;font-weight:700;color:var(--text);line-height:1.4">' + line + '</div>' +
-              '<button onclick="workerOpenPlant()" style="margin-top:14px;width:100%;padding:13px;background:var(--deep);color:var(--gold-l,#F0D98A);border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">Open my jobs &amp; machines  ›</button>' +
-            '</div>' +
-          '</div>';
-      }
+      // Mechanic's Safety home does NOT show the workshop card — that's
+      // his Plant tile content, not Safety. Niall, 2026-06-01: "for the
+      // mechanic in the safety tile it says your workshop etc this should
+      // not be here." Workshop info shows when he taps Plant from the
+      // launcher.
+      if (mc) { mc.style.display = 'none'; mc.innerHTML = ''; }
       if (plantSub) plantSub.textContent = 'Your repairs, services & machines';
-      if (siteContacts) siteContacts.style.display = 'none';
+      if (siteContacts) siteContacts.style.display = '';
     } else {
       if (mc) { mc.style.display = 'none'; mc.innerHTML = ''; }
       if (siteContacts) siteContacts.style.display = '';
@@ -22288,14 +22278,6 @@ function goToTalk() {
     sigPrev.innerHTML = '<span class="no-sig">No saved signature — go to Profile to add one</span>';
   }
 
-  // Reset checkboxes
-  talkChecks = { chk1: false, chk2: false };
-  document.getElementById('chk1').classList.remove('checked');
-  document.getElementById('chk2').classList.remove('checked');
-
-  // Update tile sub with talk title
-  document.getElementById('talk-tile-sub').textContent = TODAYS_TALK.title;
-
   // Check if this user has signed today's talk via the records system
   // (Records are the source of truth — legacy flag retained for tile/chip back-compat only.)
   const todayDateStr = new Date().toLocaleDateString('en-AU');
@@ -22304,12 +22286,26 @@ function goToTalk() {
     return (r.worker_name || '').toLowerCase() === (p.name || '').toLowerCase()
       && r.date === todayDateStr;
   });
+
+  // Restore checkbox state: if the user already signed today, show the
+  // boxes as ticked (and the Sign section visible so the worker can SEE
+  // they signed). Niall, 2026-06-01: "the boxes should remain ticked so
+  // they know they signed it." If unsigned, reset.
+  talkChecks = { chk1: !!myRecord, chk2: !!myRecord };
+  document.getElementById('chk1').classList.toggle('checked', !!myRecord);
+  document.getElementById('chk2').classList.toggle('checked', !!myRecord);
+
+  // Update tile sub with talk title
+  document.getElementById('talk-tile-sub').textContent = TODAYS_TALK.title;
+
   const alreadyDiv = document.getElementById('talk-already-signed');
   const signSection = document.getElementById('talk-sign-section');
   if (myRecord) {
     alreadyDiv.style.display = 'block';
     document.getElementById('talk-signed-at').textContent = 'Signed at ' + myRecord.time;
-    signSection.style.display = 'none';
+    // Keep the sign section VISIBLE so the worker sees the ticked boxes
+    // confirming they signed (otherwise the screen looks empty/unsigned).
+    signSection.style.display = 'block';
   } else {
     alreadyDiv.style.display = 'none';
     signSection.style.display = 'block';
@@ -22400,16 +22396,13 @@ function goToTalk() {
       const supSignedCount = supervisors.filter(w => signedNames.has((w.name || '').toLowerCase())).length;
 
       let html = '';
-      // Workers group
+      // Workers group only \u2014 per the agreed supervisor model (G3, 2026-06-01),
+      // supervisors are the deliverers of the talk, not attendees, so the
+      // "Supervisors - X of Y signed" group has been removed from this view.
       html += `<div style="padding:9px 14px;background:#F8FAF8;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em">Workers \u2014 ${workerCount} of ${nonSupervisors.length} signed</div>`;
       html += nonSupervisors.length
         ? nonSupervisors.map(rowHtml).join('')
         : '<div style="padding:14px;color:var(--muted);font-size:12px;font-style:italic">No on-site workers</div>';
-      // Supervisors group (only show if any exist)
-      if (supervisors.length) {
-        html += `<div style="padding:9px 14px;background:#F8FAF8;border-bottom:1px solid var(--border);border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:6px">Supervisors \u2014 ${supSignedCount} of ${supervisors.length} signed</div>`;
-        html += supervisors.map(rowHtml).join('');
-      }
       supList.innerHTML = html;
 
       // All-signed confirmation chip — shown only when every on-site worker (excluding supervisors)
@@ -22481,9 +22474,14 @@ function goToTalk() {
       wrapupCard.style.display = inDebrief ? 'block' : 'none';
       // Set the PDF button to its correct state based on debrief done-ness.
       try { if (typeof tbtRefreshDebriefGate === 'function') tbtRefreshDebriefGate(); } catch(e){}
-      // Hide the sign-section during step 1; show it during step 2
+      // PER THE AGREED SUPERVISOR MODEL (G3, Niall 2026-06-01): supervisor
+      // does NOT sign the toolbox as an attendee. His contribution is the
+      // debrief, not a personal attendance signature. So the worker sign
+      // section (chk1/chk2 + Sign button -> submitTalk -> Continue to Sign
+      // In) stays HIDDEN for supervisors at all times. He can re-edit the
+      // debrief any time and the Save Debrief button persists it.
       var supSignSection = document.getElementById('talk-sign-section');
-      if (supSignSection) supSignSection.style.display = inDebrief ? 'block' : 'none';
+      if (supSignSection) supSignSection.style.display = 'none';
       // Show the delivery-state stepper card
       var deliveryCard = document.getElementById('talk-delivery-state-card');
       var step1 = document.getElementById('delivery-step-1');
@@ -22504,7 +22502,17 @@ function goToTalk() {
         const haz = document.getElementById('wu-hazards');
         const qns = document.getElementById('wu-questions');
         const acn = document.getElementById('wu-actions');
-        if (att) att.value = saved && saved.attendance != null ? saved.attendance : '';
+        // Auto-fill attendance with the live signed-count if the supervisor
+        // hasn't explicitly entered a different number. Niall, 2026-06-01:
+        // "for the attendance count in the supervisor tile make this number
+        // auto fill please."
+        if (att) {
+          if (saved && saved.attendance != null && saved.attendance !== '') {
+            att.value = saved.attendance;
+          } else {
+            att.value = autoCount;
+          }
+        }
         if (haz) haz.value = saved && saved.hazards ? saved.hazards : '';
         if (qns) qns.value = saved && saved.questions ? saved.questions : '';
         if (acn) acn.value = saved && saved.actions ? saved.actions : '';
@@ -44464,8 +44472,36 @@ function submitTalk() {
 
 // ─── TOOLBOX TALK — RECORD ACCESS HELPERS ─────────────────────────────
 function tbtLoadAll() {
-  try { return JSON.parse(localStorage.getItem('slan_tbt_records_v1') || '[]'); }
-  catch(e) { return []; }
+  var stored = [];
+  try { stored = JSON.parse(localStorage.getItem('slan_tbt_records_v1') || '[]'); } catch(e) { stored = []; }
+  // SINGLE SOURCE OF TRUTH: merge DEMO_TALKS seeded sign-ups so the
+  // supervisor's "who signed today" list, the KPI counter, the activity
+  // pill and the launcher strip all read the same data. Without this
+  // merge, the KPI counts seeded workers (via _signedTalkToday which
+  // reads DEMO_TALKS) but the list only reads localStorage, so the
+  // supervisor sees "everyone signed" on the KPI and "nobody signed"
+  // in the list (Niall, 2026-06-01).
+  var seen = new Set(stored.map(function(r){
+    return ((r.worker_name||'')+'|'+(r.date||'')).toLowerCase();
+  }));
+  var merged = stored.slice();
+  if (typeof DEMO_TALKS !== 'undefined' && Array.isArray(DEMO_TALKS)) {
+    DEMO_TALKS.forEach(function(t){
+      if (!t || !t.signed || !t.worker_name || !t.date) return;
+      var key = ((t.worker_name||'')+'|'+(t.date||'')).toLowerCase();
+      if (seen.has(key)) return;
+      merged.push({
+        worker_name: t.worker_name,
+        company:     t.company || '',
+        role:        t.role || '',
+        date:        t.date,
+        time:        t.time || '',
+        talk_id:     t.talk_id || (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK ? TODAYS_TALK.version : ''),
+        talk_title:  t.talk_title || (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK ? TODAYS_TALK.title : '')
+      });
+    });
+  }
+  return merged;
 }
 
 // Has this person signed today's toolbox talk? Returns the record or null.
@@ -44704,13 +44740,16 @@ function tbtDownloadRosterPDF(targetTalkId) {
       setText(C.darkText);
       doc.setFont('helvetica','bold'); doc.setFontSize(16);
       doc.text(TITLE, PAGE_W/2, logoY + logoH/2 + 1.5, {align:'center'});
-      setStroke(C.darkGreen); doc.setLineWidth(0.5);
+      // GOLD accent line below the title — matches the plant repair PDF
+      // (SLS-REG-016) house style Niall picked.
+      setStroke(C.gold || '#B8960C'); doc.setLineWidth(0.6);
       doc.line(ML, logoY + logoH + 1, PAGE_W - MR, logoY + logoH + 1);
       return logoY + logoH + 5;
     }
     function drawFooter(pn, tp) {
       var fY = PAGE_H - MB;
-      setStroke(C.greyLight); doc.setLineWidth(0.2);
+      // GOLD accent line above the footer text — matches plant PDF style.
+      setStroke(C.gold || '#B8960C'); doc.setLineWidth(0.4);
       doc.line(ML, fY - 4, PAGE_W - MR, fY - 4);
       setText(C.greyLabel || '#888888');
       doc.setFont('courier','normal'); doc.setFontSize(7);
@@ -45651,6 +45690,12 @@ function tbtMarkTalkDelivered() {
     tbtSetDeliveryState(active.version, 'debrief');
     if (typeof slanToast === 'function') slanToast('Talk delivered \u2014 complete the debrief below.', 'success');
     if (typeof goToTalk === 'function') goToTalk();
+    // Scroll the debrief card into view so the supervisor lands at the
+    // form he just opened, not at the top of the talk content.
+    setTimeout(function(){
+      var card = document.getElementById('talk-wrapup-card');
+      if (card) card.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 120);
   });
 }
 
