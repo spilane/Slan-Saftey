@@ -18114,11 +18114,13 @@ function updateSupActivityStrip() {
   const signedOutToday = _supState.signedOut;
   const sinLbl = document.getElementById('d-pill-signin-lbl');
   if (sinLbl) {
-    if (signedInToday && !signedOutToday) {
-      sinLbl.textContent = 'On Site · Tap To Sign Out';
-      setPillState('d-pill-signin', 'done');
-    } else if (signedInToday && signedOutToday) {
+    if (signedOutToday) {
+      // Sign Out is the latest event — shift complete (signedOut=true
+      // implies they signed IN earlier, even if signedIn flipped back).
       sinLbl.textContent = 'Signed Out · Shift Complete';
+      setPillState('d-pill-signin', 'done');
+    } else if (signedInToday) {
+      sinLbl.textContent = 'On Site · Tap To Sign Out';
       setPillState('d-pill-signin', 'done');
     } else {
       sinLbl.textContent = 'Sign In';
@@ -24890,10 +24892,14 @@ function _profileSignedInState() {
 // "Where should the Sign In / Sign Out tile/pill take me?"
 // Returns 'in' / 'out' / 'done' (shift complete). Every caller uses this
 // so the routing decision can never drift between handlers.
+// NOTE: signedOut=true implies the worker DID sign in earlier (you can't
+// sign out without first signing in), so signedOut alone is enough to
+// say "shift complete" even if the merged signedIn is now false because
+// Sign Out is the latest event.
 function _signFlowTarget() {
   var s = _profileSignedInState();
-  if (s.signedIn && !s.signedOut) return 'out';
-  if (s.signedIn && s.signedOut) return 'done';
+  if (s.signedOut) return 'done';
+  if (s.signedIn)  return 'out';
   return 'in';
 }
 
@@ -44259,9 +44265,9 @@ function updateAllTileSubs(p) {
   ['signin-tile-sub','sup-signin-tile-sub'].forEach(function(id){
     var signinSub = document.getElementById(id);
     if (!signinSub) return;
-    if (signedIn && signedOut) signinSub.textContent = 'Signed out — shift complete';
-    else if (signedIn) signinSub.textContent = 'Signed in — tap to sign out';
-    else signinSub.textContent = 'Not signed in yet';
+    if (signedOut)      signinSub.textContent = 'Signed out — shift complete';
+    else if (signedIn)  signinSub.textContent = 'Signed in — tap to sign out';
+    else                signinSub.textContent = 'Not signed in yet';
   });
   // Hazard tile
   var hazSub = document.getElementById('hazard-tile-sub');
