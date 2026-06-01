@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mockup — Supervisor Daily Site Pre-Start v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAF7; --text:#1A2A1F; --muted:#5C6B62; --border:#E8E8E8;
+    --deep:#1C382A; --mid:#2C6B5E; --gold:#B8960C; --rs:8px; --r:14px;
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:#EFEEEA;font-family:'DM Sans',sans-serif;color:var(--text);padding:24px}
+
+  /* Page intro */
+  .page-h{max-width:880px;margin:0 auto 24px;padding:20px 24px;background:#fff;border-radius:14px;border:1px solid var(--border)}
+  .page-h h1{margin:0 0 8px;font-size:20px;font-weight:700}
+  .page-h p{margin:0 0 10px;color:var(--muted);font-size:13px;line-height:1.6}
+  .page-h ul{margin:6px 0 0 18px;font-size:13px;color:var(--text);line-height:1.7}
+  .page-h ul li{margin-bottom:3px}
+  .page-h strong{color:#1B6E3A}
+  .page-h .removed{color:#A32D2D}
+  .v2{display:inline-block;background:#1B6E3A;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.05em;text-transform:uppercase;margin-left:8px;vertical-align:middle}
+
+  /* Phone frame */
+  .phone-wrap{max-width:440px;margin:0 auto;padding:0}
+  .phone{width:100%;background:#FAFAF7;border-radius:24px;border:8px solid #1f1f1f;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.18)}
+
+  /* Topbar (matches index.html screen-site-ps) */
+  .sb{background:var(--deep);height:18px}
+  .topbar{background:var(--deep);padding:6px 16px 14px;color:#fff}
+  .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .back-btn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.08);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .back-btn svg{width:16px;height:16px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .tbar-logo{font-family:serif;font-size:20px;color:var(--gold);letter-spacing:.04em;text-align:center;line-height:1}
+  .tbar-logo small{display:block;font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:.18em;color:rgba(255,255,255,.6);margin-top:1px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:rgba(184,150,12,.22);border:2px solid rgba(184,150,12,.55);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#B8960C}
+  .form-greeting{margin-top:12px}
+  .form-greeting h1{margin:0;font-size:20px;font-weight:700;color:#fff;line-height:1.2}
+  .form-greeting p{margin:3px 0 0;font-size:12px;color:rgba(255,255,255,.6)}
+
+  /* Syncbar */
+  .syncbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:11px}
+  .syncbar .sync-l{display:flex;align-items:center;gap:7px;color:var(--text);font-weight:600}
+  .bdot{width:9px;height:9px;border-radius:50%;background:#1B6E3A}
+  .syncbar .sync-r{color:var(--muted);font-family:'DM Mono',monospace;font-size:10.5px}
+
+  /* fcard system (matches index.html exactly) */
+  .fbody{padding:14px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+  .fcard{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+  .fcard-hdr{padding:11px 16px;background:#FFFBF0;border-bottom:1px solid #F5E9C8;font-size:12.5px;font-weight:700;color:#B8960C;letter-spacing:.02em;display:flex;align-items:center;justify-content:space-between}
+  .fcard-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--text)}
+  .frow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;font-size:13px}
+  .frow > .lbl{color:var(--muted);font-size:12px;font-weight:500;line-height:1.4}
+  .frow > .val{color:var(--text);font-weight:600;text-align:right;font-size:13px;line-height:1.4}
+
+  .new-badge{display:inline-block;background:#1B6E3A;color:#fff;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;margin-left:6px}
+  .auto-badge{display:inline-block;background:#E5F4EA;color:#1B6E3A;border:1px solid rgba(27,110,58,.25);font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;margin-left:6px}
+
+  /* Input mimics */
+  .finput{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;background:#fff;color:var(--text)}
+  .ftime{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:13px;background:#fff;color:var(--text)}
+  .flabel{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;display:block}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* List rows (for carry-over, deliveries, plant, permits) */
+  .lrow{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-top:1px dashed var(--border);font-size:12.5px;color:var(--text);line-height:1.4}
+  .lrow:first-of-type{border-top:none;padding-top:0}
+  .lrow .li{flex-shrink:0;font-size:14px;width:18px;text-align:center;line-height:1.2}
+  .lrow .lt{flex:1}
+  .lrow .lt strong{display:block;font-weight:600;color:var(--text);font-size:12.5px}
+  .lrow .lt small{display:block;color:var(--muted);font-size:11px;margin-top:1px;line-height:1.4}
+  .lrow .lstatus{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:999px;flex-shrink:0;margin-top:1px}
+  .ls-ok{background:#E5F4EA;color:#1B6E3A;border:1px solid rgba(27,110,58,.25)}
+  .ls-warn{background:#FDF6E5;color:#B8960C;border:1px solid rgba(184,150,12,.3)}
+  .ls-fail{background:#FCE9E9;color:#A32D2D;border:1px solid rgba(163,45,45,.3)}
+
+  /* Tick row (for site condition checklist) */
+  .ckrow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--border);font-size:13px;color:var(--text);cursor:default}
+  .ckrow:first-of-type{border-top:none;padding-top:0}
+  .ckrow .ckbox{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border);background:#fff;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center}
+  .ckrow.on .ckbox{background:#1B6E3A;border-color:#1B6E3A}
+  .ckrow.on .ckbox svg{width:11px;height:11px;stroke:#fff;stroke-width:3;fill:none}
+  .ckrow .cktxt{flex:1;line-height:1.45;font-size:12.5px}
+
+  /* Repeater "Add" pill */
+  .add-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:#FFFBF0;border:1px dashed #F5E9C8;border-radius:999px;color:#B8960C;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px}
+
+  /* CTA */
+  .home-btn{width:100%;padding:14px;background:var(--mid);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.02em}
+
+  .annot{max-width:880px;margin:24px auto 0;padding:14px 18px;background:#FFFBF0;border:1px solid #F5E9C8;border-radius:12px;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .annot strong{color:#B8960C}
+</style>
+</head>
+<body>
+
+<div class="page-h">
+  <h1>Supervisor Daily Site Pre-Start <span class="v2">v2 — mockup</span></h1>
+  <p>Rebuild of <code>screen-site-ps</code> based on your three "yes" answers + the three new auto-pulled cards you confirmed. Eyeball this before I touch the live form.</p>
+  <ul>
+    <li><strong>Section 1 (Site Details) auto-fills</strong> — Supervisor / Date / Site read straight from your profile + today's date + your site. Only Start time / Finish time stay as inputs (they vary by shift).</li>
+    <li><strong>Sections 3 + 4 merged</strong> into one <strong>Tasks for today</strong> card. Yesterday's scheduled tasks auto-carry-over at the top; you add today's new tasks below.</li>
+    <li class="removed"><strong>Section 7 (Worker Attendance & Sign-On) removed</strong> — duplicates the app sign-in system.</li>
+    <li><strong>NEW:</strong> Today's deliveries & visitors (you fill — supplier name, what for, ETA).</li>
+    <li><strong>NEW:</strong> Plant status snapshot — auto from the Plant register (machines on site, out of service, hires due back ≤7 days).</li>
+    <li><strong>NEW:</strong> Active permits today — auto from the permit register (Hot Works, Working at Heights, Confined Space, etc. valid today on this site).</li>
+  </ul>
+</div>
+
+<div class="phone-wrap">
+<div class="phone">
+
+  <!-- Topbar -->
+  <div class="sb"></div>
+  <div class="topbar">
+    <div class="topbar-row">
+      <button class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="tbar-logo">Slán<br><small>SAFETY</small></div>
+      <div class="avatar">EB</div>
+    </div>
+    <div class="form-greeting">
+      <h1>Daily Site Pre-Start</h1>
+      <p>Site inspection before work commences</p>
+    </div>
+  </div>
+
+  <div class="syncbar">
+    <div class="sync-l"><div class="bdot"></div><span>Supervisor check</span></div>
+    <div class="sync-r">Required daily</div>
+  </div>
+
+  <div class="fbody">
+
+    <!-- 1 — SITE DETAILS (auto-filled) -->
+    <div class="fcard">
+      <div class="fcard-hdr">
+        <span>1 — Site Details</span>
+        <span class="auto-badge">Auto</span>
+      </div>
+      <div class="fcard-body">
+        <div class="frow"><span class="lbl">Supervisor</span><span class="val">Eoin Burke</span></div>
+        <div class="frow"><span class="lbl">Date</span><span class="val">Monday, 1 June 2026</span></div>
+        <div class="frow"><span class="lbl">Site</span><span class="val">Bondi Junction Mixed Use</span></div>
+        <div class="grid2" style="margin-top:6px">
+          <div>
+            <label class="flabel">Start time</label>
+            <input class="ftime" type="time" value="07:00">
+          </div>
+          <div>
+            <label class="flabel">Finish time</label>
+            <input class="ftime" type="time" value="15:30">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 — WEATHER -->
+    <div class="fcard">
+      <div class="fcard-hdr">
+        <span>2 — Weather</span>
+        <span class="auto-badge">Auto · BOM</span>
+      </div>
+      <div class="fcard-body">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="font-size:36px">⛅</div>
+          <div>
+            <div style="font-size:18px;font-weight:600;color:var(--text)">19°C</div>
+            <div style="font-size:13px;color:var(--muted)">Partly cloudy</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:2px">Wind 12 km/h · UV 4</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:#E6F5ED">
+          <div style="font-size:12px;font-weight:600;color:#1B6E3A">No weather impact on today's work</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 — TASKS FOR TODAY (merged) -->
+    <div class="fcard">
+      <div class="fcard-hdr">
+        <span>3 — Tasks for today</span>
+        <span class="new-badge">Merged 3+4</span>
+      </div>
+      <div class="fcard-body">
+
+        <!-- carry-over from yesterday (auto) -->
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">
+            ↩ Carried over from yesterday <span class="auto-badge">Auto</span>
+          </div>
+          <div class="lrow">
+            <div class="li">▢</div>
+            <div class="lt"><strong>Level 3 slab edge form-up</strong><small>From Fri 29 May — not completed</small></div>
+          </div>
+          <div class="lrow">
+            <div class="li">▢</div>
+            <div class="lt"><strong>Eastern boundary mesh tie-off</strong><small>From Fri 29 May — partial</small></div>
+          </div>
+        </div>
+
+        <!-- today's new tasks -->
+        <div style="margin-top:6px;padding-top:10px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">
+            ➕ New for today
+          </div>
+          <div class="lrow">
+            <div class="li">•</div>
+            <div class="lt"><strong>Concrete pour — level 3 east bay</strong><small>50 m³ · pump truck booked 09:00</small></div>
+          </div>
+          <div class="lrow">
+            <div class="li">•</div>
+            <div class="lt"><strong>Crane lift — precast panels 4 & 5</strong><small>Permit issued · Patrick to oversee</small></div>
+          </div>
+          <button class="add-pill" type="button">+ Add a task</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 4 — HAZARDS -->
+    <div class="fcard">
+      <div class="fcard-hdr"><span>4 — Hazards & controls</span></div>
+      <div class="fcard-body">
+        <div class="lrow">
+          <div class="li">⚠</div>
+          <div class="lt"><strong>Wet edges around the pour zone</strong><small>Control: barricade + signage + edge guard</small></div>
+        </div>
+        <div class="lrow">
+          <div class="li">⚠</div>
+          <div class="lt"><strong>Crane lift overhead — eastern courtyard</strong><small>Control: exclusion zone + spotter + 2-way radio</small></div>
+        </div>
+        <button class="add-pill" type="button">+ Add a hazard</button>
+      </div>
+    </div>
+
+    <!-- 5 — SITE CONDITION CHECKLIST -->
+    <div class="fcard">
+      <div class="fcard-hdr"><span>5 — Site condition checklist</span></div>
+      <div class="fcard-body">
+        <div class="ckrow on"><div class="ckbox"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="cktxt">Site secured (perimeter fencing intact, gates locked overnight)</div></div>
+        <div class="ckrow on"><div class="ckbox"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="cktxt">First aid station stocked and accessible</div></div>
+        <div class="ckrow on"><div class="ckbox"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="cktxt">Fire extinguishers checked, no obstructions to muster point</div></div>
+        <div class="ckrow on"><div class="ckbox"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="cktxt">Amenities clean (toilets, lunch room, water)</div></div>
+        <div class="ckrow on"><div class="ckbox"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="cktxt">Edge protection, scaffolding & handrails intact</div></div>
+        <div class="ckrow"><div class="ckbox"></div><div class="cktxt">SWMS displayed for today's high-risk work</div></div>
+      </div>
+    </div>
+
+    <!-- 6 — DELIVERIES & VISITORS (NEW) -->
+    <div class="fcard">
+      <div class="fcard-hdr">
+        <span>6 — Today's deliveries & visitors</span>
+        <span class="new-badge">New</span>
+      </div>
+      <div class="fcard-body">
+        <div class="lrow">
+          <div class="li">🚚</div>
+          <div class="lt"><strong>Hanson — concrete pump truck</strong><small>50 m³ for L3 east bay · ETA 08:45</small></div>
+        </div>
+        <div class="lrow">
+          <div class="li">🚚</div>
+          <div class="lt"><strong>Reece Plumbing — copper pipe delivery</strong><small>Building B basement · ETA 10:30</small></div>
+        </div>
+        <div class="lrow">
+          <div class="li">👤</div>
+          <div class="lt"><strong>Mark Davis (Structural Engineer)</strong><small>Slab sign-off inspection · ETA 14:00</small></div>
+        </div>
+        <button class="add-pill" type="button">+ Add a delivery / visitor</button>
+      </div>
+    </div>
+
+    <!-- 7 — PLANT STATUS SNAPSHOT (NEW, auto) -->
+    <div class="fcard">
+      <div class="fcard-hdr">
+        <span>7 — Plant status snapshot</span>
+        <span class="auto-badge">Auto · Plant register</span>
+        <span class="new-badge">New</span>
+      </div>
+      <div class="fcard-body">
+        <div class="frow"><span class="lbl">Machines on site</span><span class="val">10</span></div>
+        <div class="frow"><span class="lbl">Out of service</span><span class="val" style="color:#A32D2D">1 — MAG-009 (LMI fault)</span></div>
+        <div class="frow"><span class="lbl">Hires due back ≤7 days</span><span class="val" style="color:#B8960C">1 — GEN-005 in 4 days</span></div>
+        <div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:#FCE9E9;display:flex;align-items:flex-start;gap:8px">
+          <div style="font-size:14px;color:#A32D2D">⚠</div>
+          <div style="font-size:12px;color:#A32D2D;line-height:1.45"><strong>1 machine out of service</strong> — workers stopped at gate. Mechanic notified.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8 — ACTIVE PERMITS (NEW, auto) -->
+    <div class="fcard">
+      <div class="fcard-hdr">
+        <span>8 — Active permits today</span>
+        <span class="auto-badge">Auto · Permit register</span>
+        <span class="new-badge">New</span>
+      </div>
+      <div class="fcard-body">
+        <div class="lrow">
+          <div class="li">🔥</div>
+          <div class="lt"><strong>Hot Works — PTW-HW-0142</strong><small>Welding to mesh ties · Holder: Jake Ryan · 08:00–14:00</small></div>
+          <div class="lstatus ls-ok">Active</div>
+        </div>
+        <div class="lrow">
+          <div class="li">🏗</div>
+          <div class="lt"><strong>Working at Heights — PTW-WH-0089</strong><small>L3 edge work · Holder: Tom Burke · 07:30–16:00</small></div>
+          <div class="lstatus ls-ok">Active</div>
+        </div>
+        <div class="lrow">
+          <div class="li">⛏</div>
+          <div class="lt"><strong>Excavation — PTW-EX-0034</strong><small>Boundary trench · Holder: Sam Carroll · 09:00–15:00</small></div>
+          <div class="lstatus ls-warn">Expires today</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9 — SUPERVISOR SIGN-OFF -->
+    <div class="fcard">
+      <div class="fcard-hdr"><span>9 — Supervisor sign-off</span></div>
+      <div class="fcard-body">
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.5">I confirm I have inspected the site, addressed today's hazards, briefed the crew, and the site is safe to commence work.</div>
+        <div style="margin-top:6px;padding:14px;background:#FAFAF7;border:1.5px dashed var(--border);border-radius:8px;text-align:center;font-family:serif;font-size:18px;color:var(--mid);font-style:italic">Eoin Burke</div>
+      </div>
+    </div>
+
+    <button class="home-btn">Submit pre-start &amp; release to workers</button>
+
+  </div>
+</div>
+</div>
+
+<div class="annot">
+  <strong>What changes vs today's form:</strong><br>
+  • Section 1 inputs (Site / Date / Supervisor name) become read-only auto-filled rows — no typing.<br>
+  • Sections 3 + 4 merge into a single Tasks card with a carry-over band at the top (pulled from yesterday's submitted pre-start).<br>
+  • Section 7 (Worker Attendance &amp; Sign-On) is gone — the app already records who signed in.<br>
+  • Three new auto-pulled cards (Deliveries &amp; Visitors / Plant snapshot / Active permits) read from the same data the rest of the app uses — no double-entry.<br>
+  • All other cards (Weather, Hazards, Site Condition, Sign-off) keep the same content and behaviour.<br><br>
+  <strong>If you're happy with this:</strong> I'll port it to <code>screen-site-ps</code> in <code>index.html</code> and wire the auto-pulls to the real <code>slan_plant_records</code> / <code>slan_plant_alerts</code> / <code>slan_permits</code> stores.
+</div>
+
+</body>
+</html>
