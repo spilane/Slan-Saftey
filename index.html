@@ -10695,31 +10695,31 @@ function ahStyleDivisionHome(){
     </div>
 
     <div id="talk-roster-wrap" style="display:none;margin-top:8px">
-      <button onclick="tbtDownloadRosterPDF()" style="display:block;width:100%;padding:11px 14px;background:#2C6B5E;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
+      <button id="tbt-pdf-btn" onclick="tbtDownloadRosterPDF()" disabled style="display:block;width:100%;padding:11px 14px;background:#C7C7C2;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:not-allowed;font-family:'DM Sans',sans-serif">
         📄 Download combined roster PDF
       </button>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4">Includes talk content, all signatures captured so far, and the supervisor debrief below. Re-download whenever new workers sign — the latest version replaces the old one.</div>
+      <div id="tbt-pdf-hint" style="font-size:11px;color:#A32D2D;margin-top:6px;line-height:1.4;font-weight:600">Complete the supervisor debrief below to unlock the PDF.</div>
     </div>
 
     <!-- Supervisor: post-talk debrief / wrap-up -->
     <div class="fcard" id="talk-wrapup-card" style="display:none;margin-top:8px">
-      <div class="fcard-hdr">Supervisor debrief <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">— optional</span></div>
+      <div class="fcard-hdr">Supervisor debrief <span style="font-size:11px;font-weight:600;color:#A32D2D;margin-left:6px">— required before PDF</span></div>
       <div class="fcard-body">
         <div class="fgroup">
           <label class="flabel">Attendance count <span style="font-weight:400;color:var(--muted);font-size:11px" id="wu-auto-count">(auto: 0 signed)</span></label>
-          <input type="text" id="wu-attendance" inputmode="numeric" placeholder="Enter attendance count" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:14px;width:100%;outline:none" autocomplete="off">
+          <input type="text" id="wu-attendance" inputmode="numeric" placeholder="0" style="padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--text);width:100%;outline:none;text-align:center;letter-spacing:.02em" autocomplete="off" oninput="tbtRefreshDebriefGate()">
         </div>
         <div class="fgroup">
           <label class="flabel">Site-specific hazards discussed</label>
-          <textarea id="wu-hazards" placeholder="Brief summary of any site-specific risks raised during the talk." rows="3" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical"></textarea>
+          <textarea id="wu-hazards" placeholder="Brief summary of any site-specific risks raised during the talk." rows="3" oninput="tbtRefreshDebriefGate()" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical"></textarea>
         </div>
         <div class="fgroup">
           <label class="flabel">Questions or concerns raised</label>
-          <textarea id="wu-questions" placeholder="What did workers ask, or push back on?" rows="3" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical"></textarea>
+          <textarea id="wu-questions" placeholder="What did workers ask, or push back on?" rows="3" oninput="tbtRefreshDebriefGate()" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical"></textarea>
         </div>
         <div class="fgroup" style="margin-bottom:0">
           <label class="flabel">Action items / follow-ups</label>
-          <textarea id="wu-actions" placeholder="Who is doing what by when?" rows="3" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical"></textarea>
+          <textarea id="wu-actions" placeholder="Who is doing what by when?" rows="3" oninput="tbtRefreshDebriefGate()" style="padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;resize:vertical"></textarea>
         </div>
         <button onclick="tbtSaveWrapup()" style="display:block;width:100%;padding:11px;margin-top:12px;background:#1B6E3A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">
           Save debrief
@@ -22451,6 +22451,8 @@ function goToTalk() {
       var inDebrief = (deliveryState === 'debrief');
       rosterWrap.style.display = 'block';
       wrapupCard.style.display = inDebrief ? 'block' : 'none';
+      // Set the PDF button to its correct state based on debrief done-ness.
+      try { if (typeof tbtRefreshDebriefGate === 'function') tbtRefreshDebriefGate(); } catch(e){}
       // Hide the sign-section during step 1; show it during step 2
       var supSignSection = document.getElementById('talk-sign-section');
       if (supSignSection) supSignSection.style.display = inDebrief ? 'block' : 'none';
@@ -44435,6 +44437,14 @@ function tbtSaveWrapup() {
     localStorage.setItem(key, JSON.stringify(all));
     var msg = document.getElementById('wu-saved-msg');
     if (msg) { msg.style.display = 'block'; setTimeout(function(){ msg.style.display = 'none'; }, 2500); }
+    // Continuity refresh: PDF button, supervisor activity strip, supervisor
+    // home tile sub — all read tbtDebriefDone, push the new state to them
+    // straight away so the dashboard reflects "Debrief complete" without
+    // needing a nav.
+    try { if (typeof tbtRefreshDebriefGate === 'function') tbtRefreshDebriefGate(); } catch(e){}
+    try { if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip(); } catch(e){}
+    try { if (typeof checkDashTalkStatus === 'function') checkDashTalkStatus(); } catch(e){}
+    try { if (typeof ahUpdateActivity === 'function') ahUpdateActivity(); } catch(e){}
   } catch(e) { slanAlert('Could not save your changes. Please try again.', 'Could not save debrief: ' + (e.message || e), 'danger'); }
 }
 
@@ -44456,12 +44466,52 @@ function tbtDebriefDone() {
   var talkId = TODAYS_TALK.version || '';
   var dateStr = new Date().toLocaleDateString('en-AU');
   var w = tbtLoadWrapup(talkId, dateStr);
-  if (!w) return false;
-  var hasAttend = (w.attendance != null && w.attendance !== '' && !isNaN(Number(w.attendance)));
+  // Also consult the in-progress form (so the gate flips live as the
+  // supervisor types, before he taps Save).
+  if (!w) {
+    var att = (document.getElementById('wu-attendance')||{}).value;
+    var haz = (document.getElementById('wu-hazards')||{}).value;
+    var qns = (document.getElementById('wu-questions')||{}).value;
+    var act = (document.getElementById('wu-actions')||{}).value;
+    if (att == null && haz == null && qns == null && act == null) return false;
+    w = { attendance: att, hazards: haz, questions: qns, actions: act };
+  }
+  var hasAttend = (w.attendance != null && w.attendance !== '' && !isNaN(Number(w.attendance)) && Number(w.attendance) >= 0);
   var hasHaz    = !!(w.hazards    && String(w.hazards).trim());
   var hasQns    = !!(w.questions  && String(w.questions).trim());
   var hasAct    = !!(w.actions    && String(w.actions).trim());
   return hasAttend && hasHaz && hasQns && hasAct;
+}
+
+// Live UI gate: enables/disables the "Download combined roster PDF" button
+// and updates the helper line. Wired to the four debrief inputs' oninput so
+// the supervisor sees the lock release as he completes the form.
+function tbtRefreshDebriefGate() {
+  var btn = document.getElementById('tbt-pdf-btn');
+  var hint = document.getElementById('tbt-pdf-hint');
+  if (!btn) return;
+  var done = tbtDebriefDone();
+  if (done) {
+    btn.disabled = false;
+    btn.style.background = '#2C6B5E';
+    btn.style.cursor = 'pointer';
+    btn.style.color = '#fff';
+    if (hint) {
+      hint.textContent = 'Includes the talk, all signatures captured so far, and your debrief. Re-download whenever new workers sign.';
+      hint.style.color = 'var(--muted)';
+      hint.style.fontWeight = '400';
+    }
+  } else {
+    btn.disabled = true;
+    btn.style.background = '#C7C7C2';
+    btn.style.cursor = 'not-allowed';
+    btn.style.color = '#fff';
+    if (hint) {
+      hint.textContent = 'Complete the supervisor debrief below to unlock the PDF.';
+      hint.style.color = '#A32D2D';
+      hint.style.fontWeight = '600';
+    }
+  }
 }
 
 // Build a single combined PDF: talk content + supervisor debrief + signature
@@ -44474,6 +44524,16 @@ function tbtDownloadRosterByTalkId(talkId) {
 function tbtDownloadRosterPDF(targetTalkId) {
   try {
     if (!window.jspdf || !window.jspdf.jsPDF) { slanAlert('PDF generator is not loaded yet. Please wait a moment and try again.', 'PDF generator not available right now. Try again in a moment.', 'danger'); return; }
+
+    // Hard gate: today's roster PDF is unavailable until the supervisor
+    // completes the debrief. Past-talk rosters (different talk_id passed
+    // in) are unaffected — their debrief was captured in their day.
+    var todayTalkId = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? TODAYS_TALK.version : '';
+    var isTodayPdf = !targetTalkId || targetTalkId === todayTalkId;
+    if (isTodayPdf && typeof tbtDebriefDone === 'function' && !tbtDebriefDone()) {
+      slanAlert('Complete the supervisor debrief first', 'Fill in attendance, hazards discussed, questions raised, and action items, then tap Save debrief. The PDF will unlock immediately.', 'warn');
+      return;
+    }
 
     var todayDate = new Date().toLocaleDateString('en-AU');
     var allRecs = tbtLoadAll();
