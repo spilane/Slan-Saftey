@@ -17526,14 +17526,13 @@ function initHome(p){
       else { wbar.style.display = 'none'; }
     }
     if (isMech) {
-      // Mechanic's Safety home does NOT show the workshop card — that's
-      // his Plant tile content, not Safety. Niall, 2026-06-01: "for the
-      // mechanic in the safety tile it says your workshop etc this should
-      // not be here." Workshop info shows when he taps Plant from the
-      // launcher.
+      // Mechanic's Safety home does NOT show the workshop card OR the site
+      // contacts card. Niall, 2026-06-01: "remove site contact from daves
+      // saftey tile." Workshop info shows when he taps Plant from the
+      // launcher; safety contacts aren't his concern on this view.
       if (mc) { mc.style.display = 'none'; mc.innerHTML = ''; }
       if (plantSub) plantSub.textContent = 'Your repairs, services & machines';
-      if (siteContacts) siteContacts.style.display = '';
+      if (siteContacts) siteContacts.style.display = 'none';
     } else {
       if (mc) { mc.style.display = 'none'; mc.innerHTML = ''; }
       if (siteContacts) siteContacts.style.display = '';
@@ -44555,8 +44554,22 @@ function tbtSaveWrapup() {
     };
     all[talkId + '|' + todayDate] = entry;
     localStorage.setItem(key, JSON.stringify(all));
+    // VISIBLE feedback so the supervisor can see the save landed. The old
+    // 'wu-saved-msg' was a tiny 11px green line that disappeared after 2.5s
+    // — Niall, 2026-06-01: "i filled out the debrief and click save and now
+    // nothing is happening." Use the standard toast + keep the inline line
+    // for accessibility.
+    try { if (typeof slanToast === 'function') slanToast('Debrief saved ✔', 'success'); } catch(e) {}
     var msg = document.getElementById('wu-saved-msg');
-    if (msg) { msg.style.display = 'block'; setTimeout(function(){ msg.style.display = 'none'; }, 2500); }
+    if (msg) {
+      msg.textContent = '✔ Debrief saved at ' + new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true});
+      msg.style.display = 'block';
+      msg.style.fontSize = '13px';
+      msg.style.fontWeight = '600';
+      msg.style.padding = '8px 12px';
+      msg.style.background = '#E5F4EA';
+      msg.style.borderRadius = '8px';
+    }
     // Continuity refresh: PDF button, supervisor activity strip, supervisor
     // home tile sub — all read tbtDebriefDone, push the new state to them
     // straight away so the dashboard reflects "Debrief complete" without
