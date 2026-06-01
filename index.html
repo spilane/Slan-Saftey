@@ -39894,8 +39894,15 @@ function updateNotifBadges() {
 
 
 function smartSignFlow() {
-  var signed = localStorage.getItem('slan_signed_in_today');
-  var signedOut = localStorage.getItem('slan_signed_out_today');
+  var signed = !!localStorage.getItem('slan_signed_in_today');
+  var signedOut = !!localStorage.getItem('slan_signed_out_today');
+  // Also consult DEMO_SIGNINS so seeded supervisor/director sign-ins
+  // route correctly to Sign Out on the demo's first tap.
+  var p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (p && p.name && typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS) && typeof _today !== 'undefined') {
+    if (!signed    && DEMO_SIGNINS.some(function(s){ return s && s.worker_name === p.name && s.type === 'Sign In'  && s.date === _today; })) signed    = true;
+    if (!signedOut && DEMO_SIGNINS.some(function(s){ return s && s.worker_name === p.name && s.type === 'Sign Out' && s.date === _today; })) signedOut = true;
+  }
   // If signed in but not out → go to sign out
   if (signed && !signedOut) {
     startFlow('out');
@@ -44161,9 +44168,15 @@ function dincInitCharts() {
 // TILE SUBTITLE UPDATES — keep worker home tiles current
 // ═══════════════════════════════════════════════════════════════
 function updateAllTileSubs(p) {
-  // Sign in/out tile
-  var signedIn = localStorage.getItem('slan_signed_in_today');
-  var signedOut = localStorage.getItem('slan_signed_out_today');
+  // Sign in/out tile — also consult DEMO_SIGNINS so the demo's seeded
+  // supervisor/director sign-in flips the tile sub without needing them
+  // to re-sign via the app.
+  var signedIn = !!localStorage.getItem('slan_signed_in_today');
+  var signedOut = !!localStorage.getItem('slan_signed_out_today');
+  if (p && p.name && typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS) && typeof _today !== 'undefined') {
+    if (!signedIn  && DEMO_SIGNINS.some(function(s){ return s && s.worker_name === p.name && s.type === 'Sign In'  && s.date === _today; })) signedIn  = true;
+    if (!signedOut && DEMO_SIGNINS.some(function(s){ return s && s.worker_name === p.name && s.type === 'Sign Out' && s.date === _today; })) signedOut = true;
+  }
   ['signin-tile-sub','sup-signin-tile-sub'].forEach(function(id){
     var signinSub = document.getElementById(id);
     if (!signinSub) return;
