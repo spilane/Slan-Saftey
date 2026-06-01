@@ -2788,7 +2788,7 @@ function ahStyleDivisionHome(){
       <div class="tile" onclick="goToTalk()">
         <div class="tile-icon ic-blue"><svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="tile-name">Toolbox Talk</div>
-        <div class="tile-sub" id="d-talk-status">Sign today's talk</div>
+        <div class="tile-sub" id="d-talk-status">Run debrief</div>
       </div>
 
       <div class="tile" onclick="goToPermitsToWork()">
@@ -15739,13 +15739,9 @@ function goToSuperDash() {
       av.innerHTML = `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
     }
 
-    // Talk status on tile (uses records, not legacy flag) — matches worker tile copy
-    const talkEl = document.getElementById('d-talk-status');
-    if (talkEl) {
-      const signedRec = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(p && p.name) : null;
-      if (signedRec) talkEl.textContent = 'Signed today ✓';
-      else talkEl.textContent = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? TODAYS_TALK.title : 'Monthly safety topic';
-    }
+    // Talk status on tile — reflects DEBRIEF state (supervisor's responsibility),
+    // via the single _supTalkTileSubText helper so it can't drift from pill/KPI.
+    checkDashTalkStatus();
 
     _doOpenSuperDash();
   });
@@ -15764,12 +15760,7 @@ function _doOpenSuperDash() {
   if (dateEl)  dateEl.textContent  = now.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
   const av = document.getElementById('d-avatar');
   if (av && p && p.photo) av.innerHTML = `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-  const talkEl = document.getElementById('d-talk-status');
-  if (talkEl) {
-    const signedRec = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(p && p.name) : null;
-    if (signedRec) talkEl.textContent = 'Signed today ✓';
-    else talkEl.textContent = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? TODAYS_TALK.title : 'Monthly safety topic';
-  }
+  checkDashTalkStatus();
   goTo('screen-dash');
   loadSuperDash();
 }
@@ -16020,13 +16011,18 @@ async function checkDashSpsAlert() {
   } catch(e) { banner.style.display = 'none'; }
 }
 
+// Supervisor's Toolbox Talk tile sub \u2014 driven by the DEBRIEF state, not by
+// "has the supervisor signed it" (he doesn't sign as an attendee). One helper
+// used everywhere so the tile, the pill and the KPI can't disagree.
+function _supTalkTileSubText() {
+  var done = (typeof tbtDebriefDone === 'function') && tbtDebriefDone();
+  if (done) return 'Debrief complete \u2713';
+  var title = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? TODAYS_TALK.title : 'Monthly safety topic';
+  return 'Run debrief \u00b7 ' + title;
+}
 function checkDashTalkStatus() {
   const el = document.getElementById('d-talk-status');
-  if (!el) return;
-  const me = (typeof getProfile === 'function') ? getProfile() : null;
-  const signedRec = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(me && me.name) : null;
-  if (signedRec) el.textContent = 'Signed today \u2713';
-  else el.textContent = (typeof TODAYS_TALK !== 'undefined' && TODAYS_TALK) ? TODAYS_TALK.title : 'Monthly safety topic';
+  if (el) el.textContent = _supTalkTileSubText();
 }
 
 
@@ -18142,10 +18138,13 @@ function updateSupActivityStrip() {
   const swmsNewAvail  = !!localStorage.getItem('swms_new_available');
   setPillState('d-pill-swms', (swmsSignedAny && !swmsNewAvail) ? 'done' : 'warn');
 
-  // Toolbox talk — chip shows green only if THIS supervisor has signed today
-  const _meSup = (typeof getProfile === 'function') ? getProfile() : null;
-  const supSignedToday = (typeof tbtHasSignedToday === 'function') ? tbtHasSignedToday(_meSup && _meSup.name) : null;
-  setPillState('d-pill-talk', supSignedToday ? 'done' : 'warn');
+  // Toolbox talk — supervisor's responsibility is the DEBRIEF, not signing
+  // attendance like a worker. Pill goes green when the debrief is complete
+  // (all four fields filled). Label reflects state for clarity.
+  const debriefDone = (typeof tbtDebriefDone === 'function') && tbtDebriefDone();
+  setPillState('d-pill-talk', debriefDone ? 'done' : 'warn');
+  const talkLbl = document.getElementById('d-pill-talk-lbl');
+  if (talkLbl) talkLbl.textContent = debriefDone ? 'Debrief complete' : 'Debrief pending';
 
   // SDS Reports — show pending missing chemical reports
   let sdsMissing = [];
@@ -44447,6 +44446,24 @@ function tbtLoadWrapup(talkId, dateStr) {
   } catch(e) { return null; }
 }
 
+// SINGLE SOURCE OF TRUTH for "is today's toolbox debrief complete?" — used
+// by the supervisor activity pill, the submit gate and the PDF download
+// gate so they can never drift. Complete = all four required fields filled
+// (attendance + hazards + questions + actions). Niall's rule: no submit,
+// no PDF until the debrief is finished.
+function tbtDebriefDone() {
+  if (typeof TODAYS_TALK === 'undefined' || !TODAYS_TALK) return false;
+  var talkId = TODAYS_TALK.version || '';
+  var dateStr = new Date().toLocaleDateString('en-AU');
+  var w = tbtLoadWrapup(talkId, dateStr);
+  if (!w) return false;
+  var hasAttend = (w.attendance != null && w.attendance !== '' && !isNaN(Number(w.attendance)));
+  var hasHaz    = !!(w.hazards    && String(w.hazards).trim());
+  var hasQns    = !!(w.questions  && String(w.questions).trim());
+  var hasAct    = !!(w.actions    && String(w.actions).trim());
+  return hasAttend && hasHaz && hasQns && hasAct;
+}
+
 // Build a single combined PDF: talk content + supervisor debrief + signature
 // roster + workers who haven't signed yet. Re-downloadable any time so it
 // stays up-to-date as late signers come in.
@@ -44836,11 +44853,16 @@ function tbtDownloadRosterPDF(targetTalkId) {
 }
 
 // ─── SIGN-IN / SIGN-OUT GATE ─────────────────────────────────
-// Workers (and supervisors) cannot sign IN or OUT until they have signed the
-// current active toolbox talk. Returns true if blocked (caller should abort).
+// WORKERS cannot sign IN/OUT until they have signed the current toolbox talk.
+// Supervisors / Directors / Mechanics are NOT gated — the supervisor delivers
+// the talk, the director moves between sites, the mechanic supports the work.
+// None of them sign the talk as attendees. Their toolbox responsibility is
+// the post-talk debrief (supervisor) or just receiving the talk content; it
+// is NOT a sign-in pre-requisite (Niall, 2026-06-01).
 function tbtBlocksSignInOut() {
   var p = (typeof getProfile === 'function') ? getProfile() : null;
   if (!p || !p.name) return false; // no profile = onboarding flow, don't block
+  if (p.role && p.role !== 'Worker') return false; // non-workers bypass the gate
   if (typeof TODAYS_TALK === 'undefined' || !TODAYS_TALK) return false;
   var signed = tbtHasSignedCurrent(p.name);
   if (signed) return false;
