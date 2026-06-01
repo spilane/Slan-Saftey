@@ -24600,6 +24600,27 @@ function _openIncidents(siteCode) {
 // Workers whose LATEST event today is a Sign Out. (Mirror of
 // _currentlyOnSiteToday — same merge logic, opposite final filter.)
 // Used by the roster's "Signed out today" section.
+// Normalise any sign-in record's time to a comparable integer (seconds
+// since midnight). Handles DEMO_SIGNINS 24h ('06:30'), finalSubmit 12h
+// ('04:27:08 pm') and queued records with an ISO timestamp. Without this,
+// raw string compare in the merge below made '06:30' beat '04:27 pm',
+// so the seeded morning Sign In always overrode the live afternoon Sign
+// Out — i.e. signing out as Eoin never removed him from "on site".
+function _recTimeOrder(rec) {
+  if (rec.timestamp) {
+    var t = Date.parse(rec.timestamp);
+    if (!isNaN(t)) return t;
+  }
+  var s = String(rec.time || '');
+  var m = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if (!m) return 0;
+  var h = parseInt(m[1],10), mn = parseInt(m[2],10), sec = m[3] ? parseInt(m[3],10) : 0;
+  var ap = m[4] ? m[4].toLowerCase() : '';
+  if (ap === 'pm' && h < 12) h += 12;
+  if (ap === 'am' && h === 12) h = 0;
+  return h * 3600 + mn * 60 + sec;
+}
+
 function _signedOutToday() {
   const today = new Date().toLocaleDateString('en-AU');
   const byWorker = {};
@@ -24608,17 +24629,18 @@ function _signedOutToday() {
     if ((rec.date || '') !== today) return;
     const role = String(rec.role || '').toLowerCase();
     if (role.indexOf('director') !== -1) return;
-    const time = rec.time || '';
+    const order = _recTimeOrder(rec);
     const prev = byWorker[rec.worker_name];
-    if (!prev || time >= prev.time) {
+    if (!prev || order >= prev._order) {
       byWorker[rec.worker_name] = {
         worker_name: rec.worker_name,
         company:   rec.company || '',
         role:      rec.role || '',
         site_code: rec.site_code || 'site-a',
         site_name: rec.site_name || rec.address || '',
-        time:      time,
-        type:      rec.type || rec.submission_type || ''
+        time:      rec.time || '',
+        type:      rec.type || rec.submission_type || '',
+        _order:    order
       };
     }
   }
@@ -24633,6 +24655,7 @@ function _signedOutToday() {
         role:        s.data.role || '',
         type:        s.data.submission_type || s.data.type || 'Sign In',
         time:        s.data.time || '',
+        timestamp:   s.data.timestamp || '',
         date:        (s.data.date || '').replace(/-/g,'/'),
         site_code:   s.data.site_code || '',
         site_name:   s.data.site_name || s.data.address || ''
@@ -24794,17 +24817,18 @@ function _currentlyOnSiteToday() {
     // directors excluded (company-wide oversight, not site headcount).
     const role = String(rec.role || '').toLowerCase();
     if (role.indexOf('director') !== -1) return;
-    const time = rec.time || '';
+    const order = _recTimeOrder(rec);
     const prev = byWorker[rec.worker_name];
-    if (!prev || time >= prev.time) {
+    if (!prev || order >= prev._order) {
       byWorker[rec.worker_name] = {
         worker_name: rec.worker_name,
         company:   rec.company || '',
         role:      rec.role || '',
         site_code: rec.site_code || 'site-a',
         site_name: rec.site_name || rec.address || '',
-        time:      time,
-        type:      rec.type || rec.submission_type || ''
+        time:      rec.time || '',
+        type:      rec.type || rec.submission_type || '',
+        _order:    order
       };
     }
   }
@@ -24821,6 +24845,7 @@ function _currentlyOnSiteToday() {
         role:        s.data.role || '',
         type:        s.data.submission_type || s.data.type || 'Sign In',
         time:        s.data.time || '',
+        timestamp:   s.data.timestamp || '',
         date:        (s.data.date || '').replace(/-/g,'/'),
         site_code:   s.data.site_code || '',
         site_name:   s.data.site_name || s.data.address || ''
