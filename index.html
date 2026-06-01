@@ -17102,6 +17102,11 @@ function urlBase64ToUint8Array(base64String) {
 
 
 const SITE   = 'Bondi Junction Mixed Use';
+// Per-site code used by the supervisor + director KPI filters
+// (_currentlyOnSiteToday + _signedOutToday). Without this on the queued
+// payload, Jake signing in at Bondi never appears in Eoin's "On site"
+// count because the supervisor filter requires site_code === 'site-a'.
+const SITE_CODE = 'site-a';
 
 let mode='in', locData={lat:null,lng:null,address:'Not captured',accuracy:null};
 let isOnline=navigator.onLine;
@@ -17871,15 +17876,21 @@ function setPillState(id, state) {
 }
 
 function chipTapSignIn() {
-  const q = JSON.parse(localStorage.getItem('slan_queue')||'[]');
-  const today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
-  const signedInToday  = !!localStorage.getItem('slan_signed_in_today')  || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign In'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
-  const signedOutToday = !!localStorage.getItem('slan_signed_out_today') || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign Out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
-  if (signedInToday && !signedOutToday) {
-    if (typeof startFlow === 'function') startFlow('out'); else goTo('screen-confirm');
-  } else {
-    if (typeof startFlow === 'function') startFlow('in');  else goTo('screen-confirm');
+  // Routed through the single-source helper so this stays in lockstep with
+  // smartSignFlow, supChipTapSignIn, the tile sub and the pill state.
+  // Seeded sign-ins (DEMO_SIGNINS — Eoin, Patrick) and queued live sign-ins
+  // both flow through here without duplicating the merge logic.
+  var target = (typeof _signFlowTarget === 'function') ? _signFlowTarget() : 'in';
+  if (target === 'done') {
+    // Shift already complete today — explain in a dialog rather than
+    // dumping the user on the Sign In screen with mismatched ticks.
+    if (typeof slanAlert === 'function') {
+      slanAlert("You've already signed out today", "Your shift is logged as complete. If you need to sign back in for another shift, ask your supervisor or reset the demo from My Profile.", 'info');
+    }
+    return;
   }
+  if (typeof startFlow === 'function') startFlow(target);
+  else goTo('screen-confirm');
 }
 function chipTapPrestart() { goTo('screen-prestart'); if (typeof initPrestart === 'function') setTimeout(initPrestart, 20); }
 function chipTapSwms()     { goTo('screen-swms-library'); if (typeof initSwmsLibrary === 'function') setTimeout(initSwmsLibrary, 20); }
@@ -18096,20 +18107,18 @@ function updateSupActivityStrip() {
   const today = new Date().toLocaleDateString('en-AU').replace(/\//g,'-');
   const q = JSON.parse(localStorage.getItem('slan_queue') || '[]');
 
-  // Sign In — also consult DEMO_SIGNINS so the demo's seeded supervisor
-  // sign-in (Eoin at 06:30) flips the pill green without the user having
-  // to re-sign in via the app.
-  const todayAU = new Date().toLocaleDateString('en-AU');
-  const seededSignIn = (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS))
-    && DEMO_SIGNINS.some(s => s && s.worker_name === p.name && s.type === 'Sign In' && s.date === _today);
-  const seededSignOut = (typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS))
-    && DEMO_SIGNINS.some(s => s && s.worker_name === p.name && s.type === 'Sign Out' && s.date === _today);
-  const signedInToday  = !!localStorage.getItem('slan_signed_in_today')  || seededSignIn  || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign In'  && s.data.date && s.data.date.replace(/\//g,'-') === today);
-  const signedOutToday = !!localStorage.getItem('slan_signed_out_today') || seededSignOut || q.some(s => s.data && s.data.form_type === 'attendance' && s.data.submission_type === 'Sign Out' && s.data.date && s.data.date.replace(/\//g,'-') === today);
+  // Sign In — routed through the single-source helper so the pill agrees
+  // with the tile sub, the KPI count and the routing decision.
+  const _supState = (typeof _profileSignedInState === 'function') ? _profileSignedInState() : { signedIn: false, signedOut: false };
+  const signedInToday  = _supState.signedIn;
+  const signedOutToday = _supState.signedOut;
   const sinLbl = document.getElementById('d-pill-signin-lbl');
   if (sinLbl) {
     if (signedInToday && !signedOutToday) {
       sinLbl.textContent = 'On Site · Tap To Sign Out';
+      setPillState('d-pill-signin', 'done');
+    } else if (signedInToday && signedOutToday) {
+      sinLbl.textContent = 'Signed Out · Shift Complete';
       setPillState('d-pill-signin', 'done');
     } else {
       sinLbl.textContent = 'Sign In';
@@ -21417,6 +21426,11 @@ function goTo(id){
   try { ahEnsureHomeBack(); } catch(e) {}
   try { Promise.resolve().then(ahStyleDivisionHome); } catch(e) {}
   window.scrollTo(0,0);
+  // Auto-refresh launcher activity strip + tile badges when landing on it
+  // so the supervisor coming back after sign-out sees the fresh state.
+  if (id === 'screen-apphome') {
+    try { if (typeof ahUpdateActivity === 'function') ahUpdateActivity(); } catch(e) {}
+  }
   // Auto-refresh chip strip when landing on worker home or supervisor dash
   if (id === 'screen-home') {
     try { if (typeof updateStatusStrip === 'function') updateStatusStrip(); } catch(e) {}
@@ -21692,7 +21706,7 @@ function finalSubmit(){
     date:now.toLocaleDateString('en-AU'),
     time:now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}),
     worker_name:p.name,company:p.company,role:p.role,white_card:p.whitecard,
-    site:SITE,
+    site:SITE,site_code:(typeof SITE_CODE!=='undefined'?SITE_CODE:'site-a'),site_name:SITE,
     latitude:locData.lat,longitude:locData.lng,
     gps_accuracy_m:locData.accuracy,
     address:locData.address,
@@ -21729,6 +21743,18 @@ function finalSubmit(){
     fetch(PA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
       .then(r=>{if(!r.ok)queueSub(payload);}).catch(()=>queueSub(payload));
   }else{queueSub(payload);}
+
+  // CONTINUITY REFRESH (Niall, 2026-06-01): every surface that reads the
+  // sign-in/out state must be re-rendered now that we have written it.
+  // Without this, the supervisor's KPI / pill / tile / launcher strip
+  // remain stale until the next nav, which made it look like "the
+  // supervisor doesn't show up as signed out".
+  try { if (typeof updateStatusStrip === 'function') updateStatusStrip(); } catch(e){}
+  try { if (typeof updateSupActivityStrip === 'function') updateSupActivityStrip(); } catch(e){}
+  try { if (typeof dirUpdateActivityStrip === 'function') dirUpdateActivityStrip(); } catch(e){}
+  try { if (typeof updateAllTileSubs === 'function') updateAllTileSubs(p); } catch(e){}
+  try { if (typeof loadSuperDash === 'function') loadSuperDash(); } catch(e){}
+  try { if (typeof ahUpdateActivity === 'function') ahUpdateActivity(); } catch(e){}
 }
 
 function showSuccess(m,p,now,ref){
@@ -24802,6 +24828,48 @@ function _currentlyOnSiteToday() {
     });
   } catch(e){}
   return Object.values(byWorker).filter(function(r){ return r.type === 'Sign In'; });
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// SINGLE SOURCE OF TRUTH for "is THIS profile signed in / signed out today?"
+// Used by every sign-in/out routing decision (chipTapSignIn, supChipTapSignIn,
+// smartSignFlow) AND every status surface (worker tile sub, supervisor tile
+// sub, supervisor activity pill, launcher activity strip). Routes through
+// the canonical _currentlyOnSiteToday() + _signedOutToday() helpers so the
+// state always reflects DEMO_SIGNINS + slan_queue + localStorage merged
+// together. If any reader bypasses this and consults one source alone,
+// they will disagree with the rest of the app — never do that again
+// (Niall, 2026-06-01: continuity rule).
+function _profileSignedInState() {
+  const p = (typeof getProfile === 'function') ? getProfile() : null;
+  if (!p || !p.name) return { signedIn:false, signedOut:false };
+  let signedIn = false, signedOut = false;
+  try {
+    if (typeof _currentlyOnSiteToday === 'function') {
+      signedIn = _currentlyOnSiteToday().some(function(r){ return r.worker_name === p.name; });
+    }
+  } catch(e) {}
+  try {
+    if (typeof _signedOutToday === 'function') {
+      signedOut = _signedOutToday().some(function(r){ return r.worker_name === p.name; });
+    }
+  } catch(e) {}
+  // Belt and braces: also honour the localStorage flags if for any reason
+  // the merged helpers missed the record. This keeps the live (user-action)
+  // path correct even before queueSub completes.
+  if (!signedIn && !!localStorage.getItem('slan_signed_in_today')) signedIn = true;
+  if (!signedOut && !!localStorage.getItem('slan_signed_out_today')) signedOut = true;
+  return { signedIn: signedIn, signedOut: signedOut };
+}
+
+// "Where should the Sign In / Sign Out tile/pill take me?"
+// Returns 'in' / 'out' / 'done' (shift complete). Every caller uses this
+// so the routing decision can never drift between handlers.
+function _signFlowTarget() {
+  var s = _profileSignedInState();
+  if (s.signedIn && !s.signedOut) return 'out';
+  if (s.signedIn && s.signedOut) return 'done';
+  return 'in';
 }
 
 // Identify the active supervisor's site_code (defaults to Bondi for the
@@ -39895,22 +39963,12 @@ function updateNotifBadges() {
 
 
 function smartSignFlow() {
-  var signed = !!localStorage.getItem('slan_signed_in_today');
-  var signedOut = !!localStorage.getItem('slan_signed_out_today');
-  // Also consult DEMO_SIGNINS so seeded supervisor/director sign-ins
-  // route correctly to Sign Out on the demo's first tap.
-  var p = (typeof getProfile === 'function') ? getProfile() : null;
-  if (p && p.name && typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS) && typeof _today !== 'undefined') {
-    if (!signed    && DEMO_SIGNINS.some(function(s){ return s && s.worker_name === p.name && s.type === 'Sign In'  && s.date === _today; })) signed    = true;
-    if (!signedOut && DEMO_SIGNINS.some(function(s){ return s && s.worker_name === p.name && s.type === 'Sign Out' && s.date === _today; })) signedOut = true;
-  }
-  // If signed in but not out → go to sign out
-  if (signed && !signedOut) {
-    startFlow('out');
-  } else {
-    // Either not signed in yet, or already signed out (new shift)
-    startFlow('in');
-  }
+  // Routed through _signFlowTarget so the tile, the pill, the launcher
+  // activity strip and the success copy all agree about where you are
+  // in the shift. Direct localStorage reads were inconsistent across
+  // callers — never reintroduce them here.
+  if (typeof chipTapSignIn === 'function') { chipTapSignIn(); return; }
+  startFlow('in');
 }
 
 
@@ -44169,15 +44227,10 @@ function dincInitCharts() {
 // TILE SUBTITLE UPDATES — keep worker home tiles current
 // ═══════════════════════════════════════════════════════════════
 function updateAllTileSubs(p) {
-  // Sign in/out tile — also consult DEMO_SIGNINS so the demo's seeded
-  // supervisor/director sign-in flips the tile sub without needing them
-  // to re-sign via the app.
-  var signedIn = !!localStorage.getItem('slan_signed_in_today');
-  var signedOut = !!localStorage.getItem('slan_signed_out_today');
-  if (p && p.name && typeof DEMO_SIGNINS !== 'undefined' && Array.isArray(DEMO_SIGNINS) && typeof _today !== 'undefined') {
-    if (!signedIn  && DEMO_SIGNINS.some(function(s){ return s && s.worker_name === p.name && s.type === 'Sign In'  && s.date === _today; })) signedIn  = true;
-    if (!signedOut && DEMO_SIGNINS.some(function(s){ return s && s.worker_name === p.name && s.type === 'Sign Out' && s.date === _today; })) signedOut = true;
-  }
+  // Routed through the single-source helper so the tile state matches the
+  // pill state, the KPI count and the routing decision.
+  var st = (typeof _profileSignedInState === 'function') ? _profileSignedInState() : { signedIn: !!localStorage.getItem('slan_signed_in_today'), signedOut: !!localStorage.getItem('slan_signed_out_today') };
+  var signedIn = st.signedIn, signedOut = st.signedOut;
   ['signin-tile-sub','sup-signin-tile-sub'].forEach(function(id){
     var signinSub = document.getElementById(id);
     if (!signinSub) return;
