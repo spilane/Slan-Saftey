@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -44594,10 +44594,11 @@ function tbtDownloadRosterPDF(targetTalkId) {
     var ML = 22, MR = 22, MT = 18, MB = 16;
     var CW = PAGE_W - ML - MR;
     var TITLE = 'TOOLBOX TALK ROSTER';
-    var FOOTER_CODE = 'SLS-TBT-ROSTER \u00b7 v1.0';
+    var FOOTER_CODE = 'SLS-TBT · v1.0';
     var C = (typeof PDF_COLOURS !== 'undefined') ? PDF_COLOURS : {
       darkGreen:'#2C6B5E', darkText:'#1A2A1F', subLabel:'#5C6B62',
       greyLabel:'#888888', greyLight:'#dddddd', white:'#FFFFFF',
+      neutralBg:'#F8F7F3', border:'#e5e5e5',
       paleGreen:'#F0F7E8', greenBorder:'#d4e3c2', greenDark:'#1B6E3A',
       amberBg:'#FDF8EC', amberDark:'#BA7517'
     };
@@ -44629,7 +44630,7 @@ function tbtDownloadRosterPDF(targetTalkId) {
       doc.line(ML, fY - 4, PAGE_W - MR, fY - 4);
       setText(C.greyLabel || '#888888');
       doc.setFont('courier','normal'); doc.setFontSize(7);
-      doc.text(FOOTER_CODE + '  \u00b7  ' + (talkMeta.version || ''), ML, fY);
+      doc.text(FOOTER_CODE, ML, fY);
       doc.setFont('helvetica','normal');
       doc.text('Page ' + pn + ' of ' + tp, PAGE_W - MR, fY, {align:'right'});
     }
@@ -44642,269 +44643,229 @@ function tbtDownloadRosterPDF(targetTalkId) {
       doc.text(label, ML + 4, yPos + h/2 + 1.5);
       return yPos + h + 4;
     }
+    function drawSubLabel(yPos, label) {
+      yPos += 2;
+      setText(C.subLabel);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+      doc.text(label, ML, yPos);
+      return yPos + 3;
+    }
+    function drawCard(yPos, height, bgColor, borderColor, accentColor) {
+      if (accentColor) {
+        setFill(accentColor);
+        doc.rect(ML, yPos, 1.5, height, 'F');
+        setFill(bgColor); setStroke(borderColor); doc.setLineWidth(0.2);
+        doc.rect(ML + 1.5, yPos, CW - 1.5, height, 'FD');
+      } else {
+        setFill(bgColor); setStroke(borderColor); doc.setLineWidth(0.2);
+        doc.rect(ML, yPos, CW, height, 'FD');
+      }
+    }
     function drawField(x, yPos, label, value) {
       setText(C.greyLabel || '#888888');
       doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
       doc.text(label + ':', x, yPos);
       var lblW = doc.getTextWidth(label + ':');
       setText(C.darkText);
-      doc.text(String(value || '\u2014'), x + lblW + 1.5, yPos);
-    }
-    function newPageIfNeeded(yPos, neededSpace) {
-      if (yPos + neededSpace > PAGE_H - MB - 6) { doc.addPage(); return drawHeader(); }
-      return yPos;
-    }
-    // Like newPageIfNeeded but adds `gapIfStaying` only when we DON'T break to a
-    // new page. Avoids the dead-space-at-top-of-page-2 problem.
-    function sectionBreak(yPos, neededSpace, gapIfStaying) {
-      if (yPos + neededSpace > PAGE_H - MB - 6) { doc.addPage(); return drawHeader(); }
-      return yPos + (gapIfStaying || 0);
-    }
-    function drawTick(x, yPos, color, size) {
-      size = size || 3;
-      setStroke(color);
-      doc.setLineWidth(0.5);
-      // Simple checkmark shape
-      doc.line(x, yPos - size*0.2, x + size*0.4, yPos + size*0.3);
-      doc.line(x + size*0.4, yPos + size*0.3, x + size*1.1, yPos - size*0.7);
+      doc.text(String(value || '—'), x + lblW + 1.5, yPos);
     }
 
     var y = drawHeader();
-    y += 2;
+    var pageNum = 1;
+    drawFooter(pageNum, '__TP__');
 
-    // ── HEADER DETAILS ──
-    y = drawMajorBanner(y, 'TALK DETAILS');
-    y += 3;
-    setText(C.darkText);
-    doc.setFont('helvetica','bold'); doc.setFontSize(14);
-    doc.text(talkMeta.title || 'Toolbox Talk', ML, y); y += 6;
-    setText(C.subLabel || '#5C6B62');
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    doc.text((talkMeta.version || '') + '  \u00b7  Generated ' + todayDate, ML, y); y += 7;
-    drawField(ML, y, 'Site', (typeof SITE !== 'undefined') ? SITE : '\u2014');
-    drawField(ML + CW/2, y, 'Presenter', talkMeta.presenter || '\u2014');
-    y += 6;
-    drawField(ML, y, 'Total signed', String(talkRecs.length));
-    drawField(ML + CW/2, y, 'Roster generated', new Date().toLocaleString('en-AU'));
-    y += 10;
-
-    // ── TALK CONTENT ──
-    y = newPageIfNeeded(y, 18);
-    y = drawMajorBanner(y, 'TALK CONTENT');
-    y += 5;
-    var sections = talkMeta.sections || [];
-    sections.forEach(function(sec, secIdx){
-      y = newPageIfNeeded(y, 18);
-      // Section heading — green left bar + heading text on a pale background row
-      var headerH = 8;
-      setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
-      doc.rect(ML, y, CW, headerH, 'FD');
-      setFill(C.greenDark);
-      doc.rect(ML, y, 1.5, headerH, 'F');
-      setText(C.darkText);
-      doc.setFont('helvetica','bold'); doc.setFontSize(10);
-      doc.text(sec.heading || '', ML + 5, y + headerH/2 + 1.5);
-      y += headerH + 4;
-
-      doc.setFont('helvetica','normal'); doc.setFontSize(10);
-      (sec.points || []).forEach(function(pt){
-        var lines = doc.splitTextToSize(pt, CW - 8);
-        var blockH = lines.length * 5 + 3;
-        y = newPageIfNeeded(y, blockH);
-        setFill(C.greenDark);
-        doc.circle(ML + 2.2, y - 1.5, 0.9, 'F');
-        setText(C.darkText);
-        doc.text(lines, ML + 7, y);
-        y += lines.length * 5 + 2;
-      });
-      if (secIdx < sections.length - 1) y += 5;
-    });
-
-    // ── SUPERVISOR DEBRIEF ──
-    if (wrapup && (wrapup.attendance != null || wrapup.hazards || wrapup.questions || wrapup.actions)) {
-      y = sectionBreak(y, 30, 4);
-      y = drawMajorBanner(y, 'SUPERVISOR DEBRIEF');
-      y += 4;
-      if (wrapup.attendance != null) {
-        // Render attendance the same way as talk content sections — pale-green band
-        var attH = 8;
-        setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
-        doc.rect(ML, y, CW, attH, 'FD');
-        setFill(C.greenDark);
-        doc.rect(ML, y, 1.5, attH, 'F');
-        setText(C.darkText);
-        doc.setFont('helvetica','bold'); doc.setFontSize(10);
-        doc.text('Attendance count: ' + String(wrapup.attendance), ML + 5, y + attH/2 + 1.5);
-        y += attH + 5;
+    var ensure = function(need) {
+      if (y + need > PAGE_H - MB - 8) {
+        doc.addPage();
+        pageNum++;
+        y = drawHeader();
+        drawFooter(pageNum, '__TP__');
       }
-      function debriefBlock(label, text) {
-        if (!text) return;
-        y = newPageIfNeeded(y, 18);
-        // Section heading — same as talk content
-        var headerH = 8;
-        setFill(C.paleGreen); setStroke(C.greenBorder); doc.setLineWidth(0.2);
-        doc.rect(ML, y, CW, headerH, 'FD');
-        setFill(C.greenDark);
-        doc.rect(ML, y, 1.5, headerH, 'F');
-        setText(C.darkText);
-        doc.setFont('helvetica','bold'); doc.setFontSize(10);
-        doc.text(label, ML + 5, y + headerH/2 + 1.5);
-        y += headerH + 4;
-        // Body text — same size as talk content
-        setText(C.darkText);
-        doc.setFont('helvetica','normal'); doc.setFontSize(10);
-        var lines = doc.splitTextToSize(text, CW - 4);
-        var blockH = lines.length * 5 + 3;
-        y = newPageIfNeeded(y, blockH);
-        doc.text(lines, ML + 2, y);
-        y += lines.length * 5 + 5;
-      }
-      debriefBlock('Site-specific hazards discussed', wrapup.hazards);
-      debriefBlock('Questions or concerns raised', wrapup.questions);
-      debriefBlock('Action items / follow-ups', wrapup.actions);
-      
-      // Supervisor signature block
-      if (wrapup.supervisor_signature) {
-        y = newPageIfNeeded(y, 32);
-        y += 4;
-        setText(C.darkText);
-        doc.setFont('helvetica','bold'); doc.setFontSize(9);
-        doc.text('Delivered by:', ML, y);
-        y += 6;
-        setText(C.darkText);
-        doc.setFont('helvetica','normal'); doc.setFontSize(10);
-        doc.text(wrapup.supervisor_name || 'Site Supervisor', ML, y);
-        y += 6;
-        // Signature box
-        var sigW = 70, sigH = 22;
-        setStroke(C.greyLight); doc.setLineWidth(0.3);
-        doc.rect(ML, y, sigW, sigH);
-        try { doc.addImage(wrapup.supervisor_signature, 'PNG', ML + 1, y + 1, sigW - 2, sigH - 2); } catch(e) {}
-        setText(C.greyLabel || '#888888');
-        doc.setFont('helvetica','normal'); doc.setFontSize(7);
-        doc.text('Supervisor Signature', ML + sigW/2, y + sigH + 3, {align:'center'});
-        y += sigH + 6;
-      }
+    };
+
+    function drawCardRow(label, value) {
+      if (!value && value !== 0) return;
+      var labelW = 56;
+      var valueW = CW - labelW - 8;
+      var valueLines = doc.splitTextToSize(String(value), valueW);
+      var rowH = Math.max(6, valueLines.length * 4.2 + 2);
+      ensure(rowH + 1);
+      drawCard(y, rowH, C.neutralBg, C.border);
+      setText(C.greyLabel); doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+      doc.text(label, ML + 3, y + 4.5);
+      setText(C.darkText); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.text(valueLines, ML + labelW, y + 4.5);
+      y += rowH + 1.5;
+    }
+    function drawCardBlock(label, value) {
+      if (!value) return;
+      ensure(12);
+      if (label) y = drawSubLabel(y, String(label).toUpperCase());
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      var lines = doc.splitTextToSize(String(value), CW - 12);
+      var blockH = Math.max(12, lines.length * 5.5 + 10);
+      ensure(blockH + 1);
+      drawCard(y, blockH, C.neutralBg, C.border);
+      setText(C.darkText); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.text(lines, ML + 4, y + 6);
+      y += blockH + 3;
     }
 
-    // ── WORKER ACKNOWLEDGEMENT (audit completeness) ──
-    // What each signer in the roster below committed to. Required for audit:
-    // a roster of names is meaningless without showing what they agreed to.
-    y = sectionBreak(y, 40, 4);
-    y = drawMajorBanner(y, 'WORKER ACKNOWLEDGEMENT \u2014 AGREED BY EACH SIGNER');
-    y += 4;
-    setText(C.darkText);
-    doc.setFont('helvetica','italic'); doc.setFontSize(9);
-    doc.text('By signing below, each worker confirmed:', ML, y);
-    y += 5;
-    var rosterAckStatements = [
-      'I confirm I have read and understood this toolbox talk content, the safety information presented, and have had the opportunity to ask questions or raise concerns.',
-      'I commit to applying this knowledge, working safely in accordance with the controls discussed, and reporting any unsafe conditions or near misses to my supervisor immediately.'
-    ];
-    doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
-    rosterAckStatements.forEach(function(s){
-      var lines = doc.splitTextToSize(s, CW - 8);
-      var blockH = lines.length * 4.8 + 3;
-      y = newPageIfNeeded(y, blockH);
-      drawTick(ML + 1, y - 1, C.greenDark, 3);
-      setText(C.darkText);
-      doc.text(lines, ML + 7, y);
-      y += blockH;
+    // === TALK DETAILS ===
+    y = drawMajorBanner(y, 'TALK DETAILS');
+    y = drawSubLabel(y, 'TALK REFERENCE');
+    var refH = 14;
+    drawCard(y, refH, C.neutralBg, C.border);
+    var innerY = y + 5;
+    var colW = CW / 3;
+    setText(C.greyLabel); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    doc.text('VERSION', ML + 3, innerY);
+    doc.text('GENERATED', ML + colW + 3, innerY);
+    doc.text('SITE', ML + colW*2 + 3, innerY);
+    setText(C.darkText); doc.setFont('courier','bold'); doc.setFontSize(9.5);
+    doc.text(String(talkMeta.version || '—'), ML + 3, innerY + 5);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text(todayDate, ML + colW + 3, innerY + 5);
+    doc.text(String((typeof SITE !== 'undefined') ? SITE : '—'), ML + colW*2 + 3, innerY + 5);
+    y += refH + 3;
+
+    drawCardRow('Talk title', talkMeta.title || 'Toolbox Talk');
+    drawCardRow('Presenter', talkMeta.presenter || '—');
+    drawCardRow('Total signed', String(talkRecs.length));
+    drawCardRow('Roster generated', new Date().toLocaleString('en-AU'));
+
+    // === TALK CONTENT ===
+    ensure(18);
+    y = drawMajorBanner(y, 'TALK CONTENT');
+    var sections = talkMeta.sections || [];
+    sections.forEach(function(sec){
+      var heading = sec.heading || '';
+      var points = sec.points || [];
+      if (!points.length) return;
+      var bodyText = points.map(function(pt){ return '•  ' + pt; }).join('\n');
+      drawCardBlock(heading, bodyText);
     });
-    y += 4;
 
-    // ── SIGNATURE ROSTER ──
-    y = sectionBreak(y, 30, 4);
+    // === SUPERVISOR DEBRIEF ===
+    if (wrapup && (wrapup.attendance != null || wrapup.hazards || wrapup.questions || wrapup.actions)) {
+      ensure(30);
+      y = drawMajorBanner(y, 'SUPERVISOR DEBRIEF');
+      if (wrapup.attendance != null) drawCardRow('Attendance count', String(wrapup.attendance));
+      drawCardBlock('Site-specific hazards discussed', wrapup.hazards);
+      drawCardBlock('Questions or concerns raised',    wrapup.questions);
+      drawCardBlock('Action items / follow-ups',       wrapup.actions);
+    }
+
+    // === WORKER ACKNOWLEDGEMENT ===
+    ensure(40);
+    y = drawMajorBanner(y, 'WORKER ACKNOWLEDGEMENT');
+    setText(C.darkText); doc.setFont('helvetica','italic'); doc.setFontSize(8.5);
+    var intro = doc.splitTextToSize('By signing below, each worker confirmed the following statements:', CW);
+    intro.forEach(function(line){ ensure(4); doc.text(line, ML, y + 3); y += 4; });
+    y += 1;
+    drawCardBlock('Statement 1', 'I confirm I have read and understood this toolbox talk content, the safety information presented, and have had the opportunity to ask questions or raise concerns.');
+    drawCardBlock('Statement 2', 'I commit to applying this knowledge, working safely in accordance with the controls discussed, and reporting any unsafe conditions or near misses to my supervisor immediately.');
+
+    // === DECLARATION ===
+    ensure(28);
+    y = drawMajorBanner(y, 'DECLARATION');
+    setText(C.darkText); doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+    var decl = doc.splitTextToSize('All signers below confirmed they attended and understood the toolbox talk content above. Late signers (after the day of delivery) are flagged in the roster.', CW);
+    decl.forEach(function(line){ ensure(4); doc.text(line, ML, y + 3); y += 4; });
+    y += 2;
+
+    // === SIGNATURE ROSTER ===
+    ensure(30);
     y = drawMajorBanner(y, 'SIGNATURE ROSTER');
-    y += 4;
     if (talkRecs.length === 0) {
-      setText(C.subLabel || '#5C6B62');
-      doc.setFont('helvetica','italic'); doc.setFontSize(10);
-      doc.text('No signatures captured yet.', ML, y);
-      y += 8;
+      setText(C.subLabel); doc.setFont('helvetica','italic'); doc.setFontSize(9);
+      doc.text('No signatures captured yet.', ML, y + 4);
+      y += 10;
     } else {
-      // Render a table-style row per signer — taller, more breathing room
-      var ROW_H = 34;
-      var ROW_GAP = 3;
-      talkRecs.forEach(function(rec, idx){
-        y = newPageIfNeeded(y, ROW_H + ROW_GAP);
-        // Row background — subtle alternating tint
-        if (idx % 2 === 0) {
-          setFill('#FAFCF9'); setStroke(C.greenBorder); doc.setLineWidth(0.2);
-          doc.rect(ML, y, CW, ROW_H, 'FD');
-        } else {
-          setFill('#FFFFFF'); setStroke(C.greyLight); doc.setLineWidth(0.2);
-          doc.rect(ML, y, CW, ROW_H, 'FD');
-        }
-        var pad = 5;
-        // Left column: name + role + company + signed-at
-        setText(C.darkText);
-        doc.setFont('helvetica','bold'); doc.setFontSize(11);
-        doc.text(rec.worker_name || '\u2014', ML + pad, y + 7);
-
-        setText(C.subLabel || '#5C6B62');
-        doc.setFont('helvetica','normal'); doc.setFontSize(9);
-        var line2 = (rec.role || '') + (rec.company ? '  \u00b7  ' + rec.company : '');
-        if (line2) doc.text(line2, ML + pad, y + 13);
-
-        setText(C.greyLabel || '#888888');
-        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-        doc.text('Signed ' + (rec.date || '') + (rec.time ? ' at ' + rec.time : ''), ML + pad, y + 19);
-
-        // Late-signer flag (badge style)
+      var ROW_H = 26;
+      talkRecs.forEach(function(rec){
+        ensure(ROW_H + 2);
+        drawCard(y, ROW_H, C.neutralBg, C.border);
+        var pad = 4;
+        setText(C.darkText); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+        doc.text(rec.worker_name || '—', ML + pad, y + 6);
+        setText(C.subLabel); doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+        var line2 = (rec.role || '') + (rec.company ? '  ·  ' + rec.company : '');
+        if (line2) doc.text(line2, ML + pad, y + 11);
+        setText(C.greyLabel); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+        doc.text('Signed ' + (rec.date || '') + (rec.time ? ' at ' + rec.time : ''), ML + pad, y + 16);
         if (rec.date !== todayDate) {
-          var badgeW = 30, badgeH = 5.5;
-          setFill(C.amberBg); setStroke(C.amberDark); doc.setLineWidth(0.3);
-          doc.roundedRect(ML + pad, y + 22, badgeW, badgeH, 1.2, 1.2, 'FD');
-          setText(C.amberDark);
-          doc.setFont('helvetica','bold'); doc.setFontSize(7);
-          doc.text('LATE SIGNER', ML + pad + badgeW/2, y + 25.7, {align:'center'});
+          var bw = 22, bh = 4.5;
+          setFill(C.amberBg); setStroke(C.amberDark); doc.setLineWidth(0.25);
+          doc.roundedRect(ML + pad, y + 19, bw, bh, 1, 1, 'FD');
+          setText(C.amberDark); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+          doc.text('LATE SIGNER', ML + pad + bw/2, y + 22, {align:'center'});
         }
-
-        // Right column: signature image (clean box with caption)
-        var sigW = 70, sigH = 22;
+        var sigW = 60, sigH = 18;
         var sigX = ML + CW - sigW - pad;
         var sigY = y + 4;
-        setStroke(C.greyLight); doc.setLineWidth(0.3);
-        doc.rect(sigX, sigY, sigW, sigH);
+        setFill(C.white); setStroke(C.greyLight); doc.setLineWidth(0.2);
+        doc.rect(sigX, sigY, sigW, sigH, 'FD');
         if (rec.signature) {
           try { doc.addImage(rec.signature, 'PNG', sigX + 1, sigY + 1, sigW - 2, sigH - 2); } catch(e) {}
         }
-        setText(C.greyLabel || '#888888');
-        doc.setFont('helvetica','normal'); doc.setFontSize(7);
-        doc.text('Signature', sigX + sigW/2, sigY + sigH + 3, {align:'center'});
-
-        y += ROW_H + ROW_GAP;
+        setText(C.subLabel); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+        doc.text('WORKER SIGNATURE', sigX + sigW/2, sigY + sigH + 2.5, {align:'center'});
+        y += ROW_H + 2;
       });
     }
 
-    // ── WORKERS WHO HAVEN'T SIGNED YET ──
+    // === SUPERVISOR SIGNATURE ===
+    if (wrapup && (wrapup.supervisor_signature || wrapup.supervisor_name)) {
+      ensure(32);
+      y = drawSubLabel(y, 'SUPERVISOR SIGNATURE');
+      drawCard(y, 22, C.white, C.greyLight);
+      var sigRendered = false;
+      try {
+        if (wrapup.supervisor_signature) {
+          doc.addImage(wrapup.supervisor_signature, 'PNG', ML + 2, y + 2, CW - 4, 18);
+          sigRendered = true;
+        }
+      } catch(e) {}
+      if (!sigRendered && wrapup.supervisor_name) {
+        setText(C.darkText);
+        doc.setFont('times','italic'); doc.setFontSize(16);
+        doc.text(String(wrapup.supervisor_name), ML + 4, y + 13);
+      }
+      setText(C.subLabel); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.text(String(wrapup.supervisor_name || 'Site Supervisor'), ML + 2, y + 25);
+      doc.text(todayDate, PAGE_W - MR - 2, y + 25, {align:'right'});
+      y += 28;
+    }
+
+    // === NOT YET SIGNED ===
     if (typeof DEMO_WORKERS !== 'undefined' && DEMO_WORKERS) {
       var signedNamesSet = new Set(talkRecs.map(function(r){ return (r.worker_name||'').toLowerCase(); }));
       var unsigned = DEMO_WORKERS
         .filter(function(w){ return w.onsite; })
         .filter(function(w){ return !signedNamesSet.has((w.name||'').toLowerCase()); });
       if (unsigned.length) {
-        y = newPageIfNeeded(y, 18);
-        y += 2;
-        y = drawMajorBanner(y, 'NOT YET SIGNED \u2014 BLOCKED FROM SIGN-IN/OUT');
-        setText(C.subLabel || '#5C6B62');
-        doc.setFont('helvetica','italic'); doc.setFontSize(8.5);
-        doc.text('These workers cannot sign in or out until they sign the current toolbox talk.', ML, y);
-        y += 5;
-        unsigned.forEach(function(w){
-          y = newPageIfNeeded(y, 6);
-          setText(C.darkText);
-          doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
-          doc.text('\u2022  ' + (w.name || '') + (w.role ? '  \u2014  ' + w.role : '') + (w.company ? '  \u00b7  ' + w.company : ''), ML, y);
-          y += 4.5;
-        });
+        ensure(18);
+        y = drawMajorBanner(y, 'NOT YET SIGNED — BLOCKED FROM SIGN-IN/OUT');
+        var noteLines = doc.splitTextToSize('These workers cannot sign in or out until they sign the current toolbox talk.', CW);
+        setText(C.subLabel); doc.setFont('helvetica','italic'); doc.setFontSize(8.5);
+        noteLines.forEach(function(line){ ensure(4); doc.text(line, ML, y + 3); y += 4; });
+        y += 1;
+        var unsignedText = unsigned.map(function(w){
+          return '•  ' + (w.name || '') + (w.role ? '  —  ' + w.role : '') + (w.company ? '  ·  ' + w.company : '');
+        }).join('\n');
+        drawCardBlock('', unsignedText);
       }
     }
 
-    // ── FOOTER ──
+    // === FINAL PASS: rewrite footer total pages ===
     var pages = doc.internal.getNumberOfPages();
-    for (var i = 1; i <= pages; i++) { doc.setPage(i); drawFooter(i, pages); }
+    for (var i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      setFill(C.white);
+      doc.rect(0, PAGE_H - MB - 6, PAGE_W, MB + 6, 'F');
+      drawFooter(i, pages);
+    }
     var fname = 'Toolbox-Roster-' + (talkMeta.version || 'TBT') + '-' + todayDate.replace(/\//g,'-') + '.pdf';
     doc.save(fname);
   } catch(e) {
